@@ -1,11 +1,11 @@
 import { components, OptionProps } from "react-select";
 import type { LookupManyAppearance } from "../../LookupMany";
-import { ColorfulLookupManyOption, ColorfulLookupManyPill, ILookupManyPillProps, LookupManyPill, PersonLookupManyOption, PersonLookupManyPill } from "../../ui";
+import { LookupManyUiColorfulOption, LookupManyUiColorfulPill, ILookupManyUiPillProps, LookupManyUiPill, LookupManyUiPersonOption, LookupManyUiPersonPill } from "../../ui";
 
 type Reference = ComponentFramework.EntityReference;
 
 export interface ILookupManyAppearanceComponents {
-    onRenderPill: (props: ILookupManyPillProps) => JSX.Element;
+    onRenderPill: (props: ILookupManyUiPillProps) => JSX.Element;
     onRenderOption: (props: OptionProps<Reference, true, never>) => JSX.Element;
 }
 
@@ -14,19 +14,19 @@ export const getLookupManyAppearanceComponents = (appearance: LookupManyAppearan
     switch (appearance.type) {
         case 'colorful': {
             return {
-                onRenderPill: props => <ColorfulLookupManyPill {...props} colorPropertyName={appearance.colorPropertyName} />,
-                onRenderOption: props => <ColorfulLookupManyOption {...props} colorPropertyName={appearance.colorPropertyName} />,
+                onRenderPill: props => <LookupManyUiColorfulPill {...props} colorPropertyName={appearance.colorPropertyName} />,
+                onRenderOption: props => <LookupManyUiColorfulOption {...props} colorPropertyName={appearance.colorPropertyName} />,
             };
         }
         case 'people': {
             return {
-                onRenderPill: props => <PersonLookupManyPill {...props} imageUrlPropertyName={appearance.imageUrlPropertyName} />,
-                onRenderOption: props => <PersonLookupManyOption {...props} imageUrlPropertyName={appearance.imageUrlPropertyName} />,
+                onRenderPill: props => <LookupManyUiPersonPill {...props} imageUrlPropertyName={appearance.imageUrlPropertyName} />,
+                onRenderOption: props => <LookupManyUiPersonOption {...props} imageUrlPropertyName={appearance.imageUrlPropertyName} />,
             };
         }
         case 'plain': {
             return {
-                onRenderPill: props => <LookupManyPill {...props} />,
+                onRenderPill: props => <LookupManyUiPill {...props} />,
                 onRenderOption: props => <components.Option {...props} />,
             };
         }

@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { HIDDEN_LAYER_HOSTS } from "../layout";
 
-export const getFooterEndUiStyles = () => mergeStyleSets({
+export const getDatasetControlUiFooterEndStyles = () => mergeStyleSets({
     datasetControlFooterEnd: {
         ...HIDDEN_LAYER_HOSTS,
         display: 'flex',

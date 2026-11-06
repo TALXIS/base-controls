@@ -21,36 +21,36 @@ export interface IDatasetControlLoadResult<TData = unknown> {
 export type DatasetControlViewsHook = (views: IDatasetControlView[]) => void;
 
 /** What the parts, the Grid and the skeleton need beside the consumer's API. */
-export interface IDatasetControlRuntime extends IDatasetControl {
+export interface IDatasetControlInternal extends IDatasetControl {
     readonly services: IDatasetControlServiceLocator;
     /** The control's height, as the `height` prop gives it. */
     getHeight(): string | undefined;
     /** Where the parts keep their state for a view: the one shown, unless another is given. */
     getViewStateStore(viewId?: string): IStateStore;
     /**
-     * Registers a hook over the views, applied on every load after `onLoad`.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over the views, applied on every load after `onLoad`.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerViews(hook: DatasetControlViewsHook, priority?: number): () => void;
+    addViewsHook(hook: DatasetControlViewsHook, priority?: number): () => void;
 }
 
 export interface IDatasetControlRuntimeParameters {
-    onGetProps: () => IDatasetControlProps;
+    getProps: () => IDatasetControlProps;
     /** The control's state, which outlives the runtime: the next mount opens the view it is on. */
     state: DatasetControlState;
-    onGetLabelsService: () => LabelsService;
+    getLabelsService: () => LabelsService;
     theme: ITheme;
 }
 
-export class DatasetControlRuntime implements IDatasetControlRuntime {
+export class DatasetControlRuntime implements IDatasetControlInternal {
     public readonly lifecycle = new RuntimeLifecycle({
         onInit: () => this._init(),
         onDestroy: () => this._destroy(),
     });
     private _services = new ServiceLocator<IDatasetControlServiceMap>();
-    private _moduleLoader = new ModuleLoader<IDatasetControlModuleMap, IDatasetControlRuntime>();
+    private _moduleLoader = new ModuleLoader<IDatasetControlModuleMap, IDatasetControlInternal>();
     private _surfaces = new DatasetControlSurfaces();
-    private _onGetProps: () => IDatasetControlProps;
+    private _getProps: () => IDatasetControlProps;
     private _theme: ITheme;
     private _state: DatasetControlState;
     private _provider?: IDataProvider;
@@ -60,11 +60,11 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     private _view?: IDatasetControlResolvedView;
 
     constructor(parameters: IDatasetControlRuntimeParameters) {
-        this._onGetProps = parameters.onGetProps;
+        this._getProps = parameters.getProps;
         this._theme = parameters.theme;
         this._state = parameters.state;
         this._services.register('runtime', () => this);
-        this._services.register('labels', parameters.onGetLabelsService);
+        this._services.register('labels', parameters.getLabelsService);
         this._services.register('surfaces', () => this._surfaces);
         new DatasetControlUnsavedChangesGuard({ runtime: this });
     }
@@ -105,8 +105,8 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         return this._state.getViewStore(viewId);
     }
 
-    public registerViews(hook: DatasetControlViewsHook, priority?: number): () => void {
-        return this._viewsHooks.register(hook, priority);
+    public addViewsHook(hook: DatasetControlViewsHook, priority?: number): () => void {
+        return this._viewsHooks.add(hook, priority);
     }
 
     public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
@@ -118,7 +118,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     public getHeight(): string | undefined {
-        return this._onGetProps().height;
+        return this._getProps().height;
     }
 
 
@@ -155,8 +155,8 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     private async _init(): Promise<void> {
-        await this._moduleLoader.load(this._onGetProps().modules ?? [], this);
-        const { provider, views = [] } = await this._onGetProps().onLoad(this);
+        await this._moduleLoader.load(this._getProps().modules ?? [], this);
+        const { provider, views = [] } = await this._getProps().onLoad(this);
         try {
             //a copy: the hooks change it in place
             const listedViews = [...views];
@@ -231,7 +231,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     private _releaseProvider(provider: IDataProvider): void {
-        if (this._onGetProps().destroyProviderOnUnmount !== false) {
+        if (this._getProps().destroyProviderOnUnmount !== false) {
             provider.destroy();
         }
     }

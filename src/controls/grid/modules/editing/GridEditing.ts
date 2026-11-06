@@ -41,7 +41,7 @@ export interface IGridEditingEvents {
 
 export interface IGridEditingParameters {
     services: IGridServiceLocator;
-    autoSave?: boolean;
+    enableAutoSave?: boolean;
     onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'];
 }
 
@@ -79,12 +79,12 @@ export class GridEditing implements IGridEditing {
 
     constructor(parameters: IGridEditingParameters) {
         this._services = parameters.services;
-        this._isAutoSaveEnabled = !!parameters.autoSave;
+        this._isAutoSaveEnabled = !!parameters.enableAutoSave;
         this.locks = new GridLocks({ services: this._services });
         if (parameters.onEditedCellChanged) {
             this.events.addEventListener('onEditedCellChanged', parameters.onEditedCellChanged);
         }
-        this._registerHooks();
+        this._addHooks();
         this._services.observe('keyboard', keyboard => {
             keyboard.onKeyDown(event => this._onKeyDown(event));
         });
@@ -139,18 +139,18 @@ export class GridEditing implements IGridEditing {
         this._returnFocus(gridApi, cell);
     }
 
-    private _registerHooks(): void {
+    private _addHooks(): void {
         const columns = this._services.get('columns');
-        columns.registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.editing);
+        columns.addColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.editing);
         //after row selection has added its checkbox column
-        columns.registerColumnDefinitions(this._onSelectionColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection + 1);
-        columns.headers.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.editing);
-        this._services.get('grid').registerAgGridOptions(result => {
+        columns.addColumnDefinitionsHook(this._onSelectionColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection + 1);
+        columns.headers.addColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.editing);
+        this._services.get('grid').addAgGridOptionsHook(result => {
             //AG Grid hands its own writes, such as a paste, over as `cellEditRequest`
             result.options.readOnlyEdit = true;
         }, GRID_MODULE_PRIORITY.editing);
-        this._services.get('gridTheme').registerStyles(this._onStyles, GRID_MODULE_PRIORITY.editing);
-        this._services.get('rows').registerRowClass(LOCKED_RECORD_ROW_CLASS, ({ record }) => this._isRecordLocked(record));
+        this._services.get('gridTheme').addStylesHook(this._onStyles, GRID_MODULE_PRIORITY.editing);
+        this._services.get('rows').addRowClass(LOCKED_RECORD_ROW_CLASS, ({ record }) => this._isRecordLocked(record));
     }
 
     private _onStyles = (result: IGridStyles, theme: ITheme): void => {
@@ -325,7 +325,7 @@ export class GridEditing implements IGridEditing {
     }
 
     private _isOneClickEdit(colDef: ColDef<IRecord>): boolean {
-        return !!getColumnContext(colDef).cell?.oneClickEdit;
+        return !!getColumnContext(colDef).cell?.enableOneClickEdit;
     }
 
     private _isColumnRequired(column: IColumn): boolean {

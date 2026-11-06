@@ -2,8 +2,8 @@ import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { Column } from "ag-grid-community";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
-import { HookRegistry } from "@core";
-import { IGridInternalServiceLocator } from "..";
+import { HookRegistry, IEventSubscriber } from "@core";
+import { IGridServiceLocatorInternal } from "..";
 import { GridColumnHeader, IGridColumnHeader } from "./GridColumnHeader";
 
 /** Something a module draws in a column header beside its name. */
@@ -38,7 +38,7 @@ export type GridColumnHeaderThemeHook = (builder: ThemeBuilder, header: IGridCol
 export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader) => void;
 
 export interface IGridColumnHeadersParameters {
-    services: IGridInternalServiceLocator;
+    services: IGridServiceLocatorInternal;
 }
 
 /** What a column header offers and what it draws. */
@@ -51,29 +51,29 @@ export interface IGridColumnHeaders {
     /** Draws every header on screen again, for a change their columns do not carry. */
     render(): void;
     /**
-     * Registers a hook over what a column's menu offers, under a heading of its own.
+     * Adds a hook over what a column's menu offers, under a heading of its own.
      *
      * @param priority Ascending: the modules sit at {@link GRID_MODULE_PRIORITY}.
      */
-    registerColumnMenuSection(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
+    addColumnMenuSectionsHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
     /**
-     * Registers a hook over the assembled menu, for what a section cannot express.
+     * Adds a hook over the assembled menu, for what a section cannot express.
      *
      * @param priority Ascending among hooks that all run after the sections.
      */
-    registerColumnMenuItems(hook: GridColumnMenuItemsHook, priority?: number): () => void;
+    addColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void;
     /**
-     * Registers a hook over what a column header draws beside its name.
+     * Adds a hook over what a column header draws beside its name.
      *
-     * @param priority Ascending: a lower number runs earlier.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerColumnHeaderAdornments(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void;
+    addColumnHeaderAdornmentsHook(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void;
     /**
-     * Registers a hook over the theme a column header is drawn in.
+     * Adds a hook over the theme a column header is drawn in.
      *
-     * @param priority Ascending: a higher number gets the later word.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerColumnHeaderTheme(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
+    addColumnHeaderThemeHook(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
 }
 
 /** What the grid's own parts read of it. */
@@ -83,7 +83,7 @@ export interface IGridColumnHeadersInternal extends IGridColumnHeaders {
         column: Column;
         element?: HTMLElement;
     }): IGridColumnHeader;
-    readonly events: IEventEmitter<IGridColumnHeadersEvents>;
+    readonly events: IEventSubscriber<IGridColumnHeadersEvents>;
     /** Everything the modules offer for a column, in order. */
     getMenuItems(header: IGridColumnHeader): IContextualMenuItem[];
     /** Run by the header in question. */
@@ -93,7 +93,7 @@ export interface IGridColumnHeadersInternal extends IGridColumnHeaders {
 }
 
 export class GridColumnHeaders implements IGridColumnHeadersInternal {
-    private _services: IGridInternalServiceLocator;
+    private _services: IGridServiceLocatorInternal;
     public readonly events: IEventEmitter<IGridColumnHeadersEvents> = new EventEmitter<IGridColumnHeadersEvents>();
     private _menuSectionHooks = new HookRegistry<GridColumnMenuSectionsHook>();
     private _menuItemHooks = new HookRegistry<GridColumnMenuItemsHook>();
@@ -112,18 +112,18 @@ export class GridColumnHeaders implements IGridColumnHeadersInternal {
         this.events.dispatchEvent('onRenderRequested');
     }
 
-    public registerColumnMenuSection(hook: GridColumnMenuSectionsHook, priority?: number): () => void {
-        return this._menuSectionHooks.register(hook, priority);
+    public addColumnMenuSectionsHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void {
+        return this._menuSectionHooks.add(hook, priority);
     }
 
-    public registerColumnMenuItems(hook: GridColumnMenuItemsHook, priority?: number): () => void {
-        return this._menuItemHooks.register(hook, priority);
+    public addColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void {
+        return this._menuItemHooks.add(hook, priority);
     }
 
     public getMenuItems(header: IGridColumnHeader): IContextualMenuItem[] {
         const sections: IColumnMenuSection[] = [];
         this._menuSectionHooks.apply(sections, header);
-        header.getContext().header?.onGetMenuSections?.(sections);
+        header.getContext().header?.menuSectionsHook?.(sections);
         const items = sections
             .filter(section => section.items.length > 0)
             .flatMap(section => [{
@@ -134,27 +134,27 @@ export class GridColumnHeaders implements IGridColumnHeadersInternal {
                 onRenderIcon: () => null,
             }, ...section.items]);
         this._menuItemHooks.apply(items, header);
-        header.getContext().header?.onGetMenuItems?.(items);
+        header.getContext().header?.menuItemsHook?.(items);
         return items;
     }
 
-    public registerColumnHeaderAdornments(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void {
-        return this._adornmentHooks.register(hook, priority);
+    public addColumnHeaderAdornmentsHook(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void {
+        return this._adornmentHooks.add(hook, priority);
     }
 
-    public registerColumnHeaderTheme(hook: GridColumnHeaderThemeHook, priority?: number): () => void {
-        return this._themeHooks.register(hook, priority);
+    public addColumnHeaderThemeHook(hook: GridColumnHeaderThemeHook, priority?: number): () => void {
+        return this._themeHooks.add(hook, priority);
     }
 
     public applyColumnHeaderThemeHooks(builder: ThemeBuilder, header: IGridColumnHeader): void {
         this._themeHooks.apply(builder, header);
-        header.getContext().header?.onGetTheme?.(builder);
+        header.getContext().header?.themeHook?.(builder);
     }
 
     public getAdornments(header: IGridColumnHeader): IColumnHeaderAdornment[] {
         const adornments: IColumnHeaderAdornment[] = [];
         this._adornmentHooks.apply(adornments, header);
-        header.getContext().header?.onGetAdornments?.(adornments);
+        header.getContext().header?.adornmentsHook?.(adornments);
         return adornments;
     }
 }

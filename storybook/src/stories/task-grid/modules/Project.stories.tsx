@@ -35,7 +35,7 @@ Tasks usually belong to a project, and several parts of a task grid need to know
 |---|---|
 | \`createMemoryProjectModule\` | \`project\`: the project above. |
 | \`createDataverseProjectModule\` | \`entityName\` and \`id\` of the project's record, \`startDateColumn\` and \`endDateColumn\` for its dates, and \`columns\`, more columns to read into \`data\`. |
-| \`createProjectModule\` | \`onCreateStore\`: a store with \`onLoadProject()\`, which returns the project. |
+| \`createProjectModule\` | \`createStore\`: a store with \`loadProject()\`, which returns the project. |
 
 The example's *dataverse.ts* reads the project from Dataverse.
 

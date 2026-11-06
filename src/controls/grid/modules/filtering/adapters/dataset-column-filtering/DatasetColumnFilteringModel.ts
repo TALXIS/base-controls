@@ -4,26 +4,26 @@ import { LabelsOf } from "@labels";
 import { FILTER_OPERATOR_LABEL_KEYS, FILTER_OPERATORS_LABELS } from "./labels";
 
 export interface IDatasetColumnFilteringModelEvents {
-    onSave: (result: false | ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => void;
+    onSaved: (result: false | ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => void;
     onConditionValueChanged: () => void;
 }
 
-interface IDatasetColumnFilteringModelOptions {
+interface IDatasetColumnFilteringModelParameters {
     condition: Condition;
     operatorLabels: LabelsOf<typeof FILTER_OPERATORS_LABELS>;
     filtering: Filtering;
 }
 
-export class DatasetColumnFilteringModel extends EventEmitter<IDatasetColumnFilteringModelEvents> {
+export class DatasetColumnFilteringModel {
+    public readonly events = new EventEmitter<IDatasetColumnFilteringModelEvents>();
     private _condition: Condition;
     private _operatorLabels: LabelsOf<typeof FILTER_OPERATORS_LABELS>;
     private _filtering: Filtering;
 
-    constructor(options: IDatasetColumnFilteringModelOptions) {
-        super();
-        this._condition = options.condition;
-        this._operatorLabels = options.operatorLabels;
-        this._filtering = options.filtering;
+    constructor(parameters: IDatasetColumnFilteringModelParameters) {
+        this._condition = parameters.condition;
+        this._operatorLabels = parameters.operatorLabels;
+        this._filtering = parameters.filtering;
     }
 
     public getOperatorOptionSet(): ComponentFramework.PropertyHelper.OptionMetadata[] {
@@ -52,7 +52,7 @@ export class DatasetColumnFilteringModel extends EventEmitter<IDatasetColumnFilt
             }
             this._condition.setValue(values);
         }
-        this.dispatchEvent('onConditionValueChanged');
+        this.events.dispatchEvent('onConditionValueChanged');
     }
 
     public getConditionValue(): any[] {
@@ -105,6 +105,6 @@ export class DatasetColumnFilteringModel extends EventEmitter<IDatasetColumnFilt
                 }
             }
         }
-        this.dispatchEvent('onSave', result);
+        this.events.dispatchEvent('onSaved', result);
     }
 }

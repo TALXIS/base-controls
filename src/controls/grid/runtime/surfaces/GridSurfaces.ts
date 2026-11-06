@@ -10,14 +10,14 @@ export interface IGridSurface {
 /** A hook over what the modules draw over the grid. */
 export type GridSurfacesHook = (surfaces: IGridSurface[]) => void;
 
-/** What the modules draw over the grid, assembled from what they registered. */
+/** What the modules draw over the grid, assembled from what they added. */
 export interface IGridSurfaces {
     /**
-     * Registers a hook over what the modules draw over the grid.
+     * Adds a hook over what the modules draw over the grid.
      *
-     * @param priority Ascending: a lower number is drawn first.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerSurface(hook: GridSurfacesHook, priority?: number): () => void;
+    addSurfacesHook(hook: GridSurfacesHook, priority?: number): () => void;
 }
 
 /** What the grid's own parts read of it. */
@@ -29,8 +29,8 @@ export interface IGridSurfacesInternal extends IGridSurfaces {
 export class GridSurfaces implements IGridSurfacesInternal {
     private _surfaceHooks = new HookRegistry<GridSurfacesHook>();
 
-    public registerSurface(hook: GridSurfacesHook, priority?: number): () => void {
-        return this._surfaceHooks.register(hook, priority);
+    public addSurfacesHook(hook: GridSurfacesHook, priority?: number): () => void {
+        return this._surfaceHooks.add(hook, priority);
     }
 
     public getSurfaces(): IGridSurface[] {

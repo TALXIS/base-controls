@@ -1,1 +1,1 @@
-export * from './LookupManyPill';
+export * from './LookupManyUiPill';

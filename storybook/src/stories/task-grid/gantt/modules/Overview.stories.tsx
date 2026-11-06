@@ -24,7 +24,7 @@ The Gantt itself lines the tasks up on a timeline; dragging bars, drawing links,
 | [**Links**](?path=/docs/controls-taskgrid-gantt-modules-links--overview) | \`createLinksModule()\` | The [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) module | Dependencies drawn between the bars, and drawn by the user. |
 | Your own | An \`IGanttModule\` | | See [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview). |
 
-\`createMarkersModule\` and \`createNonWorkingDaysModule\` take an \`onCreateStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on the task grid's [**Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take the data itself.
+\`createMarkersModule\` and \`createNonWorkingDaysModule\` take an \`createStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on the task grid's [**Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take the data itself.
 
 ## The library
 

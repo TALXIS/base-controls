@@ -50,7 +50,7 @@ export interface IGridGroupingEvents {
 
 export interface IGroupingSettings {
     /** Whether a column's menu offers grouping. */
-    allowUserGrouping: boolean;
+    enableUserGrouping: boolean;
     /** How the groups nest. */
     type: 'nested' | 'flat';
     /** How many levels open themselves. */
@@ -73,7 +73,7 @@ export interface IGridGrouping {
     /** Whether the rows are grouped by the column. */
     isColumnGrouped(column: IColumn): boolean;
     /** Whether the rows may be grouped by the column. */
-    canColumnBeGrouped(column: IColumn): boolean;
+    canGroupColumn(column: IColumn): boolean;
     /** How many levels of groups are open. */
     getExpandedLevel(): number;
     /** The deepest level there is to open. */
@@ -120,14 +120,14 @@ export class GridGrouping implements IGridGrouping {
     constructor(parameters: IGridGroupingParameters) {
         this._services = parameters.services;
         const {
-            allowUserGrouping = true,
+            enableUserGrouping = true,
             type = 'nested',
             defaultExpandedLevel = -1,
             pinGroupedColumns = true,
             maxGroupLoadsPerSelection = 100,
         } = parameters.settings ?? {};
         
-        this._settings = { allowUserGrouping, type, defaultExpandedLevel, pinGroupedColumns, maxGroupLoadsPerSelection };
+        this._settings = { enableUserGrouping, type, defaultExpandedLevel, pinGroupedColumns, maxGroupLoadsPerSelection };
         const state = this._gridServices.get('state').get<IGroupingState>(GROUPING_STATE_KEY);
         this._expandedLevel = state?.expandedLevel ?? defaultExpandedLevel;
         this._toggledGroups = new Map(Object.entries(state?.toggledGroups ?? {}));
@@ -145,27 +145,27 @@ export class GridGrouping implements IGridGrouping {
             this._provider.addEventListener('onNestedProviderPagingLimitReached', this._onNestedProviderPagingLimitReached),
             this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded),
         ];
-        this._registerHooks();
+        this._addHooks();
     }
 
     /** What this module has to say about what the grid draws, in the order the grid asks. */
-    private _registerHooks(): void {
+    private _addHooks(): void {
         const cells = this._gridServices.get('cells');
         const columnHeaders = this._gridServices.get('columns').headers;
-        this._gridServices.get('grid').registerAgGridOptions(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
-        cells.registerCellTheme(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('grid').addAgGridOptionsHook(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
+        cells.addCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
         //locks come with the editing module, which may register after this one
         this._gridServices.get('grid').modules.observe('editing', editing => {
-            editing.locks.registerLock(this._onLock, GRID_MODULE_PRIORITY.grouping);
+            editing.locks.addLockHook(this._onLock, GRID_MODULE_PRIORITY.grouping);
         });
         //listed in the column menu after sorting and filtering
-        columnHeaders.registerColumnMenuSection(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
-        columnHeaders.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.get('surfaces').registerSurface(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
+        columnHeaders.addColumnMenuSectionsHook(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
+        columnHeaders.addColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('surfaces').addSurfacesHook(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('grid').modules.observe('rowSelection', selection => {
-            selection.registerSelectRecords(this._onSelectRecords, GRID_MODULE_PRIORITY.grouping);
-            selection.registerSelectionState(this._onSelectionState, GRID_MODULE_PRIORITY.grouping);
+            selection.addSelectRecordsHook(this._onSelectRecords, GRID_MODULE_PRIORITY.grouping);
+            selection.addSelectionStateHook(this._onSelectionState, GRID_MODULE_PRIORITY.grouping);
         });
     }
 
@@ -235,8 +235,8 @@ export class GridGrouping implements IGridGrouping {
         return !!column.grouping?.isGrouped;
     }
 
-    public canColumnBeGrouped(column: IColumn): boolean {
-        return this._settings.allowUserGrouping
+    public canGroupColumn(column: IColumn): boolean {
+        return this._settings.enableUserGrouping
             && !!column.metadata?.CanBeGrouped
             && column.dataType !== DataTypes.MultiSelectOptionSet;
     }
@@ -341,14 +341,14 @@ export class GridGrouping implements IGridGrouping {
             colDef.valueGetter = params => this._getGroupedValue(params.data, columnName);
             colDef.valueFormatter = params => this._getGroupedFormattedValue(params.data, columnName);
             //a group's value is not edited in place
-            colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, oneClickEdit: false }, widthOffset: GROUPED_COLUMN_WIDTH_OFFSET };
+            colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, enableOneClickEdit: false }, widthOffset: GROUPED_COLUMN_WIDTH_OFFSET };
             if (this._settings.pinGroupedColumns) {
                 colDef.pinned = 'left';
             }
         }
         for (const colDef of columnDefs.filter(colDef => !!columnsMap[colDef.colId ?? colDef.field ?? ''])) {
             this._applyGroupRowRenderer(colDef, columnsMap[colDef.colId ?? colDef.field!]);
-            this._rowModelGrouping?.onApplyColumnDefinition(colDef, isGrouped(colDef));
+            this._rowModelGrouping?.applyColumnDefinition(colDef, isGrouped(colDef));
             //AG Grid keeps a pin that a new definition leaves out
             if (!isGrouped(colDef)) {
                 colDef.pinned ??= null;
@@ -363,12 +363,12 @@ export class GridGrouping implements IGridGrouping {
     };
 
     /** Styles a group row as the heading of what it holds. */
-    private _onCellTheme = (builder: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
+    private _onCellTheme = (builder: ThemeBuilder, parameters: { record: IRecord; columnName: string }): void => {
         //unstyled until something is grouped
         if (this._provider.grouping.getGroupBys().length === 0) {
             return;
         }
-        if (isGroupRecord(params.record)) {
+        if (isGroupRecord(parameters.record)) {
             builder.colors.background = this._gridTheme.palette.neutralLighterAlt;
             builder.edit('grouping|groupRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
             return;
@@ -403,7 +403,7 @@ export class GridGrouping implements IGridGrouping {
     /** What a column's menu offers: grouping by it, or ungrouping it. */
     private _onMenuSection = (sections: IColumnMenuSection[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
-        if (!column || !this.canColumnBeGrouped(column)) {
+        if (!column || !this.canGroupColumn(column)) {
             return;
         }
         const isGrouped = this.isColumnGrouped(column);

@@ -1,6 +1,6 @@
 import { getFormatting, getLocaleFromLanguageId } from "@talxis/client-libraries";
 
-export interface IUserSettingsParams {
+export interface IUserSettingsParameters {
     lcid?: number;
     formatInfoCultureName?: string;
 }
@@ -9,11 +9,11 @@ export interface IXrmUserSettings extends Xrm.UserSettings {
     formatInfoCultureName?: string;
 }
 
-export interface IInternalXrmUserSettings extends IXrmUserSettings {
+export interface IXrmUserSettingsInternal extends IXrmUserSettings {
     initializeFormatting(): void;
 }
 
-export class UserSettings implements IInternalXrmUserSettings {
+export class UserSettings implements IXrmUserSettingsInternal {
     public dateFormattingInfo: any;
     public defaultDashboardId: string;
     public isGuidedHelpEnabled: boolean;
@@ -30,12 +30,12 @@ export class UserSettings implements IInternalXrmUserSettings {
     public userName: string;
     public formatInfoCultureName?: string;
 
-    constructor(params: IUserSettingsParams = {}) {
+    constructor(parameters: IUserSettingsParameters = {}) {
         this.defaultDashboardId = "";
         this.isGuidedHelpEnabled = false;
         this.isHighContrastEnabled = false;
         this.isRTL = false;
-        this.languageId = params.lcid ?? 1033;
+        this.languageId = parameters.lcid ?? 1033;
         this.securityRolePrivileges = [];
         this.securityRoles = [];
         this.transactionCurrency = {
@@ -46,7 +46,7 @@ export class UserSettings implements IInternalXrmUserSettings {
         this.transactionCurrencyId = "";
         this.userId = "";
         this.userName = "";
-        this.formatInfoCultureName = params.formatInfoCultureName ?? "en-US";
+        this.formatInfoCultureName = parameters.formatInfoCultureName ?? "en-US";
         this.roles = {
             get: () => [] as any,
             getLength: () => 0,

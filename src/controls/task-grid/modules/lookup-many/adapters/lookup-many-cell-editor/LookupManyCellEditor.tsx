@@ -4,7 +4,7 @@ import type { ICellEditorParams } from "ag-grid-community";
 import { useDatasetControlModule } from "@controls/dataset-control";
 import { EditingCell, Grid, IGridCellParams, useGridCell, useGridField } from "@controls/grid";
 import { useTaskRuntime } from "../../../../adapters/root/context";
-import { LookupManyEditorPopup, LookupManySelect } from "../../ui";
+import { LookupManyUiEditorPopup, LookupManyUiSelect } from "../../ui";
 import { getLookupManyAppearanceComponents } from "../lookup-many-appearance";
 import { LOOKUP_MANY_LABELS } from "../../labels";
 
@@ -27,11 +27,11 @@ const LookupManyCellSelect = (props: ILookupManyCellSelectProps) => {
     useEffect(() => () => optionsProvider?.destroy(), [optionsProvider]);
     const labels = useLabels(LOOKUP_MANY_LABELS);
 
-    return <LookupManyEditorPopup cellWidth={props.cellWidth} components={lookupMany.components.editorPopup}>
-        <LookupManySelect
+    return <LookupManyUiEditorPopup cellWidth={props.cellWidth} components={lookupMany.components.editorPopup}>
+        <LookupManyUiSelect
             dataProvider={optionsProvider}
             value={field?.getValue() ?? []}
-            isDisabled={!optionsProvider}
+            disabled={!optionsProvider}
             autoFocus
             defaultSearchQuery={props.eventKey?.length === 1 ? props.eventKey : undefined}
             noRecordsFoundText={labels.get('lookupMany.noRecordsFound')}
@@ -39,7 +39,7 @@ const LookupManyCellSelect = (props: ILookupManyCellSelectProps) => {
             getRemoveText={reference => labels.get('lookupMany.remove', { name: reference.name ?? '' })}
             components={components}
             onChange={value => field?.setValue(value)} />
-    </LookupManyEditorPopup>;
+    </LookupManyUiEditorPopup>;
 };
 
 /** A lookup-many cell being edited in a picker popped out over the cell. */

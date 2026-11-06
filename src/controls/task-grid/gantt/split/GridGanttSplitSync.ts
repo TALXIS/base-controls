@@ -3,8 +3,8 @@ import type { ColDef } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
 import type { IGrid, IGridAgGridInitialOptions } from "@controls/grid";
 import type { IStateStore } from "@core";
-import type { ITaskRuntime } from "../../../runtime";
-import { TASK_GRID_PRIORITY } from "../../../priorities";
+import type { ITaskRuntime } from "../../runtime";
+import { TASK_GRID_PRIORITY } from "../../priorities";
 import type { IGantt } from "../interfaces";
 import { GridGanttScrollSync } from "./GridGanttScrollSync";
 import { GridGanttHoverSync } from "./GridGanttHoverSync";
@@ -24,14 +24,14 @@ export class GridGanttSplitSync {
     private _grid?: IGrid;
     private _scrollSync?: GridGanttScrollSync;
     private _hoverSync?: GridGanttHoverSync;
-    private _unregisters: (() => void)[];
+    private _removers: (() => void)[];
 
     //registered as the grid is made, before AG Grid reads its options
     constructor(parameters: IGridGanttSplitSyncParameters) {
         this._taskRuntime = parameters.taskRuntime;
         this._state = parameters.state;
         const datasetControl = this._taskRuntime.services.get('datasetControl');
-        this._unregisters = [
+        this._removers = [
             datasetControl.modules.observe('userQueries', userQueries => userQueries.saveWithView('ganttSplitSize', () => this._state.get<number>(GANTT_SIZE_STATE_KEY))),
             datasetControl.parts.observe('grid', this._onGridAvailable),
             datasetControl.parts.observe('gantt', this._onGanttAvailable),
@@ -48,13 +48,13 @@ export class GridGanttSplitSync {
     }
 
     public destroy(): void {
-        this._unregisters.forEach(unregister => unregister());
+        this._removers.forEach(remove => remove());
     }
 
     private _onGridAvailable = (grid: IGrid): (() => void) => {
         this._grid = grid;
-        grid.registerAgGridInitialOptions(this._onAgGridInitialOptions);
-        grid.services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 1);
+        grid.addAgGridInitialOptionsHook(this._onAgGridInitialOptions);
+        grid.services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 1);
         return () => {
             this._destroySync();
             this._grid = undefined;

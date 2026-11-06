@@ -1,10 +1,10 @@
 import { createElement } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import type { GanttStatic } from "dhtmlx-gantt";
-import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
+import { EventEmitter } from "@talxis/client-libraries";
 import type { LabelsOf } from "@labels";
-import type { ITaskRuntime } from "../../../../runtime";
-import type { ITaskGridSetting } from "../../../../adapters/root/settings";
+import type { ITaskRuntime } from "../../../runtime";
+import type { ITaskGridSetting } from "../../../adapters/root/settings";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { GanttCellClassHook, IGanttTimeline } from "../../timeline";
@@ -16,6 +16,7 @@ import { getNonWorkingDaysStyles } from "./styles";
 import { NonWorkingDayCalendar } from "./NonWorkingDayCalendar";
 import { NonWorkingDayScaleTooltip } from "./adapters/scale-tooltip";
 import type { INonWorkingDaysUiTooltipComponents } from "./ui/tooltip";
+import type { IEventSubscriber } from "@core";
 
 const SHOW_NON_WORKING_DAYS_STATE_KEY = 'showNonWorkingDays';
 //a year of non-working days in a row is a calendar to give up on
@@ -44,7 +45,7 @@ export interface INonWorkingDay<TData = { [key: string]: unknown }> {
 /** Where the consumer's non-working days come from. */
 export interface INonWorkingDaysStore<TData = { [key: string]: unknown }> {
     /** Called on every mount and on `reload` while the chart draws without these days. */
-    onLoadNonWorkingDays(): Promise<INonWorkingDay<TData>[]>;
+    loadNonWorkingDays(): Promise<INonWorkingDay<TData>[]>;
 }
 
 /** The replaceable pieces of the non-working days, by the part they belong to. */
@@ -59,7 +60,7 @@ export interface INonWorkingDaysParameters<TData = { [key: string]: unknown }> {
     isVisibleByDefault?: boolean;
     /** Whether a dragged or drawn task may start or end on a non-working day (default `false`). */
     enableDropOnNonWorkingDays?: boolean;
-    onCreateStore?: (taskRuntime: ITaskRuntime) => INonWorkingDaysStore<TData>;
+    createStore?: (taskRuntime: ITaskRuntime) => INonWorkingDaysStore<TData>;
     components?: INonWorkingDaysComponents;
 }
 
@@ -71,7 +72,7 @@ export interface INonWorkingDaysEvents {
 
 /** The `nonWorkingDays` module: weekends and the store's days, left out of durations. */
 export interface INonWorkingDays<TData = { [key: string]: unknown }> {
-    readonly events: IEventEmitter<INonWorkingDaysEvents>;
+    readonly events: IEventSubscriber<INonWorkingDaysEvents>;
     isVisible(): boolean;
     setVisible(isVisible: boolean): void;
     /** Reads the store's days again and redraws the chart. */
@@ -101,19 +102,19 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
         this._isVisibleByDefault = parameters.isVisibleByDefault ?? true;
         this._isWeekendEnabled = parameters.enableWeekends ?? true;
         this._components = parameters.components ?? {};
-        this._store = parameters.onCreateStore?.(gantt.getTaskRuntime());
+        this._store = parameters.createStore?.(gantt.getTaskRuntime());
         this._calendar = new NonWorkingDayCalendar(this._getWeekends());
-        gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getNonWorkingDaysStyles(theme)));
-        gantt.surfaces.registerSurface(this._onSurfaces);
-        gantt.services.get('schedule').registerDuration(this._countWorkingTime);
+        gantt.services.get('theme').addStylesHook((result, theme) => result.styles.push(getNonWorkingDaysStyles(theme)));
+        gantt.surfaces.addSurfacesHook(this._onSurfaces);
+        gantt.services.get('schedule').addDurationHook(this._countWorkingTime);
         if (!parameters.enableDropOnNonWorkingDays) {
-            gantt.services.get('schedule').registerSnap(this._keepOffNonWorkingDays);
+            gantt.services.get('schedule').addSnapHook(this._keepOffNonWorkingDays);
         }
         gantt.services.observe('chart', this._onChartReady);
         gantt.services.observe('timeline', this._onTimelineReady);
         const datasetControl = gantt.getTaskRuntime().services.get('datasetControl');
         this._unwatchUserQueries = datasetControl.modules.observe('userQueries', userQueries => userQueries.saveWithView('showNonWorkingDays', () => this.isVisible()));
-        this._unwatchTaskSettings = datasetControl.parts.observe('taskSettings', settings => settings.registerSettings(this._addSettings));
+        this._unwatchTaskSettings = datasetControl.parts.observe('taskSettings', settings => settings.addSettingsHook(this._addSettings));
         //not awaited so the chart draws before the store's days load
         this.reload();
     }
@@ -140,7 +141,7 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
         }
         const store = this._store;
         const errorTitle = this._labels.get('nonWorkingDays.loadNonWorkingDaysFailed');
-        const calendar = await this._gantt.getTaskRuntime().execute(async () => new NonWorkingDayCalendar([...this._getWeekends(), ...await store.onLoadNonWorkingDays()]), { loading: { show: false }, error: { title: errorTitle, rethrow: false } });
+        const calendar = await this._gantt.getTaskRuntime().execute(async () => new NonWorkingDayCalendar([...this._getWeekends(), ...await store.loadNonWorkingDays()]), { loading: { show: false }, error: { title: errorTitle, rethrow: false } });
         if (!calendar || this._isDestroyed) {
             return;
         }
@@ -230,8 +231,8 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
                 classNames.push(NON_WORKING_DAY_CLASS);
             }
         };
-        timeline.registerCellClass(addNonWorkingDayClass);
-        timeline.registerScaleCellClass(addNonWorkingDayClass);
+        timeline.addCellClassHook(addNonWorkingDayClass);
+        timeline.addScaleCellClassHook(addNonWorkingDayClass);
     };
 
     //read while drawing: the zoom is registered after the chart

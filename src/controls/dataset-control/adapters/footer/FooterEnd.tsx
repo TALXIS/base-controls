@@ -1,4 +1,4 @@
-import { DatasetControlUi, IFooterEndUiComponents } from "../../ui";
+import { DatasetControlUi, IDatasetControlUiFooterEndComponents } from "../../ui";
 import { DatasetControlRegionContext } from "../region";
 
 /** Props for `DatasetControl.Footer.End`. */
@@ -8,7 +8,7 @@ export interface IFooterEndProps {
     /** Added to the region's box. */
     className?: string;
     /** Replacements for the region's slots. */
-    components?: Partial<IFooterEndUiComponents>;
+    components?: Partial<IDatasetControlUiFooterEndComponents>;
 }
 
 /** The footer's right region, such as for the paging. */

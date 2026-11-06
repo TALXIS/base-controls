@@ -195,11 +195,11 @@ const GridExample = () => {
             <Grid
                 modules={[
                     createClientSideRowModelModule(),
-                    createEditingModule({ autoSave: true }),
+                    createEditingModule({ enableAutoSave: true }),
                     createGroupingModule({ defaultExpandedLevel: 0 }),
                     createAggregationModule(),
                 ]}
-                rowSettings={{ onGetLock: lockSubmittedEntries }}
+                rowSettings={{ lockHook: lockSubmittedEntries }}
                 enableOptionSetColors
                 onSetup={grid => { gridRef.current = grid }}
                 height='440px' />

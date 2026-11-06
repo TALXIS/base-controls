@@ -3,19 +3,19 @@ import { PivotItem } from "@fluentui/react";
 import { ITabsComponentProps } from "../components";
 import React, { useMemo } from "react";
 import type { TabLikeChild } from "../Tabs";
-import { getPivotStyles } from "./styles";
-import { IPivotComponents, PivotComponents } from "./components";
+import { getFormUiPivotStyles } from "./styles";
+import { IFormUiPivotComponents, FormUiPivotComponents } from "./components";
 
 interface IPivotProps extends ITabsComponentProps {
-    components?: Partial<IPivotComponents>;
+    components?: Partial<IFormUiPivotComponents>;
 }
 
-export const Pivot = (props: IPivotProps) => {
+export const FormUiPivot = (props: IPivotProps) => {
     
-    const components = { ...PivotComponents, ...props.components };
+    const components = { ...FormUiPivotComponents, ...props.components };
     const childrenArray: TabLikeChild[] = React.Children.toArray(props.children).filter(child => React.isValidElement(child)) as TabLikeChild[];
     const theme = useTheme();
-    const styles = useMemo(() => getPivotStyles(theme), [theme]);
+    const styles = useMemo(() => getFormUiPivotStyles(theme), [theme]);
 
     return components.onRenderPivot({
         overflowBehavior: 'menu',

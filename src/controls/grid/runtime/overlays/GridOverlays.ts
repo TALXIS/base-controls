@@ -1,6 +1,6 @@
 import { GridApi } from "ag-grid-community";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IGridInternalServiceLocator } from "..";
+import { IGridServiceLocatorInternal } from "..";
 import type { IGridAgGridOptions } from "../grid";
 
 /** How long a load may take before it is worth telling anyone about. */
@@ -17,12 +17,12 @@ const ACTIVE_OVERLAYS: { [overlay in GridOverlay]: string | undefined } = {
 };
 
 export interface IGridOverlaysParameters {
-    services: IGridInternalServiceLocator;
+    services: IGridServiceLocatorInternal;
 }
 
 /** The spinner and the empty state. */
 export class GridOverlays {
-    private _services: IGridInternalServiceLocator;
+    private _services: IGridServiceLocatorInternal;
     private _visibleOverlay: GridOverlay = 'none';
     /** Pending request to show the loading overlay, until {@link LOADING_OVERLAY_DELAY} is up. */
     private _loadingOverlayTimeout: NodeJS.Timeout | undefined;
@@ -30,8 +30,8 @@ export class GridOverlays {
     constructor(parameters: IGridOverlaysParameters) {
         this._services = parameters.services;
         //AG Grid's own overlays would answer to its state, not the provider's
-        this._services.get('grid').registerAgGridInitialOptions(result => result.options.suppressOverlays = ['loading', 'noRows', 'noMatchingRows']);
-        this._services.get('grid').registerAgGridOptions(this._onAgGridOptions);
+        this._services.get('grid').addAgGridInitialOptionsHook(result => result.options.suppressOverlays = ['loading', 'noRows', 'noMatchingRows']);
+        this._services.get('grid').addAgGridOptionsHook(this._onAgGridOptions);
         this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
     }
 

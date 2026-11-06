@@ -1,8 +1,8 @@
 import { createContext, useContext } from "react";
-import type { ILookupManySelectComponents } from "./components";
+import type { ILookupManyUiSelectComponents } from "./components";
 
 export interface ILookupManySelectContext {
-    components: ILookupManySelectComponents;
+    components: ILookupManyUiSelectComponents;
     onRemove: (reference: ComponentFramework.EntityReference) => void;
     getRemoveText: (reference: ComponentFramework.EntityReference) => string;
 }

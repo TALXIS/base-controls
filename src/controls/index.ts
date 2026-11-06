@@ -1,4 +1,4 @@
-export * from '@controls/check-list';
+export * from '@controls/checklist';
 export * from '@controls/dataset-control';
 export * from '@controls/ribbon';
 export * from '@controls/form';

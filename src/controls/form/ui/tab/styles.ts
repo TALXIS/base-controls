@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getTabStyles = () => {
+export const getFormUiTabStyles = () => {
     return mergeStyleSets({
         tab: {
             gap: 12,

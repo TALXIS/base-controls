@@ -1,7 +1,7 @@
 import { useLabels } from "@labels";
 import { useDataProviderEvents } from "@data";
 import { DatasetControlUi } from "../../ui";
-import { IEmptyStateUiComponents } from "../../ui/empty-state";
+import { IDatasetControlUiEmptyStateComponents } from "../../ui/empty-state";
 import { EMPTY_STATE_LABELS } from "./labels";
 
 /** Props for `DatasetControl.EmptyState`. */
@@ -9,7 +9,7 @@ export interface IEmptyStateProps {
     /** What shows the records while there are some. */
     children?: React.ReactNode;
     /** Replacements for the empty state's slots. */
-    components?: Partial<IEmptyStateUiComponents>;
+    components?: Partial<IDatasetControlUiEmptyStateComponents>;
 }
 
 /** The empty state in place of its children while the provider has no records. */

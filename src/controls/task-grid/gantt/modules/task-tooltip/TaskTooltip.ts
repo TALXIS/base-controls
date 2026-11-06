@@ -18,12 +18,12 @@ export interface ITaskTooltip {
     getComponents(): ITaskTooltipRendererComponents;
 }
 
-export class TaskTooltipModule implements ITaskTooltip {
+export class TaskTooltip implements ITaskTooltip {
     private _parameters: ITaskTooltipParameters;
 
     constructor(gantt: IGantt, parameters: ITaskTooltipParameters) {
         this._parameters = parameters;
-        gantt.surfaces.registerSurface(this._onSurfaces);
+        gantt.surfaces.addSurfacesHook(this._onSurfaces);
     }
 
     public getStatusColumnName(): string | undefined {

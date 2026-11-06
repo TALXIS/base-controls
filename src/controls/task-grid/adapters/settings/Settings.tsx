@@ -22,7 +22,7 @@ export const Settings = (props: ISettingsProps) => {
     const taskRuntime = useTaskRuntime();
     const propsRef = useLatest(props);
     const labels = useLabels(TASK_GRID_LABELS);
-    const settings = useRegisterDatasetControlPart('taskSettings', () => new TaskSettings({ taskRuntime, onGetProps: () => propsRef.current }));
+    const settings = useRegisterDatasetControlPart('taskSettings', () => new TaskSettings({ taskRuntime, getProps: () => propsRef.current }));
     const provider = useDataProviderEvents(['onLoading']);
     const { rerender } = useRerender();
 

@@ -24,7 +24,7 @@ Esc closes the editor and keeps what was typed, and closing an editor without ch
 
 ## Save
 
-With \`autoSave\`, each commit calls \`record.save()\` straight away, and a paste saves each record once. Without it, edits stay on the records until you call \`provider.save()\` or \`provider.clearChanges()\`; the grid marks nothing as changed, so build your save bar from the provider (see *Edit and save* on [**Data providers**](?path=/docs/concepts-data-providers--overview)). The save events are under *Follow saves* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
+With \`enableAutoSave\`, each commit calls \`record.save()\` straight away, and a paste saves each record once. Without it, edits stay on the records until you call \`provider.save()\` or \`provider.clearChanges()\`; the grid marks nothing as changed, so build your save bar from the provider (see *Edit and save* on [**Data providers**](?path=/docs/concepts-data-providers--overview)). The save events are under *Follow saves* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
 
 {{story: Review changes, then save them all}}
 
@@ -44,14 +44,14 @@ A value that fails validation shows an error icon in its cell, with the message 
 |---|---|---|
 | Required | \`metadata.RequiredLevel\` \`1\` or \`2\` on the provider column | The value is not empty |
 | Built-in | The column's data type and metadata | Single-line text against \`MaxLength\`, numbers against \`MinValue\` and \`MaxValue\`, and number, email, URL and date formats |
-| One column | \`context.cell.onGetValidation(result, { record })\` in \`colDefs\` | Your rule for that column; it may read any column of the record |
-| Every column | \`registerValidation(hook, priority?)\` on the \`validation\` service | Your rule for every column: see *Validation* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) |
+| One column | \`context.cell.validationHook(result, { record })\` in \`colDefs\` | Your rule for that column; it may read any column of the record |
+| Every column | \`addValidationHook(hook, priority?)\` on the \`validation\` service | Your rule for every column: see *Validation* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) |
 
 Your rules run first, then the required and built-in checks, so a rule can add an error but not clear a built-in one. The rules are set on the provider's records: they gate every save, a \`provider.save()\` from outside the grid included, and they replace a \`record.expressions.setValidationExpression\` of your own on the same column. Validation does not need the editing module, so a read-only grid shows invalid values too; only the editing module draws a required column's asterisk.
 
 ## Edit in place
 
-\`context.cell.oneClickEdit: true\` in \`colDefs\` draws the column's editing control in the cell itself, so no editor opens: a two options column becomes a switch, an option set a coloured picker while \`enableOptionSetColors\` is on.
+\`context.cell.enableOneClickEdit: true\` in \`colDefs\` draws the column's editing control in the cell itself, so no editor opens: a two options column becomes a switch, an option set a coloured picker while \`enableOptionSetColors\` is on.
 
 {{story: Tick billable in place}}
 
@@ -67,16 +67,16 @@ Locks decide what can be edited. The levels are checked in the order of the tabl
 |---|---|---|
 | Grid | No editing module | Nothing |
 | Column | \`context.isLocked\`, which defaults to \`!metadata.IsValidForUpdate\`, or a lock hook asked about \`{ columnName }\` | A lock in the header |
-| Record | \`rowSettings.onGetLock\`, a lock hook asked about \`{ record }\`, or an inactive record | A dimmed row, and a lock in a column pinned at the start |
-| Cell | \`context.cell.onGetLock\`, or a lock hook asked about \`{ record, columnName }\` | A lock in the cell |
+| Record | \`rowSettings.lockHook\`, a lock hook asked about \`{ record }\`, or an inactive record | A dimmed row, and a lock in a column pinned at the start |
+| Cell | \`context.cell.lockHook\`, or a lock hook asked about \`{ record, columnName }\` | A lock in the cell |
 
-\`context.isLocked: true\` is final; to open a column its metadata locks, give it \`context: { isLocked: false }\`. \`rowSettings.onGetLock(result, { record })\` starts with \`result.isLocked\` as \`!record.isActive()\` and runs after the record-level hooks, so it can also unlock. \`context.cell.onGetLock\` runs after the cell-level hooks, only for a cell whose column and record are open. A module locks with \`editing.locks.registerLock\`: see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
+\`context.isLocked: true\` is final; to open a column its metadata locks, give it \`context: { isLocked: false }\`. \`rowSettings.lockHook(result, { record })\` starts with \`result.isLocked\` as \`!record.isActive()\` and runs after the record-level hooks, so it can also unlock. \`context.cell.lockHook\` runs after the cell-level hooks, only for a cell whose column and record are open. A module locks with \`editing.locks.addLockHook\`: see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
 Locks gate only the grid's own editing: \`record.setValue()\` from your code ignores them. A lock that reads something outside its record, such as a toggle or the user's role, redraws nothing by itself: see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). The lock column is \`RECORD_LOCK_COLUMN_KEY\`, hidden until a loaded row is locked, and a dimmed row carries the class \`LOCKED_RECORD_ROW_CLASS\`. To change the tooltips, as the example does, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ### Inactive records
 
-A record the provider reports inactive (\`record.isActive()\` is \`false\`) starts out locked. The memory, FetchXml and Power Apps dataset providers report every record active, so lock inactive records yourself in \`rowSettings.onGetLock\`, for example from Dataverse's \`statecode\`, as the approved entries above are locked from their status.
+A record the provider reports inactive (\`record.isActive()\` is \`false\`) starts out locked. The memory, FetchXml and Power Apps dataset providers report every record active, so lock inactive records yourself in \`rowSettings.lockHook\`, for example from Dataverse's \`statecode\`, as the approved entries above are locked from their status.
 
 ## When the server refuses
 
@@ -92,7 +92,7 @@ The options are *At mount*: see *Change a prop that is read at mount* on [**Prop
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| \`autoSave\` | \`boolean\` | \`false\` | Saves a record each time one of its values is committed. |
+| \`enableAutoSave\` | \`boolean\` | \`false\` | Saves a record each time one of its values is committed. |
 | \`onEditedCellChanged\` | \`(previous?, next?) => void\` | None | Fires when an editor opens or closes, or the user steps into or out of an in-place cell. Each argument is \`{ recordId, columnName }\`. |
 
 ## Changing how it looks
@@ -108,7 +108,7 @@ The editing module takes no \`components\` option. It draws two columns of its o
 | | \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | | The lock of a locked record |
 | \`RecordSaveSelectionCell\` | the keys of \`RecordSaveIndicatorCell\`, and \`checkbox\` | \`checkbox\`: \`onRenderContainer\`, \`onRenderCheckbox\` | \`RowSelectionUiCheckboxComponents\` | The checkbox column's cell (\`SELECTION_COLUMN_KEY\`) with row selection on |
 
-The lock in a locked column's header is an adornment keyed \`'lock'\`, which you replace or remove in \`context.header.onGetAdornments\` (see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview)). The lock in a locked cell is the cell's own \`lockIcon\` piece: see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview).
+The lock in a locked column's header is an adornment keyed \`'lock'\`, which you replace or remove in \`context.header.adornmentsHook\` (see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview)). The lock in a locked cell is the cell's own \`lockIcon\` piece: see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview).
 
 {{story: Draw the save status your way}}
 
@@ -136,10 +136,10 @@ The module is \`grid.modules.find('editing')\`, or \`useGridModule('editing')\` 
 | \`start(cell)\`, \`finish(cell)\` | Steps into an in-place cell; ends the edit and brings the focus back to the cell. |
 | \`isAutoSaveEnabled()\` | Whether each commit saves its record. |
 | \`locks.get({ record?, columnName? })\` | \`{ isLocked, lockedBy? }\`, where \`lockedBy\` is \`'column'\`, \`'record'\` or \`'cell'\`. |
-| \`locks.registerLock(hook, priority?)\` | Locks columns, records and cells. See *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). |
+| \`locks.addLockHook(hook, priority?)\` | Locks columns, records and cells. See *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). |
 | \`events\` | \`onEditedCellChanged\`: see *Options*. |
 
-To change a value as a cell would, saving it with \`autoSave\`, go through its field: \`grid.services.get('fields').get(record, columnName).setValue(value)\`. \`record.setValue()\` changes the record and saves nothing.
+To change a value as a cell would, saving it with \`enableAutoSave\`, go through its field: \`grid.services.get('fields').get(record, columnName).setValue(value)\`. \`record.setValue()\` changes the record and saves nothing.
 
 ## Where next
 
@@ -191,7 +191,7 @@ export const CheckHoursAsTheyAreEntered: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`context.cell.onGetValidation\` keeps *Hours* between 0.25 and 12, and \`RequiredLevel\` makes *Work done* required. Try: enter 14 hours.`,
+                story: `\`context.cell.validationHook\` keeps *Hours* between 0.25 and 12, and \`RequiredLevel\` makes *Work done* required. Try: enter 14 hours.`,
             },
         },
     },
@@ -215,7 +215,7 @@ export const FreezeApprovedEntries: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Approved entries locked by \`rowSettings.onGetLock\`, *Hourly rate* by \`context.cell.onGetLock\` and *Employee* by \`context.isLocked\`. Try: hover a lock.`,
+                story: `Approved entries locked by \`rowSettings.lockHook\`, *Hourly rate* by \`context.cell.lockHook\` and *Employee* by \`context.isLocked\`. Try: hover a lock.`,
             },
         },
     },
@@ -227,7 +227,7 @@ export const TickBillableInPlace: Story = {
     parameters: {
         docs: {
             description: {
-                story: `*Billable* is a switch in its cell through \`context.cell.oneClickEdit\`, saved by auto-save. Try: switch a billable entry off.`,
+                story: `*Billable* is a switch in its cell through \`context.cell.enableOneClickEdit\`, saved by auto-save. Try: switch a billable entry off.`,
             },
         },
     },

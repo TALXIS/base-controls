@@ -6,7 +6,7 @@ import { FieldLookup, IFieldLookupProps } from "./field-lookup";
 import { FieldFile, IFieldFileProps } from "./field-file";
 
 /** The replaceable pieces of a value. */
-export interface IValueRendererUiComponents {
+export interface ICellUiValueRendererComponents {
     /** The box the value sits in; its `children` are the icons and the value. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderText: (props: IFieldTextProps) => JSX.Element;
@@ -22,8 +22,8 @@ export interface IValueRendererUiComponents {
     onRenderSuffixIcon: (props: IIconProps) => JSX.Element;
 }
 
-/** The defaults for {@link IValueRendererUiComponents}. */
-export const ValueRendererUiComponents: IValueRendererUiComponents = {
+/** The defaults for {@link ICellUiValueRendererComponents}. */
+export const CellUiValueRendererComponents: ICellUiValueRendererComponents = {
     onRenderContainer: props => <div {...props} />,
     onRenderText: props => <FieldText {...props} />,
     onRenderPlaceholder: props => <FieldText {...props} isPlaceholder />,

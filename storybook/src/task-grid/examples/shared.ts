@@ -34,7 +34,7 @@ export const createTaskDatabase = () => new MemoryTaskDatabase({ records: TASKS,
 export const createLoadTasks = (database: MemoryTaskDatabase) => async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
     const taskRuntime = control.modules.get('taskRuntime')
     return {
-        provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
+        provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
         fieldMapping,
         views: TASK_VIEWS,
     }

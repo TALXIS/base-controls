@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { EmptyState } from "@controls/dataset-control/ui/empty-state";
+import { DatasetControlUiEmptyState } from "@controls/dataset-control/ui/empty-state";
 import { useLabels } from "@labels";
 import { GRID_LABELS } from "../../../labels";
 import { useGridComponents } from "../../../context";
@@ -11,5 +11,5 @@ export const EmptyStateOverlay = () => {
     const components = useGridComponents();
     const styles = useMemo(() => getEmptyStateOverlayStyles(), []);
 
-    return <EmptyState className={styles.emptyStateOverlay} message={labels.get('grid.noRecordsFound')} components={components.overlays?.emptyState} />;
+    return <DatasetControlUiEmptyState className={styles.emptyStateOverlay} message={labels.get('grid.noRecordsFound')} components={components.overlays?.emptyState} />;
 };

@@ -17,7 +17,7 @@ export class XrmData implements IXrmDataContextInternal {
         this.entity = new XrmEntity(formContext);
         this.attributes = this._createAttributeCollection();
         this.process = {};
-        this._registerEventListeners();
+        this._addEventListeners();
     }
 
     public getIsDirty(): boolean {
@@ -33,7 +33,7 @@ export class XrmData implements IXrmDataContextInternal {
     }
 
     public async refresh(save?: boolean): Promise<void> {
-        this._formContext.getFormXmlModel().getForm().refresh();
+        this._formContext.getFormXmlModel().getForm().reload();
     }
 
     public addOnLoad(handler: Xrm.Events.DataLoadEventHandler): void {
@@ -59,8 +59,8 @@ export class XrmData implements IXrmDataContextInternal {
         return makeItemCollection(attributes.map((attribute) => new XrmAttribute(attribute, this._formContext)), (attribute) => attribute.getName()) as any;
     }
 
-    private _registerEventListeners(): void {
-        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroy', () => {
+    private _addEventListeners(): void {
+        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroyed', () => {
             this._onLoadHandlerSet.clear();
         });
     }

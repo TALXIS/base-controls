@@ -15,7 +15,7 @@ The parts are drawn in Fluent UI, and you can change what they draw at two level
 
 ## Pieces and slots
 
-The control and every part take a \`components\` map of pieces and slots: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). Every one of them is listed under *Reference*. Menu items and commands are added through the part, with \`registerItems\`, \`registerCommands\` or \`registerColumnCommands\`: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
+The control and every part take a \`components\` map of pieces and slots: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). Every one of them is listed under *Reference*. Menu items and commands are added through the part, with \`addItemsHook\`, \`addCommandsHook\` or \`addColumnCommandsHook\`: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 
 ## Wrap the control
 
@@ -35,7 +35,7 @@ A part of your own is any component you put inside the control: a total in the f
 
 {{story: Total the selected deals}}
 
-- \`useRegisterDatasetControlPart(key, onCreate)\` registers the part for \`control.parts\`; declare its key first, as the example's \`types.ts\` does.
+- \`useRegisterDatasetControlPart(key, create)\` registers the part for \`control.parts\`; declare its key first, as the example's \`types.ts\` does.
 - \`DatasetControl.Ui\`, also exported as \`DatasetControlUi\`, holds the regions and most parts as plain UI with no control behind them, for a part that looks like a built-in one.
 - The ribbon and the notifications are not in \`DatasetControl.Ui\`: use the exported \`Ribbon\` and \`NotificationMessageBar\`.
 
@@ -57,29 +57,29 @@ Your view reads the records, columns and selection from the provider (see [**Dat
 
 | Part | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`DatasetControl\` | Top level | \`onRenderContainer\` | \`ContainerUiComponents\` | The control's box |
-| \`DatasetControl\` | \`skeleton\` | \`onRenderSkeleton\` | \`SkeletonUiComponents\` | The placeholder while the first page loads |
+| \`DatasetControl\` | Top level | \`onRenderContainer\` | \`DatasetControlUiContainerComponents\` | The control's box |
+| \`DatasetControl\` | \`skeleton\` | \`onRenderSkeleton\` | \`DatasetControlUiSkeletonComponents\` | The placeholder while the first page loads |
 | \`DatasetControl\` | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load |
 | \`DatasetControl\` | \`loadingOverlay\` | \`onRenderOverlay\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | The overlay \`loadingOverlay.show()\` puts over the control |
-| \`Header\` | Top level | \`onRenderContainer\` | \`HeaderUiComponents\` | The header's box, a \`WrapCompactProvider\` |
-| \`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\` | Top level | \`onRenderContainer\` | \`HeaderStartUiComponents\` and the like | The region's box |
-| \`ViewSwitcher\` | Top level | \`onRenderButton\`, with the views as \`menuProps.items\` | \`ViewSwitcherUiComponents\` | The button and its menu |
-| \`Ribbon\` | Top level | \`onRenderCommandBar\`, with the commands as \`items\` | \`RibbonUiComponents\` | The command bar |
-| \`Ribbon\` | \`shimmer\` | \`onRenderShimmer\` | \`RibbonShimmerUiComponents\` | The shimmer before the first load |
+| \`Header\` | Top level | \`onRenderContainer\` | \`DatasetControlUiHeaderComponents\` | The header's box, a \`WrapCompactProvider\` |
+| \`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\` | Top level | \`onRenderContainer\` | \`DatasetControlUiHeaderStartComponents\` and the like | The region's box |
+| \`ViewSwitcher\` | Top level | \`onRenderButton\`, with the views as \`menuProps.items\` | \`DatasetControlUiViewSwitcherComponents\` | The button and its menu |
+| \`Ribbon\` | Top level | \`onRenderCommandBar\`, with the commands as \`items\` | \`RibbonUiCommandBarComponents\` | The command bar |
+| \`Ribbon\` | \`shimmer\` | \`onRenderShimmer\` | \`RibbonUiShimmerComponents\` | The shimmer before the first load |
 | \`Ribbon\` | \`errorMessage\` | As the control's \`errorMessage\` | \`ErrorMessageBarComponents\` | A failed first load |
-| \`QuickFind\` | Top level | \`onRenderContainer\`, \`onRenderTextField\` | \`QuickFindUiComponents\` | The box and the search field |
-| \`QuickFind\` | \`compact\` | \`onRenderButton\` | \`QuickFindCompactButtonComponents\` | The search button in a compact header |
-| \`QuickFind\` | \`callout\` | \`onRenderCallout\`, \`onRenderLikeWarning\`, \`onRenderDescription\`, \`onRenderColumns\`, \`onRenderColumn\` | \`QuickFindCalloutComponents\` | The callout listing the columns searched |
-| \`EditColumns\` | \`button\` | \`onRenderButton\`, \`onRenderTooltip\` | \`EditColumnsButtonUiComponents\` | The button that opens the editor |
-| \`EditColumns\` | \`panel\` | \`onRenderPanel\`, \`onRenderFooter\`, \`onRenderCommandBar\` | \`EditColumnsPanelUiComponents\` | The editor's panel, its **Save** and **Cancel**, and the commands above the pickers |
-| \`EditColumns\` | \`scopeSelector\`, \`columnSelector\` | \`onRenderSelector\`, \`onRenderOption\` | \`EditColumnsSelectorUiComponents\` | The *Column source* and column pickers |
-| \`EditColumns\` | \`columnList\` | \`onRenderColumn\` | \`EditColumnsColumnListUiComponents\` | Each chosen column, with its commands |
+| \`QuickFind\` | Top level | \`onRenderContainer\`, \`onRenderTextField\` | \`DatasetControlUiQuickFindComponents\` | The box and the search field |
+| \`QuickFind\` | \`compact\` | \`onRenderButton\` | \`DatasetControlUiQuickFindCompactButtonComponents\` | The search button in a compact header |
+| \`QuickFind\` | \`callout\` | \`onRenderCallout\`, \`onRenderLikeWarning\`, \`onRenderDescription\`, \`onRenderColumns\`, \`onRenderColumn\` | \`DatasetControlUiQuickFindCalloutComponents\` | The callout listing the columns searched |
+| \`EditColumns\` | \`button\` | \`onRenderButton\`, \`onRenderTooltip\` | \`DatasetControlUiEditColumnsButtonComponents\` | The button that opens the editor |
+| \`EditColumns\` | \`panel\` | \`onRenderPanel\`, \`onRenderFooter\`, \`onRenderCommandBar\` | \`DatasetControlUiEditColumnsPanelComponents\` | The editor's panel, its **Save** and **Cancel**, and the commands above the pickers |
+| \`EditColumns\` | \`scopeSelector\`, \`columnSelector\` | \`onRenderSelector\`, \`onRenderOption\` | \`DatasetControlUiEditColumnsSelectorComponents\` | The *Column source* and column pickers |
+| \`EditColumns\` | \`columnList\` | \`onRenderColumn\` | \`DatasetControlUiEditColumnsColumnListComponents\` | Each chosen column, with its commands |
 | \`EditColumns\` | \`errorMessage\` | As the control's \`errorMessage\` | \`ErrorMessageBarComponents\` | A failed load of the columns |
 | \`Notifications\` | Top level | \`onRenderNotifications\` | | The message bar |
-| \`EmptyState\` | Top level | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyStateUiComponents\` | The empty state |
-| \`Pagination\` | Top level | \`onRenderCommandBar\`, with the buttons as \`items\` | \`PaginationUiComponents\` | The page buttons |
-| \`PageSizeSwitcher\` | Top level | \`onRenderButton\`, with the sizes as \`menuProps.items\` | \`PageSizeSwitcherUiComponents\` | The range and its menu |
-| \`UserQueries\` | \`manageViewsPanel\` | \`onRenderPanel\`, \`onRenderCloseButton\` | \`ManageViewsPanelUiComponents\` | The *Manage views* panel |
+| \`EmptyState\` | Top level | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`DatasetControlUiEmptyStateComponents\` | The empty state |
+| \`Pagination\` | Top level | \`onRenderCommandBar\`, with the buttons as \`items\` | \`DatasetControlUiPaginationComponents\` | The page buttons |
+| \`PageSizeSwitcher\` | Top level | \`onRenderButton\`, with the sizes as \`menuProps.items\` | \`DatasetControlUiPageSizeSwitcherComponents\` | The range and its menu |
+| \`UserQueries\` | \`manageViewsPanel\` | \`onRenderPanel\`, \`onRenderCloseButton\` | \`UserQueriesUiManageViewsPanelComponents\` | The *Manage views* panel |
 | \`UserQueries\` | \`manageViews.datasetControl\` | The control's, plus the keys \`header\`, \`body\`, \`footer\`, \`ribbon\`, \`quickFind\` and \`pagination\` | | The control inside *Manage views* |
 | \`UserQueries\` | \`manageViews.grid\` | The \`Grid\`'s | | The grid inside *Manage views* |
 
@@ -98,7 +98,7 @@ Your view reads the records, columns and selection from the provider (see [**Dat
 | \`useDatasetControlRegion()\` | \`'start'\` or \`'end'\`, the side of the header or footer the component is in; \`undefined\` outside both. |
 | \`useDatasetControlHeader()\` | Inside the header, \`showOnly()\` hides everything in it but the calling part, and \`showAll()\` brings the rest back; \`undefined\` outside the header. |
 | \`useCompact()\` | Whether the header is compact: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). |
-| \`useRegisterDatasetControlPart(key, onCreate)\` | Nothing; creates an object once and registers it under \`key\` for \`control.parts\`, while the component is mounted. |
+| \`useRegisterDatasetControlPart(key, create)\` | Nothing; creates an object once and registers it under \`key\` for \`control.parts\`, while the component is mounted. |
 
 ## Where next
 

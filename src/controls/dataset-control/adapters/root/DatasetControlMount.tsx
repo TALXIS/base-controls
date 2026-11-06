@@ -1,7 +1,7 @@
 import { DataProviderContext } from "@data";
 import { useRuntime } from "@controls/runtime-host";
 import type { DatasetControlRuntime } from "../../runtime";
-import { DatasetControlRuntimeContext } from "./context";
+import { DatasetControlContext } from "./context";
 import { DatasetControlUi } from "../../ui";
 import { Surfaces } from "../surfaces/Surfaces";
 import { LoadingOverlay } from "../loading-overlay";
@@ -13,7 +13,7 @@ export const DatasetControlMount = (props: IDatasetControlProps) => {
 
     const { errorMessage, skeleton, loadingOverlay, ...container } = props.components ?? {};
 
-    return <DatasetControlRuntimeContext.Provider value={runtime}>
+    return <DatasetControlContext.Provider value={runtime}>
         <DataProviderContext.Provider value={runtime.getProvider() ?? null}>
             <DatasetControlUi.Container height={props.height} className={props.className} components={container}>
                 <LoadingOverlay components={loadingOverlay}>
@@ -22,5 +22,5 @@ export const DatasetControlMount = (props: IDatasetControlProps) => {
                 </LoadingOverlay>
             </DatasetControlUi.Container>
         </DataProviderContext.Provider>
-    </DatasetControlRuntimeContext.Provider>;
+    </DatasetControlContext.Provider>;
 };

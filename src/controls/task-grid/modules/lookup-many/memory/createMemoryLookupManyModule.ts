@@ -12,7 +12,7 @@ export interface IMemoryLookupManySource {
     columns: IColumn[];
 }
 
-export interface IMemoryLookupManyModuleParameters extends Omit<ILookupManyParameters, 'onCreateStore'> {
+export interface IMemoryLookupManyModuleParameters extends Omit<ILookupManyParameters, 'createStore'> {
     /** The sources by entity name, matched against each column's `entityName`. */
     sources: { [entityName: string]: IMemoryLookupManySource };
     /** The tasks' references, by task id and column name. */
@@ -22,5 +22,5 @@ export interface IMemoryLookupManyModuleParameters extends Omit<ILookupManyParam
 /** Lookup-many columns over records held in memory, starting over on every mount. */
 export const createMemoryLookupManyModule = (parameters: IMemoryLookupManyModuleParameters): ILookupManyModule => {
     const { sources, values, ...moduleParameters } = parameters;
-    return createLookupManyModule({ ...moduleParameters, onCreateStore: () => new MemoryLookupManyStore({ sources, values }) });
+    return createLookupManyModule({ ...moduleParameters, createStore: () => new MemoryLookupManyStore({ sources, values }) });
 };

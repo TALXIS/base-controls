@@ -2,7 +2,7 @@ import { ServiceLocator } from "../service-locator/ServiceLocator";
 import type { IServiceLocator } from "../service-locator/interfaces";
 
 /** What a module's `onLoad` gets besides its host. */
-export interface IModuleLoadContext {
+export interface IModuleLoadParameters {
     /** Aborted when the mount goes or another module fails, so a load can cancel what it started. */
     signal: AbortSignal;
 }
@@ -13,7 +13,7 @@ export interface IRuntimeModule<TMap extends object, TName extends keyof TMap, T
     name: TName;
     /** Lower loads first; modules of the same priority load at the same time. Defaults to `0`. */
     priority?: number;
-    onLoad(host: THost, context: IModuleLoadContext): TMap[TName] | Promise<TMap[TName]>;
+    onLoad(host: THost, context: IModuleLoadParameters): TMap[TName] | Promise<TMap[TName]>;
     /** Called as the mount goes, with what `onLoad` returned. */
     onDestroy?(instance: TMap[TName]): void;
 }

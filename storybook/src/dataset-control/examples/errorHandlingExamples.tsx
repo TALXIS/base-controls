@@ -77,7 +77,7 @@ const GridExample = () => {
     const [isDown, setIsDown] = React.useState(false)
     const [log, setLog] = React.useState<string[]>([])
     const write = (line: string) => setLog(log => [line, ...log].slice(0, 3))
-    const modules = React.useMemo(() => [createUserQueriesModule({ onCreateStore: () => new DealViewsStore({ storageKey: 'docs.failingDealViews' }) })], [])
+    const modules = React.useMemo(() => [createUserQueriesModule({ createStore: () => new DealViewsStore({ storageKey: 'docs.failingDealViews' }) })], [])
 
     const toggleServer = (checked: boolean) => {
         server.isDown = checked

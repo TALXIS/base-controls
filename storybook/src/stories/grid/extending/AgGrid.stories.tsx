@@ -14,8 +14,8 @@ The grid runs on <a href="https://www.ag-grid.com/" target="_blank" rel="norefer
 
 | Call | Its hooks run | For |
 |---|---|---|
-| \`grid.registerAgGridInitialOptions(hook, priority?)\` | Once, when AG Grid is created | The options AG Grid reads only then, such as \`ensureDomOrder\`, \`suppressColumnVirtualisation\`, \`enableRtl\` or \`tooltipShowMode\` |
-| \`grid.registerAgGridOptions(hook, priority?)\` | When AG Grid is ready, after every load of the provider, and on every \`refreshAgGridOptions()\` | The options AG Grid takes at any time, such as \`headerHeight\`, \`suppressMovableColumns\` or \`tooltipShowDelay\` |
+| \`grid.addAgGridInitialOptionsHook(hook, priority?)\` | Once, when AG Grid is created | The options AG Grid reads only then, such as \`ensureDomOrder\`, \`suppressColumnVirtualisation\`, \`enableRtl\` or \`tooltipShowMode\` |
+| \`grid.addAgGridOptionsHook(hook, priority?)\` | When AG Grid is ready, after every load of the provider, and on every \`refreshAgGridOptions()\` | The options AG Grid takes at any time, such as \`headerHeight\`, \`suppressMovableColumns\` or \`tooltipShowDelay\` |
 | \`grid.refreshAgGridOptions()\` | When you call it | Runs the option hooks again and passes AG Grid the options whose value changed |
 
 Each hook receives \`{ options }\` and sets what it needs on it. Both register calls return a function that takes the hook off again, and their priorities work as every hook's do: see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
@@ -37,7 +37,7 @@ The grid starts from these, and its modules add their own. Change the others, an
 | \`readOnlyEdit\` | Editing | No |
 | \`rowSelection\`, \`cellSelection\` | Row selection, cell selection | No |
 | \`groupDisplayType\`, \`isGroupOpenByDefault\`, \`isServerSideGroupOpenByDefault\`, \`isFullWidthRow\`, \`fullWidthCellRenderer\`, \`pinnedBottomRowData\` | Grouping, totals | No |
-| \`theme\` | The grid | No: use \`registerTheme\`, see *The AG Grid theme* below |
+| \`theme\` | The grid | No: use \`addThemeHook\`, see *The AG Grid theme* below |
 
 ## AG Grid's api
 
@@ -73,8 +73,8 @@ The \`gridTheme\` service changes it, once, as the grid mounts:
 
 | Hook | Receives | Does |
 |---|---|---|
-| \`registerTheme(hook, priority?)\` | \`result: { theme }\` and \`fluentTheme\` | Replace \`result.theme\`, usually with \`withParams\`, which takes any of <a href="https://www.ag-grid.com/react-data-grid/theming-parameters/" target="_blank" rel="noreferrer">AG Grid's theme parameters</a> |
-| \`registerStyles(hook, priority?)\` | \`result: { styles }\` and \`fluentTheme\` | Push Fluent \`IStyle\` rules for the grid's root element, for what no parameter covers |
+| \`addThemeHook(hook, priority?)\` | \`result: { theme }\` and \`fluentTheme\` | Replace \`result.theme\`, usually with \`withParams\`, which takes any of <a href="https://www.ag-grid.com/react-data-grid/theming-parameters/" target="_blank" rel="noreferrer">AG Grid's theme parameters</a> |
+| \`addStylesHook(hook, priority?)\` | \`result: { styles }\` and \`fluentTheme\` | Push Fluent \`IStyle\` rules for the grid's root element, for what no parameter covers |
 
 An example is under *Change the AG Grid theme* on [**Appearance**](?path=/docs/controls-grid-appearance--overview).
 

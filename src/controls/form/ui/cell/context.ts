@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { ICellProps } from "./Cell";
+import type { IFormUiCellProps } from "./Cell";
 
-export const CellContext = React.createContext<ICellProps | null>(null);
+export const CellContext = React.createContext<IFormUiCellProps | null>(null);
 export const DisabledContext = React.createContext<{
     onDisabledChange: (disabled: boolean) => void;
 } | null>(null);
@@ -10,6 +10,6 @@ export const useDisabledContext = () => {
     return React.useContext(DisabledContext);
 }
 
-export const useFormCellContext = (): ICellProps | null => {
+export const useFormCellContext = (): IFormUiCellProps | null => {
     return React.useContext(CellContext);
 };

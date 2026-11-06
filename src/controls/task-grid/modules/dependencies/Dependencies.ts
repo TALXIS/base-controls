@@ -1,16 +1,17 @@
 import type { ColDef } from "ag-grid-community";
-import { EventEmitter, IColumn, IEntityReference, IEventEmitter, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IColumn, IEntityReference, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
 import type { LabelsOf } from "@labels";
 import type { ITaskDataProvider } from "../../runtime/provider";
 import type { ITaskRuntime, TaskSavingChainLinksHook } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
-import { createReadOnlyLookupColumn, TaskColumnValues } from "../column-values";
+import { createReadOnlyLookupColumn, TaskColumnValues } from "../../runtime/column-values";
 import { DEPENDENCIES_LABELS } from "./labels";
 import { DependenciesCell } from "./adapters/dependencies-cell";
 import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "./constants";
-import type { IDependencyCountComponents } from "./ui/dependency-count";
+import type { IDependenciesUiCountComponents } from "./ui/dependency-count";
+import type { IEventSubscriber } from "@core";
 
 const DEPENDENCY_COLUMN_NAMES = [PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME];
 
@@ -38,10 +39,10 @@ export type TaskDependencyCreate = Omit<ITaskDependency, 'id'>;
 /** Where dependencies are kept. */
 export interface IDependenciesStore {
     /** The dependencies touching any of these tasks, at either end. */
-    onLoadDependencies(taskIds: string[]): Promise<ITaskDependency[]>;
-    onCreateDependency(dependency: TaskDependencyCreate): Promise<ITaskDependency>;
-    onUpdateDependency(dependency: ITaskDependency): Promise<void>;
-    onDeleteDependency(dependencyId: string): Promise<void>;
+    loadDependencies(taskIds: string[]): Promise<ITaskDependency[]>;
+    createDependency(dependency: TaskDependencyCreate): Promise<ITaskDependency>;
+    updateDependency(dependency: ITaskDependency): Promise<void>;
+    deleteDependency(dependencyId: string): Promise<void>;
     /** Called as the dependencies go. */
     destroy?(): void;
 }
@@ -49,11 +50,11 @@ export interface IDependenciesStore {
 /** The replaceable parts of what the dependencies draw, by the piece they belong to. */
 export interface IDependenciesComponents {
     /** The count in a Predecessors or Successors cell. */
-    count?: Partial<IDependencyCountComponents>;
+    count?: Partial<IDependenciesUiCountComponents>;
 }
 
 export interface IDependenciesParameters {
-    onCreateStore: (taskRuntime: ITaskRuntime) => IDependenciesStore;
+    createStore: (taskRuntime: ITaskRuntime) => IDependenciesStore;
     /** Loads a task's dependencies again once its editor closes. */
     reloadOnEditorClosed?: boolean;
     components?: IDependenciesComponents;
@@ -66,7 +67,7 @@ export interface IDependenciesEvents {
 
 /** The `dependencies` module, read and written through its store. */
 export interface IDependencies {
-    events: IEventEmitter<IDependenciesEvents>;
+    readonly events: IEventSubscriber<IDependenciesEvents>;
     readonly components: IDependenciesComponents;
     getDependencies(): ITaskDependency[];
     /** What the task waits on. */
@@ -118,17 +119,17 @@ export class Dependencies implements IDependencies {
     constructor(taskRuntime: ITaskRuntime, parameters: IDependenciesParameters) {
         this._taskRuntime = taskRuntime;
         this.components = parameters.components ?? {};
-        this._store = parameters.onCreateStore(taskRuntime);
+        this._store = parameters.createStore(taskRuntime);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => DEPENDENCY_COLUMN_NAMES,
-            onLoad: this._loadDependencies,
+            load: this._loadDependencies,
             errorMessage: () => this._labels.get('dependencies.loadDependenciesFailed'),
             reloadOnEditorClosed: parameters.reloadOnEditorClosed,
         });
         taskRuntime.services.observe('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
-        taskRuntime.services.get('savingChains').registerLinks(this._addDependencyLinks);
+        taskRuntime.services.get('savingChains').addLinksHook(this._addDependencyLinks);
     }
 
     private get _labels(): LabelsOf<typeof DEPENDENCIES_LABELS> {
@@ -179,7 +180,7 @@ export class Dependencies implements IDependencies {
             return null;
         }
         return this._executeInChain(dependency, async () => {
-            const created = await this._store.onCreateDependency(dependency);
+            const created = await this._store.createDependency(dependency);
             this._setDependencies([...this._dependencies, created], [created]);
             await this._taskRuntime.getProvider().synchronize();
             return created;
@@ -193,7 +194,7 @@ export class Dependencies implements IDependencies {
         }
         return this._executeInChain(existing, async () => {
             const updated = { ...existing, ...changes };
-            await this._store.onUpdateDependency(updated);
+            await this._store.updateDependency(updated);
             this._setDependencies(this._dependencies.map(dependency => dependency.id === dependencyId ? updated : dependency), [updated]);
             await this._taskRuntime.getProvider().synchronize();
             return true;
@@ -206,7 +207,7 @@ export class Dependencies implements IDependencies {
             return false;
         }
         return this._executeInChain(existing, async () => {
-            await this._store.onDeleteDependency(dependencyId);
+            await this._store.deleteDependency(dependencyId);
             this._setDependencies(this._dependencies.filter(dependency => dependency.id !== dependencyId), [existing]);
             await this._taskRuntime.getProvider().synchronize();
             return true;
@@ -228,8 +229,8 @@ export class Dependencies implements IDependencies {
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
         const offTasksDeleted = provider.taskEvents.addEventListener('onTasksDeleted', this._onTasksDeleted);
-        const unregisterColumns = provider.registerAvailableColumns(this._addColumns);
-        return () => { offTasksDeleted(); unregisterColumns(); };
+        const removeColumnsHook = provider.addAvailableColumnsHook(this._addColumns);
+        return () => { offTasksDeleted(); removeColumnsHook(); };
     };
 
     private _onTasksDeleted = (taskIds: string[]): void => {
@@ -242,7 +243,7 @@ export class Dependencies implements IDependencies {
 
     //replaces everything held for the tasks
     private _loadDependencies = async (taskIds: string[]): Promise<void> => {
-        const loaded = await this._store.onLoadDependencies(taskIds);
+        const loaded = await this._store.loadDependencies(taskIds);
         const loadedTaskIds = new Set(taskIds);
         const loadedIds = new Set(loaded.map(dependency => dependency.id));
         const replaced = this._dependencies.filter(dependency => loadedIds.has(dependency.id) || loadedTaskIds.has(dependency.predecessorTaskId) || loadedTaskIds.has(dependency.successorTaskId));
@@ -310,7 +311,7 @@ export class Dependencies implements IDependencies {
     };
 
     private _onGridAvailable = (grid: IGrid): void => {
-        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

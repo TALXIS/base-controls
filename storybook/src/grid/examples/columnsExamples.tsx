@@ -167,7 +167,7 @@ const GridExample = () => {
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
             <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
+                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
                 colDefs={{
                     actions: {
                         headerName: '',
@@ -175,7 +175,7 @@ const GridExample = () => {
                         initialWidth: 96,
                         context: {
                             cell: {
-                                onGetCommands: (result, { record }) => {
+                                commandsHook: (result, { record }) => {
                                     if (isLowStock(record) && !isDiscontinued(record)) {
                                         result.items.push({ key: 'reorder', text: 'Reorder', iconOnly: true, iconProps: { iconName: 'ShoppingCart' }, onClick: () => reorder(record) })
                                     }
@@ -223,18 +223,18 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), createSortingModule()]}
+                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), createSortingModule()]}
                 colDefs={{
                     instock: {
                         context: {
                             header: {
-                                onGetAdornments: adornments => {
+                                adornmentsHook: adornments => {
                                     const lowStock = provider.getRecords().filter(isLowStock).length
                                     if (lowStock > 0) {
                                         adornments.push({ key: 'lowStock', placement: 'suffix', title: lowStock + ' below reorder level', onRender: () => <span className={styles.badge}>{lowStock}</span> })
                                     }
                                 },
-                                onGetMenuSections: sections => {
+                                menuSectionsHook: sections => {
                                     sections.push({
                                         key: 'quickFilters',
                                         title: 'Quick filters',

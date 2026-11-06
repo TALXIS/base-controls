@@ -47,13 +47,13 @@ const GridExample = () => {
         }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: LOOKUP_MANY_VALUES }),
         createMemoryTemplatesModule({ database, templates: TEMPLATES }),
-        createMemoryChecklistModule({ items: CHECKLIST_ITEMS }),
+        createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS }),
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
     ], [database])
 
     const onLoad = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
         const taskRuntime = control.modules.get('taskRuntime')
-        return { provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }), fieldMapping, views: VIEWS }
+        return { provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }), fieldMapping, views: VIEWS }
     }
 
     return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion stateKey='devTasks' height='100%' onLoad={onLoad}>

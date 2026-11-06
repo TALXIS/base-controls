@@ -2,10 +2,10 @@ import { createCustomColumnsModule, ICustomColumnsModule } from "../createCustom
 import type { ICustomColumnsParameters } from "../CustomColumns";
 import { ITalxisCustomColumnsStoreParameters, TalxisCustomColumnsStore } from "./TalxisCustomColumnsStore";
 
-export interface ITalxisCustomColumnsModuleParameters extends Omit<ITalxisCustomColumnsStoreParameters, 'taskRuntime'>, Omit<ICustomColumnsParameters, 'onCreateStore'> { }
+export interface ITalxisCustomColumnsModuleParameters extends Omit<ITalxisCustomColumnsStoreParameters, 'taskRuntime'>, Omit<ICustomColumnsParameters, 'createStore'> { }
 
 /** The user's own task columns as TALXIS attribute definitions and values. */
 export const createTalxisCustomColumnsModule = (parameters: ITalxisCustomColumnsModuleParameters): ICustomColumnsModule => {
     const { entityName, recordId, navigationPropertyName, ...moduleParameters } = parameters;
-    return createCustomColumnsModule({ ...moduleParameters, onCreateStore: taskRuntime => new TalxisCustomColumnsStore({ taskRuntime, entityName, recordId, navigationPropertyName }) });
+    return createCustomColumnsModule({ ...moduleParameters, createStore: taskRuntime => new TalxisCustomColumnsStore({ taskRuntime, entityName, recordId, navigationPropertyName }) });
 };

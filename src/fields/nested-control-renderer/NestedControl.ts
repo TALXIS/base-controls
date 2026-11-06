@@ -16,8 +16,8 @@ const manifestCache = new PromiseCache();
 const LOADED_CONTROLS = new Set<string>();
 
 
-export interface IOptions {
-    onGetBindings: () => {
+export interface INestedControlParameters {
+    getBindings: () => {
         [key: string]: IBinding;
     }
     /**
@@ -31,11 +31,11 @@ export interface IOptions {
     /**
 * Container element into which the control will be rendered in.
 */
-    onGetContainerElement?: () => HTMLDivElement;
-    onGetControlName?: () => string;
+    getContainerElement?: () => HTMLDivElement;
+    getControlName?: () => string;
     callbacks?: {
         onInit?: (instance: NestedControl) => void;
-        onGetControlStates?: () => IControlStates | undefined
+        getControlStates?: () => IControlStates | undefined
         onNotifyOutputChanged?: (ouputs: any) => void;
 
         /**
@@ -44,15 +44,15 @@ export interface IOptions {
         onControlStateChanged?: () => void;
     },
     overrides?: {
-        onGetProps?: (props: IControl<any, any, any>) => IControl<any, any, any>;
+        getProps?: (props: IControl<any, any, any>) => IControl<any, any, any>;
         onRender?: (control: NestedControl, defaultRender: () => Promise<void>) => void;
         onUnmount?: (control: NestedControl, defaultUnmount: () => void) => void;
-        onIsLoading?: () => boolean;
+        isLoading?: () => boolean;
     }
 }
 
 export class NestedControl {
-    private _options: IOptions;
+    private _options: INestedControlParameters;
     private _pendingInitialRender: boolean = false;
     private _errorMessage: string = '';
     private _properties: Map<string, Property> = new Map();
@@ -69,8 +69,8 @@ export class NestedControl {
     private _container: HTMLDivElement | null = null;
     private _hasControlBeenPatched: boolean = false;
 
-    constructor(options: IOptions) {
-        this._options = options;
+    constructor(parameters: INestedControlParameters) {
+        this._options = parameters;
         this._getPropertiesFromBindings();
     }
 
@@ -93,7 +93,7 @@ export class NestedControl {
                 parameters: parameters,
                 mode: Object.create(this.getOptions().parentPcfContext.mode, {
                     isControlDisabled: {
-                        value: this.getOptions().callbacks?.onGetControlStates?.()?.isControlDisabled ?? false
+                        value: this.getOptions().callbacks?.getControlStates?.()?.isControlDisabled ?? false
                     }
                 }),
                 factory: {
@@ -104,12 +104,12 @@ export class NestedControl {
             parameters: parameters,
             onNotifyOutputChanged: (outputs: any) => {
                 Object.entries(outputs).map(([name, output]) => {
-                    this.getOptions().onGetBindings()[name]?.onNotifyOutputChanged?.(output)
+                    this.getOptions().getBindings()[name]?.onNotifyOutputChanged?.(output)
                 })
                 this.getOptions().callbacks?.onNotifyOutputChanged?.(outputs);
             }
         }
-        const result = this._overrideDecorator(() => props, this.getOptions().overrides?.onGetProps, () => [props] as any);
+        const result = this._overrideDecorator(() => props, this.getOptions().overrides?.getProps, () => [props] as any);
         this._props = result;
         return result;
     }
@@ -117,7 +117,7 @@ export class NestedControl {
     public getParameters() {
         const parameters: { [name: string]: IProperty } = {};
         [...this._properties.entries()].map(([name, prop]) => {
-            const binding = this.getOptions().onGetBindings()[name];
+            const binding = this.getOptions().getBindings()[name];
             //binding might not exist if we have switched controls
             if (binding) {
                 parameters[name] = {
@@ -144,7 +144,7 @@ export class NestedControl {
     }
 
     public async render() {
-        if (this._pendingInitialRender || this._destroyed || this._options.overrides?.onIsLoading?.()) {
+        if (this._pendingInitialRender || this._destroyed || this._options.overrides?.isLoading?.()) {
             return;
         }
         await this._getPropertiesFromBindings();
@@ -192,7 +192,7 @@ export class NestedControl {
     }
 
     public getContainer() {
-        let container = this.getOptions().onGetContainerElement?.();
+        let container = this.getOptions().getContainerElement?.();
         if (container) {
             this._container = container;
             return container;
@@ -207,7 +207,7 @@ export class NestedControl {
     }
 
     public getControlName() {
-        const controlName = this.getOptions().onGetControlName?.();
+        const controlName = this.getOptions().getControlName?.();
         if (!controlName) {
             throw new Error("Cannot render control if it's name is not specified!");
         }
@@ -215,7 +215,7 @@ export class NestedControl {
     }
 
     public getBindings() {
-        return this.getOptions().onGetBindings();
+        return this.getOptions().getBindings();
     }
 
     public getCustomControlId() {
@@ -259,7 +259,7 @@ export class NestedControl {
                 }
                 try {
                     const properties: any = {
-                        controlstates: this.getOptions().callbacks?.onGetControlStates?.() ?? {},
+                        controlstates: this.getOptions().callbacks?.getControlStates?.() ?? {},
                         parameters: this._getCustomControlParameters(this._manifest!),
                         childeventlisteners: [{
                             eventname: "onInit",
@@ -322,9 +322,9 @@ export class NestedControl {
 
     private async _getPropertiesFromBindings() {
         const promises: Promise<boolean>[] = [];
-        Object.entries(this.getOptions().onGetBindings()).map(([name, binding]) => {
+        Object.entries(this.getOptions().getBindings()).map(([name, binding]) => {
             if (!this._properties.get(name)) {
-                const getBinding = () => this.getOptions().onGetBindings()[name];
+                const getBinding = () => this.getOptions().getBindings()[name];
                 const propertyInstance = this._getPropertyInstance(getBinding);
                 const metadata = getBinding()?.metadata;
                 //push to promise only if we need to fetch the metadata asynchronously
@@ -346,40 +346,40 @@ export class NestedControl {
         }
     }
 
-    private _getPropertyInstance(onGetBinding: () => IBinding) {
-        switch (onGetBinding().type) {
+    private _getPropertyInstance(getBinding: () => IBinding) {
+        switch (getBinding().type) {
             case DataTypes.TwoOptions:
             case DataTypes.OptionSet:
             case DataTypes.MultiSelectOptionSet: {
-                return new OptionSetProperty(this.getOptions(), onGetBinding);
+                return new OptionSetProperty(this.getOptions(), getBinding);
             }
             case DataTypes.DateAndTimeDateAndTime:
             case DataTypes.DateAndTimeDateOnly: {
-                return new DateProperty(this.getOptions(), onGetBinding);
+                return new DateProperty(this.getOptions(), getBinding);
             }
             case DataTypes.WholeNone:
             case DataTypes.Decimal:
             case DataTypes.Currency:
             case DataTypes.WholeDuration: {
-                return new NumberProperty(this.getOptions(), onGetBinding);
+                return new NumberProperty(this.getOptions(), getBinding);
             }
             case DataTypes.LookupSimple:
             case DataTypes.LookupOwner:
             case DataTypes.LookupCustomer:
             case DataTypes.LookupRegarding: {
-                return new LookupProperty(this.getOptions(), onGetBinding);
+                return new LookupProperty(this.getOptions(), getBinding);
             }
             case DataTypes.File:
             case DataTypes.Image: {
-                return new FileProperty(this.getOptions(), onGetBinding)
+                return new FileProperty(this.getOptions(), getBinding)
             }
             default: {
-                return new TextProperty(this.getOptions(), onGetBinding);
+                return new TextProperty(this.getOptions(), getBinding);
             }
         }
     }
     private _getPrimaryBindingName(): string {
-        const primaryBinding = Object.entries(this.getOptions().onGetBindings()).find(([key, binding]) => !binding.isStatic)?.[0];
+        const primaryBinding = Object.entries(this.getOptions().getBindings()).find(([key, binding]) => !binding.isStatic)?.[0];
         if (!primaryBinding) {
             throw new Error('Control needs to have atleast one non-static binding!');
         }
@@ -431,7 +431,7 @@ export class NestedControl {
                 })(),
                 Attributes: (() => {
                     const getBindingMetadata = (bindingName: string) => {
-                        const binding = this.getOptions().onGetBindings()[bindingName];
+                        const binding = this.getOptions().getBindings()[bindingName];
                         return binding?.metadata ? {
                             EntityLogicalName: binding.metadata.entityName,
                             LogicalName: binding.metadata.attributeName
@@ -450,17 +450,17 @@ export class NestedControl {
                     return undefined;
                 })(),
                 Callback: (value: any) => {
-                    let binding = this.getOptions().onGetBindings()[property.name];
+                    let binding = this.getOptions().getBindings()[property.name];
                     let bindingName = property.name;
                     if (!binding && !property.isBindingProperty) {
                         return;
                     }
                     if (!binding) {
                         bindingName = this._getPrimaryBindingName();
-                        binding = this.getOptions().onGetBindings()[bindingName]
+                        binding = this.getOptions().getBindings()[bindingName]
                     }
                     binding.onNotifyOutputChanged?.(value);
-                    const boundBindings = Object.entries(this.getOptions().onGetBindings()).filter(([key, binding]) => !binding.isStatic);
+                    const boundBindings = Object.entries(this.getOptions().getBindings()).filter(([key, binding]) => !binding.isStatic);
                     const outputs: any = {};
                     boundBindings.map(([key, binding]) => {
                         outputs[key] = key === bindingName ? value : this.getProps().parameters[bindingName].raw

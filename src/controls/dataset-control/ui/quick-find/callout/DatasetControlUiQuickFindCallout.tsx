@@ -1,11 +1,11 @@
 import { Fragment, useMemo } from "react";
 import { IColumn } from "@talxis/client-libraries";
-import type { IQuickFindUiLabels } from "../components";
-import { IQuickFindCalloutComponents, QuickFindCalloutComponents } from "./components";
-import { getQuickFindCalloutStyles } from "./styles";
+import type { IDatasetControlUiQuickFindLabels } from "../components";
+import { IDatasetControlUiQuickFindCalloutComponents, DatasetControlUiQuickFindCalloutComponents } from "./components";
+import { getDatasetControlUiQuickFindCalloutStyles } from "./styles";
 
 /** Props for the callout that explains how the search matches. */
-export interface IQuickFindCalloutProps {
+export interface IDatasetControlUiQuickFindCalloutProps {
     /** The selector of the element the callout points at. */
     target: string;
     /** The columns a search matches on. */
@@ -13,17 +13,17 @@ export interface IQuickFindCalloutProps {
     /** Whether to show the wildcard warning instead of the columns. */
     isLikeQuery: boolean;
     /** The callout's strings. */
-    labels: IQuickFindUiLabels;
+    labels: IDatasetControlUiQuickFindLabels;
     /** Called when the callout closes. */
     onDismiss: () => void;
     /** Replacements for its slots. */
-    components?: Partial<IQuickFindCalloutComponents>;
+    components?: Partial<IDatasetControlUiQuickFindCalloutComponents>;
 }
 
 /** Explains how the search matches: a warning for a leading wildcard, otherwise the columns it searches. */
-export const QuickFindCallout = (props: IQuickFindCalloutProps) => {
-    const components = { ...QuickFindCalloutComponents, ...props.components };
-    const styles = useMemo(() => getQuickFindCalloutStyles(), []);
+export const DatasetControlUiQuickFindCallout = (props: IDatasetControlUiQuickFindCalloutProps) => {
+    const components = { ...DatasetControlUiQuickFindCalloutComponents, ...props.components };
+    const styles = useMemo(() => getDatasetControlUiQuickFindCalloutStyles(), []);
 
     return components.onRenderCallout({
         target: props.target,

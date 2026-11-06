@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { ITabProps } from "./Tab";
+import type { IFormUiTabProps } from "./Tab";
 
-export interface ITabContext extends ITabProps {
+export interface ITabContext extends IFormUiTabProps {
     columnsPerRow: number;
 }
 

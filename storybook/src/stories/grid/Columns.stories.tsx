@@ -44,7 +44,7 @@ The column takes the grid's header and keeps its \`initialWidth\`. It has no edi
 
 ## Add cell commands
 
-\`context.cell.onGetCommands(result, { record })\` adds commands to the column's cells. They show while the row is hovered, focused or selected, and are asked for each time, so they can depend on the record. Push \`ICommandBarItemProps\` to \`result.items\` for buttons, or to \`result.overflowItems\` for the **…** menu. Give each a \`text\`; \`iconOnly: true\` shows just the icon.
+\`context.cell.commandsHook(result, { record })\` adds commands to the column's cells. They show while the row is hovered, focused or selected, and are asked for each time, so they can depend on the record. Push \`ICommandBarItemProps\` to \`result.items\` for buttons, or to \`result.overflowItems\` for the **…** menu. Give each a \`text\`; \`iconOnly: true\` shows just the icon.
 
 {{story: Reorder from the row}}
 
@@ -54,10 +54,10 @@ Clicking a header opens its menu. \`context.header\` adds to the header and its 
 
 | Callback | Does |
 |---|---|
-| \`onGetAdornments(adornments)\` | Push \`{ key, placement: 'prefix' \\| 'suffix', title?, onRender? }\` to draw beside the name. |
-| \`onGetMenuSections(sections)\` | Push \`{ key, title, items }\`, or remove a module's section by its key. |
-| \`onGetMenuItems(items)\` | Change the final menu items. |
-| \`onGetTheme(builder)\` | Colour the header. See *Colour column headers* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`adornmentsHook(adornments)\` | Push \`{ key, placement: 'prefix' \\| 'suffix', title?, onRender? }\` to draw beside the name. |
+| \`menuSectionsHook(sections)\` | Push \`{ key, title, items }\`, or remove a module's section by its key. |
+| \`menuItemsHook(items)\` | Change the final menu items. |
+| \`themeHook(builder)\` | Colour the header. See *Colour column headers* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
 
 The menu is built each time it opens, and adornments each time the header draws. After a change the header should show, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
@@ -95,18 +95,18 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 | \`alignment\` | \`'left' \\| 'center' \\| 'right'\` | Which edge the value reads from; numbers and currency default to \`'right'\`. |
 | \`widthOffset\` | \`number\` | Pixels added for what a module draws in the column, such as grouping's indent. Not saved. |
 | \`cell.isRowResizable\` | \`boolean\` | Draws the grip a row is dragged taller by. |
-| \`cell.oneClickEdit\` | \`boolean\` | With editing, draws the editing control in the cell. See *Edit in place* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`cell.onGetCommands\` | \`(result, { record }) => void\` | The cell's commands. See *Add cell commands*. |
-| \`cell.onGetTheme\` | \`(builder, { record }) => void\` | The cell's colours. See *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
-| \`cell.onGetLoading\` | \`(result, { record }) => void\` | Draws a shimmer in place of the value while \`result.isLoading\`. |
-| \`cell.onGetLock\` | \`(result, { record }) => void\` | With editing, locks the cell. See *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`cell.onGetValidation\` | \`(result, { record }) => void\` | Marks the value invalid. See *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`cell.onGetControlParameters\` | \`(parameters, { record }) => void\` | The parameters the cell's control receives. See *Control parameters*. |
-| \`header.onGetAdornments\`, \`onGetMenuSections\`, \`onGetMenuItems\`, \`onGetTheme\` | Callbacks | See *Extend the header*. |
+| \`cell.enableOneClickEdit\` | \`boolean\` | With editing, draws the editing control in the cell. See *Edit in place* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
+| \`cell.commandsHook\` | \`(result, { record }) => void\` | The cell's commands. See *Add cell commands*. |
+| \`cell.themeHook\` | \`(builder, { record }) => void\` | The cell's colours. See *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`cell.loadingHook\` | \`(result, { record }) => void\` | Draws a shimmer in place of the value while \`result.isLoading\`. |
+| \`cell.lockHook\` | \`(result, { record }) => void\` | With editing, locks the cell. See *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
+| \`cell.validationHook\` | \`(result, { record }) => void\` | Marks the value invalid. See *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
+| \`cell.controlParametersHook\` | \`(parameters, { record }) => void\` | The parameters the cell's control receives. See *Control parameters*. |
+| \`header.adornmentsHook\`, \`menuSectionsHook\`, \`menuItemsHook\`, \`themeHook\` | Callbacks | See *Extend the header*. |
 
 ### Control parameters
 
-\`cell.onGetControlParameters\`, and the \`registerControlParameters\` hook, change what a cell's control receives. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\`, which reads these:
+\`cell.controlParametersHook\`, and the \`addControlParametersHook\` hook, change what a cell's control receives. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\`, which reads these:
 
 | Parameter | Description |
 |---|---|
@@ -118,7 +118,7 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 | \`IsMultiline\` | \`true\` wraps the text onto the lines its row has room for, up to six. |
 | \`ColumnAlignment\` | \`'left'\`, \`'center'\` or \`'right'\`. |
 
-An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field reads \`Placeholder\` too. \`GridValueRenderer\` reads the value from the record, so changing \`value\` here shows nothing.
+An editor, and a cell drawn with \`enableOneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field reads \`Placeholder\` too. \`GridValueRenderer\` reads the value from the record, so changing \`value\` here shows nothing.
 
 ## Where next
 
@@ -182,7 +182,7 @@ export const ReorderFromTheRow: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`onGetCommands\` adds *Reorder* to low-stock products, and *Copy SKU* and *Discontinue* to the **…** menu. Try: hover a row.`,
+                story: `\`commandsHook\` adds *Reorder* to low-stock products, and *Copy SKU* and *Discontinue* to the **…** menu. Try: hover a row.`,
             },
         },
     },
@@ -194,7 +194,7 @@ export const FlagLowStockInTheHeader: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`onGetAdornments\` adds a low-stock badge, and \`onGetMenuSections\` adds quick filters. Try: open the *In stock* menu.`,
+                story: `\`adornmentsHook\` adds a low-stock badge, and \`menuSectionsHook\` adds quick filters. Try: open the *In stock* menu.`,
             },
         },
     },

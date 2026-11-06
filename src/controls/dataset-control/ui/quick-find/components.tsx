@@ -1,9 +1,9 @@
 import { ITextFieldProps, TextField } from "@legacy";
-import { IQuickFindCalloutComponents } from "./callout";
-import { IQuickFindCompactButtonComponents } from "./compact-button";
+import { IDatasetControlUiQuickFindCalloutComponents } from "./callout";
+import { IDatasetControlUiQuickFindCompactButtonComponents } from "./compact-button";
 
 /** The strings of the quick find's callout. */
-export interface IQuickFindUiLabels {
+export interface IDatasetControlUiQuickFindLabels {
     /** Shown when the query starts with `*`. */
     leadingWildcardWarning: string;
     /** The start of the sentence above the columns. */
@@ -15,19 +15,19 @@ export interface IQuickFindUiLabels {
 }
 
 /** The replaceable pieces of the quick find. */
-export interface IQuickFindUiComponents {
+export interface IDatasetControlUiQuickFindComponents {
     /** The box around the field, which the callout points at. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** The search field. */
     onRenderTextField: (props: ITextFieldProps) => JSX.Element | null;
     /** The search button drawn in place of the field while the quick find is compact. */
-    compact?: Partial<IQuickFindCompactButtonComponents>;
+    compact?: Partial<IDatasetControlUiQuickFindCompactButtonComponents>;
     /** What explains how the search matches, under the field. */
-    callout?: Partial<IQuickFindCalloutComponents>;
+    callout?: Partial<IDatasetControlUiQuickFindCalloutComponents>;
 }
 
-/** The defaults for {@link IQuickFindUiComponents}. */
-export const QuickFindUiComponents: IQuickFindUiComponents = {
+/** The defaults for {@link IDatasetControlUiQuickFindComponents}. */
+export const DatasetControlUiQuickFindComponents: IDatasetControlUiQuickFindComponents = {
     onRenderContainer: props => <div {...props} />,
     onRenderTextField: props => <TextField {...props} />,
 };

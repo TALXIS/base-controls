@@ -9,7 +9,7 @@ const REJECTED = 4
 const keepApprovedUnselected: IGridModule = {
     name: 'keepApprovedUnselected',
     onLoad: grid => {
-        grid.modules.observe('rowSelection', selection => selection.registerSelectRecords((selection, { provider }) => {
+        grid.modules.observe('rowSelection', selection => selection.addSelectRecordsHook((selection, { provider }) => {
             const records = provider.getRecordsMap()
             selection.recordIds = selection.recordIds.filter(id => Number(records[id]?.getValue('status')) !== APPROVED)
         }))
@@ -40,10 +40,10 @@ const GridExample = () => {
         const entries = provider.getSelectedRecordIds().map(id => provider.getRecordsMap()[id])
         const isEmpty = entries.length === 0
         return [
-            { id: 'approve', label: 'Approve (' + entries.length + ')', iconName: 'CheckMark', isDisabled: isEmpty, onExecute: () => setStatus(entries, APPROVED) },
-            { id: 'reject', label: 'Reject (' + entries.length + ')', iconName: 'Cancel', isDisabled: isEmpty, onExecute: () => setStatus(entries, REJECTED) },
+            { id: 'approve', label: 'Approve (' + entries.length + ')', iconName: 'CheckMark', disabled: isEmpty, onExecute: () => setStatus(entries, APPROVED) },
+            { id: 'reject', label: 'Reject (' + entries.length + ')', iconName: 'Cancel', disabled: isEmpty, onExecute: () => setStatus(entries, REJECTED) },
             { id: 'selectSubmitted', label: 'Select all submitted', iconName: 'MultiSelect', onExecute: selectSubmitted },
-            { id: 'clear', label: 'Clear selection', iconName: 'Clear', isDisabled: isEmpty, onExecute: () => provider.clearSelectedRecordIds() },
+            { id: 'clear', label: 'Clear selection', iconName: 'Clear', disabled: isEmpty, onExecute: () => provider.clearSelectedRecordIds() },
         ]
     }
 
@@ -58,7 +58,7 @@ const GridExample = () => {
             <Grid
                 modules={[
                     createClientSideRowModelModule(),
-                    createEditingModule({ autoSave: true }),
+                    createEditingModule({ enableAutoSave: true }),
                     createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
                     createSortingModule(),
                     keepApprovedUnselected,

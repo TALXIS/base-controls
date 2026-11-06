@@ -18,7 +18,7 @@ Your own code often has to follow what the user does in a form, or fill in, read
 |---|---|
 | \`getData()\` | The values by column name, unsaved changes included. |
 | \`getField(name)\` | The field, with \`getValue()\` and \`setValue(value)\`. |
-| \`refresh()\` | Runs \`onLoad\` again and draws the form anew. |
+| \`reload()\` | Runs \`onLoad\` again and draws the form anew. |
 
 ## Events
 
@@ -54,9 +54,9 @@ A component of yours inside \`Form.Root\` reaches the form through hooks:
 | \`getRecord()\`, \`getData()\` | The record, and its values with the unsaved changes. |
 | \`getField(name)\` | The field, with \`getValue()\`, \`setValue(value)\`, \`getColumn()\` and the rest. |
 | \`getValidationSummary()\` | The validation summary of the last save. |
-| \`refresh()\` | Runs \`onLoad\` again. |
+| \`reload()\` | Runs \`onLoad\` again. |
 | \`events\` | The events of \`Form.Root\`; \`addEventListener\` returns what removes the listener again. |
-| \`registerSaveBlocker(blocker)\` | Runs \`blocker(request)\` before every save from now on, once the fields pass; \`request.isBlocked = true\` stops the save. Returns what removes it. |
+| \`addSaveBlocker(blocker)\` | Runs \`blocker(request)\` before every save from now on, once the fields pass; \`request.isBlocked = true\` stops the save. Returns what removes it. |
 
 ## Where next
 

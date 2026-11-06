@@ -2,7 +2,7 @@ import { CSSProperties } from "react";
 import { mergeStyleSets } from "@fluentui/react";
 import { getJustifyContent, IAlignment } from "@core";
 
-export const getValueRendererUiStyles = (columnAlignment: IAlignment, isMultiline: boolean) => {
+export const getCellUiValueRendererStyles = (columnAlignment: IAlignment, isMultiline: boolean) => {
     return mergeStyleSets({
         valueRendererUi: {
             //fills whatever it is put in

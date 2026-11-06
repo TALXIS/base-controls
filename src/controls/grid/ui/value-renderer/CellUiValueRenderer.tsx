@@ -1,28 +1,28 @@
 import { Fragment, useMemo } from "react";
 import { getClassNames, IAlignment } from "@core";
-import { IValueRendererUiComponents, ValueRendererUiComponents } from "./components";
+import { ICellUiValueRendererComponents, CellUiValueRendererComponents } from "./components";
 import { IFileValue } from "./field-file";
 import { IOptionSetRendererOption } from "./option-set-renderer";
-import { getValueRendererUiStyles } from "./styles";
+import { getCellUiValueRendererStyles } from "./styles";
 
 /** One link of a value: an address it navigates to, a click it runs, or neither. */
-export interface IValueRendererUiLink {
+export interface ICellUiValueRendererLink {
     text: string;
     href?: string;
     onClick?: () => void;
 }
 
 /** What a value is drawn as. */
-export type IValueRendererUiValue =
+export type ICellUiValueRendererValue =
     | { type: 'placeholder'; text: string }
     | { type: 'text'; text: string }
-    | { type: 'link'; link: IValueRendererUiLink }
-    | { type: 'lookup'; links: (IValueRendererUiLink & { key: string })[] }
+    | { type: 'link'; link: ICellUiValueRendererLink }
+    | { type: 'lookup'; links: (ICellUiValueRendererLink & { key: string })[] }
     | { type: 'file'; file: IFileValue; isImage: boolean }
     | { type: 'options'; options: IOptionSetRendererOption[] };
 
-export interface IValueRendererUiProps {
-    value: IValueRendererUiValue;
+export interface ICellUiValueRendererProps {
+    value: ICellUiValueRendererValue;
     /** Which edge the value reads from; defaults to `'left'`. */
     alignment?: IAlignment;
     /** Whether the value wraps onto as many lines as it needs. */
@@ -30,14 +30,14 @@ export interface IValueRendererUiProps {
     prefixIconName?: string;
     suffixIconName?: string;
     className?: string;
-    components?: Partial<IValueRendererUiComponents>;
+    components?: Partial<ICellUiValueRendererComponents>;
 }
 
 /** A value in its cell, drawn by what it is, between an optional prefix and suffix icon. */
-export const ValueRendererUi = (props: IValueRendererUiProps) => {
+export const CellUiValueRenderer = (props: ICellUiValueRendererProps) => {
     const { value, alignment = 'left', isMultiline = false } = props;
-    const components = { ...ValueRendererUiComponents, ...props.components };
-    const styles = useMemo(() => getValueRendererUiStyles(alignment, isMultiline), [alignment, isMultiline]);
+    const components = { ...CellUiValueRendererComponents, ...props.components };
+    const styles = useMemo(() => getCellUiValueRendererStyles(alignment, isMultiline), [alignment, isMultiline]);
 
     const renderValue = (): JSX.Element => {
         switch (value.type) {

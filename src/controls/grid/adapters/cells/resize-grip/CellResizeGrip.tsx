@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useRerender } from "@core";
-import { useGridInternalService } from "../../../useGridService";
+import { useGridServiceInternal } from "../../../useGridService";
 import { useIsInsideCellContainer } from "../container/context";
 import { useGridCell } from "../root/context";
 import { CellUi, ICellUiResizeGripComponents } from "../../../ui/cells";
@@ -15,7 +15,7 @@ export const CellResizeGrip = (props: ICellResizeGripProps) => {
     const { children } = props;
     const cell = useGridCell();
     const hasContainerAbove = useIsInsideCellContainer();
-    const rows = useGridInternalService('rows');
+    const rows = useGridServiceInternal('rows');
     const node = cell.getNode();
     const { rerender } = useRerender();
 

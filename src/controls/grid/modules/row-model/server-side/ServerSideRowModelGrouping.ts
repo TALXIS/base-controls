@@ -10,10 +10,10 @@ export class ServerSideRowModelGrouping implements IGridRowModelGrouping {
         this.isGroupOpenByDefault = parameters.isGroupOpenByDefault;
     }
 
-    public onAgGridOptions(): void { }
+    public applyAgGridOptions(): void { }
 
     //AG Grid keeps a `rowGroup` that a new definition leaves out
-    public onApplyColumnDefinition(colDef: ColDef<IRecord>, isGrouped: boolean): void {
+    public applyColumnDefinition(colDef: ColDef<IRecord>, isGrouped: boolean): void {
         colDef.rowGroup = isGrouped;
     }
 }

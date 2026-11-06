@@ -44,7 +44,7 @@ interface IInputs {
     ClientApiFunctionName?: ComponentFramework.PropertyTypes.StringProperty;
 }
 
-interface IVirtualDatasetControlEntryOptions {
+interface IVirtualDatasetControlEntryParameters {
     /**
      * Runs a promise that is awaited when the dataset control is initialized, before loading the first data.
      */
@@ -65,13 +65,13 @@ export class VirtualDatasetControlEntry {
     private _pcfContext!: IPcfContext;
     private _dataset!: Dataset<IDataProvider>;
     private _container!: HTMLDivElement;
-    private _options?: IVirtualDatasetControlEntryOptions
+    private _options?: IVirtualDatasetControlEntryParameters
     private _initialized: boolean = false;
     private _state: ComponentFramework.Dictionary = {};
     private _datasetControl!: IDatasetControl;
 
-    constructor(options?: IVirtualDatasetControlEntryOptions) {
-        this._options = options;
+    constructor(parameters?: IVirtualDatasetControlEntryParameters) {
+        this._options = parameters;
     }
 
     public init(context: ComponentFramework.Context<IInputs, IOutputs>, container: HTMLDivElement, state: ComponentFramework.Dictionary) {

@@ -38,7 +38,7 @@ export const ControlRenderer = (props: IControlProps) => {
     const form = useForm();
     const column = field.getColumn();
     const context = usePcfContext();
-    const validationResult = form.saveOperationPerformed ? form.isFieldValid(column.name) : null;
+    const validationResult = form.saveOperationPerformed ? form.getFieldValidation(column.name) : null;
 
     const onNotifyOutputChanged = (outputs: any) => {
         field.setValue(outputs.value);

@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getQuickFindCalloutStyles = () => mergeStyleSets({
+export const getDatasetControlUiQuickFindCalloutStyles = () => mergeStyleSets({
     calloutMain: {
         padding: 8,
     },

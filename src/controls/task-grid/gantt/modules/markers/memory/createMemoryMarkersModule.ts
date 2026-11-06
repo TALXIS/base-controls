@@ -1,8 +1,8 @@
-import { simulateBackend } from "../../../../../runtime/data-sources/memory/simulateBackend";
+import { simulateBackend } from "../../../../runtime/data-sources/memory/simulateBackend";
 import type { IMarker, IMarkersParameters, IMarkersStore } from "../Markers";
 import { createMarkersModule, IMarkersModule } from "../createMarkersModule";
 
-export interface IMemoryMarkersModuleParameters extends Omit<IMarkersParameters, 'onCreateStore'> {
+export interface IMemoryMarkersModuleParameters extends Omit<IMarkersParameters, 'createStore'> {
     markers: IMarker[];
 }
 
@@ -13,7 +13,7 @@ class MemoryMarkersStore implements IMarkersStore {
         this._markers = markers;
     }
 
-    public async onLoadMarkers(): Promise<IMarker[]> {
+    public async loadMarkers(): Promise<IMarker[]> {
         await simulateBackend();
         return this._markers;
     }
@@ -22,5 +22,5 @@ class MemoryMarkersStore implements IMarkersStore {
 /** Markers held in memory. */
 export const createMemoryMarkersModule = (parameters: IMemoryMarkersModuleParameters): IMarkersModule => {
     const { markers, ...moduleParameters } = parameters;
-    return createMarkersModule({ ...moduleParameters, onCreateStore: () => new MemoryMarkersStore(markers) });
+    return createMarkersModule({ ...moduleParameters, createStore: () => new MemoryMarkersStore(markers) });
 };

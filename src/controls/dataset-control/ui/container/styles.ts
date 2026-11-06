@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getContainerUiStyles = (height?: string) => mergeStyleSets({
+export const getDatasetControlUiContainerStyles = (height?: string) => mergeStyleSets({
     datasetControlContainer: {
         position: 'relative',
         display: 'flex',

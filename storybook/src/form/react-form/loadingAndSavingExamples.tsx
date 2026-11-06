@@ -9,7 +9,7 @@ const account = createMemoryRecord({
     data: ACCOUNT_DATA,
     metadata: ACCOUNT_METADATA,
     //runs on every save, before the change is committed in memory
-    onSave: async record => {
+    save: async record => {
         //stands in for a call to your API
         await new Promise(resolve => setTimeout(resolve, 800))
         //the columns this save writes
@@ -40,14 +40,14 @@ const account = createMemoryRecord({
     data: ACCOUNT_DATA,
     metadata: ACCOUNT_METADATA,
     //slow enough to see the ribbon say Saving
-    onSave: async record => {
+    save: async record => {
         await new Promise(resolve => setTimeout(resolve, 1000))
         return { recordId: record.getRecordId(), success: true, fields: record.getFields().filter(field => field.isDirty()).map(field => field.getColumn().name) }
     },
 })
 
 //saves each change the user commits
-const GridExample = () => <Form.Root onLoad={async () => ({ record: account })} autoSave>
+const GridExample = () => <Form.Root onLoad={async () => ({ record: account })} enableAutoSave>
     <Form.Ribbon />
     <Form.Notifications />
     <Form.Section label='Account'>

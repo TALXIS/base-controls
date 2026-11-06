@@ -1,8 +1,8 @@
 import { createElement } from "react";
 import type { ITheme } from "@fluentui/react";
 import type { GanttStatic } from "dhtmlx-gantt";
-import type { ITaskDataProvider } from "../../../../runtime/provider";
-import { runQuietly } from "../../../../runtime/runQuietly";
+import type { ITaskDataProvider } from "../../../runtime/provider";
+import { runQuietly } from "../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { IGanttTasks } from "../../tasks";
@@ -38,9 +38,9 @@ export class TaskSelection implements ITaskSelection {
         this._offSelectionChanged = this._provider.addEventListener('onRecordsSelected', this._onSelectionChanged);
         gantt.services.observe('chart', this._onChartReady);
         gantt.services.observe('tasks', this._onTasksReady);
-        gantt.services.get('theme').registerStyles(this._onStyles);
+        gantt.services.get('theme').addStylesHook(this._onStyles);
         if (parameters.enableSelectionBox ?? true) {
-            gantt.surfaces.registerSurface(this._onSurfaces);
+            gantt.surfaces.addSurfacesHook(this._onSurfaces);
         }
     }
 
@@ -64,8 +64,8 @@ export class TaskSelection implements ITaskSelection {
     };
 
     private _onTasksReady = (tasks: IGanttTasks): void => {
-        tasks.registerRowClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), ROW_SELECTED_CLASS));
-        tasks.registerTaskClass((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), BAR_SELECTED_CLASS));
+        tasks.addRowClassHook((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), ROW_SELECTED_CLASS));
+        tasks.addTaskClassHook((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), BAR_SELECTED_CLASS));
     };
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {

@@ -3,10 +3,10 @@ import { ILayoutBreakpoints, Layout } from "./Layout";
 import { useLatest } from "@core";
 
 
-interface IUseCalculatedColumnsParams {
+interface IUseCalculatedColumnsParameters {
     ref: React.RefObject<HTMLDivElement>;
     breakpoints: ILayoutBreakpoints;
-    onGetNumberOfColumnsForWidth?: (containerWidth: number, breakpoints: ILayoutBreakpoints) => number;
+    getNumberOfColumnsForWidth?: (containerWidth: number, breakpoints: ILayoutBreakpoints) => number;
 }
 
 export interface IColumnCalculation {
@@ -16,8 +16,8 @@ export interface IColumnCalculation {
     containerWidth: number;
 }
 
-export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
-    const { ref, breakpoints, onGetNumberOfColumnsForWidth = Layout.getNumberOfColumnsForWidth } = params;
+export const useCalculatedColumns = (parameters: IUseCalculatedColumnsParameters) => {
+    const { ref, breakpoints, getNumberOfColumnsForWidth = Layout.getNumberOfColumnsForWidth } = parameters;
 
     const [columnCalculation, setColumnCalculation] = React.useState<IColumnCalculation>({
         firstRender: true,
@@ -30,7 +30,7 @@ export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
 
     const observer = React.useMemo(() => new ResizeObserver((entries) => {
         const containerWidth = entries[0].contentRect.width;
-        const numOfColumns = onGetNumberOfColumnsForWidth(containerWidth, breakpointsRef.current);
+        const numOfColumns = getNumberOfColumnsForWidth(containerWidth, breakpointsRef.current);
         setColumnCalculation({
             firstRender: false,
             columnsPerRow: numOfColumns,
@@ -49,7 +49,7 @@ export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
 
     React.useEffect(() => {
         setColumnCalculation((current) => {
-            const numOfColumns = onGetNumberOfColumnsForWidth(current.containerWidth, breakpointsRef.current);
+            const numOfColumns = getNumberOfColumnsForWidth(current.containerWidth, breakpointsRef.current);
             if (numOfColumns === current.columnsPerRow) {
                 return current;
             }

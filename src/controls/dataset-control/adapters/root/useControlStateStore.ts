@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { IStateStore, StateStore, useStateStore } from "@core";
-import { useDatasetControlRuntime } from "./context";
+import { useOptionalDatasetControlInternal } from "./context";
 
 /**
  * The store a control keeps its state in, per view inside a DatasetControl.
  * @param stateKey Read once, at mount; without one, the control keeps nothing.
  */
 export const useControlStateStore = (stateKey: string | undefined): IStateStore => {
-    const datasetControl = useDatasetControlRuntime();
+    const datasetControl = useOptionalDatasetControlInternal();
     const stateStore = useStateStore();
     return useMemo(() => {
         if (!stateKey) {

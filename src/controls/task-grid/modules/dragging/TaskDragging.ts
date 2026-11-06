@@ -2,7 +2,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { GridApi, IRowDragItem, IRowNode, IsRowValidDropPositionParams, IsRowValidDropPositionResult, RowDragEndEvent, RowDragEnterEvent } from "ag-grid-community";
 import { ITheme } from "@fluentui/react";
 import type { IGrid, IGridAgGridInitialOptions, IGridAgGridOptions, IGridEditedCell, IGridStyles } from "@controls/grid";
-import type { ITaskDataProvider, ITaskMoveParams, ITaskMovePosition } from "../../runtime/provider";
+import type { ITaskDataProvider, ITaskMoveParameters, ITaskMovePosition } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
@@ -35,7 +35,7 @@ interface IGap {
 
 export interface ITaskDraggingParameters {
     /** Called after a dragged task is moved. */
-    onTaskMoved?(params: ITaskMoveParams): void;
+    onTaskMoved?(parameters: ITaskMoveParameters): void;
 }
 
 /** The `dragging` module, moving a task by dragging its row. */
@@ -68,10 +68,10 @@ export class TaskDragging implements ITaskDragging {
         const grid = taskGrid as IGrid<ITaskGridServiceMap>;
         this._grid = grid;
         const services = grid.services;
-        grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
-        grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
-        services.get('gridTheme').registerStyles(this._onStyles, TASK_GRID_PRIORITY.tree);
-        services.get('rows').registerRowClass(TASK_ROW_CLASS_NAMES.dropTarget, ({ record }) => this._dropInto?.data === record);
+        grid.addAgGridInitialOptionsHook(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
+        grid.addAgGridOptionsHook(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
+        services.get('gridTheme').addStylesHook(this._onStyles, TASK_GRID_PRIORITY.tree);
+        services.get('rows').addRowClass(TASK_ROW_CLASS_NAMES.dropTarget, ({ record }) => this._dropInto?.data === record);
         grid.modules.observe('editing', editing => { editing.events.addEventListener('onEditedCellChanged', this._onEditedCellChanged); });
         services.observe('gridApi', this._onGridApiAvailable);
         return this._clearTimers;
@@ -289,7 +289,7 @@ export class TaskDragging implements ITaskDragging {
         return () => { offTaskMoved(); offBeforeNewDataLoaded(); };
     };
 
-    private _onTaskMoved = (params: ITaskMoveParams): void => this._parameters.onTaskMoved?.(params);
+    private _onTaskMoved = (parameters: ITaskMoveParameters): void => this._parameters.onTaskMoved?.(parameters);
 
     private _clearTimers = (): void => {
         window.clearTimeout(this._dropIntoTimer);

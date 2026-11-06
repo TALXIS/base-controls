@@ -14,17 +14,17 @@ import {
     DEFAULT_COLUMN_WIDTH, FilteringUi, getColumnContext, getTextColorForBackground, getColorContrast, getTintColors, mixColors, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationCardComponents, NotificationMessageBar, NotificationMessageBarComponents, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
-    CommandBar, DataProviderScope, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useDatasetControlRegion, useDatasetControlModule, useRegisterDatasetControlPart, createTalxisUserQueriesModule, createDataverseUserQueriesModule, DataverseUserQueriesStore, useCompact, useCompactItem, CompactContext, WrapCompactProvider, BreakpointCompactProvider, useDatasetControlHeader, ViewSwitcherUiComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, RibbonUi, RibbonUiComponents, RuntimeHost, RuntimeLifecycle, useRuntime, Form, FormUi, useField, NestedControlRenderer, BaseControls, createMemoryRecord, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, AppThemeProvider, Callout, useAppTheme, useSurfaceMenuProps, useTheme, useThemeBuilder, TooltipHost, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
+    CommandBar, DataProviderScope, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useDatasetControlRegion, useDatasetControlModule, useRegisterDatasetControlPart, createTalxisUserQueriesModule, createDataverseUserQueriesModule, DataverseUserQueriesStore, useCompact, useCompactItem, CompactContext, WrapCompactProvider, BreakpointCompactProvider, useDatasetControlHeader, DatasetControlUiViewSwitcherComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, RibbonUiCommandBar, RibbonUiCommandBarComponents, RuntimeHost, RuntimeLifecycle, useRuntime, Form, FormUi, useField, NestedControlRenderer, BaseControls, createMemoryRecord, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, AppThemeProvider, Callout, useAppTheme, useSurfaceMenuProps, useTheme, useThemeBuilder, TooltipHost, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
 } from '@talxis/base-controls'
-import { ValueRendererUiComponents, CellColumnControlComponents, CellUiCommandsComponents, RecordSaveUiIndicatorComponents, RecordSaveUiErrorCalloutComponents, RowSelectionUiCheckboxComponents, RowSelectionUiHeaderCheckboxComponents, GroupingUiToggleComponents, GroupingUiCountComponents, AggregationUiTotalValueComponents, GroupingUiExpandCollapseComponents, FilteringUiCalloutComponents, ThemeContext, Dialog, XrmForm, ControlComponents, useForm, useValidationSummary, Map } from '@talxis/base-controls'
+import { CellUiValueRendererComponents, CellColumnControlComponents, CellUiCommandsComponents, RecordSaveUiIndicatorComponents, RecordSaveUiErrorCalloutComponents, RowSelectionUiCheckboxComponents, RowSelectionUiHeaderCheckboxComponents, GroupingUiToggleComponents, GroupingUiCountComponents, AggregationUiTotalValueComponents, GroupingUiExpandCollapseComponents, FilteringUiCalloutComponents, ThemeContext, Dialog, XrmForm, ControlComponents, useForm, useValidationSummary, Map } from '@talxis/base-controls'
 import * as FluentV8 from '@fluentui/react'
 import * as FluentV9 from '@fluentui/react-components'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular } from '@fluentui/react-icons'
 import { DataProvider, Dataset, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
-import { createIsolatedComponent, createIsolatedHost, registerIsolatedContent, CZECH_LABELS, NOTIFICATION_MESSAGE_BAR_LABELS, PcfContextProvider, EmptyStateUiComponents, LocalStorageUserQueriesStore, LabelsProvider, PaginationUiComponents, QuickFindUiComponents, translateLabels, useLabels, useTaskRuntime } from '@talxis/base-controls'
-import { CheckList, CHECK_LIST_LABELS, CompletionCell, NameCell, sortCheckListProvider, TaskDatasetControl, TaskGrid, createMemoryTaskDataSource, MemoryTaskStore, MemoryTaskDatabase, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createTaskEditingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStore, createChecklistModule, createMemoryChecklistModule, createTalxisChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
-import { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker } from '@talxis/base-controls/controls/task-grid/modules/gantt'
+import { createIsolatedComponent, createIsolatedHost, defineIsolatedContent, CZECH_LABELS, NOTIFICATION_MESSAGE_BAR_LABELS, PcfContextProvider, DatasetControlUiEmptyStateComponents, LocalStorageUserQueriesStore, LabelsProvider, DatasetControlUiPaginationComponents, DatasetControlUiQuickFindComponents, translateLabels, useLabels, useTaskRuntime } from '@talxis/base-controls'
+import { Checklist, CHECKLIST_LABELS, CompletionCell, NameCell, sortChecklistProvider, TaskDatasetControl, TaskGrid, createMemoryTaskProvider, MemoryTaskStore, MemoryTaskDatabase, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createTaskEditingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStore, createTaskChecklistModule, createMemoryTaskChecklistModule, createTalxisTaskChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
+import { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker } from '@talxis/base-controls/controls/task-grid/gantt'
 import { LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VIEW_COLUMNS } from '../task-grid/memoryLookupManyData'
 import { TEMPLATES } from '../task-grid/memoryTemplateData'
 import { NON_WORKING_DAYS } from '../task-grid/memoryNonWorkingDayData'
@@ -41,7 +41,7 @@ export const GRID_SANDBOX_SCOPE = {
     useValidationSummary,
     ControlComponents,
     Dataset,
-    ValueRendererUiComponents,
+    CellUiValueRendererComponents: CellUiValueRendererComponents,
     CellColumnControlComponents,
     CellUiCommandsComponents,
     RecordSaveUiIndicatorComponents,
@@ -85,11 +85,11 @@ export const GRID_SANDBOX_SCOPE = {
     WrapCompactProvider,
     BreakpointCompactProvider,
     useDatasetControlHeader,
-    ViewSwitcherUiComponents,
+    DatasetControlUiViewSwitcherComponents,
     ErrorMessageBarComponents,
     Ribbon,
-    RibbonUi,
-    RibbonUiComponents,
+    RibbonUiCommandBar: RibbonUiCommandBar,
+    RibbonUiCommandBarComponents: RibbonUiCommandBarComponents,
     RuntimeHost,
     RuntimeLifecycle,
     useRuntime,
@@ -186,16 +186,16 @@ export const GRID_SANDBOX_SCOPE = {
     createDealsProvider,
     createIsolatedComponent,
     createIsolatedHost,
-    registerIsolatedContent,
+    defineIsolatedContent,
     createTimesheetsProvider,
     createTicketsProvider,
     createProductsProvider,
     createLaunchPlanProvider,
-    CheckList,
+    Checklist,
     CompletionCell,
     NameCell,
-    sortCheckListProvider,
-    CHECK_LIST_LABELS,
+    sortChecklistProvider,
+    CHECKLIST_LABELS,
     TaskDatasetControl,
     TaskGrid,
     useTaskRuntime,
@@ -207,10 +207,10 @@ export const GRID_SANDBOX_SCOPE = {
     defineLabels: <T extends { [key: string]: string }>(defaults: T) => ({ defaults }),
     translateLabels,
     LocalStorageUserQueriesStore,
-    QuickFindUiComponents,
-    PaginationUiComponents,
-    EmptyStateUiComponents,
-    createMemoryTaskDataSource,
+    DatasetControlUiQuickFindComponents,
+    DatasetControlUiPaginationComponents,
+    DatasetControlUiEmptyStateComponents,
+    createMemoryTaskProvider,
     MemoryTaskStore,
     MemoryTaskDatabase,
     createProjectModule,
@@ -232,9 +232,9 @@ export const GRID_SANDBOX_SCOPE = {
     MemoryTemplatesStore,
     TEMPLATES,
     NON_WORKING_DAYS,
-    createChecklistModule,
-    createMemoryChecklistModule,
-    createTalxisChecklistModule,
+    createTaskChecklistModule,
+    createMemoryTaskChecklistModule,
+    createTalxisTaskChecklistModule,
     CHECKLIST_ITEMS,
     CHECKLIST_COLUMN,
     createChecklistItems,

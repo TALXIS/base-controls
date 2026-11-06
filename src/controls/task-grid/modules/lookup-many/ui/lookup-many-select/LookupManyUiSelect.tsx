@@ -3,18 +3,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Layer } from "@fluentui/react";
 import { MultiValueProps, OptionProps } from "react-select";
 import type { IDataProvider } from "@talxis/client-libraries";
-import { ILookupManySelectComponents, LookupManySelectComponents } from "./components";
+import { ILookupManyUiSelectComponents, LookupManyUiSelectComponents } from "./components";
 import { LookupManySelectContext, useLookupManySelectContext } from "./context";
-import { getLookupManySelectStyles } from "./styles";
+import { getLookupManyUiSelectStyles } from "./styles";
 
 type Reference = ComponentFramework.EntityReference;
 
-/** Props for {@link LookupManySelect}. */
-export interface ILookupManySelectProps {
+/** Props for {@link LookupManyUiSelect}. */
+export interface ILookupManyUiSelectProps {
     /** Searched as the user types, for the records that can be picked. */
     dataProvider?: IDataProvider;
     value?: Reference[];
-    isDisabled?: boolean;
+    disabled?: boolean;
     autoFocus?: boolean;
     /** What the search starts with, such as the key that opened the picker. */
     defaultSearchQuery?: string;
@@ -22,7 +22,7 @@ export interface ILookupManySelectProps {
     loadingText: string;
     /** The accessible name of a pick's remove button. */
     getRemoveText: (reference: Reference) => string;
-    components?: Partial<ILookupManySelectComponents>;
+    components?: Partial<ILookupManyUiSelectComponents>;
     placeholder?: string;
     /** Draws as a field whose records open in a popup over the page. */
     isMenuPopup?: boolean;
@@ -38,11 +38,11 @@ const MultiValue = (props: MultiValueProps<Reference, true, never>) => {
 const Option = (props: OptionProps<Reference, true, never>) => useLookupManySelectContext().components.onRenderOption(props);
 
 /** A multi-record picker over any provider, its picks wrapping above the records it offers. */
-export const LookupManySelect = (props: ILookupManySelectProps) => {
-    const components = { ...LookupManySelectComponents, ...props.components };
+export const LookupManyUiSelect = (props: ILookupManyUiSelectProps) => {
+    const components = { ...LookupManyUiSelectComponents, ...props.components };
     const theme = useTheme();
     const isMenuPopup = !!props.isMenuPopup;
-    const styles = useMemo(() => getLookupManySelectStyles(theme, isMenuPopup), [theme, isMenuPopup]);
+    const styles = useMemo(() => getLookupManyUiSelectStyles(theme, isMenuPopup), [theme, isMenuPopup]);
     const value = props.value ?? [];
     const isMountedRef = useRef(true);
     const [menuPortal, setMenuPortal] = useState<HTMLDivElement | null>(null);
@@ -66,10 +66,10 @@ export const LookupManySelect = (props: ILookupManySelectProps) => {
         {props.isMenuPopup && <Layer><div ref={setMenuPortal} /></Layer>}
         {components.onRenderSelect({
             isMulti: true,
-            isDisabled: props.isDisabled,
+            isDisabled: props.disabled,
             autoFocus: props.autoFocus,
             defaultInputValue: props.defaultSearchQuery,
-            menuIsOpen: !props.isDisabled && (!props.isMenuPopup || isMenuOpen),
+            menuIsOpen: !props.disabled && (!props.isMenuPopup || isMenuOpen),
             onMenuOpen: () => setIsMenuOpen(true),
             onMenuClose: () => setIsMenuOpen(false),
             menuPortalTarget: props.isMenuPopup ? menuPortal : undefined,
@@ -80,7 +80,7 @@ export const LookupManySelect = (props: ILookupManySelectProps) => {
             isClearable: false,
             closeMenuOnSelect: false,
             backspaceRemovesValue: true,
-            defaultOptions: !props.isDisabled,
+            defaultOptions: !props.disabled,
             noOptionsMessage: () => props.noRecordsFoundText,
             loadingMessage: () => props.loadingText,
             getOptionValue: reference => reference.id.guid,

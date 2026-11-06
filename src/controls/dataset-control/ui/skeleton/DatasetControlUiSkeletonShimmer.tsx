@@ -1,10 +1,10 @@
 import { useTheme } from '@theme';
 import * as React from 'react';
 
-import { getSkeletonStyles } from './styles';
+import { getDatasetControlUiSkeletonStyles } from './styles';
 
 /** What the placeholder is shaped like. */
-export interface ISkeletonShimmerProps {
+export interface IDatasetControlUiSkeletonShimmerProps {
     /** Container height. Left unset, the placeholder is as tall as its rows. */
     height?: string;
     /**
@@ -40,10 +40,10 @@ const ROW_PATTERNS = [
 ];
 
 /** A shimmering placeholder shaped like a ribbon, a grid and a footer. */
-export const SkeletonShimmer = (props: ISkeletonShimmerProps) => {
+export const DatasetControlUiSkeletonShimmer = (props: IDatasetControlUiSkeletonShimmerProps) => {
     const theme = useTheme();
     //the rows only grow into a container with a height of its own; without one they define it themselves
-    const styles = React.useMemo(() => getSkeletonStyles(theme, !!props.height, props.height === '100%'), [theme, props.height]);
+    const styles = React.useMemo(() => getDatasetControlUiSkeletonStyles(theme, !!props.height, props.height === '100%'), [theme, props.height]);
     const columns = props.columns ?? DEFAULT_COLUMNS;
     const rowCount = props.rowCount ?? DEFAULT_ROW_COUNT;
     const showHeader = props.showHeader ?? true;

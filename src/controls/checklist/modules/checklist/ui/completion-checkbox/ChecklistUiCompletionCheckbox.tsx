@@ -1,23 +1,23 @@
 import { useMemo, useState } from "react";
 import { getClassNames } from "@core";
 import { useTheme } from "@theme";
-import { CompletionCheckboxUiComponents, ICompletionCheckboxUiComponents } from "./components";
-import { CHECK_HOST_CLASS_NAME, getCompletionCheckboxStyles } from "./styles";
+import { ChecklistUiCompletionCheckboxComponents, IChecklistUiCompletionCheckboxComponents } from "./components";
+import { CHECK_HOST_CLASS, getChecklistUiCompletionCheckboxStyles } from "./styles";
 
-export interface ICompletionCheckboxUiProps {
+export interface IChecklistUiCompletionCheckboxProps {
     isChecked: boolean;
     /** Its accessible name and tooltip. */
     label: string;
     onToggle: () => void;
-    isDisabled?: boolean;
-    components?: Partial<ICompletionCheckboxUiComponents>;
+    disabled?: boolean;
+    components?: Partial<IChecklistUiCompletionCheckboxComponents>;
 }
 
 /** The round check an item is ticked off with, as Fluent draws a selection check. */
-export const CompletionCheckboxUi = (props: ICompletionCheckboxUiProps) => {
+export const ChecklistUiCompletionCheckbox = (props: IChecklistUiCompletionCheckboxProps) => {
     const theme = useTheme();
-    const styles = useMemo(() => getCompletionCheckboxStyles(theme), [theme]);
-    const components = { ...CompletionCheckboxUiComponents, ...props.components };
+    const styles = useMemo(() => getChecklistUiCompletionCheckboxStyles(theme), [theme]);
+    const components = { ...ChecklistUiCompletionCheckboxComponents, ...props.components };
     //only a tick the user just made pops, not one a redrawn row already had
     const [isPopping, setIsPopping] = useState(false);
 
@@ -32,8 +32,8 @@ export const CompletionCheckboxUi = (props: ICompletionCheckboxUiProps) => {
         'aria-checked': props.isChecked,
         'aria-label': props.label,
         title: props.label,
-        disabled: props.isDisabled,
-        className: getClassNames([styles.root, CHECK_HOST_CLASS_NAME]),
+        disabled: props.disabled,
+        className: getClassNames([styles.root, CHECK_HOST_CLASS]),
         onClick,
         children: components.onRenderCheck({ checked: props.isChecked, className: props.isChecked && isPopping ? styles.popped : undefined }),
     });

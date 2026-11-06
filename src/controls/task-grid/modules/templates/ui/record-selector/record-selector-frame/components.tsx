@@ -1,9 +1,9 @@
 /** The replaceable pieces of {@link RecordSelectorFrame}. */
-export interface IRecordSelectorFrameComponents {
+export interface ITemplatesUiRecordSelectorFrameComponents {
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
-/** The defaults for {@link IRecordSelectorFrameComponents}. */
-export const RecordSelectorFrameComponents: IRecordSelectorFrameComponents = {
+/** The defaults for {@link ITemplatesUiRecordSelectorFrameComponents}. */
+export const TemplatesUiRecordSelectorFrameComponents: ITemplatesUiRecordSelectorFrameComponents = {
     onRenderContainer: props => <div {...props} />,
 };

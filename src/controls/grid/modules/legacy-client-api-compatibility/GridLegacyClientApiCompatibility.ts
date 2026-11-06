@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { EventEmitter, IAddControlNotificationOptions, IControlParameters, ICustomColumnControl, IEventEmitter, IField, IRecord } from "@talxis/client-libraries";
 import { ICommandBarItemProps, Target } from "@fluentui/react";
-import { CELL_COMMANDS_CLASS_NAME } from "../../ui/cells/commands/styles";
+import { CELL_COMMANDS_CLASS } from "../../ui/cells/commands/styles";
 import { merge } from "merge-anything";
 import { createThemeBuilder, getTextColorForBackground } from "@theme";
 import type { GridCellCommandsHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../../runtime/cells";
@@ -10,6 +10,7 @@ import type { IGridSurface } from "../../runtime/surfaces";
 import type { IGridServiceLocator } from "../../runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { NotificationCalloutHost } from "./adapters/notification-callout-host";
+import type { IEventSubscriber } from "@core";
 
 const COMPATIBILITY_HOOK_PRIORITY = GRID_MODULE_PRIORITY.legacyClientApiCompatibility;
 
@@ -24,7 +25,7 @@ export interface IGridLegacyClientApiCompatibilityParameters {
 
 /** The notification a cell has open, for the callout that shows it. */
 export interface IGridLegacyClientApiCompatibility {
-    readonly events: IEventEmitter<IGridLegacyClientApiCompatibilityEvents>;
+    readonly events: IEventSubscriber<IGridLegacyClientApiCompatibilityEvents>;
     getOpenNotification(): IAddControlNotificationOptions | undefined;
     /** The command the open notification was clicked from. */
     getOpenTarget(): Target | undefined;
@@ -42,16 +43,16 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
     constructor(parameters: IGridLegacyClientApiCompatibilityParameters) {
         this._services = parameters.services;
         const cells = parameters.services.get('cells');
-        parameters.services.get('surfaces').registerSurface(this._onSurfaces, COMPATIBILITY_HOOK_PRIORITY);
+        parameters.services.get('surfaces').addSurfacesHook(this._onSurfaces, COMPATIBILITY_HOOK_PRIORITY);
         //locks come with the editing module, which may register after this one
         parameters.services.get('grid').modules.observe('editing', editing => {
-            editing.locks.registerLock(this._onLock, COMPATIBILITY_HOOK_PRIORITY);
+            editing.locks.addLockHook(this._onLock, COMPATIBILITY_HOOK_PRIORITY);
         });
-        cells.registerCellLoading(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
-        cells.registerCellTheme(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
-        cells.registerCellCommands(this._onCellCommands, COMPATIBILITY_HOOK_PRIORITY);
-        cells.registerControl(this._onControl, COMPATIBILITY_HOOK_PRIORITY);
-        cells.registerControlParameters(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
+        cells.addCellLoadingHook(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
+        cells.addCellThemeHook(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
+        cells.addCellCommandsHook(this._onCellCommands, COMPATIBILITY_HOOK_PRIORITY);
+        cells.addControlHook(this._onControl, COMPATIBILITY_HOOK_PRIORITY);
+        cells.addControlParametersHook(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
         //a legacy script redraws through the dataset
         parameters.services.observe('gridApi', () => this._provider.addEventListener('onRenderRequested', this._onRenderRequested));
     }
@@ -163,7 +164,7 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
     //an overflow menu item is gone once the menu closes
     private _getCalloutTarget(event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>): Target {
         const element = event.currentTarget;
-        if (element.closest(`.${CELL_COMMANDS_CLASS_NAME}`) || !('clientX' in event)) {
+        if (element.closest(`.${CELL_COMMANDS_CLASS}`) || !('clientX' in event)) {
             return element;
         }
         return event.nativeEvent;
@@ -193,10 +194,10 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
     };
 
     /** Only for a column the record's provider has. */
-    private _getField(params: { record: IRecord; columnName: string }): IField | undefined {
-        if (!params.record.getDataProvider().getColumnsMap()[params.columnName]) {
+    private _getField(parameters: { record: IRecord; columnName: string }): IField | undefined {
+        if (!parameters.record.getDataProvider().getColumnsMap()[parameters.columnName]) {
             return undefined;
         }
-        return params.record.getField(params.columnName);
+        return parameters.record.getField(parameters.columnName);
     }
 }

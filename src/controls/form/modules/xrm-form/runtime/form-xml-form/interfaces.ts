@@ -1,4 +1,4 @@
-import type { IEventEmitter, IField, IFieldValidationResult } from "@talxis/client-libraries";
+import type { IField, IFieldValidationResult } from "@talxis/client-libraries";
 import type {
     FormXml as MetadataFormXml,
     FormXmlAncestor as MetadataFormXmlAncestor,
@@ -25,11 +25,12 @@ import type {
     FormXmlControlParameters,
     RequiredLevelEnum,
 } from "@talxis/client-metadata";
-import type { IFormRuntime } from "../../../../runtime/FormRuntime";
+import type { IForm } from "../../../../runtime/FormRuntime";
+import type { IEventSubscriber } from "@core";
 
 export interface IFormXmlFormProps {
     formXml: string;
-    form: IFormRuntime;
+    form: IForm;
     lcid: number;
 }
 
@@ -41,7 +42,7 @@ export interface IFormXmlTabsEvents {
 
 export interface IFormXmlTabs extends Omit<MetadataFormXmlTabs, 'tab'> {
     tab: IFormXmlTab[];
-    events: IEventEmitter<IFormXmlTabsEvents>;
+    readonly events: IEventSubscriber<IFormXmlTabsEvents>;
     getExpandedTab: () => IFormXmlTab;
     getVisibleTabs: () => IFormXmlTab[];
     setExpandedTab: (tabId: string) => void;
@@ -57,7 +58,7 @@ export interface IFormXmlTabEvents {
 export interface IFormXmlTab extends Omit<MetadataFormXmlTab, 'events' | 'columns'> {
     id: string;
     formXmlModel: IFormXmlModel;
-    events: IEventEmitter<IFormXmlTabEvents>;
+    readonly events: IEventSubscriber<IFormXmlTabEvents>;
     getLabel: () => string | null;
     setExpanded: () => void;
     getExpanded: () => boolean;
@@ -76,7 +77,7 @@ export interface IFormXmlSectionEvents {
 }
 
 export interface IFormXmlSection extends Omit<MetadataFormXmlSection, 'events' | 'columns'> {
-    events: IEventEmitter<IFormXmlSectionEvents>;
+    readonly events: IEventSubscriber<IFormXmlSectionEvents>;
     getLabel: () => string | null;
     getCells: () => IFormXmlCell[];
     getControls: () => IFormXmlControl[];
@@ -105,7 +106,7 @@ export interface IFormXmlControlEvents {
 
 export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'control'> {
     control?: IFormXmlControl;
-    events: IEventEmitter<IFormXmlCellEvents>;
+    readonly events: IEventSubscriber<IFormXmlCellEvents>;
     getLabel: () => string | null;
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
@@ -113,7 +114,7 @@ export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'cont
 }
 
 export interface IFormXmlControl extends MetadataFormXmlControl {
-    events: IEventEmitter<IFormXmlControlEvents>;
+    readonly events: IEventSubscriber<IFormXmlControlEvents>;
     setDisabled: (disabled: boolean) => void;
     getDisabled: () => boolean;
     getCell: () => IFormXmlCell;
@@ -126,8 +127,8 @@ export interface IFormXmlFormEvents {
 
 export interface IFormXmlModel extends Omit<MetadataFormXml, 'tabs' | 'events'> {
     tabs: IFormXmlTabs;
-    events: IEventEmitter<IFormXmlFormEvents>;
-    getForm: () => IFormRuntime;
+    readonly events: IEventSubscriber<IFormXmlFormEvents>;
+    getForm: () => IForm;
     getVisibleTabs: () => IFormXmlTab[];
     getSections: () => IFormXmlSection[];
     getCells: () => IFormXmlCell[];
@@ -152,7 +153,7 @@ export interface IFormXmlAttributeEvents {
 }
 
 export interface IFormXmlAttribute {
-    events: IEventEmitter<IFormXmlAttributeEvents>;
+    readonly events: IEventSubscriber<IFormXmlAttributeEvents>;
     getField: () => IField;
     getRequiredLevel: () => RequiredLevelEnum | null;
     setRequiredLevel: (requiredLevel: RequiredLevelEnum) => void;

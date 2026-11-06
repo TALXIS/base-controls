@@ -2,19 +2,19 @@ import { ICellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { useLabels } from "@labels";
 import { Grid, IGridValueRenderer, useGridCell, useGridField, useGridModule } from "@controls/grid";
-import { CHECK_LIST_LABELS } from "../../../../labels";
-import { CompletionCheckboxUi, ICompletionCheckboxUiComponents } from "../../ui/completion-checkbox";
+import { CHECKLIST_LABELS } from "../../../../labels";
+import { ChecklistUiCompletionCheckbox, IChecklistUiCompletionCheckboxComponents } from "../../ui/completion-checkbox";
 import { ICompletionCellComponents } from "./components";
 
 export interface ICompletionCellProps extends ICellRendererParams<IRecord> {
     components?: ICompletionCellComponents;
 }
 
-const CompletionCheckbox = (props: { components?: Partial<ICompletionCheckboxUiComponents> }) => {
+const CompletionCheckbox = (props: { components?: Partial<IChecklistUiCompletionCheckboxComponents> }) => {
     const cell = useGridCell();
     const field = useGridField();
-    const checkList = useGridModule('checkList');
-    const labels = useLabels(CHECK_LIST_LABELS);
+    const checkList = useGridModule('checklist');
+    const labels = useLabels(CHECKLIST_LABELS);
     const record = cell.getRecord();
 
     if (!field || !checkList.isItem(record)) {
@@ -22,10 +22,10 @@ const CompletionCheckbox = (props: { components?: Partial<ICompletionCheckboxUiC
     }
     const isCompleted = checkList.isCompleted(record);
 
-    return <CompletionCheckboxUi
+    return <ChecklistUiCompletionCheckbox
         isChecked={isCompleted}
-        label={labels.get('checkList.markItemFinished')}
-        isDisabled={cell.isLocked()}
+        label={labels.get('checklist.markItemFinished')}
+        disabled={cell.isLocked()}
         onToggle={() => field.setValue(!isCompleted)}
         components={props.components} />;
 };

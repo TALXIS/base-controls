@@ -4,7 +4,7 @@ import { IEventSubscriber } from "@core";
 /** What the page size switcher raises. */
 export interface IDatasetControlPageSizeSwitcherEvents {
     /** The page size or the records on the page changed. */
-    onPageSizeChanged: () => void;
+    onChanged: () => void;
 }
 
 /** Which records of how many the current page shows. */
@@ -103,6 +103,6 @@ export class DatasetControlPageSizeSwitcher implements IDatasetControlPageSizeSw
     }
 
     private _onChanged = (): void => {
-        this.events.dispatchEvent('onPageSizeChanged');
+        this.events.dispatchEvent('onChanged');
     };
 }

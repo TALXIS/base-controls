@@ -1,11 +1,11 @@
 import { useTheme } from "@theme";
 import { useMemo } from "react";
 
-import { IQuickFindCompactButtonComponents, QuickFindCompactButtonComponents } from "./components";
-import { getQuickFindCompactButtonStyles } from "./styles";
+import { IDatasetControlUiQuickFindCompactButtonComponents, DatasetControlUiQuickFindCompactButtonComponents } from "./components";
+import { getDatasetControlUiQuickFindCompactButtonStyles } from "./styles";
 
 /** Props for the button the quick find draws while it is compact. */
-export interface IQuickFindCompactButtonProps {
+export interface IDatasetControlUiQuickFindCompactButtonProps {
     /** The button's tooltip and accessible name. */
     text: string;
     /** Whether the field holds a query, which the button marks with a dot. */
@@ -15,14 +15,14 @@ export interface IQuickFindCompactButtonProps {
     /** Expands the search field. */
     onClick: () => void;
     /** Replacements for its slots. */
-    components?: Partial<IQuickFindCompactButtonComponents>;
+    components?: Partial<IDatasetControlUiQuickFindCompactButtonComponents>;
 }
 
 /** A search icon button that stands in for the quick find while it is compact. */
-export const QuickFindCompactButton = (props: IQuickFindCompactButtonProps) => {
-    const components = { ...QuickFindCompactButtonComponents, ...props.components };
+export const DatasetControlUiQuickFindCompactButton = (props: IDatasetControlUiQuickFindCompactButtonProps) => {
+    const components = { ...DatasetControlUiQuickFindCompactButtonComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getQuickFindCompactButtonStyles(theme), [theme]);
+    const styles = useMemo(() => getDatasetControlUiQuickFindCompactButtonStyles(theme), [theme]);
     return components.onRenderButton({
         className: props.hasValue ? styles.hasValue : undefined,
         iconProps: { iconName: 'Search' },

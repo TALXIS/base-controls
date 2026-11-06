@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getBodyUiStyles = () => mergeStyleSets({
+export const getDatasetControlUiBodyStyles = () => mergeStyleSets({
     datasetControlBody: {
         flexGrow: 1,
         minHeight: 0,

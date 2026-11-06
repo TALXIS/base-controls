@@ -37,7 +37,7 @@ export interface IRuntimeLifecycleParameters {
 }
 
 /** One mount's status, error and events; a runtime owns one, and the host drives it. */
-export class RuntimeLifecycle implements IRuntimeLifecycle {
+export class whyRuntimeLifecycle implements IRuntimeLifecycle {
     public readonly events = new EventEmitter<IRuntimeEvents>();
     private _parameters: IRuntimeLifecycleParameters;
     private _status: RuntimeStatus = 'initializing';

@@ -1,1 +1,1 @@
-export * from './HeaderItems';
+export * from './DatasetControlUiHeaderItems';

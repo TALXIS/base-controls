@@ -16,13 +16,13 @@ export interface IProjectData<TData = { [key: string]: unknown }> {
 /** Where the project comes from. */
 export interface IProjectStore<TData = { [key: string]: unknown }> {
     /** Called on every mount, before the tasks load. */
-    onLoadProject(): Promise<IProjectData<TData>>;
+    loadProject(): Promise<IProjectData<TData>>;
     /** Called as the project goes. */
     destroy?(): void;
 }
 
 export interface IProjectParameters<TData = { [key: string]: unknown }> {
-    onCreateStore: (taskRuntime: ITaskRuntime) => IProjectStore<TData>;
+    createStore: (taskRuntime: ITaskRuntime) => IProjectStore<TData>;
 }
 
 /** The `project` module, the project the tasks belong to. */
@@ -45,12 +45,12 @@ export class Project<TData = { [key: string]: unknown }> implements IProject<TDa
     private _project!: IProjectData<TData>;
 
     constructor(taskRuntime: ITaskRuntime, parameters: IProjectParameters<TData>) {
-        this._store = parameters.onCreateStore(taskRuntime);
+        this._store = parameters.createStore(taskRuntime);
     }
 
     /** Loads the project before the module registers. */
     public async load(): Promise<void> {
-        this._project = await this._store.onLoadProject();
+        this._project = await this._store.loadProject();
     }
 
     public getId(): string {

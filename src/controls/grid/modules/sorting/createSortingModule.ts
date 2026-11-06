@@ -4,7 +4,7 @@ import { IGridSortingComponents } from "./components";
 import { GridSorting } from "./GridSorting";
 import { IGridSortingServiceMap } from "./runtime";
 
-export interface ISortingModuleOptions {
+export interface ISortingModuleParameters {
     /** Overrides for the parts of what this module draws, by piece. */
     components?: IGridSortingComponents;
 }
@@ -12,13 +12,13 @@ export interface ISortingModuleOptions {
 export interface ISortingModule extends IGridModule<'sorting'> { }
 
 /** Builds the module that lets the grid be sorted. */
-export const createSortingModule = (options?: ISortingModuleOptions): ISortingModule => ({
+export const createSortingModule = (parameters?: ISortingModuleParameters): ISortingModule => ({
     name: 'sorting',
     onLoad: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridSortingServiceMap>();
         services.register('gridServices', () => gridServices);
-        services.register('components', () => options?.components ?? {});
+        services.register('components', () => parameters?.components ?? {});
         return new GridSorting({ services });
     },
 });

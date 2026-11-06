@@ -1,1 +1,1 @@
-export * from './PersonLookupManyPill';
+export * from './LookupManyUiPersonPill';

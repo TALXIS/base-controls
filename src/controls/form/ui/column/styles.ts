@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getColumnStyles = () => {
+export const getFormUiColumnStyles = () => {
     return mergeStyleSets({
         column: {
             gap: 12,

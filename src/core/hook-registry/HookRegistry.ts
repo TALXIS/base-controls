@@ -1,5 +1,5 @@
 /** One hook, and where it sits in the order they run in. */
-interface IRegisteredHook<THook> {
+interface IHookEntry<THook> {
     hook: THook;
     priority: number;
 }
@@ -8,26 +8,24 @@ interface IRegisteredHook<THook> {
  * The hooks something was given, in the order they run.
  *
  * One definition of what priority means, for every seam that takes hooks: ascending, defaulting to `0`,
- * and hooks sharing a priority run in the order they were registered — which is what a stable `sort`
- * gives. The sorting happens on registration, so applying them only walks the list.
+ * and hooks sharing a priority run in the order they were added — which is what a stable `sort`
+ * gives. The sorting happens when one is added, so applying them only walks the list.
  *
  * A hook returns nothing: it mutates what it is handed rather than replacing it, so the owner keeps
  * whatever it was going to hand on. See `SavedQueryHook` or `GridColumnDefinitionsHook`.
  */
 export class HookRegistry<THook extends (...args: any[]) => void> {
-    private _hooks: IRegisteredHook<THook>[] = [];
+    private _hooks: IHookEntry<THook>[] = [];
 
     /**
-     * @param priority Ascending — a lower number runs earlier, so a higher one gets the later word.
-     * Defaults to `0`.
-     * @returns Takes the hook back off. Whatever registers one with a shorter life than the registry's
-     * holds on to this, since a registry keeps what it is given until it is told otherwise.
+     * @param priority Ascending: a higher number runs later.
+     * @returns Takes the hook back off; keep it when the hook lives shorter than the registry.
      */
-    public register(hook: THook, priority: number = 0): () => void {
+    public add(hook: THook, priority: number = 0): () => void {
         this._hooks.push({ hook, priority });
         this._hooks.sort((left, right) => left.priority - right.priority);
         return () => {
-            this._hooks = this._hooks.filter(registered => registered.hook !== hook);
+            this._hooks = this._hooks.filter(entry => entry.hook !== hook);
         };
     }
 

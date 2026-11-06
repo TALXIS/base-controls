@@ -548,7 +548,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                 optionSet: normalizeOptions(column?.metadata?.OptionSet),
             },
             metadata: { PrimaryIdAttribute: "id", PrimaryNameAttribute: "name" },
-            onSave: async (record) => {
+            save: async (record) => {
                 const fields = record.getColumns().map((fieldColumn) => fieldColumn.name).filter((name) => record.isDirty(name))
                 const rawData = record.toRawData()
                 commitFieldChangesRef.current(Object.fromEntries(fields.map((name) => [name, rawData[name]])))

@@ -49,7 +49,7 @@ const GridExample = () => {
         }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
         createMemoryTemplatesModule({ database, templates: TEMPLATES }),
-        createMemoryChecklistModule({ items: createChecklistItems(tasks) }),
+        createMemoryTaskChecklistModule({ items: createChecklistItems(tasks) }),
         createMemoryDependenciesModule({ dependencies: createDependencies(tasks) }),
     ], [database])
     const ganttModules = React.useMemo(() => [
@@ -65,7 +65,7 @@ const GridExample = () => {
 
     const onLoad = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
         const taskRuntime = control.modules.get('taskRuntime')
-        return { provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }), fieldMapping, views: VIEWS }
+        return { provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }), fieldMapping, views: VIEWS }
     }
 
     return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion stateKey='devGanttStressTasks' height='100%' onLoad={onLoad}>

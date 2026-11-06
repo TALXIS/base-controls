@@ -2,21 +2,21 @@ import { IPcfContext } from "../../interfaces";
 import { Client, getFormatting, getLocaleFromLanguageId } from "@talxis/client-libraries";
 import { XrmFactory } from "../../xrm";
 import { Device } from "./Device";
-import { FactoryApi, IFactoryApiParams } from "./FactoryApi";
-import { IModeParams, Mode } from "./Mode";
+import { FactoryApi, IFactoryApiParameters } from "./FactoryApi";
+import { IModeParameters, Mode } from "./Mode";
 import { Resources } from "./Resources";
 import { UserSettings } from "../../xrm/UserSettings";
 
-interface IPcfContextUserSettingsParams {
+interface IPcfContextUserSettingsParameters {
     lcid?: number;
     formatInfoCultureName?: string;
 }
 
-interface IPcfContextFactoryParams {
+interface IPcfContextFactoryParameters {
     baseContext?: ComponentFramework.Context<any, any>;
-    userSettings?: IPcfContextUserSettingsParams;
-    mode?: IModeParams;
-    factory?: IFactoryApiParams;
+    userSettings?: IPcfContextUserSettingsParameters;
+    mode?: IModeParameters;
+    factory?: IFactoryApiParameters;
 }
 
 /**
@@ -44,7 +44,7 @@ export class PcfContextFactory {
      * context surfaces.
      * @returns A context object shaped like a PCF runtime context.
      */
-    public static createContext(params: IPcfContextFactoryParams = {}): IPcfContext {
+    public static createContext(params: IPcfContextFactoryParameters = {}): IPcfContext {
         const { baseContext, userSettings, mode, factory } = params;
         const xrm = XrmFactory.createXrm({ userSettings });
         const resolvedUserSettings = baseContext?.userSettings ?? new UserSettings(userSettings);
@@ -82,13 +82,13 @@ export class PcfContextFactory {
         * `onRequestRender` event so consumers can react to render requests the
         * same way they would in a hosted PCF environment.
         *
-        * @param params Optional factory configuration.
+        * @param parameters Optional factory configuration.
         * @returns A factory surface compatible with the PCF context contract.
      */
-    private static _createFactoryApi(params?: IFactoryApiParams): ComponentFramework.Factory {
+    private static _createFactoryApi(parameters?: IFactoryApiParameters): ComponentFramework.Factory {
         const factory = new FactoryApi();
-        if (params?.requestRender) {
-            factory.events.addEventListener("onRequestRender", () => params.requestRender?.());
+        if (parameters?.requestRender) {
+            factory.events.addEventListener("onRequestRender", () => parameters.requestRender?.());
         }
         return factory;
     }

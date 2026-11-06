@@ -36,7 +36,7 @@ interface IInputs {
 
 }
 
-interface IDatasetControlEntryOptions {
+interface IDatasetControlEntryParameters {
     onInitialize?: (dataset: IDataset) => Promise<void>;
 }
 
@@ -52,12 +52,12 @@ export class DatasetControlEntry {
     private _pcfContext!: IPcfContext;
     private _client = new Client();
     private _scheduleForRefresh: boolean = false;
-    private _options?: IDatasetControlEntryOptions;
+    private _options?: IDatasetControlEntryParameters;
     private _state: ComponentFramework.Dictionary = {};
     private _datasetControl!: IDatasetControl;
 
-    constructor(options?: IDatasetControlEntryOptions) {
-        this._options = options;
+    constructor(parameters?: IDatasetControlEntryParameters) {
+        this._options = parameters;
     }
 
     public init(context: ComponentFramework.Context<IInputs, IOutputs>, container: HTMLDivElement, state: ComponentFramework.Dictionary) {

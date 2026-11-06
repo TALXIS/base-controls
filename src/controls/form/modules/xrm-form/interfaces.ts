@@ -1,8 +1,8 @@
-import type { IFormApi, IFormEventHandlers, IFormLoadResult } from "../../interfaces";
+import type { IFormApi, IFormEventProps, IFormLoadResult } from "../../interfaces";
 import type { IControlComponents } from "../../adapters/control/components";
 import type { IRibbonComponents } from "../../adapters/ribbon/components";
 import type { IFormNotificationsComponents } from "../../adapters/notifications/components";
-import { ITabsComponents } from "../../ui";
+import { IFormUiTabsComponents } from "../../ui";
 
 /**
  * Public Xrm section context exposed by `XrmForm`.
@@ -213,7 +213,7 @@ export interface IXrmFormLoadResult extends IFormLoadResult {
 /**
  * Payload delivered when `XrmForm` becomes ready.
  */
-export interface IOnXrmFormReadyParams {
+export interface IOnXrmFormReadyParameters {
     /** Public form context surface. */
     formContext: IXrmFormContext;
     /** Base Form imperative API. */
@@ -223,20 +223,20 @@ export interface IOnXrmFormReadyParams {
 /**
  * Props for the React `XrmForm` runtime.
  */
-export interface IXrmFormProps extends Partial<IFormEventHandlers> {
-    /** Runs on mount and on refresh; remount with a `key` to load another record. */
+export interface IXrmFormProps extends Partial<IFormEventProps> {
+    /** Runs on mount and on `reload()`; remount with a `key` to load another record. */
     onLoad: () => Promise<IXrmFormLoadResult>;
     /** Saves the record after each change the user commits; read as the form mounts. */
-    autoSave?: boolean;
-    /** Fired when the form context runtime and the base Form API are ready. */
-    onFormReady?: (params: IOnXrmFormReadyParams) => void;
+    enableAutoSave?: boolean;
+    /** Fires when the form context runtime and the base Form API are ready. */
+    onFormReady?: (parameters: IOnXrmFormReadyParameters) => void;
     /** Top-level Xrm overridable UI configuration. */
     components?: Partial<IXrmFormComponents>;
 }
 
 export interface IXrmFormComponents {
     control: Partial<IControlComponents>;
-    tabs: Partial<ITabsComponents>;
+    tabs: Partial<IFormUiTabsComponents>;
     ribbon: Partial<IRibbonComponents>;
     notifications: Partial<IFormNotificationsComponents>;
 }

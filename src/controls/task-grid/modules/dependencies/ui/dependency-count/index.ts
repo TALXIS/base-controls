@@ -1,2 +1,2 @@
-export * from './DependencyCount';
+export * from './DependenciesUiCount';
 export * from './components';

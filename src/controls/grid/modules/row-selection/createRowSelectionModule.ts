@@ -4,7 +4,7 @@ import { IGridModule } from "../../interfaces";
 import { GridRowSelection } from "./GridRowSelection";
 import { IGridRowSelectionServiceMap } from "./runtime";
 
-export interface IRowSelectionModuleOptions {
+export interface IRowSelectionModuleParameters {
     /** How many rows may be selected at once. */
     mode: 'single' | 'multiple';
     /** Called when the selected records change, with the ids now selected. */
@@ -14,12 +14,12 @@ export interface IRowSelectionModuleOptions {
 export interface IRowSelectionModule extends IGridModule<'rowSelection'> { }
 
 /** Builds the module that lets rows be selected. */
-export const createRowSelectionModule = (options: IRowSelectionModuleOptions): IRowSelectionModule => ({
+export const createRowSelectionModule = (parameters: IRowSelectionModuleParameters): IRowSelectionModule => ({
     name: 'rowSelection',
     agGridModules: [RowSelectionModule],
     onLoad: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridRowSelectionServiceMap>();
         services.register('gridServices', () => gridServices);
-        return new GridRowSelection({ services, mode: options.mode, onSelectionChanged: options.onSelectionChanged });
+        return new GridRowSelection({ services, mode: parameters.mode, onSelectionChanged: parameters.onSelectionChanged });
     },
 });

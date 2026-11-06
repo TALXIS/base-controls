@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { RIBBON_HEIGHT } from "../styles";
 
-export const getRibbonShimmerUiStyles = (align: 'start' | 'end') => mergeStyleSets({
+export const getRibbonUiShimmerStyles = (align: 'start' | 'end') => mergeStyleSets({
     ribbonShimmer: {
         height: RIBBON_HEIGHT,
         display: 'flex',

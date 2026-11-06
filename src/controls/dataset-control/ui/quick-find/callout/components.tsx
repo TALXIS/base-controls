@@ -1,8 +1,8 @@
 import { FontIcon, ICalloutProps, Text } from "@fluentui/react";
 import { IColumn } from "@talxis/client-libraries";
 import { Callout } from "@ui";
-import type { IQuickFindUiLabels } from "../components";
-import { getQuickFindCalloutStyles } from "./styles";
+import type { IDatasetControlUiQuickFindLabels } from "../components";
+import { getDatasetControlUiQuickFindCalloutStyles } from "./styles";
 
 /** Props for one column in the callout. */
 export interface IQuickFindCalloutColumnProps {
@@ -11,23 +11,23 @@ export interface IQuickFindCalloutColumnProps {
 }
 
 /** The replaceable pieces of the quick find callout. */
-export interface IQuickFindCalloutComponents {
+export interface IDatasetControlUiQuickFindCalloutComponents {
     /** The callout itself. */
     onRenderCallout: (props: ICalloutProps) => JSX.Element | null;
     /** Shown instead of the description and columns while the query starts with a wildcard. */
     onRenderLikeWarning: (props: { text: string }) => JSX.Element | null;
     /** The sentence above the columns. */
-    onRenderDescription: (props: IQuickFindUiLabels) => JSX.Element | null;
+    onRenderDescription: (props: IDatasetControlUiQuickFindLabels) => JSX.Element | null;
     /** Holds the columns; its `children` are what `onRenderColumn` returns. */
     onRenderColumns: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** One column a search matches on. */
     onRenderColumn: (props: IQuickFindCalloutColumnProps) => JSX.Element | null;
 }
 
-const styles = getQuickFindCalloutStyles();
+const styles = getDatasetControlUiQuickFindCalloutStyles();
 
-/** The defaults for {@link IQuickFindCalloutComponents}. */
-export const QuickFindCalloutComponents: IQuickFindCalloutComponents = {
+/** The defaults for {@link IDatasetControlUiQuickFindCalloutComponents}. */
+export const DatasetControlUiQuickFindCalloutComponents: IDatasetControlUiQuickFindCalloutComponents = {
     onRenderCallout: props => <Callout {...props} />,
     onRenderLikeWarning: props => <Text><FontIcon className={styles.warningIcon} iconName="Warning" />{props.text}</Text>,
     onRenderDescription: props => <Text>{props.columnsHintStart} <span className={styles.bold}>{props.columnsHintOperator}</span> {props.columnsHintEnd}</Text>,

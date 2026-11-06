@@ -1,6 +1,6 @@
 import { mergeStyleSets, ITheme } from "@fluentui/react";
 
-export const getSkeletonStyles = (theme: ITheme) => {
+export const getFormUiSkeletonStyles = (theme: ITheme) => {
     return mergeStyleSets({
         root: {
             display: 'flex',

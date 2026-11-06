@@ -8,7 +8,7 @@ export const XrmFormContext = React.createContext<IXrmFormContext | null>(null);
 FormXmlContext.displayName = "FormXmlContext";
 XrmFormContext.displayName = "XrmFormContext";
 
-export const useFormXmlContext = () => {
+export const useFormXmlModel = () => {
     const context = React.useContext(FormXmlContext);
     if (!context) {
         throw new Error(`This component must be rendered within ${FormXmlContext.displayName}.Provider.`);

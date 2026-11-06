@@ -1,26 +1,26 @@
 import { useMemo } from "react";
-import type { IHeaderUiComponents, IQuickFindUiComponents } from "@controls/dataset-control";
+import type { IDatasetControlUiHeaderComponents, IDatasetControlUiQuickFindComponents } from "@controls/dataset-control";
 import { getClassNames } from "@core";
 import { WrapCompactProvider } from "@ui";
-import { IRecordSelectorFrameComponents, RecordSelectorFrameComponents } from "./components";
-import { getRecordSelectorFrameStyles } from "./styles";
+import { ITemplatesUiRecordSelectorFrameComponents, TemplatesUiRecordSelectorFrameComponents } from "./components";
+import { getTemplatesUiRecordSelectorFrameStyles } from "./styles";
 
 /** The slots that fit a dataset control's parts into the frame. */
 export interface IRecordSelectorFrameParts {
-    header: Partial<IHeaderUiComponents>;
-    quickFind: Partial<IQuickFindUiComponents>;
+    header: Partial<IDatasetControlUiHeaderComponents>;
+    quickFind: Partial<IDatasetControlUiQuickFindComponents>;
 }
 
-export interface IRecordSelectorFrameProps {
+export interface ITemplatesUiRecordSelectorFrameProps {
     /** Handed the slots the dataset control's parts take. */
     children: (parts: IRecordSelectorFrameParts) => React.ReactNode;
-    components?: Partial<IRecordSelectorFrameComponents>;
+    components?: Partial<ITemplatesUiRecordSelectorFrameComponents>;
 }
 
 /** The fixed-size box a record selector's search, list and paging are drawn in. */
-export const RecordSelectorFrame = (props: IRecordSelectorFrameProps) => {
-    const components = { ...RecordSelectorFrameComponents, ...props.components };
-    const styles = useMemo(() => getRecordSelectorFrameStyles(), []);
+export const TemplatesUiRecordSelectorFrame = (props: ITemplatesUiRecordSelectorFrameProps) => {
+    const components = { ...TemplatesUiRecordSelectorFrameComponents, ...props.components };
+    const styles = useMemo(() => getTemplatesUiRecordSelectorFrameStyles(), []);
     const parts = useMemo((): IRecordSelectorFrameParts => ({
         header: { onRenderContainer: containerProps => <WrapCompactProvider {...containerProps} className={getClassNames([containerProps.className, styles.header])} /> },
         quickFind: { onRenderContainer: containerProps => <div {...containerProps} className={getClassNames([containerProps.className, styles.quickFind])} /> },

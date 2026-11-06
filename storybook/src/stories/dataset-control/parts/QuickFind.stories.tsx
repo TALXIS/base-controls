@@ -28,7 +28,7 @@ The provider decides which columns are searched and what matches, and the field 
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| \`components\` | \`Partial<IQuickFindUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IDatasetControlUiQuickFindComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 

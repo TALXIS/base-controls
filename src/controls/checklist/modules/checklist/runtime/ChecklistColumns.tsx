@@ -1,8 +1,8 @@
 import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { GRID_MODULE_PRIORITY, RECORD_SAVE_COLUMN_KEY, IGridCellCommands, IGridColumnContext, IGridServiceLocator } from "@controls/grid";
-import { IGridCheckList } from "../GridCheckList";
-import { CHECK_LIST_LABELS } from "../../../labels";
+import { IGridChecklist } from "../GridChecklist";
+import { CHECKLIST_LABELS } from "../../../labels";
 import { CompletionCell } from "../adapters/completion-cell";
 import { NameCell } from "../adapters/name-cell";
 import { CONTROL_COLUMN_WIDTH, DELETE_COLUMN_NAME } from "../constants";
@@ -20,26 +20,26 @@ const CONTROL_COLUMN_DEFINITION: ColDef<IRecord> = {
     lockPinned: true,
 };
 
-export interface ICheckListColumnsParameters {
+export interface IChecklistColumnsParameters {
     services: IGridServiceLocator;
-    checkList: IGridCheckList;
+    checklist: IGridChecklist;
 }
 
 /** The checkbox column first, the delete column last, and the stack rank hidden. */
-export class CheckListColumns {
+export class ChecklistColumns {
     private _services: IGridServiceLocator;
-    private _checkList: IGridCheckList;
+    private _checklist: IGridChecklist;
     private _deleteColumnDefinition: ColDef<IRecord>;
 
-    constructor(parameters: ICheckListColumnsParameters) {
+    constructor(parameters: IChecklistColumnsParameters) {
         this._services = parameters.services;
-        this._checkList = parameters.checkList;
+        this._checklist = parameters.checklist;
         this._deleteColumnDefinition = this._getDeleteColumnDefinition();
-        this._services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.clipboard + 1);
+        this._services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.clipboard + 1);
     }
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
-        const { name, stackRank, completed } = this._checkList.getFieldMapping();
+        const { name, stackRank, completed } = this._checklist.getFieldMapping();
         this._assertColumnsExist();
         const hiddenColumnIds = new Set([stackRank, RECORD_SAVE_COLUMN_KEY]);
         for (let index = columnDefs.length - 1; index >= 0; index--) {
@@ -74,7 +74,7 @@ export class CheckListColumns {
     private _getDeleteColumnDefinition(): ColDef<IRecord> {
         const context: IGridColumnContext = {
             alignment: 'center',
-            cell: { onGetCommands: this._onGetDeleteCommands },
+            cell: { commandsHook: this._onCellCommands },
         };
         return {
             ...CONTROL_COLUMN_DEFINITION,
@@ -85,11 +85,11 @@ export class CheckListColumns {
         };
     }
 
-    private _onGetDeleteCommands = (result: IGridCellCommands, params: { record: IRecord }): void => {
-        if (!this._checkList.isItem(params.record)) {
+    private _onCellCommands = (result: IGridCellCommands, parameters: { record: IRecord }): void => {
+        if (!this._checklist.isItem(parameters.record)) {
             return;
         }
-        const label = this._services.get('labels').getLabels(CHECK_LIST_LABELS).get('checkList.deleteItem');
+        const label = this._services.get('labels').getLabels(CHECKLIST_LABELS).get('checklist.deleteItem');
         const iconStyle = { color: this._services.get('theme').semanticColors.errorIcon };
         result.items.push({
             key: 'delete',
@@ -99,14 +99,14 @@ export class CheckListColumns {
             ariaLabel: label,
             buttonStyles: { icon: iconStyle, iconHovered: iconStyle, iconPressed: iconStyle },
             onClick: () => {
-                this._deleteItem(params.record);
+                this._deleteItem(parameters.record);
             },
         });
     };
 
     private async _deleteItem(record: IRecord): Promise<void> {
         const confirmation = await this._services.get('pcfContext').navigation.openConfirmDialog({
-            text: this._services.get('labels').getLabels(CHECK_LIST_LABELS).get('checkList.confirmDialog.deleteItem.text'),
+            text: this._services.get('labels').getLabels(CHECKLIST_LABELS).get('checklist.confirmDialog.deleteItem.text'),
         });
         if (!confirmation.confirmed) {
             return;
@@ -119,7 +119,7 @@ export class CheckListColumns {
 
     private _assertColumnsExist(): void {
         const columnsMap = this._services.get('provider').getColumnsMap();
-        for (const [field, columnName] of Object.entries(this._checkList.getFieldMapping())) {
+        for (const [field, columnName] of Object.entries(this._checklist.getFieldMapping())) {
             if (!columnsMap[columnName]) {
                 throw new Error(`CheckList field mapping points "${field}" at column "${columnName}", which the data provider does not have. Available columns: ${Object.keys(columnsMap).join(', ')}.`);
             }

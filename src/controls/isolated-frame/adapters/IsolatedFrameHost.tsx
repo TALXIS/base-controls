@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ErrorMessageBoundary } from "@ui";
 import { IIsolatedFrameParameters, IsolatedFrame } from "../runtime/IsolatedFrame";
-import { IsolatedFrameUi } from "../ui/IsolatedFrameUi";
+import { IsolatedFrameUiFrame } from "../ui/IsolatedFrameUiFrame";
 
 export interface IIsolatedFrameHostProps {
     parameters: IIsolatedFrameParameters;
@@ -48,5 +48,5 @@ const IsolatedFrameView = (props: IIsolatedFrameViewProps) => {
         }
     }, []);
 
-    return <IsolatedFrameUi ref={onIframe} title={props.title} className={props.className} />;
+    return <IsolatedFrameUiFrame ref={onIframe} title={props.title} className={props.className} />;
 };

@@ -1,19 +1,19 @@
-import { IInternalXrmUserSettings, IUserSettingsParams, IXrmUserSettings, UserSettings } from "./UserSettings";
+import { IXrmUserSettingsInternal, IUserSettingsParameters, IXrmUserSettings, UserSettings } from "./UserSettings";
 
-export interface IGlobalContextUserSettingsParams extends IUserSettingsParams {}
+export interface IGlobalContextUserSettingsParameters extends IUserSettingsParameters {}
 
-export interface IGlobalContextParams {
-    userSettings?: IGlobalContextUserSettingsParams;
+export interface IGlobalContextParameters {
+    userSettings?: IGlobalContextUserSettingsParameters;
 }
 
 export class GlobalContext {
     public readonly userSettings: IXrmUserSettings;
 
-    constructor(params: IGlobalContextParams = {}) {
-        this.userSettings = new UserSettings(params.userSettings);
+    constructor(parameters: IGlobalContextParameters = {}) {
+        this.userSettings = new UserSettings(parameters.userSettings);
     }
 
     public initializeFormatting(): void {
-        (this.userSettings as IInternalXrmUserSettings).initializeFormatting();
+        (this.userSettings as IXrmUserSettingsInternal).initializeFormatting();
     }
 }

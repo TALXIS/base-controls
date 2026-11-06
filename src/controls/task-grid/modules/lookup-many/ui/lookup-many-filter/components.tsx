@@ -1,9 +1,9 @@
 import { DefaultButton, IButtonProps, PrimaryButton } from "@fluentui/react";
 import type { IFilteringUiCalloutComponents } from "@controls/grid";
-import type { ILookupManySelectComponents } from "../lookup-many-select";
+import type { ILookupManyUiSelectComponents } from "../lookup-many-select";
 
 /** The replaceable pieces of {@link LookupManyFilter}. */
-export interface ILookupManyFilterComponents {
+export interface ILookupManyUiFilterComponents {
     /** Holds the operator, the value and the buttons. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** Holds what the operator compares with. */
@@ -14,11 +14,11 @@ export interface ILookupManyFilterComponents {
     /** The callout the filter is drawn in. */
     callout?: Partial<IFilteringUiCalloutComponents>;
     /** The picker of the records compared with. */
-    select?: Partial<ILookupManySelectComponents>;
+    select?: Partial<ILookupManyUiSelectComponents>;
 }
 
-/** The defaults for {@link ILookupManyFilterComponents}. */
-export const LookupManyFilterComponents: ILookupManyFilterComponents = {
+/** The defaults for {@link ILookupManyUiFilterComponents}. */
+export const LookupManyUiFilterComponents: ILookupManyUiFilterComponents = {
     onRenderContainer: props => <div {...props} />,
     onRenderValue: props => <div {...props} />,
     onRenderButtons: props => <div {...props} />,

@@ -1,7 +1,7 @@
-import { FormUi, ITabProps } from "../../ui";
+import { FormUi, IFormUiTabProps } from "../../ui";
 
-export type { ITabProps } from "../../ui";
+export type { IFormUiTabProps } from "../../ui";
 
-export const Tab = (props: ITabProps) => {
+export const Tab = (props: IFormUiTabProps) => {
     return <FormUi.Tab {...props} />;
 };

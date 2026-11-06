@@ -29,7 +29,7 @@ Declare each key you save on \`IUserQuerySavedValueMap\` in \`declare module '@t
 | \`createLocalStorageUserQueriesModule({ storageKey })\` | In this browser, under \`storageKey\`. |
 | \`createTalxisUserQueriesModule({ entityName })\` | As \`talxis_userquery\` records. |
 | \`createDataverseUserQueriesModule({ entityName, table })\` | As records of a Dataverse table you map. |
-| \`createUserQueriesModule({ onCreateStore })\` | In a store of yours. |
+| \`createUserQueriesModule({ createStore })\` | In a store of yours. |
 
 Every factory also takes \`enableSaveAsNewView\`, \`enableSaveChanges\` and \`enableManageViews\`; each command is on unless set to \`false\`.
 
@@ -39,7 +39,7 @@ The example's \`dataverse.ts\` creates both Dataverse modules. Both need a page 
 
 ## Keep views in your own store
 
-\`createUserQueriesModule({ onCreateStore })\` keeps the views in a store of yours. \`onCreateStore\` gets the control on every mount.
+\`createUserQueriesModule({ createStore })\` keeps the views in a store of yours. \`createStore\` gets the control on every mount.
 
 {{story: Keep views in your own store}}
 

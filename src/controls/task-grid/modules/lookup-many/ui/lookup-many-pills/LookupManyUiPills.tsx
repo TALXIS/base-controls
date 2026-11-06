@@ -1,21 +1,21 @@
 import { Fragment, useMemo, useRef, useState } from "react";
 import { OptionTag, TooltipHost, useResizeEffect } from "@ui";
-import { ILookupManyPillsComponents, LookupManyPillsComponents } from "./components";
-import { getLookupManyPillsStyles, LOOKUP_MANY_PILLS_GAP, LOOKUP_MANY_PILLS_PADDING } from "./styles";
+import { ILookupManyUiPillsComponents, LookupManyUiPillsComponents } from "./components";
+import { getLookupManyUiPillsStyles, LOOKUP_MANY_PILLS_GAP, LOOKUP_MANY_PILLS_PADDING } from "./styles";
 
-/** Props for {@link LookupManyPills}. */
-export interface ILookupManyPillsProps {
+/** Props for {@link LookupManyUiPills}. */
+export interface ILookupManyUiPillsProps {
     value: ComponentFramework.EntityReference[];
     /** Opens a pill's record, plain text without it. */
     onOpen?: (reference: ComponentFramework.EntityReference) => void;
-    components?: Partial<ILookupManyPillsComponents>;
+    components?: Partial<ILookupManyUiPillsComponents>;
 }
 
 /** A lookup-many value on one line, the records that do not fit counted in a hoverable `+N`. */
-export const LookupManyPills = (props: ILookupManyPillsProps) => {
+export const LookupManyUiPills = (props: ILookupManyUiPillsProps) => {
     const { value, onOpen } = props;
-    const components = { ...LookupManyPillsComponents, ...props.components };
-    const styles = useMemo(() => getLookupManyPillsStyles(), []);
+    const components = { ...LookupManyUiPillsComponents, ...props.components };
+    const styles = useMemo(() => getLookupManyUiPillsStyles(), []);
     const rootRef = useRef<HTMLDivElement>(null);
     const measurerRef = useRef<HTMLDivElement>(null);
     const [visibleCount, setVisibleCount] = useState(value.length);

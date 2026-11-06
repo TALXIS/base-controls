@@ -2,8 +2,8 @@ import type { GanttStatic } from "dhtmlx-gantt";
 import type { IEventSubscriber, IRuntimeModule, IServiceLocator, IServiceRegistry, IStateStore } from "@core";
 import type { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IGrid } from "@controls/grid";
-import type { ITaskGridServiceMap } from "../../services";
-import type { ITaskRuntime } from "../../runtime";
+import type { ITaskGridServiceMap } from "../services";
+import type { ITaskRuntime } from "../runtime";
 import type { IGanttSchedule } from "./schedule";
 import type { IGanttSavedZoom, IGanttZooming } from "./zooming";
 import type { IGanttTimeline } from "./timeline";
@@ -78,10 +78,10 @@ export interface IGantt {
     /** The build the chart is created from, there before any other module loads. */
     getLibrary(): ILibrary;
     /**
-     * Registers a hook that sets the chart's config, templates and plugins before it is drawn.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook that sets the chart's config, templates and plugins before it is drawn.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerChartConfig(hook: GanttChartConfigHook, priority?: number): () => void;
+    addChartConfigHook(hook: GanttChartConfigHook, priority?: number): () => void;
     /** Redraws the chart, such as after a hook's answer changed. */
     render(): void;
 }

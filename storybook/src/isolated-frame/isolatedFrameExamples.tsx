@@ -21,7 +21,7 @@ const IsolatedDeals = createIsolatedHost<{ theme: ITheme }>('deals', {
     //your frame's entry script; here, the docs runner that runs these files
     scripts: SANDBOX_FRAME_SCRIPTS,
     //runs on the frame's window before its scripts load
-    onPrepareWindow: frameWindow => Object.assign(frameWindow, { greeting: 'handed over by onPrepareWindow' }),
+    prepareWindow: frameWindow => Object.assign(frameWindow, { greeting: 'handed over by prepareWindow' }),
 })
 
 const GridExample = () => {
@@ -48,7 +48,7 @@ const GridExample = () => {
     },
     {
         name: 'FramedDeals.tsx',
-        code: `import { AppThemeProvider, ITheme, PcfContextProvider, registerIsolatedContent, StateProvider } from '@talxis/base-controls'
+        code: `import { AppThemeProvider, ITheme, PcfContextProvider, defineIsolatedContent, StateProvider } from '@talxis/base-controls'
 import { initializeIcons } from '@fluentui/react'
 import { DealsGrid } from './deals'
 
@@ -70,7 +70,7 @@ const FramedDeals = (props: { theme: ITheme }) => {
 }
 
 //under the key the page's host names
-registerIsolatedContent('deals', FramedDeals)
+defineIsolatedContent('deals', FramedDeals)
 `,
     },
     {

@@ -34,7 +34,7 @@ const LOOKUP_DATA_TYPES = new Set<string>(['Lookup.Customer', 'Lookup.Owner', 'L
 export type GridFilterControl = 'operator' | 'value';
 
 /** A hook over the parameters a filter control is handed. */
-export type GridFilterControlParametersHook = (result: IParameters, params: {
+export type GridFilterControlParametersHook = (result: IParameters, parameters: {
     column: IColumn;
     control: GridFilterControl;
     /** Which value control, where an operator such as between takes two. */
@@ -65,11 +65,11 @@ export interface IGridFiltering {
     /** Closes the filter callout. */
     closeFilter(): void;
     /**
-     * Registers a hook over the parameters the filter callout's controls are handed.
+     * Adds a hook over the parameters the filter callout's controls are handed.
      *
-     * @param priority Ascending: a higher number gets the later word.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerFilterControlParameters(hook: GridFilterControlParametersHook, priority?: number): () => void;
+    addFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void;
     /** Which column's filter callout is open, if any. */
     getOpenColumnName(): string | undefined;
     /** What the open filter is drawn against: the header it was opened from. */
@@ -91,11 +91,11 @@ export class GridFiltering implements IGridFiltering {
     constructor(parameters: IGridFilteringParameters) {
         this._services = parameters.services;
         this._filtering = new Filtering(this._provider, FieldValue);
-        this._registerHooks();
+        this._addHooks();
     }
 
-    public registerFilterControlParameters(hook: GridFilterControlParametersHook, priority?: number): () => void {
-        return this._filterControlParametersHooks.register(hook, priority);
+    public addFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void {
+        return this._filterControlParametersHooks.add(hook, priority);
     }
 
     public getFilterControlParameters(parameters: IParameters, params: Parameters<GridFilterControlParametersHook>[1]): IParameters {
@@ -109,7 +109,7 @@ export class GridFiltering implements IGridFiltering {
 
     private _getDefaultValueControlParameters(parameters: IParameters, column: IColumn): IParameters {
         const result: IParameters = {
-            EnableOptionSetColors: { raw: this._services.get('gridServices').get('settings').areOptionSetColorsEnabled(), type: DataTypes.TwoOptions },
+            EnableOptionSetColors: { raw: this._services.get('gridServices').get('settings').isOptionSetColorsEnabled(), type: DataTypes.TwoOptions },
         };
         //a lookup filters among existing records and asks for one view type
         if (LOOKUP_DATA_TYPES.has(column.dataType) && parameters.value) {
@@ -120,12 +120,12 @@ export class GridFiltering implements IGridFiltering {
         return result;
     }
 
-    private _registerHooks(): void {
+    private _addHooks(): void {
         const gridServices = this._services.get('gridServices');
         //the callout is a surface over the grid
-        gridServices.get('surfaces').registerSurface(this._onSurfaces, GRID_MODULE_PRIORITY.filtering);
-        gridServices.get('columns').headers.registerColumnMenuSection(this._onMenuSection, GRID_MODULE_PRIORITY.filtering);
-        gridServices.get('columns').headers.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('surfaces').addSurfacesHook(this._onSurfaces, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columns').headers.addColumnMenuSectionsHook(this._onMenuSection, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columns').headers.addColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.filtering);
     }
 
     private _onSurfaces = (surfaces: IGridSurface[]): void => {

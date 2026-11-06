@@ -1,2 +1,2 @@
-export * from './RibbonShimmerUi';
+export * from './RibbonUiShimmer';
 export * from './components';

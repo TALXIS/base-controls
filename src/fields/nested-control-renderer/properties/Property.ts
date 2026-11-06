@@ -1,16 +1,16 @@
 import { IPcfContext } from "@pcf/interfaces";
 import { FieldValue, IAttributeMetadata} from "@talxis/client-libraries";
-import { IOptions } from "../NestedControl";
+import { INestedControlParameters } from "../NestedControl";
 import { IBinding } from "../interfaces";
 
 export abstract class Property {
-    private _onGetBinding: () => IBinding;
+    private _getBinding: () => IBinding;
     private _parentPcfContext: IPcfContext;
     private _attributeMetadata: IAttributeMetadata = {} as any;
 
-    constructor(options: IOptions, onGetBinding: () => IBinding) {
-        this._onGetBinding = onGetBinding;
-        this._parentPcfContext = options.parentPcfContext;
+    constructor(parameters: INestedControlParameters, getBinding: () => IBinding) {
+        this._getBinding = getBinding;
+        this._parentPcfContext = parameters.parentPcfContext;
     }
     public abstract getParameter(): any;
 
@@ -47,6 +47,6 @@ export abstract class Property {
         return this._binding.formattedValue ?? new FieldValue(this.getValue(), this.dataType, this._attributeMetadata).getFormattedValue() ?? undefined;
     }
     private get _binding() {
-        return this._onGetBinding();
+        return this._getBinding();
     }
 }

@@ -1,7 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { CELL_VALUE_PADDING } from "../../../constants";
 
-export const getDependencyCountStyles = (theme: ITheme) => mergeStyleSets({
+export const getDependenciesUiCountStyles = (theme: ITheme) => mergeStyleSets({
     root: {
         display: 'flex',
         alignItems: 'center',

@@ -1,4 +1,4 @@
-export * from './ValueRendererUi';
+export * from './CellUiValueRenderer';
 export * from './field-file';
 export * from './field-link';
 export * from './field-lookup';

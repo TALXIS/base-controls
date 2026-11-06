@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { getClassNames } from "@core";
-import { ContainerUiComponents, IContainerUiComponents } from "./components";
-import { getContainerUiStyles } from "./styles";
+import { DatasetControlUiContainerComponents, IDatasetControlUiContainerComponents } from "./components";
+import { getDatasetControlUiContainerStyles } from "./styles";
 
 /** Props for the control's outer box, as plain UI. */
-export interface IContainerUiProps {
+export interface IDatasetControlUiContainerProps {
     /** The skeleton, the error or the parts. */
     children?: React.ReactNode;
     /** `'100%'` fills the parent; the content's height when left out. */
@@ -12,12 +12,12 @@ export interface IContainerUiProps {
     /** Added to the box. */
     className?: string;
     /** Replacements for its slots. */
-    components?: Partial<IContainerUiComponents>;
+    components?: Partial<IDatasetControlUiContainerComponents>;
 }
 
 /** The control's box, stacking the header, body and footer. */
-export const Container = (props: IContainerUiProps) => {
-    const components = { ...ContainerUiComponents, ...props.components };
-    const styles = useMemo(() => getContainerUiStyles(props.height), [props.height]);
+export const DatasetControlUiContainer = (props: IDatasetControlUiContainerProps) => {
+    const components = { ...DatasetControlUiContainerComponents, ...props.components };
+    const styles = useMemo(() => getDatasetControlUiContainerStyles(props.height), [props.height]);
     return components.onRenderContainer({ className: getClassNames([styles.datasetControlContainer, props.className]), children: props.children });
 };

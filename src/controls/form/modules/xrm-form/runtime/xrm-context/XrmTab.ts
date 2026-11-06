@@ -14,7 +14,7 @@ export class XrmTab implements IXrmTabContext {
         this._formContext = formContext;
         this._tab = tab;
         this.sections = this._createSectionsCollection();
-        this._registerEventListeners();
+        this._addEventListeners();
     }
 
     public getName(): string {
@@ -62,9 +62,9 @@ export class XrmTab implements IXrmTabContext {
         return makeItemCollection(sections.map((s) => new XrmSection(s, this._formContext)), (s) => s.getName()) as any;
     }
 
-    private _registerEventListeners() {
+    private _addEventListeners() {
         this._formContext.getFormXmlModel().tabs.events.addEventListener('onTabFocusChanged', this._tabFocusChangedHandler);
-        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroy', this._formDestroyedHandler);
+        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroyed', this._formDestroyedHandler);
     }
 
     private _fireOnTabStateChange() {

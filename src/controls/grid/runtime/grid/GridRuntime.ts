@@ -8,9 +8,9 @@ import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import { RowLoading } from "../../adapters/rows/loading";
 import { LoadingOverlay } from "../../adapters/overlays/loading";
 import { EmptyStateOverlay } from "../../adapters/overlays/empty-state";
-import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import { IGridProps, IGridEventHandlers, IGridModuleLocator, IGridModuleMap, IGridOpenRecordParams } from "../../interfaces";
-import { IGridInternalServiceLocator, IGridInternalServiceMap } from "../interfaces";
+import type { IDatasetControlInternal } from "@controls/dataset-control/runtime/DatasetControlRuntime";
+import { IGridProps, IGridEventProps, IGridModuleLocator, IGridModuleMap, IGridOpenRecordParameters } from "../../interfaces";
+import { IGridServiceLocatorInternal, IGridServiceMapInternal } from "../interfaces";
 import { IGrid, IGridEvents } from "./interfaces";
 import { GridSettings } from "../settings";
 import { GridRows } from "../rows";
@@ -47,7 +47,7 @@ export type GridAgGridOptionsHook = (result: IGridAgGridOptions) => void;
 
 export interface IGridRuntimeParameters {
     /** The current props, read on demand so the grid follows them. */
-    onGetProps: () => IGridProps;
+    getProps: () => IGridProps;
     /** Where the records, the columns and the paging come from. */
     provider: IDataProvider;
     /** The host context. */
@@ -57,9 +57,9 @@ export interface IGridRuntimeParameters {
     /** The grid's own entry in the state store. */
     state: IStateStore;
     /** The DatasetControl the grid is inside, if any. */
-    datasetControl?: IDatasetControlRuntime;
+    datasetControl?: IDatasetControlInternal;
     /** Resolves the strings the grid and its modules render. */
-    onGetLabelsService: () => LabelsService;
+    getLabelsService: () => LabelsService;
 }
 
 export class GridRuntime implements IGrid {
@@ -67,9 +67,9 @@ export class GridRuntime implements IGrid {
         onInit: () => this._init(),
         onDestroy: () => this._destroy(),
     });
-    private _services = new ServiceLocator<IGridInternalServiceMap>();
+    private _services = new ServiceLocator<IGridServiceMapInternal>();
     private _moduleLoader = new ModuleLoader<IGridModuleMap, IGrid>();
-    private _onGetProps: () => IGridProps;
+    private _getProps: () => IGridProps;
     private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
     private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
     private _agGridProps?: IGridAgGridInitialOptions['options'];
@@ -78,15 +78,15 @@ export class GridRuntime implements IGrid {
     private _columnDefs?: ColDef<IRecord>[];
     public readonly events: IEventEmitter<IGridEvents> = new EventEmitter<IGridEvents>();
 
-    constructor({ onGetProps, provider, pcfContext, theme, state, datasetControl, onGetLabelsService }: IGridRuntimeParameters) {
-        this._onGetProps = onGetProps;
+    constructor({ getProps, provider, pcfContext, theme, state, datasetControl, getLabelsService }: IGridRuntimeParameters) {
+        this._getProps = getProps;
         this._services.register('grid', () => this);
         //first api listener so the others find the options applied
         this._services.observe('gridApi', () => this.refreshAgGridOptions());
 
         //everything below reads the props and the provider through these
-        const settings = new GridSettings({ onGetProps, datasetControl });
-        this._services.register('labels', onGetLabelsService);
+        const settings = new GridSettings({ getProps, datasetControl });
+        this._services.register('labels', getLabelsService);
         this._services.register('settings', () => settings);
         this._services.register('state', () => state);
         this._services.register('pcfContext', () => pcfContext);
@@ -117,7 +117,7 @@ export class GridRuntime implements IGrid {
 
     }
 
-    public get services(): IGridInternalServiceLocator {
+    public get services(): IGridServiceLocatorInternal {
         return this._services;
     }
 
@@ -129,12 +129,12 @@ export class GridRuntime implements IGrid {
         return this._services.get('labels').getLabels(set);
     }
 
-    public registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void {
-        return this._agGridInitialOptionsHooks.register(hook, priority);
+    public addAgGridInitialOptionsHook(hook: GridAgGridInitialOptionsHook, priority?: number): () => void {
+        return this._agGridInitialOptionsHooks.add(hook, priority);
     }
 
-    public registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void {
-        return this._agGridOptionsHooks.register(hook, priority);
+    public addAgGridOptionsHook(hook: GridAgGridOptionsHook, priority?: number): () => void {
+        return this._agGridOptionsHooks.add(hook, priority);
     }
 
     public refreshAgGridOptions(): void {
@@ -161,18 +161,18 @@ export class GridRuntime implements IGrid {
         return this._agGridProps;
     }
 
-    public openRecord(params: IGridOpenRecordParams): void {
-        const onOpenRecord = this._onGetProps().onOpenRecord;
+    public openRecord(parameters: IGridOpenRecordParameters): void {
+        const onOpenRecord = this._getProps().onOpenRecord;
         if (onOpenRecord) {
-            onOpenRecord(params);
+            onOpenRecord(parameters);
             return;
         }
         //a grouped row's provider has none of the root's interceptors
-        this._provider.openDatasetItem(params.reference, { columnName: params.columnName });
+        this._provider.openDatasetItem(parameters.reference, { columnName: parameters.columnName });
     }
 
     private async _init(): Promise<void> {
-        const modules = this._onGetProps().modules;
+        const modules = this._getProps().modules;
         await this._moduleLoader.load(modules, this);
         if (this.lifecycle.isDestroyed()) {
             return;
@@ -182,7 +182,7 @@ export class GridRuntime implements IGrid {
         }
         //before AG Grid is constructed, which the host renders once the grid is ready
         ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...modules.flatMap(module => module.agGridModules ?? [])]);
-        await this._onGetProps().onLoad?.(this);
+        await this._getProps().onLoad?.(this);
         //after the modules so their api and provider listeners run first
         this._services.observe('gridApi', () => this._onGridApiAvailable());
     }

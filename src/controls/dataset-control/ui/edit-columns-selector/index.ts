@@ -1,2 +1,2 @@
-export * from './EditColumnsSelector';
+export * from './DatasetControlUiEditColumnsSelector';
 export * from './components';

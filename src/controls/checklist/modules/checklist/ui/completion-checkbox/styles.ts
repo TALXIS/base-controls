@@ -7,9 +7,9 @@ const POP = keyframes({
 });
 
 //Fluent's `Check` reads hover off this class on its parent, and does not export it
-export const CHECK_HOST_CLASS_NAME = 'ms-Check-checkHost';
+export const CHECK_HOST_CLASS = 'ms-Check-checkHost';
 
-export const getCompletionCheckboxStyles = (theme: ITheme) => mergeStyleSets({
+export const getChecklistUiCompletionCheckboxStyles = (theme: ITheme) => mergeStyleSets({
     root: {
         display: 'flex',
         alignItems: 'center',

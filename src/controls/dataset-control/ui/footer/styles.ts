@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getFooterUiStyles = (theme: ITheme) => mergeStyleSets({
+export const getDatasetControlUiFooterStyles = (theme: ITheme) => mergeStyleSets({
     datasetControlFooter: {
         display: 'flex',
         flexWrap: 'wrap',

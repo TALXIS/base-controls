@@ -10,11 +10,11 @@ import { ITimePickerProps, TimePicker } from "@legacy";
 import dayjs from "dayjs";
 import React from 'react';
 
-interface IInternalCalendarProps extends ICalendarProps {
-    timePickerProps: IInternalTimePickerProps;
+interface ICalendarInternalProps extends ICalendarProps {
+    timePickerProps: ITimePickerInternalProps;
 }
 
-export interface IInternalTimePickerProps extends Omit<ITimePickerProps, 'onChange' | 'defaultValue'> {
+export interface ITimePickerInternalProps extends Omit<ITimePickerProps, 'onChange' | 'defaultValue'> {
     formattedDateTime: string;
     visible: boolean;
     timeFormat: string;
@@ -55,7 +55,7 @@ export const Calendar = (calendarProps: ICalendarProps) => {
     };
 
     //what the picker hands over, and what the control it belongs to makes of it
-    const props: IInternalCalendarProps = {
+    const props: ICalendarInternalProps = {
         ...calendarProps,
         isMonthPickerVisible: parameters.EnableMonthPicker?.raw !== false,
         isDayPickerVisible: parameters.EnableDayPicker?.raw !== false,

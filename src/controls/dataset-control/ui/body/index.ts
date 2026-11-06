@@ -1,2 +1,2 @@
-export * from './Body';
+export * from './DatasetControlUiBody';
 export * from './components';

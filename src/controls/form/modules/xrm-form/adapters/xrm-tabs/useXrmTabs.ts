@@ -1,8 +1,8 @@
 import { useRerender, useEventEmitter } from "@core";
-import { useFormXmlContext } from "../context";
+import { useFormXmlModel } from "../context";
 
-export const useTabs = () => {
-    const form = useFormXmlContext();
+export const useXrmTabs = () => {
+    const form = useFormXmlModel();
     const tabs = form.tabs;
     const { rerender } = useRerender();
 

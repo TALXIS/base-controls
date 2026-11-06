@@ -1,14 +1,14 @@
 import { IInternalDataProvider } from "@talxis/client-libraries";
 import { DATASET_CONTROL_LABELS } from "../adapters/root/labels";
-import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
+import type { IDatasetControlInternal } from "./DatasetControlRuntime";
 
 export interface IDatasetControlUnsavedChangesGuardParameters {
-    runtime: IDatasetControlRuntime;
+    runtime: IDatasetControlInternal;
 }
 
 /** Asks before anything that reloads the provider throws its unsaved changes away. */
 export class DatasetControlUnsavedChangesGuard {
-    private _runtime: IDatasetControlRuntime;
+    private _runtime: IDatasetControlInternal;
 
     constructor(parameters: IDatasetControlUnsavedChangesGuardParameters) {
         this._runtime = parameters.runtime;

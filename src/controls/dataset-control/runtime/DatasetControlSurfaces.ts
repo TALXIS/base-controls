@@ -10,14 +10,14 @@ export interface IDatasetControlSurface {
 /** A hook over what the modules draw in the DatasetControl. */
 export type DatasetControlSurfacesHook = (surfaces: IDatasetControlSurface[]) => void;
 
-/** What the modules draw in the DatasetControl, assembled from what they registered. */
+/** What the modules draw in the DatasetControl, assembled from what they added. */
 export interface IDatasetControlSurfaces {
     /**
-     * Registers a hook over what the modules draw in the DatasetControl.
+     * Adds a hook over what the modules draw in the DatasetControl.
      *
-     * @param priority Ascending: a lower number is drawn first.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerSurface(hook: DatasetControlSurfacesHook, priority?: number): () => void;
+    addSurfacesHook(hook: DatasetControlSurfacesHook, priority?: number): () => void;
 }
 
 /** What the control's own parts read of it. */
@@ -29,8 +29,8 @@ export interface IDatasetControlSurfacesInternal extends IDatasetControlSurfaces
 export class DatasetControlSurfaces implements IDatasetControlSurfacesInternal {
     private _surfaceHooks = new HookRegistry<DatasetControlSurfacesHook>();
 
-    public registerSurface(hook: DatasetControlSurfacesHook, priority?: number): () => void {
-        return this._surfaceHooks.register(hook, priority);
+    public addSurfacesHook(hook: DatasetControlSurfacesHook, priority?: number): () => void {
+        return this._surfaceHooks.add(hook, priority);
     }
 
     public getSurfaces(): IDatasetControlSurface[] {

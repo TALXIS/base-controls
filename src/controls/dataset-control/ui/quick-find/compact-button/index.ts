@@ -1,2 +1,2 @@
-export * from './QuickFindCompactButton';
+export * from './DatasetControlUiQuickFindCompactButton';
 export * from './components';

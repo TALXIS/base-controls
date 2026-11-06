@@ -2,8 +2,8 @@ import { HookRegistry } from "@core";
 import type { GanttStatic, Task } from "dhtmlx-gantt";
 import type { GridApi, IRowNode } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
-import type { ITaskDataProviderEvents } from "../../../runtime/provider";
-import type { ITaskRuntime } from "../../../runtime";
+import type { ITaskDataProviderEvents } from "../../runtime/provider";
+import type { ITaskRuntime } from "../../runtime";
 import type { IGantt } from "../interfaces";
 import { GANTT_TASK_DONE_CLASS, GANTT_TASK_INACTIVE_CLASS, GANTT_TASK_LOCKED_CLASS, GANTT_TASK_SAVING_CLASS, GANTT_TASK_STARTED_CLASS, GANTT_TASK_SUMMARY_CLASS, setTaskIndexResolver } from "../chart";
 import type { IGanttSchedule } from "../schedule";
@@ -19,38 +19,40 @@ export interface IGanttTasks {
     /** The displayed tasks, top down. */
     getTaskIds(): string[];
     /**
-     * Registers a hook over each task as it is handed to the chart.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over each task as it is handed to the chart.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerTask(hook: GanttTaskHook, priority?: number): () => void;
+    addTaskHook(hook: GanttTaskHook, priority?: number): () => void;
     /**
-     * Registers a hook over the class names of each bar.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over the class names of each bar.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerTaskClass(hook: GanttTaskClassHook, priority?: number): () => void;
+    addTaskClassHook(hook: GanttTaskClassHook, priority?: number): () => void;
     /**
-     * Registers a hook over the class names of each task's row.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over the class names of each task's row.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerRowClass(hook: GanttTaskClassHook, priority?: number): () => void;
+    addRowClassHook(hook: GanttRowClassHook, priority?: number): () => void;
     /** Rebuilds every task, such as after what a task hook reads has changed. */
     parse(): void;
 }
 
-export interface IGanttTaskParameters {
+export interface IGanttTaskHookParameters {
     record: IRecord;
 }
 
 /** Changes a task's fields such as `color`, `type` or `readonly` before the chart draws it. */
-export type GanttTaskHook = (task: Task, parameters: IGanttTaskParameters) => void;
+export type GanttTaskHook = (task: Task, parameters: IGanttTaskHookParameters) => void;
 
-export interface IGanttTaskClassParameters {
+export interface IGanttTaskClassHookParameters {
     record: IRecord;
     task: Task;
 }
 
 /** Adds to the class names of a task's bar or row. */
-export type GanttTaskClassHook = (classNames: string[], parameters: IGanttTaskClassParameters) => void;
+export type GanttTaskClassHook = (classNames: string[], parameters: IGanttTaskClassHookParameters) => void;
+
+export type GanttRowClassHook = (classNames: string[], parameters: IGanttTaskClassHookParameters) => void;
 
 const SUMMARY_BAR_HEIGHT = 12;
 /** How tall a task's bar is drawn, other than a summary's. */
@@ -77,11 +79,11 @@ export class GanttTasks implements IGanttTasks {
     private _scheduledFrame?: number;
     private _pendingUpdates = new Map<string, IRecord>();
     private _scheduledUpdateFrame?: number;
-    private _unregisters: (() => void)[] = [];
+    private _removers: (() => void)[] = [];
     private _motion: GanttTaskMotion;
     private _taskHooks = new HookRegistry<GanttTaskHook>();
     private _taskClassHooks = new HookRegistry<GanttTaskClassHook>();
-    private _rowClassHooks = new HookRegistry<GanttTaskClassHook>();
+    private _rowClassHooks = new HookRegistry<GanttRowClassHook>();
 
     constructor(parameters: IGanttTasksParameters) {
         this._chart = parameters.chart;
@@ -98,7 +100,7 @@ export class GanttTasks implements IGanttTasks {
         this._chart.templates.task_text = () => '';
         setTaskIndexResolver(this._chart, taskId => this._taskIndexes.get(taskId) ?? -1);
         this._gridApi.addEventListener('modelUpdated', this._scheduleParse);
-        this._unregisters.push(
+        this._removers.push(
             () => !this._gridApi.isDestroyed() && this._gridApi.removeEventListener('modelUpdated', this._scheduleParse),
             provider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged),
             provider.taskEvents.addEventListener('onTasksUpdated', this._onTasksUpdated),
@@ -123,16 +125,16 @@ export class GanttTasks implements IGanttTasks {
         return this._taskIds;
     }
 
-    public registerTask(hook: GanttTaskHook, priority?: number): () => void {
-        return this._taskHooks.register(hook, priority);
+    public addTaskHook(hook: GanttTaskHook, priority?: number): () => void {
+        return this._taskHooks.add(hook, priority);
     }
 
-    public registerTaskClass(hook: GanttTaskClassHook, priority?: number): () => void {
-        return this._taskClassHooks.register(hook, priority);
+    public addTaskClassHook(hook: GanttTaskClassHook, priority?: number): () => void {
+        return this._taskClassHooks.add(hook, priority);
     }
 
-    public registerRowClass(hook: GanttTaskClassHook, priority?: number): () => void {
-        return this._rowClassHooks.register(hook, priority);
+    public addRowClassHook(hook: GanttRowClassHook, priority?: number): () => void {
+        return this._rowClassHooks.add(hook, priority);
     }
 
     public parse(): void {
@@ -172,7 +174,7 @@ export class GanttTasks implements IGanttTasks {
         if (this._scheduledUpdateFrame !== undefined) {
             cancelAnimationFrame(this._scheduledUpdateFrame);
         }
-        this._unregisters.forEach(unregister => unregister());
+        this._removers.forEach(remove => remove());
     }
 
     private _getTaskClass(task: Task): string {

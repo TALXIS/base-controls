@@ -1,12 +1,12 @@
 import { useTheme } from "@theme";
 import { Text } from "@fluentui/react";
 import { SectionContext } from "./context";
-import { getSectionStyles } from "./styles";
+import { getFormUiSectionStyles } from "./styles";
 import React from "react";
 import { ILayoutBreakpoints, Layout } from "../layout";
 import { useCalculatedColumns } from "../layout/useCalculatedColumns";
 
-export interface ISectionProps {
+export interface IFormUiSectionProps {
     id?: string;
     showLabel?: boolean;
     showBar?: boolean;
@@ -19,7 +19,7 @@ export interface ISectionProps {
     children?: React.ReactNode;
 }
 
-export const Section = (props: ISectionProps) => {
+export const FormUiSection = (props: IFormUiSectionProps) => {
     const { children, showBar = true, showLabel = true, label, id } = props;
     const isHeaderVisible = showBar && showLabel && label;
 
@@ -35,7 +35,7 @@ export const Section = (props: ISectionProps) => {
     });
 
     const theme = useTheme();
-    const styles = getSectionStyles({ section: props, theme });
+    const styles = getFormUiSectionStyles({ section: props, theme });
 
     return <div className={styles.section} data-id={id ? `section-${id}` : undefined}>
         {isHeaderVisible && (

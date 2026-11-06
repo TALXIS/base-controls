@@ -49,7 +49,7 @@ const GridExample = () => {
     const onLoad = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
         const taskRuntime = control.modules.get('taskRuntime')
         return {
-            provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
+            provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
             fieldMapping,
             views: VIEWS,
             rootTaskId: rootTaskId || undefined,

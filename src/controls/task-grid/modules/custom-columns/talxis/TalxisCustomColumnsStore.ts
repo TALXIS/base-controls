@@ -42,7 +42,7 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
         this._parameters = parameters;
     }
 
-    public async onLoadColumns(): Promise<IColumn[]> {
+    public async loadColumns(): Promise<IColumn[]> {
         this._relationship ??= await this._resolveRelationship();
         const entityDefinition = await DynamicEntityDefinition.fetchForRecord(this._parameters.entityName, this._parameters.recordId);
         this._columns = entityDefinition.Attributes.map(attribute => {
@@ -59,7 +59,7 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
         return this._columns;
     }
 
-    public async onLoadValues(taskIds: string[]): Promise<Map<string, IRawRecord>> {
+    public async loadValues(taskIds: string[]): Promise<Map<string, IRawRecord>> {
         const values = new Map<string, IRawRecord>();
         if (this._columns.length === 0 || taskIds.length === 0) {
             return values;
@@ -79,7 +79,7 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
         return values;
     }
 
-    public async onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult> {
+    public async saveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult> {
         const taskId = record.getRecordId();
         const definitionId = this._getDefinitionId(column.name);
         const valueId = this._valueIds.get(`${taskId}_${definitionId}`);
@@ -106,7 +106,7 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
         }
     }
 
-    public async onCreateColumn(): Promise<string | null> {
+    public async createColumn(): Promise<string | null> {
         const result = await this._navigate({
             pageType: 'entityrecord',
             entityName: ATTRIBUTE_DEFINITION_ENTITY_NAME,
@@ -116,12 +116,12 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
         return reference ? `${Sanitizer.Guid.removeGuidBrackets(reference.id)}${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}` : null;
     }
 
-    public async onUpdateColumn(columnName: string): Promise<string | null> {
+    public async updateColumn(columnName: string): Promise<string | null> {
         await this._navigate({ pageType: 'entityrecord', entityName: ATTRIBUTE_DEFINITION_ENTITY_NAME, entityId: this._getDefinitionId(columnName) });
         return columnName;
     }
 
-    public async onDeleteColumn(columnName: string): Promise<string | null> {
+    public async deleteColumn(columnName: string): Promise<string | null> {
         await this._getPcfContext().webAPI.deleteRecord(ATTRIBUTE_DEFINITION_ENTITY_NAME, this._getDefinitionId(columnName));
         return columnName;
     }

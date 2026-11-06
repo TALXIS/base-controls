@@ -1,10 +1,10 @@
 import { useMemo, useRef } from "react";
 import type { ICommandBarItemProps } from "@legacy";
-import { EditColumnsPanelUiComponents, IEditColumnsPanelUiComponents } from "./components";
-import { getEditColumnsPanelUiStyles } from "./styles";
+import { DatasetControlUiEditColumnsPanelComponents, IDatasetControlUiEditColumnsPanelComponents } from "./components";
+import { getDatasetControlUiEditColumnsPanelStyles } from "./styles";
 
 /** Props for the panel the column editor sits in, as plain UI. */
-export interface IEditColumnsPanelUiProps {
+export interface IDatasetControlUiEditColumnsPanelProps {
     /** The panel's header. */
     title: string;
     /** The save button's text. */
@@ -22,13 +22,13 @@ export interface IEditColumnsPanelUiProps {
     /** The selectors and the column list. */
     children?: React.ReactNode;
     /** Replacements for its slots. */
-    components?: Partial<IEditColumnsPanelUiComponents>;
+    components?: Partial<IDatasetControlUiEditColumnsPanelComponents>;
 }
 
 /** The column editor's panel, with Save and Cancel under what it holds. */
-export const EditColumnsPanel = (props: IEditColumnsPanelUiProps) => {
-    const components = { ...EditColumnsPanelUiComponents, ...props.components };
-    const styles = useMemo(() => getEditColumnsPanelUiStyles(), []);
+export const DatasetControlUiEditColumnsPanel = (props: IDatasetControlUiEditColumnsPanelProps) => {
+    const components = { ...DatasetControlUiEditColumnsPanelComponents, ...props.components };
+    const styles = useMemo(() => getDatasetControlUiEditColumnsPanelStyles(), []);
     const contentRef = useRef<HTMLDivElement>(null);
 
     //a panel or dialog opened from the editor sits in a layer of its own

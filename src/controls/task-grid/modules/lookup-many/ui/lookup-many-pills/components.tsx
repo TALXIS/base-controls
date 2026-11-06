@@ -1,12 +1,12 @@
-import { ILookupManyPillProps, LookupManyPill } from "../lookup-many-pill";
+import { ILookupManyUiPillProps, LookupManyUiPill } from "../lookup-many-pill";
 
 /** The replaceable pieces of {@link LookupManyPills}. */
-export interface ILookupManyPillsComponents {
+export interface ILookupManyUiPillsComponents {
     /** One record, also the ones listed under the overflow. */
-    onRenderPill: (props: ILookupManyPillProps) => JSX.Element;
+    onRenderPill: (props: ILookupManyUiPillProps) => JSX.Element;
 }
 
-/** The defaults for {@link ILookupManyPillsComponents}. */
-export const LookupManyPillsComponents: ILookupManyPillsComponents = {
-    onRenderPill: props => <LookupManyPill {...props} />,
+/** The defaults for {@link ILookupManyUiPillsComponents}. */
+export const LookupManyUiPillsComponents: ILookupManyUiPillsComponents = {
+    onRenderPill: props => <LookupManyUiPill {...props} />,
 };

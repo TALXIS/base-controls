@@ -2,21 +2,21 @@ import { useTheme } from "@theme";
 import { useMemo, useRef } from "react";
 
 import { useResizeEffect } from "@ui";
-import { ILookupManyEditorPopupComponents, LookupManyEditorPopupComponents } from "./components";
-import { getLookupManyEditorPopupStyles, LOOKUP_MANY_EDITOR_POPUP_MIN_WIDTH } from "./styles";
+import { ILookupManyUiEditorPopupComponents, LookupManyUiEditorPopupComponents } from "./components";
+import { getLookupManyUiEditorPopupStyles, LOOKUP_MANY_EDITOR_POPUP_MIN_WIDTH } from "./styles";
 
-export interface ILookupManyEditorPopupProps {
+export interface ILookupManyUiEditorPopupProps {
     /** The width of the cell it pops out over. */
     cellWidth: number;
     children?: React.ReactNode;
-    components?: Partial<ILookupManyEditorPopupComponents>;
+    components?: Partial<ILookupManyUiEditorPopupComponents>;
 }
 
 /** A popup cell editor's box, kept inside the grid. */
-export const LookupManyEditorPopup = (props: ILookupManyEditorPopupProps) => {
-    const components = { ...LookupManyEditorPopupComponents, ...props.components };
+export const LookupManyUiEditorPopup = (props: ILookupManyUiEditorPopupProps) => {
+    const components = { ...LookupManyUiEditorPopupComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getLookupManyEditorPopupStyles(theme), [theme]);
+    const styles = useMemo(() => getLookupManyUiEditorPopupStyles(theme), [theme]);
     const rootRef = useRef<HTMLDivElement>(null);
     const shiftRef = useRef({ x: 0, y: 0 });
 

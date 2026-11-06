@@ -3,14 +3,14 @@ import { IIsolatedFrameContent, IsolatedFrameChannel } from "./IsolatedFrameChan
 /** A script the frame loads: a URL, or an ES module entry. */
 export type IsolatedFrameScript = string | { src: string; type: 'module' };
 
-export interface IIsolatedComponentOptions {
+export interface IIsolatedComponentParameters {
     /** What the frame loads, in order; the running script by default. */
     scripts?: IsolatedFrameScript[];
     /** Called with the frame's window before its scripts load, to give it what its code reads, such as `Xrm`. */
-    onPrepareWindow?: (frameWindow: Window) => void;
+    prepareWindow?: (frameWindow: Window) => void;
 }
 
-export interface IIsolatedFrameParameters extends IIsolatedComponentOptions {
+export interface IIsolatedFrameParameters extends IIsolatedComponentParameters {
     /** The name the frame's copy of the code registered its content under. */
     key: string;
 }
@@ -74,7 +74,7 @@ export class IsolatedFrame {
         frameDocument.documentElement.dir = document.documentElement.dir;
         const channel = new IsolatedFrameChannel(frameWindow);
         channel.markAsFrame();
-        this._parameters.onPrepareWindow?.(frameWindow);
+        this._parameters.prepareWindow?.(frameWindow);
         for (const script of scripts) {
             await this._loadScript(frameDocument, script);
         }

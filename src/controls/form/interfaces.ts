@@ -19,7 +19,7 @@ export interface IApiField {
 /**
  * Final outcome of a save attempt.
  */
-export interface IFormAfterSaveParams {
+export interface IFormAfterSaveParameters {
     /**
      * Indicates whether the save attempt completed successfully.
      */
@@ -39,36 +39,36 @@ export interface IValidation extends IFieldValidationResult {
 /**
  * Public event callbacks that React consumers can subscribe to through {@link IFormProps}.
  */
-export interface IFormEventHandlers {
+export interface IFormEventProps {
     /**
-     * Fired when a field value changes inside the form.
+     * Fires when a field value changes inside the form.
      */
     onFieldValueChanged: (fieldName: string, newValue: any) => void;
 
     /**
-     * Fired when the aggregated validation summary changes.
+     * Fires when the aggregated validation summary changes.
      */
     onValidationSummaryChanged: (validationSummary: IValidation[]) => void;
 
     /**
-     * Fired when the form transitions between clean and dirty state.
+     * Fires when the form transitions between clean and dirty state.
      */
     onDirtyStateChanged: (isDirty: boolean) => void;
 
     /**
-     * Fired when the runtime catches an error during form work such as save operations.
+     * Fires when the runtime catches an error during form work such as save operations.
      */
-    onError: (error: any, message: string) => void;
+    onError: (message: string, details?: unknown) => void;
 
     /**
-     * Fired when a save attempt starts.
+     * Fires when a save attempt starts.
      */
     onBeforeSave: () => void;
 
     /**
-     * Fired when a save attempt finishes with its final result.
+     * Fires when a save attempt finishes with its final result.
      */
-    onAfterSave: (params: IFormAfterSaveParams) => void;
+    onAfterSave: (parameters: IFormAfterSaveParameters) => void;
 }
 
 /**
@@ -76,7 +76,7 @@ export interface IFormEventHandlers {
  */
 export interface IFormApi {
     /** Calls `onLoad` again and rebuilds the form. */
-    refresh: () => void;
+    reload: () => void;
 
     /**
      * Returns the current data held by the form, including in-progress values
@@ -99,8 +99,8 @@ export interface IFormLoadResult {
 /**
  * Props for the React-composed `Form.Root` runtime.
  */
-export interface IFormProps extends Partial<IFormEventHandlers> {
-    /** Runs on mount and on refresh; remount with a `key` to load another record. */
+export interface IFormProps extends Partial<IFormEventProps> {
+    /** Runs on mount and on `reload()`; remount with a `key` to load another record. */
     onLoad: () => Promise<IFormLoadResult>;
 
     /**
@@ -109,10 +109,10 @@ export interface IFormProps extends Partial<IFormEventHandlers> {
     children?: ReactNode;
 
     /** Saves the record after each change the user commits; read as the form mounts. */
-    autoSave?: boolean;
+    enableAutoSave?: boolean;
 
     /**
-     * Fired when the form runtime is ready and the public imperative API can be used.
+     * Fires when the form runtime is ready and the public imperative API can be used.
      */
     onFormReady?: (api: IFormApi) => void;
 }

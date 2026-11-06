@@ -25,7 +25,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         this.isGroupOpenByDefault = parameters.isGroupOpenByDefault;
         this._isTree = this._getIsTree();
         //`getDataPath` is `@initial`
-        this._services.get('grid').registerAgGridInitialOptions(result => result.options.getDataPath = getRecordPath);
+        this._services.get('grid').addAgGridInitialOptionsHook(result => result.options.getDataPath = getRecordPath);
         //ahead of the grid's refresh on the same event
         const unsubscribe = this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
         //the provider outlives the grid
@@ -37,12 +37,12 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
     }
 
     /** `treeData` is not `@initial`, so grouping can turn the hierarchy on and off. */
-    public onAgGridOptions(result: IGridAgGridOptions): void {
+    public applyAgGridOptions(result: IGridAgGridOptions): void {
         result.options.treeData = this._isTree;
     }
 
     /** Nothing: `rowGroup` would have AG Grid regroup the tree it was handed. */
-    public onApplyColumnDefinition(): void { }
+    public applyColumnDefinition(): void { }
 
     /** Every record the tree holds, as far as the child providers have been fetched. */
     public getRows(): IRecord[] {

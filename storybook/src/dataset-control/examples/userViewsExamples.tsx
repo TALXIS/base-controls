@@ -108,7 +108,7 @@ const GridExample = () => {
     //one store across mounts
     const modules = React.useMemo(() => {
         const store = new MemoryViewsStore(line => setLog(log => [line, ...log].slice(0, 6)))
-        return [createUserQueriesModule({ onCreateStore: () => store })]
+        return [createUserQueriesModule({ createStore: () => store })]
     }, [])
 
     return <Stack tokens={{ childrenGap: 8 }}>

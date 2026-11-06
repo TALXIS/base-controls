@@ -1,6 +1,6 @@
 import { ErrorHelper } from "@core/error-handling";
 import { TASK_GRID_LABELS } from "../labels";
-import type { ITaskExecuteError, ITaskExecuteLoading, ITaskExecuteOptions, ITaskRuntime } from "./interfaces";
+import type { ITaskExecuteError, ITaskExecuteLoading, ITaskExecuteParameters, ITaskRuntime } from "./interfaces";
 
 /** Runs operations under the control's loading overlay, and shows each failure once. */
 export class TaskExecutor {
@@ -13,15 +13,15 @@ export class TaskExecutor {
         this._runtime = runtime;
     }
 
-    public async execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T | undefined> {
-        const hideLoading = this._showLoading(options?.loading);
+    public async execute<T>(operation: () => Promise<T>, parameters?: ITaskExecuteParameters): Promise<T | undefined> {
+        const hideLoading = this._showLoading(parameters?.loading);
         this._runningCount++;
         try {
             return await operation();
         }
         catch (error) {
-            await this._showError(error, options?.error);
-            if (options?.error?.rethrow === false) {
+            await this._showError(error, parameters?.error);
+            if (parameters?.error?.rethrow === false) {
                 return undefined;
             }
             throw error;

@@ -1,9 +1,9 @@
 import * as React from "react";
-import type { IColumnProps } from "./Column";
+import type { IFormUiColumnProps } from "./Column";
 
-export const ColumnContext = React.createContext<IColumnProps | null>(null);
+export const ColumnContext = React.createContext<IFormUiColumnProps | null>(null);
 
-export const useColumnContext = (componentName: string): IColumnProps => {
+export const useColumnContext = (componentName: string): IFormUiColumnProps => {
     const context = React.useContext(ColumnContext);
     if (context === null) {
         throw new Error(`[Form] ${componentName} must be rendered inside Column.`);

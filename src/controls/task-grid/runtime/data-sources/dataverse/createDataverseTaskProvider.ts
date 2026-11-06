@@ -1,6 +1,6 @@
-import { createTaskDataSource, ITaskDataSourceParameters } from "../createTaskDataSource";
+import { createTaskProvider, ITaskProviderParameters } from "../createTaskProvider";
 
-export interface IDataverseTaskDataSourceParameters extends ITaskDataSourceParameters { }
+export interface IDataverseTaskProviderParameters extends ITaskProviderParameters { }
 
 /** Tasks in Dataverse, read through FetchXML and opened in their forms. */
-export const createDataverseTaskDataSource = createTaskDataSource;
+export const createDataverseTaskProvider = createTaskProvider;

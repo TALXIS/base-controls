@@ -168,7 +168,7 @@ const GridExample = () => {
     const stockCount = React.useMemo(createStockCount, [])
     return <DatasetControl onLoad={async () => ({ provider: stockCount })}>
         <DatasetControl.Body>
-            <Grid modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]} height='420px' />
+            <Grid modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]} height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
 }

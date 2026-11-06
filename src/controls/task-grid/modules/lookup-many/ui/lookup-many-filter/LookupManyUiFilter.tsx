@@ -4,16 +4,16 @@ import { IOptionSet, OptionSet } from "@fields/option-set";
 import { TextField } from "@fields/text-field";
 import type { IDataProvider } from "@talxis/client-libraries";
 import { FilteringUi } from "@controls/grid";
-import { LookupManySelect } from "../lookup-many-select";
-import { ILookupManyFilterComponents, LookupManyFilterComponents } from "./components";
-import { getLookupManyFilterStyles } from "./styles";
+import { LookupManyUiSelect } from "../lookup-many-select";
+import { ILookupManyUiFilterComponents, LookupManyUiFilterComponents } from "./components";
+import { getLookupManyUiFilterStyles } from "./styles";
 
 type Reference = ComponentFramework.EntityReference;
 
 /** What the chosen operator compares with. */
 export type LookupManyFilterValueKind = 'records' | 'text' | 'none';
 
-export interface ILookupManyFilterProps {
+export interface ILookupManyUiFilterProps {
     target?: Target;
     title: string;
     /** What the operator and text controls are drawn with. */
@@ -32,7 +32,7 @@ export interface ILookupManyFilterProps {
     /** The accessible name of a picked record's remove button. */
     getRemoveText: (reference: Reference) => string;
     isClearDisabled: boolean;
-    components?: Partial<ILookupManyFilterComponents>;
+    components?: Partial<ILookupManyUiFilterComponents>;
     onOperatorChange: (operator: number) => void;
     onRecordsChange: (records: Reference[]) => void;
     onTextChange: (text: string) => void;
@@ -42,9 +42,9 @@ export interface ILookupManyFilterProps {
 }
 
 /** A lookup-many column's filter with an operator, its value, and Apply and Clear. */
-export const LookupManyFilter = (props: ILookupManyFilterProps) => {
-    const components = { ...LookupManyFilterComponents, ...props.components };
-    const styles = useMemo(() => getLookupManyFilterStyles(), []);
+export const LookupManyUiFilter = (props: ILookupManyUiFilterProps) => {
+    const components = { ...LookupManyUiFilterComponents, ...props.components };
+    const styles = useMemo(() => getLookupManyUiFilterStyles(), []);
 
     return <FilteringUi.Callout target={props.target} title={props.title} onDismiss={props.onDismiss} components={components.callout}>
         {components.onRenderContainer({
@@ -57,7 +57,7 @@ export const LookupManyFilter = (props: ILookupManyFilterProps) => {
                 {components.onRenderValue({
                     className: styles.value,
                     children: <>
-                        {props.valueKind === 'records' && <LookupManySelect
+                        {props.valueKind === 'records' && <LookupManyUiSelect
                             dataProvider={props.dataProvider}
                             value={props.records}
                             autoFocus

@@ -1,18 +1,18 @@
 import { ICellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { GridValueRenderer, IGridValueRenderer, Grid, useGridModule } from "@controls/grid";
-import { INameCellUiComponents, NameCellUi } from "../../ui/name-cell";
+import { IChecklistUiNameCellComponents, ChecklistUiNameCell } from "../../ui/name-cell";
 import { INameCellComponents } from "./components";
 
 export interface INameCellProps extends ICellRendererParams<IRecord> {
     components?: INameCellComponents;
 }
 
-const NameValue = (props: IGridValueRenderer & { nameComponents?: Partial<INameCellUiComponents> }) => {
+const NameValue = (props: IGridValueRenderer & { nameComponents?: Partial<IChecklistUiNameCellComponents> }) => {
     const { nameComponents, ...valueProps } = props;
-    const checkList = useGridModule('checkList');
+    const checkList = useGridModule('checklist');
     const isCompleted = checkList.isCompleted(valueProps.parameters.Record.raw);
-    return <GridValueRenderer {...valueProps} components={{ ...valueProps.components, onRenderContainer: containerProps => <NameCellUi {...containerProps} isCompleted={isCompleted} components={nameComponents} /> }} />;
+    return <GridValueRenderer {...valueProps} components={{ ...valueProps.components, onRenderContainer: containerProps => <ChecklistUiNameCell {...containerProps} isCompleted={isCompleted} components={nameComponents} /> }} />;
 };
 
 /** The cell of an item's name, struck through once the item is finished. */

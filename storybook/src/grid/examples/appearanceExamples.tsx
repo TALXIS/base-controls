@@ -29,7 +29,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                 duedate: {
                     context: {
                         cell: {
-                            onGetTheme: (builder, { record }) => {
+                            themeHook: (builder, { record }) => {
                                 const urgency = getUrgency(record)
                                 if (urgency) {
                                     //tint keeps the hue readable in light and dark themes
@@ -51,7 +51,7 @@ export const ESCALATED_TICKETS_CODE = `const ESCALATED = '#d13438'
 const escalatedTicketsModule: IGridModule = {
     name: 'escalatedTickets',
     onLoad: grid => {
-        grid.services.get('cells').registerCellTheme((builder, { record }) => {
+        grid.services.get('cells').addCellThemeHook((builder, { record }) => {
             //a two-options value reads as '1' or '0'
             if (record.getValue('escalated') === '1') {
                 builder.tint(ESCALATED)
@@ -70,7 +70,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                 escalatedTicketsModule,
             ]}
             colDefs={{
-                escalated: { context: { cell: { oneClickEdit: true } } },
+                escalated: { context: { cell: { enableOneClickEdit: true } } },
             }}
             height='440px' />
     </DatasetControl.Body>
@@ -88,7 +88,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
         <Grid
             modules={[createClientSideRowModelModule(), createEditingModule()]}
             colDefs={{
-                ticketnumber: { context: { cell: { onGetTheme: builder => builder.edit('monospace', toMonospace) } } },
+                ticketnumber: { context: { cell: { themeHook: builder => builder.edit('monospace', toMonospace) } } },
             }}
             height='420px' />
     </DatasetControl.Body>
@@ -136,7 +136,7 @@ export const COLUMN_LINES_CODE = `//lines between the columns and a frame round 
 const columnLinesModule: IGridModule = {
     name: 'columnLines',
     onLoad: grid => {
-        grid.services.get('gridTheme').registerTheme((result, fluentTheme) => {
+        grid.services.get('gridTheme').addThemeHook((result, fluentTheme) => {
             const line = { color: fluentTheme.semanticColors.bodyDivider }
             result.theme = result.theme.withParams({
                 columnBorder: line,
@@ -187,7 +187,7 @@ const reviewModule: IGridModule = {
     name: 'review',
     onLoad: grid => {
         const headers = grid.services.get('columns').headers
-        headers.registerColumnHeaderTheme((builder, header) => {
+        headers.addColumnHeaderThemeHook((builder, header) => {
             const column = header.getColumn()
             const hue = column && getHeaderColour(column.name)
             if (hue) {
@@ -225,7 +225,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule(), reviewModule]}
-                colDefs={{ hours: { context: { cell: { onGetValidation: validateHours } } } }}
+                colDefs={{ hours: { context: { cell: { validationHook: validateHours } } } }}
                 onSetup={grid => gridRef.current = grid}
                 height='420px' />
         </DatasetControl.Body>
@@ -272,7 +272,7 @@ const GridExample = () => {
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
         { id: 'add', label: 'Add line', iconName: 'Add', onExecute: () => showLines(lineCount.current + 1) },
-        { id: 'remove', label: 'Remove last line', iconName: 'Remove', isDisabled: lineCount.current === 0, onExecute: () => showLines(lineCount.current - 1) },
+        { id: 'remove', label: 'Remove last line', iconName: 'Remove', disabled: lineCount.current === 0, onExecute: () => showLines(lineCount.current - 1) },
     ]
 
     return <DatasetControl onLoad={async () => ({ provider: lines })} onSetup={datasetControl => control.current = datasetControl}>

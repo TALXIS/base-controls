@@ -2,7 +2,7 @@ import type { ITheme } from "@fluentui/react";
 import type { StylesConfig } from "react-select";
 import { CELL_VALUE_PADDING } from "../../../constants";
 
-export const getLookupManySelectStyles = (theme: ITheme, isMenuPopup: boolean): StylesConfig<ComponentFramework.EntityReference, true, never> => ({
+export const getLookupManyUiSelectStyles = (theme: ITheme, isMenuPopup: boolean): StylesConfig<ComponentFramework.EntityReference, true, never> => ({
     control: base => isMenuPopup
         ? { ...base, minHeight: 32, padding: `2px ${CELL_VALUE_PADDING}px`, border: 'none', borderRadius: 0, background: theme.palette.neutralLighter, boxShadow: 'none', cursor: 'text' }
         : { ...base, minHeight: 0, padding: `4px ${CELL_VALUE_PADDING}px`, border: 'none', borderBottom: `1px solid ${theme.palette.neutralLight}`, borderRadius: 0, background: 'none', boxShadow: 'none' },

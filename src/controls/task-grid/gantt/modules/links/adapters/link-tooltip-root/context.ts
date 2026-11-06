@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import type { IPoint } from "@fluentui/react";
 import type { IRecord } from "@talxis/client-libraries";
-import type { ITaskDependency } from "../../../../../dependencies";
+import type { ITaskDependency } from "../../../../../modules/dependencies";
 import type { IGantt } from "../../../../interfaces";
 
 /** The dependency a tooltip is drawn for. */

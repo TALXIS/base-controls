@@ -5,11 +5,11 @@ import { IGridGroupingComponents } from "./components";
 import { GridGrouping } from "./GridGrouping";
 import { IGridGroupingServiceMap } from "./runtime";
 
-export interface IGroupingModuleOptions {
+export interface IGroupingModuleParameters {
     /** Overrides for the parts of what this module draws, by piece. */
     components?: IGridGroupingComponents;
     /** Whether a column's menu offers grouping. */
-    allowUserGrouping?: boolean;
+    enableUserGrouping?: boolean;
     /** How the groups nest. */
     type?: 'nested' | 'flat';
     /** How many levels open themselves. */
@@ -23,14 +23,14 @@ export interface IGroupingModuleOptions {
 export interface IGroupingModule extends IGridModule<'grouping'> { }
 
 /** Builds the module that groups the rows by a column. */
-export const createGroupingModule = (options: IGroupingModuleOptions = {}): IGroupingModule => ({
+export const createGroupingModule = (parameters: IGroupingModuleParameters = {}): IGroupingModule => ({
     name: 'grouping',
     agGridModules: [RowGroupingModule, TreeDataModule],
     onLoad: ({ services: gridServices }) => {
         const services = new ServiceLocator<IGridGroupingServiceMap>();
         services.register('gridServices', () => gridServices);
-        services.register('components', () => options.components ?? {});
-        return new GridGrouping({ services, settings: options });
+        services.register('components', () => parameters.components ?? {});
+        return new GridGrouping({ services, settings: parameters });
     },
     onDestroy: grouping => grouping.destroy(),
 });

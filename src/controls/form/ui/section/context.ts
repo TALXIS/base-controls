@@ -1,7 +1,7 @@
 import * as React from "react";
-import { ISectionProps } from "./Section";
+import { IFormUiSectionProps } from "./Section";
 
-export interface ISectionContext extends ISectionProps {
+export interface ISectionContext extends IFormUiSectionProps {
     columnsPerRow: number;
     containerWidth: number;
 }

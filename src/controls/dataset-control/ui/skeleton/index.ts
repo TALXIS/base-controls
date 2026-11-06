@@ -1,3 +1,3 @@
-export * from './Skeleton';
-export * from './SkeletonShimmer';
+export * from './DatasetControlUiSkeleton';
+export * from './DatasetControlUiSkeletonShimmer';
 export * from './components';

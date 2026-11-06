@@ -4,7 +4,7 @@ import { ThemeBuilder } from "@theme";
 import { GridCellCommandsHook, GridCellLoadingHook, GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { IStateStore } from "@core";
-import type { ITaskDataProvider, ITaskMoveParams } from "../provider";
+import type { ITaskDataProvider, ITaskMoveParameters } from "../provider";
 import { PATH_COLUMN_NAME } from "../provider/record-tree";
 import type { ITaskGridServiceMap } from "../../services";
 import type { ITaskGridTree, ITaskRuntime } from "..";
@@ -54,21 +54,21 @@ export class TaskTree implements ITaskGridTree {
         this._expansion = new TaskExpansion({
             provider: this._provider,
             expandedIds: this._getState().expandedIds ?? [],
-            onIsFlatList: () => this._isFlatList,
+            isFlatList: () => this._isFlatList,
             onExpandedIdsChanged: expandedIds => this._setState({ expandedIds }),
         });
         parameters.runtime.services.register('taskTree', () => this);
         services.register('taskExpansion', () => this._expansion);
 
-        this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
-        this._grid.registerAgGridOptions(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
-        services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree);
-        services.get('cells').registerCellTheme(this._onCellTheme, TASK_GRID_PRIORITY.tree);
-        services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree);
-        services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree);
+        this._grid.addAgGridInitialOptionsHook(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
+        this._grid.addAgGridOptionsHook(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
+        services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree);
+        services.get('cells').addCellThemeHook(this._onCellTheme, TASK_GRID_PRIORITY.tree);
+        services.get('cells').addCellLoadingHook(this._onCellLoading, TASK_GRID_PRIORITY.tree);
+        services.get('cells').addCellCommandsHook(this._onCellCommands, TASK_GRID_PRIORITY.tree);
 
-        this._grid.modules.observe('rowSelection', selection => { selection.registerSelectionState(this._onSelectionState, TASK_GRID_PRIORITY.tree); });
-        this._grid.modules.observe('editing', editing => { editing.locks.registerLock(this._onLock, TASK_GRID_PRIORITY.tree); });
+        this._grid.modules.observe('rowSelection', selection => { selection.addSelectionStateHook(this._onSelectionState, TASK_GRID_PRIORITY.tree); });
+        this._grid.modules.observe('editing', editing => { editing.locks.addLockHook(this._onLock, TASK_GRID_PRIORITY.tree); });
         services.observe('gridApi', this._onGridApi);
         this._unsubscribes = [
             parameters.runtime.services.get('datasetControl').modules.observe('userQueries', userQueries => userQueries.saveWithView('isFlatList', () => this._isFlatList)),
@@ -184,12 +184,12 @@ export class TaskTree implements ITaskGridTree {
     };
 
     //an unmatched parent is shown only because something under it matched
-    private _onCellTheme = (builder: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
-        if (params.columnName !== this._provider.getFieldMapping().subject) {
+    private _onCellTheme = (builder: ThemeBuilder, parameters: { record: IRecord; columnName: string }): void => {
+        if (parameters.columnName !== this._provider.getFieldMapping().subject) {
             return;
         }
         builder.edit('taskGrid|subject', result => { result.fonts.medium.fontWeight = 600; });
-        if (!this._provider.getRecordTree().view.isMatching(params.record.getRecordId())) {
+        if (!this._provider.getRecordTree().view.isMatching(parameters.record.getRecordId())) {
             builder.edit('taskGrid|unmatchedParent', result => { result.fonts.medium.fontStyle = 'italic'; });
         }
     };
@@ -286,9 +286,9 @@ export class TaskTree implements ITaskGridTree {
         gridApi?.applyTransaction({ update: subtree.filter(task => gridApi.getRowNode(task.getRecordId())) });
     };
 
-    private _onTaskMoved = (params: ITaskMoveParams): void => {
-        if (params.position === 'child') {
-            this._expansion.setExpanded(params.targetRecord.getRecordId(), true);
+    private _onTaskMoved = (parameters: ITaskMoveParameters): void => {
+        if (parameters.position === 'child') {
+            this._expansion.setExpanded(parameters.targetRecord.getRecordId(), true);
         }
         this._provider.clearSelectedRecordIds();
     };

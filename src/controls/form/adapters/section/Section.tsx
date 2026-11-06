@@ -1,8 +1,8 @@
 import { usePcfContext } from "@pcf";
-import { FormUi, ISectionProps } from "../../ui";
+import { FormUi, IFormUiSectionProps } from "../../ui";
 
-export type { ISectionProps } from "../../ui";
+export type { IFormUiSectionProps } from "../../ui";
 
-export const Section = (props: ISectionProps) => {
+export const Section = (props: IFormUiSectionProps) => {
     return <FormUi.Section {...props} />;
 };

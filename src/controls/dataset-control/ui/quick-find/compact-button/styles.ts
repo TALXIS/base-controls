@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getQuickFindCompactButtonStyles = (theme: ITheme) => mergeStyleSets({
+export const getDatasetControlUiQuickFindCompactButtonStyles = (theme: ITheme) => mergeStyleSets({
     //a query in the field stays visible while the field is folded away
     hasValue: {
         position: 'relative',

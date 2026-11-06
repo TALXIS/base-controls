@@ -5,7 +5,7 @@ export interface IFactoryApiEvents {
     onRequestRender: () => void;
 }
 
-export interface IFactoryApiParams {
+export interface IFactoryApiParameters {
     requestRender?: () => void;
 }
 

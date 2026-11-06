@@ -5,7 +5,7 @@ import { ITheme } from "@theme";
 const MIN_LABEL_WIDTH = 80;
 const GROUP_MAX_HEIGHT = 216;
 
-export const getViewSwitcherUiStyles = (theme: ITheme) => mergeStyleSets({
+export const getDatasetControlUiViewSwitcherStyles = (theme: ITheme) => mergeStyleSets({
     //shares the free space with a ribbon, up to its name and down to the label's minimum
     viewSwitcher: {
         height: HEADER_PART_HEIGHT,

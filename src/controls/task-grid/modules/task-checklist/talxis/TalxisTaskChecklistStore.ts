@@ -1,12 +1,12 @@
 import { DataTypes } from "@talxis/client-libraries";
 import type { ITaskRuntime } from "../../../runtime";
 import type { ITaskDataProvider } from "../../../runtime/provider";
-import type { IChecklistItem, IChecklistStore } from "../Checklist";
+import type { ITaskChecklistItem, ITaskChecklistStore } from "../TaskChecklist";
 
 const CHECKLIST_FIELD = 'talxis_checklistjson';
 
 //the items come with the tasks
-export class TalxisChecklistStore implements IChecklistStore {
+export class TalxisTaskChecklistStore implements ITaskChecklistStore {
     private _taskRuntime: ITaskRuntime;
 
     constructor(taskRuntime: ITaskRuntime) {
@@ -16,19 +16,19 @@ export class TalxisChecklistStore implements IChecklistStore {
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
         //a virtual column is never selected
-        return provider.registerRequiredColumn({ name: CHECKLIST_FIELD, displayName: CHECKLIST_FIELD, dataType: DataTypes.Multiple, isHidden: true, disableSorting: true, order: -1, visualSizeFactor: 100 });
+        return provider.addRequiredColumn({ name: CHECKLIST_FIELD, displayName: CHECKLIST_FIELD, dataType: DataTypes.Multiple, isHidden: true, disableSorting: true, order: -1, visualSizeFactor: 100 });
     };
 
-    public async onLoadItems(taskIds: string[]): Promise<Map<string, IChecklistItem[]>> {
+    public async loadItems(taskIds: string[]): Promise<Map<string, ITaskChecklistItem[]>> {
         const records = this._taskRuntime.getProvider().getRecordsMap();
-        const items = new Map<string, IChecklistItem[]>();
+        const items = new Map<string, ITaskChecklistItem[]>();
         for (const taskId of taskIds) {
             const json: string | null | undefined = records[taskId]?.getRawData()[CHECKLIST_FIELD];
             if (!json) {
                 continue;
             }
             try {
-                items.set(taskId, JSON.parse(json) as IChecklistItem[]);
+                items.set(taskId, JSON.parse(json) as ITaskChecklistItem[]);
             }
             catch {
                 continue;

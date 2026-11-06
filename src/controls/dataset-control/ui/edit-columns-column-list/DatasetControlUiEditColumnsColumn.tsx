@@ -5,13 +5,13 @@ import { CSS } from "@dnd-kit/utilities";
 import { CommandBar } from "@legacy";
 import { useThemeBuilder, useTheme, ThemeProvider } from "@theme";
 import { IEditColumnsListColumn } from "./components";
-import { getEditColumnsColumnListUiStyles } from "./styles";
+import { getDatasetControlUiEditColumnsColumnListStyles } from "./styles";
 
 /** One column in the list, dragged by its body. */
-export const EditColumnsColumn = (props: IEditColumnsListColumn) => {
+export const DatasetControlUiEditColumnsColumn = (props: IEditColumnsListColumn) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.column.name });
     const theme = useTheme();
-    const styles = useMemo(() => getEditColumnsColumnListUiStyles(theme), [theme]);
+    const styles = useMemo(() => getDatasetControlUiEditColumnsColumnListStyles(theme), [theme]);
     const columnTheme = useThemeBuilder({ colors: { primary: theme.palette.themePrimary, background: theme.semanticColors.buttonBackgroundPressed, text: theme.semanticColors.bodyText } });
 
     return <ThemeProvider

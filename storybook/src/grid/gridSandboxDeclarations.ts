@@ -830,20 +830,20 @@ declare class TotalRow {
 declare function createDealsProvider(): MemoryDataProvider;
 /** A script an isolated frame loads, in order: a URL, or a module. */
 type IsolatedFrameScript = string | { src: string; type: 'module' };
-interface IIsolatedComponentOptions {
+interface IIsolatedComponentParameters {
     /** What the frame loads, in order; pass it when the content is in a script of its own. */
     scripts?: IsolatedFrameScript[];
     /** Called with the frame's window before its scripts load. */
-    onPrepareWindow?: (frameWindow: Window) => void;
+    prepareWindow?: (frameWindow: Window) => void;
 }
 /** The frame's own settings; every other prop goes to the content. */
 type IIsolatedComponentProps = { frame?: { className?: string; title?: string } };
 /** The component the page renders: an iframe that loads options.scripts and renders what they registered under key. */
-declare function createIsolatedHost<TProps extends object>(key: string, options?: IIsolatedComponentOptions): React.ComponentType<TProps & IIsolatedComponentProps>;
+declare function createIsolatedHost<TProps extends object>(key: string, options?: IIsolatedComponentParameters): React.ComponentType<TProps & IIsolatedComponentProps>;
 /** Registers what frames render under key; outside a frame it does nothing. */
-declare function registerIsolatedContent<TProps extends object>(key: string, Content: React.ComponentType<TProps>): void;
+declare function defineIsolatedContent<TProps extends object>(key: string, Content: React.ComponentType<TProps>): void;
 /** Both sides from one bundle: the host on the page, the registered content in a frame. */
-declare function createIsolatedComponent<TProps extends object>(key: string, Content: React.ComponentType<TProps>, options?: IIsolatedComponentOptions): React.ComponentType<TProps & IIsolatedComponentProps>;
+declare function createIsolatedComponent<TProps extends object>(key: string, Content: React.ComponentType<TProps>, options?: IIsolatedComponentParameters): React.ComponentType<TProps & IIsolatedComponentProps>;
 /** What an isolated frame loads to run this example: the docs' bundle, then the example's own code. */
 declare const SANDBOX_FRAME_SCRIPTS: IsolatedFrameScript[];
 /** The 30 deals of the sales pipeline, as raw records. */
@@ -971,9 +971,9 @@ declare const Callout: (props: import('@fluentui/react').ICalloutProps & { child
 declare function useAppTheme(): ITheme;
 
 /** The theme a ThemeBuilder builds, kept while the colours and the edit's key stay the same. */
-declare function useThemeBuilder(source: IThemeBuilderSource, options?: IUseThemeBuilderOptions): ITheme;
+declare function useThemeBuilder(source: IThemeBuilderSource, options?: IUseThemeBuilderParameters): ITheme;
 
-interface IUseThemeBuilderOptions {
+interface IUseThemeBuilderParameters {
     /** A hue the background and text are tinted by, as ThemeBuilder.tint does. */
     tint?: { hue: string; strength?: ITintStrength };
     /** One edit over the result; the same key has to mean the same edit. */
@@ -1424,7 +1424,7 @@ interface IGridColDef {
     /** Defaults to Grid.ColumnHeader.Renderer. */
     headerComponent?: (props: IColumnHeaderParams) => JSX.Element | null;
     /** Grid.ColumnHeader.Renderer reads theme and components from it. */
-    headerComponentParams?: IColumnHeaderRendererOptions & { [param: string]: any };
+    headerComponentParams?: IColumnHeaderRendererParameters & { [param: string]: any };
     /** Defaults to the grid's cell bound to the column, or Grid.Cell.EmptyRenderer for an added column. */
     cellRenderer?: (props: IGridCellParams) => JSX.Element | null;
     /** The grid's cell renderers read theme and components from it. */
@@ -1504,7 +1504,7 @@ interface IGridLock {
 type IGridLockLevel = 'column' | 'record' | 'cell';
 
 /** Nothing for the grid, a column, a record's row, or both for a cell. */
-interface IGridLockContext {
+interface IGridLockHookParameters {
     record?: IRecord;
     columnName?: string;
 }
@@ -1517,33 +1517,33 @@ interface IGridLockResult {
 /** What a column decides for each of its cells, after the cell hooks. */
 interface IGridColumnCellContext {
     /** Whether the cell takes input in place without opening an editor. */
-    oneClickEdit?: boolean;
+    enableOneClickEdit?: boolean;
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
     isRowResizable?: boolean;
-    /** Runs after registerCellCommands. */
-    onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
-    /** Runs after every registerCellTheme. */
-    onGetTheme?: (builder: ThemeBuilder, params: { record: IRecord }) => void;
-    /** Runs after the cell-level registerLock hooks. */
-    onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
-    /** Runs after registerCellLoading. */
-    onGetLoading?: (result: IGridCellLoading, params: { record: IRecord }) => void;
-    /** Runs after registerValidation. */
-    onGetValidation?: (result: IFieldValidationResult, params: { record: IRecord }) => void;
-    /** Runs after registerControlParameters. */
-    onGetControlParameters?: (parameters: IParameters, params: { record: IRecord }) => void;
+    /** Runs after addCellCommandsHook. */
+    commandsHook?: (result: IGridCellCommands, params: { record: IRecord }) => void;
+    /** Runs after every addCellThemeHook. */
+    themeHook?: (builder: ThemeBuilder, params: { record: IRecord }) => void;
+    /** Runs after the cell-level addLockHook hooks. */
+    lockHook?: (result: IGridLock, params: { record: IRecord }) => void;
+    /** Runs after addCellLoadingHook. */
+    loadingHook?: (result: IGridCellLoading, params: { record: IRecord }) => void;
+    /** Runs after addValidationHook. */
+    validationHook?: (result: IFieldValidationResult, params: { record: IRecord }) => void;
+    /** Runs after addControlParametersHook. */
+    controlParametersHook?: (parameters: IParameters, params: { record: IRecord }) => void;
 }
 
 /** What a column decides for its header, after the header hooks. */
 interface IGridColumnHeaderContext {
-    /** Runs after registerColumnHeaderTheme. */
-    onGetTheme?: (builder: ThemeBuilder) => void;
-    /** Runs after registerColumnHeaderAdornments. */
-    onGetAdornments?: (adornments: IColumnHeaderAdornment[]) => void;
-    /** Runs after registerColumnMenuSection. */
-    onGetMenuSections?: (sections: IColumnMenuSection[]) => void;
-    /** Runs after registerColumnMenuItems. */
-    onGetMenuItems?: (items: IContextualMenuItem[]) => void;
+    /** Runs after addColumnHeaderThemeHook. */
+    themeHook?: (builder: ThemeBuilder) => void;
+    /** Runs after addColumnHeaderAdornmentsHook. */
+    adornmentsHook?: (adornments: IColumnHeaderAdornment[]) => void;
+    /** Runs after addColumnMenuSectionsHook. */
+    menuSectionsHook?: (sections: IColumnMenuSection[]) => void;
+    /** Runs after addColumnMenuItemsHook. */
+    menuItemsHook?: (items: IContextualMenuItem[]) => void;
 }
 
 interface IGridColumnContext {
@@ -1626,11 +1626,11 @@ interface IGridColumnHeaders {
     /** Redraws every header, for state their columns do not hold. */
     render(): void;
     /** The built-in modules add their sections at GRID_MODULE_PRIORITY. */
-    registerColumnMenuSection(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
+    addColumnMenuSectionsHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
     /** Runs on the menu the sections became. */
-    registerColumnMenuItems(hook: GridColumnMenuItemsHook, priority?: number): () => void;
-    registerColumnHeaderAdornments(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void;
-    registerColumnHeaderTheme(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
+    addColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void;
+    addColumnHeaderAdornmentsHook(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void;
+    addColumnHeaderThemeHook(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
 }
 
 type GridColumnDefinitionsHook = (columnDefs: IGridColDef[]) => void;
@@ -1645,7 +1645,7 @@ interface IGridColumnsEvents {
 interface IGridColumns {
     readonly headers: IGridColumnHeaders;
     /** Runs on every column build, before the colDefs prop. */
-    registerColumnDefinitions(hook: GridColumnDefinitionsHook, priority?: number): () => void;
+    addColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void;
 }
 
 /** Which cell a hook is running for. */
@@ -1771,14 +1771,14 @@ interface IGridCells {
     /** The cell drawing this field, where one is on screen. */
     getCell(record: IRecord, columnName: string): IGridCell | undefined;
     /** Which control draws a cell. */
-    registerControl(hook: GridControlHook, priority?: number): () => void;
+    addControlHook(hook: GridControlHook, priority?: number): () => void;
     /** The parameters the control drawing a cell is handed. */
-    registerControlParameters(hook: GridControlParametersHook, priority?: number): () => void;
+    addControlParametersHook(hook: GridControlParametersHook, priority?: number): () => void;
     /** Below GRID_MODULE_PRIORITY.grouping, a background is lost while grouped. */
-    registerCellTheme(hook: GridCellThemeHook, priority?: number): () => void;
-    registerCellLoading(hook: GridCellLoadingHook, priority?: number): () => void;
+    addCellThemeHook(hook: GridCellThemeHook, priority?: number): () => void;
+    addCellLoadingHook(hook: GridCellLoadingHook, priority?: number): () => void;
     /** Commands show while the row is hovered, focused or selected. */
-    registerCellCommands(hook: GridCellCommandsHook, priority?: number): () => void;
+    addCellCommandsHook(hook: GridCellCommandsHook, priority?: number): () => void;
 }
 
 interface IGridCellParameters {
@@ -1811,37 +1811,37 @@ type GridRowHeightHook = (result: IGridRowHeight, params: { record: IRecord; nod
 /** What the caller decides for each row, after the row-level hooks. */
 interface IGridRowSettings {
     /** Locks a record as a whole, drawn as a dimmed row. */
-    onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
-    onGetHeight?: GridRowHeightHook;
+    lockHook?: (result: IGridLock, params: { record: IRecord }) => void;
+    heightHook?: GridRowHeightHook;
 }
 
 interface IGridRows {
-    registerRowHeight(hook: GridRowHeightHook, priority?: number): () => void;
+    addRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void;
     /** Puts the class on every row with a record the rule holds for; pinned rows never take it. */
-    registerRowClass(className: string, rule: (params: { record: IRecord; node: IRowNode<IRecord> }) => boolean): () => void;
+    addRowClass(className: string, rule: (params: { record: IRecord; node: IRowNode<IRecord> }) => boolean): () => void;
     /** Runs the class rules over the records' rows again. */
     refreshRowClasses(records: IRecord[]): void;
 }
 
-type GridLockHook = (result: IGridLock, context: IGridLockContext) => void;
+type GridLockHook = (result: IGridLock, context: IGridLockHookParameters) => void;
 
 interface IGridLocks {
-    get(context?: IGridLockContext): IGridLockResult;
+    get(context?: IGridLockHookParameters): IGridLockResult;
     /** A context with a record and no columnName asks about the whole row. */
-    registerLock(hook: GridLockHook, priority?: number): () => void;
+    addLockHook(hook: GridLockHook, priority?: number): () => void;
 }
 
 type GridValidationHook = (result: IFieldValidationResult, params: { record: IRecord; columnName: string }) => void;
 
 interface IGridValidation {
     /** An error blocks the record's save. */
-    registerValidation(hook: GridValidationHook, priority?: number): () => void;
+    addValidationHook(hook: GridValidationHook, priority?: number): () => void;
 }
 
 interface IGridSettings {
     isNavigationEnabled(): boolean;
     isZebraEnabled(): boolean;
-    areOptionSetColorsEnabled(): boolean;
+    isOptionSetColorsEnabled(): boolean;
     getDefaultRowHeight(): number;
     getMaxVisibleRows(): number;
     /** How tall the grid is, as a CSS length, or undefined while it grows with its rows. */
@@ -1865,7 +1865,7 @@ interface IGridSurface {
 type GridSurfacesHook = (surfaces: IGridSurface[]) => void;
 
 interface IGridSurfaces {
-    registerSurface(hook: GridSurfacesHook, priority?: number): () => void;
+    addSurfacesHook(hook: GridSurfacesHook, priority?: number): () => void;
 }
 
 type IGridRowModelType = 'clientSide' | 'serverSide';
@@ -1877,8 +1877,8 @@ interface IGridRowModelGroupingParameters {
 
 /** What grouping asks of the row model it runs on. */
 interface IGridRowModelGrouping {
-    onAgGridOptions: (result: IGridAgGridOptions) => void;
-    onApplyColumnDefinition: (colDef: IGridColDef, isGrouped: boolean) => void;
+    applyAgGridOptions: (result: IGridAgGridOptions) => void;
+    applyColumnDefinition: (colDef: IGridColDef, isGrouped: boolean) => void;
     onApplyExpandedLevel: (gridApi: GridApi) => void;
     onExpansionChanged: () => void;
 }
@@ -1926,9 +1926,9 @@ type GridThemeHook = (result: IGridAgTheme, fluentTheme: ITheme) => void;
 /** The AG Grid theme the grid is drawn in, and the styles of its root element. */
 interface IGridTheme {
     /** A hook over the AG Grid theme, read at mount. */
-    registerTheme(hook: GridThemeHook, priority?: number): () => void;
+    addThemeHook(hook: GridThemeHook, priority?: number): () => void;
     /** A later style wins where the selectors are equally specific. */
-    registerStyles(hook: GridStylesHook, priority?: number): () => void;
+    addStylesHook(hook: GridStylesHook, priority?: number): () => void;
 }
 type GridAgGridInitialOptionsHook = (result: IGridAgGridInitialOptions) => void;
 
@@ -1945,18 +1945,18 @@ interface IGrid extends IRuntime {
     /** The modules the grid was given, by name. */
     readonly modules: { get(name: string): any; find(name: string): any; observe(name: string, callback: (instance: any) => void | (() => void)): () => void };
     /** A hook over the options AG Grid reads once, when it is created. */
-    registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
+    addAgGridInitialOptionsHook(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
     /** AG Grid is handed an option again whenever its reference changes. */
-    registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
+    addAgGridOptionsHook(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** Runs the option hooks again. */
     refreshAgGridOptions(): void;
     /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
-    openRecord(params: IGridOpenRecordParams): void;
+    openRecord(params: IGridOpenRecordParameters): void;
     /** A label set's strings, as the LabelsProvider around the grid gives them. */
     getLabels(set: ILabelSet): ILabels;
 }
 
-interface IGridOpenRecordParams {
+interface IGridOpenRecordParameters {
     record: IRecord;
     /** The record to open: the row's own, or the one a lookup link points to. */
     reference: ComponentFramework.EntityReference;
@@ -1985,9 +1985,9 @@ interface IGridRowSelectionEvents {
 interface IGridRowSelection {
     readonly events: IEventEmitter<IGridRowSelectionEvents>;
     getMode(): 'single' | 'multiple';
-    registerSelectRecords(hook: GridSelectRecordsHook, priority?: number): () => void;
-    registerSelectionState(hook: GridSelectionStateHook, priority?: number): () => void;
-    /** Selects the records through the registerSelectRecords hooks. */
+    addSelectRecordsHook(hook: GridSelectRecordsHook, priority?: number): () => void;
+    addSelectionStateHook(hook: GridSelectionStateHook, priority?: number): () => void;
+    /** Selects the records through the addSelectRecordsHook hooks. */
     selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void>;
     toggleRecord(record: IRecord): Promise<void>;
     isSelectionColumn(columnName: string | undefined): boolean;
@@ -2031,7 +2031,7 @@ interface IGridFiltering {
     openFilter(columnName: string, target?: HTMLElement): void;
     closeFilter(): void;
     /** A hook over the parameters the filter callout's operator and value controls are handed. */
-    registerFilterControlParameters(hook: GridFilterControlParametersHook, priority?: number): () => void;
+    addFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void;
     getFilterControlParameters(parameters: IParameters, params: { column: IColumn; control: GridFilterControl; index: number }): IParameters;
     readonly components: IGridFilteringComponents;
 }
@@ -2046,7 +2046,7 @@ interface IGridGrouping {
     isGroupSelectionLimitDialogOpen(): boolean;
     closeGroupSelectionLimitDialog(): void;
     isColumnGrouped(column: IColumn): boolean;
-    canColumnBeGrouped(column: IColumn): boolean;
+    canGroupColumn(column: IColumn): boolean;
     /** Whether the row stands for a group rather than for a record. */
     isGroupRow(node: IRowNode<IRecord>): boolean;
     getGroupedValueColumnName(record: IRecord, columnName: string): string;
@@ -2067,7 +2067,7 @@ interface IGridGrouping {
 
 interface IGridAggregation {
     readonly components: IGridAggregationComponents;
-    canColumnBeAggregated(column: IColumn): boolean;
+    canAggregateColumn(column: IColumn): boolean;
     addAggregation(columnName: string, aggregationFunction: AggregationFunction): void;
     removeAggregation(alias: string): void;
     /** What the column's total is called in the totals row. */
@@ -2217,7 +2217,7 @@ declare const useToastController: typeof import('@fluentui/react-components').us
 
 /** An optional feature a grid can be given. */
 /** What a module's onLoad gets besides its host. */
-interface IModuleLoadContext {
+interface IModuleLoadParameters {
     /** Aborted when the mount goes or another module fails, so a load can cancel what it started. */
     signal: AbortSignal;
 }
@@ -2230,7 +2230,7 @@ interface IGridModule {
     /** AG Grid modules the feature needs. */
     agGridModules?: any[];
     /** Called once as the grid loads, before AG Grid exists; may return a promise. */
-    onLoad(grid: IGrid, context: IModuleLoadContext): any;
+    onLoad(grid: IGrid, context: IModuleLoadParameters): any;
     /** Called as the grid tears down. */
     onDestroy?(instance: any): void;
 }
@@ -2416,7 +2416,7 @@ interface IOptionSetRendererProps {
 }
 
 /** The replaceable pieces of how a value is drawn. */
-interface IValueRendererUiComponents {
+interface ICellUiValueRendererComponents {
     /** The box the value sits in; its \`children\` are the icons and the value. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderText: (props: IFieldTextProps) => JSX.Element;
@@ -2464,7 +2464,7 @@ interface IGridValueRenderer {
     parameters: IGridValueRendererParameters;
     /** Put on the element the value is drawn in, alongside its own class. */
     className?: string;
-    components?: Partial<IValueRendererUiComponents>;
+    components?: Partial<ICellUiValueRendererComponents>;
     onNotifyOutputChanged?: (outputs: { [key: string]: any }) => void;
 }
 
@@ -2715,13 +2715,13 @@ interface IColumnHeaderParams {
 }
 
 /** What colDef.headerComponentParams sets to change a column's header. */
-interface IColumnHeaderRendererOptions {
+interface IColumnHeaderRendererParameters {
     /** The seed the header's theme is generated from. */
     theme?: ITheme;
     components?: IColumnHeaderRendererComponents;
 }
 
-interface IColumnHeaderRendererProps extends IColumnHeaderParams, IColumnHeaderRendererOptions {}
+interface IColumnHeaderRendererProps extends IColumnHeaderParams, IColumnHeaderRendererParameters {}
 
 interface IColumnHeaderRootProps extends IColumnHeaderParams {
     children?: React.ReactNode;
@@ -2790,7 +2790,7 @@ interface IOverlayUiLoadingComponents {
     onRenderText: (props: ITextProps) => JSX.Element | null;
 }
 
-interface IEmptyStateUiComponents {
+interface IDatasetControlUiEmptyStateComponents {
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderIcon: (props: IIconProps) => JSX.Element | null;
     onRenderText: (props: ITextProps) => JSX.Element | null;
@@ -2802,10 +2802,10 @@ interface IOverlayUiLoadingProps {
     components?: Partial<IOverlayUiLoadingComponents>;
 }
 
-interface IEmptyStateUiProps {
+interface IDatasetControlUiEmptyStateProps {
     message: string;
     className?: string;
-    components?: Partial<IEmptyStateUiComponents>;
+    components?: Partial<IDatasetControlUiEmptyStateComponents>;
 }
 
 interface IOverlayUi {
@@ -2968,7 +2968,7 @@ interface IRecordSaveSelectionCellProps extends ICellRendererParams<IRecord> {
 /** Replaces parts of what the grid draws over its rows. */
 interface IGridOverlayComponents {
     loading?: Partial<IOverlayUiLoadingComponents>;
-    emptyState?: Partial<IEmptyStateUiComponents>;
+    emptyState?: Partial<IDatasetControlUiEmptyStateComponents>;
 }
 
 /** Replaces parts of the rows the grid draws in place of records. */
@@ -2984,15 +2984,15 @@ interface IGridComponents {
 }
 
 /** What happens inside the grid, for a consumer to react to. */
-interface IGridEventHandlers {
+interface IGridEventProps {
     onDataLoaded: () => void;
     onLoadingChanged: (isLoading: boolean) => void;
     onRecordValueChanged: (record: IRecord, columnName: string, newValue: any) => void;
-    onBeforeRecordSaved: (record: IRecord) => void;
+    onBeforeRecordSave: (record: IRecord) => void;
     /** Fired per record, auto-save included. */
-    onAfterRecordSaved: (result: IRecordSaveOperationResult) => void;
+    onAfterRecordSave: (result: IRecordSaveOperationResult) => void;
     /** Fired once provider.save() has saved every record. */
-    onAfterSaved: (results: IRecordSaveOperationResult[]) => void;
+    onAfterSave: (results: IRecordSaveOperationResult[]) => void;
     onError: (message: string, details?: any) => void;
     /** Fired whether or not the record then opens. */
     onCellDoubleClicked: (record: IRecord, columnName: string) => void;
@@ -3002,7 +3002,7 @@ interface IGridEventHandlers {
     onColumnsChanged: (columns: IColumn[]) => void;
 }
 
-interface IGridProps extends Partial<IGridEventHandlers> {
+interface IGridProps extends Partial<IGridEventProps> {
     /** What this grid is made of, in load order; read once, at mount, and must hold a row model. */
     modules: IGridModule[];
     /** True by default and read once, at mount. */
@@ -3027,7 +3027,7 @@ interface IGridProps extends Partial<IGridEventHandlers> {
     stateKey?: string;
     rowSettings?: IGridRowSettings;
     /** Replaces opening a record from the grid. */
-    onOpenRecord?: (params: IGridOpenRecordParams) => void;
+    onOpenRecord?: (params: IGridOpenRecordParameters) => void;
     /** Called with each new grid, before it loads; subscribe and keep refs here. */
     onSetup?: (grid: IGrid) => void;
     /** Awaited after the modules load and before AG Grid renders, on every mount. */
@@ -3075,7 +3075,7 @@ interface ISelectionHeaderProps extends IColumnHeaderParams {
     components?: ISelectionHeaderComponents;
 }
 
-interface IRowSelectionModuleOptions {
+interface IRowSelectionModuleParameters {
     mode: 'single' | 'multiple';
     /** Called when the selected records change, with the ids now selected. */
     onSelectionChanged?: (selectedRecordIds: string[]) => void;
@@ -3117,7 +3117,7 @@ interface IGridSortingComponents {
     sortIcon?: Partial<IGridSortingIconComponents>;
 }
 
-interface ISortingModuleOptions {
+interface ISortingModuleParameters {
     components?: IGridSortingComponents;
 }
 
@@ -3140,7 +3140,7 @@ interface IGridFilteringComponents {
     filterCallout?: Partial<IFilteringUiCalloutComponents>;
 }
 
-interface IFilteringModuleOptions {
+interface IFilteringModuleParameters {
     components?: IGridFilteringComponents;
 }
 
@@ -3189,10 +3189,10 @@ interface IGroupExpansionHeaderProps extends IColumnHeaderParams {
     components?: IGroupExpansionHeaderComponents;
 }
 
-interface IGroupingModuleOptions {
+interface IGroupingModuleParameters {
     components?: IGridGroupingComponents;
     /** True by default. */
-    allowUserGrouping?: boolean;
+    enableUserGrouping?: boolean;
     /** nested by default. */
     type?: 'nested' | 'flat';
     /** -1 by default. */
@@ -3223,13 +3223,13 @@ interface IGridAggregationComponents {
     aggregateCell?: IAggregateCellComponents;
 }
 
-interface IAggregationModuleOptions {
+interface IAggregationModuleParameters {
     /** True by default. */
-    allowUserAggregation?: boolean;
+    enableUserAggregation?: boolean;
     components?: IGridAggregationComponents;
 }
 
-interface ILicenseModuleOptions {
+interface ILicenseModuleParameters {
     /** The AG Grid Enterprise key. */
     key: string;
 }
@@ -3411,9 +3411,9 @@ declare function createClientSideRowModelModule(): IGridModule;
 /** An AG Grid Enterprise module that reads a level at a time. */
 declare function createServerSideRowModelModule(): IGridModule;
 /** Licenses AG Grid Enterprise. */
-declare function createLicenseModule(options: ILicenseModuleOptions): IGridModule;
+declare function createLicenseModule(options: ILicenseModuleParameters): IGridModule;
 /** Lets rows be selected from a checkbox column. */
-declare function createRowSelectionModule(options: IRowSelectionModuleOptions): IGridModule;
+declare function createRowSelectionModule(options: IRowSelectionModuleParameters): IGridModule;
 /** An AG Grid Enterprise module for highlighting ranges of cells. */
 declare function createCellSelectionModule(options?: IGridCellSelectionOptions): IGridModule;
 /** AG Grid Enterprise copying, with no paste into records. */
@@ -3435,30 +3435,30 @@ declare const RecordSaveSelectionCell: (props: IRecordSaveSelectionCellProps) =>
 declare const RecordLockIcon: (props: IRecordLockIconProps) => JSX.Element | null;
 /** The cell a locked record's row shows its lock in; from the editing module. */
 declare const RecordLockIndicatorCell: (props: IRecordLockIndicatorCellProps) => JSX.Element;
-/** Lets the cells be edited, and saves each edit with autoSave. */
-declare function createEditingModule(options?: { autoSave?: boolean; onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'] }): IGridModule;
+/** Lets the cells be edited, and saves each edit with enableAutoSave. */
+declare function createEditingModule(options?: { enableAutoSave?: boolean; onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'] }): IGridModule;
 /** Lets a column be sorted from its menu, unless it sets disableSorting. */
-declare function createSortingModule(options?: ISortingModuleOptions): IGridModule;
+declare function createSortingModule(options?: ISortingModuleParameters): IGridModule;
 /** Lets a column with filter operators be filtered from its menu. */
-declare function createFilteringModule(options?: IFilteringModuleOptions): IGridModule;
+declare function createFilteringModule(options?: IFilteringModuleParameters): IGridModule;
 /** Groups the rows by a column with AG Grid Enterprise. */
-declare function createGroupingModule(options?: IGroupingModuleOptions): IGridModule;
+declare function createGroupingModule(options?: IGroupingModuleParameters): IGridModule;
 /** Shows totals in a row pinned under the rest. */
-declare function createAggregationModule(options?: IAggregationModuleOptions): IGridModule;
+declare function createAggregationModule(options?: IAggregationModuleParameters): IGridModule;
 /** Carries what legacy scripts set on records' fields into the cells. */
 declare function createLegacyClientApiCompatibilityModule(): IGridModule;
 /** Which of the provider's columns carry the label, the order and the completion state. */
 /** What makes the grid a checklist: grid.modules.find('checkList'). */
-interface IGridCheckList {
+interface IGridChecklist {
     /** The columns the checklist works with. */
-    getFieldMapping(): ICheckListFieldMapping;
+    getFieldMapping(): IChecklistFieldMapping;
     /** Whether the record is one of the list's items, not the row that adds one. */
     isItem(record: IRecord): boolean;
     /** Whether the item is finished. */
     isCompleted(record: IRecord): boolean;
 }
 
-interface ICheckListFieldMapping {
+interface IChecklistFieldMapping {
     /** Column holding the item's label. */
     name: string;
     /** Column the list is ordered by, hidden from the grid. */
@@ -3469,20 +3469,20 @@ interface ICheckListFieldMapping {
 
 /** The strings a checklist draws on top of the grid's own. */
 
-declare const CHECK_LIST_LABELS: ILabelSet;
+declare const CHECKLIST_LABELS: ILabelSet;
 /** The notification bar's strings, keys \`notificationMessageBar.*\`. */
 declare const NOTIFICATION_MESSAGE_BAR_LABELS: ILabelSet;
 
 /** The replaceable pieces of the completion checkbox. */
-interface ICompletionCheckboxUiComponents {
+interface IChecklistUiCompletionCheckboxComponents {
     /** The button; its \`children\` are the check. */
     onRenderButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => JSX.Element | null;
     onRenderCheck: (props: ICheckProps) => JSX.Element | null;
 }
 
-interface ICheckListProps extends Omit<IGridProps, 'modules'> {
+interface IChecklistProps extends Omit<IGridProps, 'modules'> {
     /** Read once, at mount. */
-    fieldMapping: ICheckListFieldMapping;
+    fieldMapping: IChecklistFieldMapping;
     /** Defaults to an auto-saving editing module; a list without editing is read-only. Read once, at mount. */
     modules?: IGridModule[];
 }
@@ -3490,29 +3490,29 @@ interface ICheckListProps extends Omit<IGridProps, 'modules'> {
 /** The cell an item is ticked off in; put it on a column through the grid's column hooks. */
 /** The completion cell's pieces: the cell's own, and the checkbox under \`checkbox\`. */
 interface ICompletionCellComponents extends ICellRendererComponents {
-    checkbox?: Partial<ICompletionCheckboxUiComponents>;
+    checkbox?: Partial<IChecklistUiCompletionCheckboxComponents>;
 }
 
 declare const CompletionCell: (props: ICellRendererParams & { components?: ICompletionCellComponents }) => JSX.Element;
 
 /** The replaceable pieces of an item's name. */
-interface INameCellUiComponents {
+interface IChecklistUiNameCellComponents {
     /** The box the name is drawn in; its \`className\` carries the strike-through. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
 /** The name cell's pieces: the cell's own, and the struck-through name under \`name\`. */
 interface INameCellComponents extends ICellRendererComponents {
-    name?: Partial<INameCellUiComponents>;
+    name?: Partial<IChecklistUiNameCellComponents>;
 }
 
 /** The cell of an item's name, struck through once finished; put it on a column through the grid's column hooks. */
 declare const NameCell: (props: ICellRendererParams & { components?: INameCellComponents }) => JSX.Element;
 
 /** A grid over the provider's records as a checklist. */
-declare const CheckList: (props: ICheckListProps) => JSX.Element;
+declare const Checklist: (props: IChecklistProps) => JSX.Element;
 /** Sorts the provider by the checklist's stackRank column; call it before the provider loads. */
-declare const sortCheckListProvider: <TProvider extends IDataProvider>(provider: TProvider, fieldMapping: Pick<ICheckListFieldMapping, 'stackRank'>) => TProvider;
+declare const sortChecklistProvider: <TProvider extends IDataProvider>(provider: TProvider, fieldMapping: Pick<IChecklistFieldMapping, 'stackRank'>) => TProvider;
 
 declare const ContextualMenuItemType: typeof import('@fluentui/react').ContextualMenuItemType;
 
@@ -3557,7 +3557,7 @@ interface IDatasetControlViewSwitcher {
     /** Loads the control for the view. */
     select(viewId: string): void;
     /** Registers a hook over the items of the switcher's menu, which it adds to or changes in place. */
-    registerItems(hook: (items: IContextualMenuItem[]) => void, priority?: number): () => void;
+    addItemsHook(hook: (items: IContextualMenuItem[]) => void, priority?: number): () => void;
 }
 
 interface IViewSwitcherProps {
@@ -3572,7 +3572,7 @@ interface IDatasetControlModule {
     name: string;
     /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
     priority?: number;
-    onLoad(datasetControl: any, context: IModuleLoadContext): any;
+    onLoad(datasetControl: any, context: IModuleLoadParameters): any;
     /** Called as the mount goes, with what onLoad returned. */
     onDestroy?(instance: any): void;
 }
@@ -3624,8 +3624,8 @@ interface IUserQuerySavedValueMap {
 /** The userQueries module, as datasetControl.modules.get('userQueries') returns it. */
 interface IDatasetControlUserQueries {
     readonly events: IEventSubscriber<{ onOperationFailed: (error: unknown) => void }>;
-    /** Saves what onGetValue returns with every user view; onApplyValue puts it back as a user view opens. */
-    saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, onGetValue: () => IUserQuerySavedValueMap[TKey] | undefined, onApplyValue?: (value: IUserQuerySavedValueMap[TKey], provider: IDataProvider) => void): () => void;
+    /** Saves what getValue returns with every user view; applyValue puts it back as a user view opens. */
+    saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, getValue: () => IUserQuerySavedValueMap[TKey] | undefined, applyValue?: (value: IUserQuerySavedValueMap[TKey], provider: IDataProvider) => void): () => void;
 }
 
 /** A Dataverse table the user's views are kept in. */
@@ -3661,7 +3661,7 @@ declare class DataverseUserQueriesStore<TData = unknown> implements IUserQueries
 /** The user's own views: listed with the control's, and added and deleted through DatasetControl.UserQueries. */
 declare const createUserQueriesModule: <TData>(parameters: {
     /** Makes the store the user's views are kept in. */
-    onCreateStore: (datasetControl: IDatasetControl<TData>) => IUserQueriesStore<TData>;
+    createStore: (datasetControl: IDatasetControl<TData>) => IUserQueriesStore<TData>;
 } & IUserQueriesCommands) => IDatasetControlModule;
 
 /** The user's views kept in the browser's localStorage, with their columns and data as JSON. */
@@ -3711,7 +3711,7 @@ interface IRibbonCommandBase {
     /** A Fluent icon name. */
     iconName?: string;
     /** The ribbon also disables an action while it runs. */
-    isDisabled?: boolean;
+    disabled?: boolean;
 }
 
 /** A command the ribbon runs when clicked. */
@@ -3729,7 +3729,7 @@ interface IRibbonMenuCommand extends IRibbonCommandBase {
 /** What the ribbon draws: a button that runs, or a menu. */
 type IRibbonCommand = IRibbonActionCommand | IRibbonMenuCommand;
 
-interface IRibbonRuntimeEvents {
+interface IRibbonEvents {
     /** The commands were loaded again, after init. */
     onCommandsChanged: () => void;
     /** A reload failed; the commands before it stay. */
@@ -3740,20 +3740,20 @@ interface IRibbonRuntimeEvents {
 }
 
 /** The ribbon's commands, and which of them are running. */
-interface IRibbonRuntime extends IRuntime {
-    readonly events: IEventSubscriber<IRibbonRuntimeEvents>;
+interface IRibbon extends IRuntime {
+    readonly events: IEventSubscriber<IRibbonEvents>;
     /** undefined until init finishes. */
     getCommands(): IRibbonCommand[] | undefined;
     isRunning(commandId: string): boolean;
     /** Loads the commands again in place; the latest call wins. */
     reload(): Promise<void>;
     /** Registers a hook over the commands, run after onLoad on every load; call reload to apply it now. A higher priority gets the later word. Returns what takes it back off. */
-    registerCommands(hook: (commands: IRibbonCommand[]) => void, priority?: number): () => void;
+    addCommandsHook(hook: (commands: IRibbonCommand[]) => void, priority?: number): () => void;
 }
 
 interface IRibbonProps {
-    /** Called on init and on every reload(); the commands registered through registerCommands follow. */
-    onLoad?: (ribbon: IRibbonRuntime) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
+    /** Called on init and on every reload(); the commands registered through addCommandsHook follow. */
+    onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to 'start'. */
     align?: 'start' | 'end';
     /** Put on the ribbon's box, and on the shimmer while loading. */
@@ -3761,7 +3761,7 @@ interface IRibbonProps {
     /** Disables every command, menus included. */
     disabled?: boolean;
     /** Called with the runtime of each mount, before its init; register commands and subscribe here. */
-    onSetup?: (ribbon: IRibbonRuntime) => void;
+    onSetup?: (ribbon: IRibbon) => void;
     components?: {
         onRenderCommandBar?: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null;
         /** The shimmer that stands in for the commands until the first load finishes. */
@@ -3782,9 +3782,9 @@ declare const RuntimeLifecycle: typeof import('@talxis/base-controls').RuntimeLi
 /** The runtime of the nearest RuntimeHost; for the control's own mount component only. */
 declare const useRuntime: typeof import('@talxis/base-controls').useRuntime;
 /** The ribbon's commands as plain UI, with no runtime behind them. */
-declare const RibbonUi: (props: { items: ICommandBarItemProps[]; align?: 'start' | 'end'; className?: string }) => JSX.Element;
+declare const RibbonUiCommandBar: (props: { items: ICommandBarItemProps[]; align?: 'start' | 'end'; className?: string }) => JSX.Element;
 /** The ribbon's default slot: the command bar. */
-declare const RibbonUiComponents: { onRenderCommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null };
+declare const RibbonUiCommandBarComponents: { onRenderCommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null };
 /** The loading boundary's default slots: a spinner with a text beside it. */
 declare const LoadingBoundaryComponents: {
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
@@ -3792,7 +3792,7 @@ declare const LoadingBoundaryComponents: {
     onRenderText: (props: import('@fluentui/react').ITextProps) => JSX.Element | null;
 };
 /** The ribbon shimmer's default slot. */
-declare const RibbonShimmerUiComponents: { onRenderShimmer: (props: import('@fluentui/react').IShimmerProps) => JSX.Element | null };
+declare const RibbonUiShimmerComponents: { onRenderShimmer: (props: import('@fluentui/react').IShimmerProps) => JSX.Element | null };
 
 /** Subscribing to an emitter's events, without dispatching them. */
 type IEventSubscriber<T> = {
@@ -3827,9 +3827,9 @@ interface IDatasetControlEditColumns {
     /** The edit in progress; there only while the editor is open. */
     getSession(): DatasetControlEditColumnsSession | undefined;
     /** Registers a hook over the commands at the top of the editor. */
-    registerCommands(hook: (commands: ICommandBarItemProps[], session: DatasetControlEditColumnsSession) => void, priority?: number): () => void;
+    addCommandsHook(hook: (commands: ICommandBarItemProps[], session: DatasetControlEditColumnsSession) => void, priority?: number): () => void;
     /** Registers a hook over each chosen column's commands, Remove first. */
-    registerColumnCommands(hook: (commands: ICommandBarItemProps[], column: IColumn, session: DatasetControlEditColumnsSession) => void, priority?: number): () => void;
+    addColumnCommandsHook(hook: (commands: ICommandBarItemProps[], column: IColumn, session: DatasetControlEditColumnsSession) => void, priority?: number): () => void;
 }
 
 /** The edit the column editor holds while it is open. */
@@ -3863,7 +3863,7 @@ interface IDatasetControlPagination {
 
 /** How many records a page holds, and which of them the page shows. */
 interface IDatasetControlPageSizeSwitcher {
-    readonly events: IEventSubscriber<{ onPageSizeChanged: () => void }>;
+    readonly events: IEventSubscriber<{ onChanged: () => void }>;
     getPageSize(): number;
     getPageSizes(): number[];
     isLoading(): boolean;
@@ -3881,7 +3881,7 @@ interface IDatasetControlNotifications {
 /** The parts rendered inside the control, each there only while it is rendered. */
 interface IDatasetControlPartMap {
     viewSwitcher: IDatasetControlViewSwitcher;
-    ribbon: IRibbonRuntime;
+    ribbon: IRibbon;
     quickFind: IDatasetControlQuickFind;
     pagination: IDatasetControlPagination;
     pageSizeSwitcher: IDatasetControlPageSizeSwitcher;
@@ -3910,7 +3910,7 @@ declare function useDatasetControlRegion(): 'start' | 'end' | undefined;
 /** A module the control loaded, by name; throws when it was not given. */
 declare function useDatasetControlModule(name: string): any;
 /** Makes a part once and registers it on the control under name, for control.parts. */
-declare function useRegisterDatasetControlPart<TName extends keyof IDatasetControlPartMap>(name: TName, onCreate: () => IDatasetControlPartMap[TName]): IDatasetControlPartMap[TName];
+declare function useRegisterDatasetControlPart<TName extends keyof IDatasetControlPartMap>(name: TName, create: () => IDatasetControlPartMap[TName]): IDatasetControlPartMap[TName];
 
 /** The overlay that covers the whole control while something runs. */
 interface IDatasetControlLoadingOverlay {
@@ -3938,7 +3938,7 @@ interface IDatasetControlSurface {
 type DatasetControlSurfacesHook = (surfaces: IDatasetControlSurface[]) => void;
 
 interface IDatasetControlSurfaces {
-    registerSurface(hook: DatasetControlSurfacesHook, priority?: number): () => void;
+    addSurfacesHook(hook: DatasetControlSurfacesHook, priority?: number): () => void;
 }
 
 /** The DatasetControl as its consumer drives it; a new one for every mount. */
@@ -3994,7 +3994,7 @@ interface IErrorMessageBarComponents {
 }
 
 /** The quick find's slots. */
-interface IQuickFindUiComponents {
+interface IDatasetControlUiQuickFindComponents {
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderTextField: (props: any) => JSX.Element | null;
     /** The search button drawn in place of the field while the quick find is compact. */
@@ -4044,20 +4044,20 @@ interface IDatasetControlNamespace {
     /** Reach it through control.parts.get('ribbon'). */
     Ribbon: (props: Omit<IRibbonProps, 'onSetup' | 'align'> & { enableRefresh?: boolean; enableSave?: boolean; enableDiscard?: boolean }) => JSX.Element;
     QuickFind: (props: {
-        components?: Partial<IQuickFindUiComponents>;
+        components?: Partial<IDatasetControlUiQuickFindComponents>;
     }) => JSX.Element;
     Notifications: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[]; components?: Partial<{ onRenderNotifications: (props: INotificationMessageBarProps) => JSX.Element | null }> }) => JSX.Element;
     Pagination: (props: { components?: Partial<{ onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }> }) => JSX.Element;
     PageSizeSwitcher: (props: { pageSizes?: number[]; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
     /** The empty state in place of its children while the provider has no records. */
-    EmptyState: (props: { children?: React.ReactNode; components?: Partial<IEmptyStateUiComponents> }) => JSX.Element;
+    EmptyState: (props: { children?: React.ReactNode; components?: Partial<IDatasetControlUiEmptyStateComponents> }) => JSX.Element;
     /** The button that opens the column editor, and the editor itself. */
     EditColumns: (props: {
         components?: IEditColumnsComponents;
     }) => JSX.Element;
     /** Saving and managing the user's own views; goes inside ViewSwitcher, with the user queries module. */
     UserQueries: (props: { components?: any }) => JSX.Element;
-    Ui: { EditColumnsColumn: (props: IDatasetControlListColumn) => JSX.Element; EmptyState: (props: IEmptyStateUiProps) => JSX.Element | null; [part: string]: any };
+    Ui: { EditColumnsColumn: (props: IDatasetControlListColumn) => JSX.Element; EmptyState: (props: IDatasetControlUiEmptyStateProps) => JSX.Element | null; [part: string]: any };
 }
 
 declare const DatasetControl: IDatasetControlNamespace;
@@ -4082,7 +4082,7 @@ declare const useDatasetControlHeader: () => {
 declare const useDatasetControl: <TData = unknown>() => IDatasetControl<TData>;
 declare const ErrorMessageBarComponents: IErrorMessageBarComponents;
 /** The view switcher's default slots, to render the default button with your own items. */
-declare const ViewSwitcherUiComponents: { onRenderButton: (props: IButtonProps) => JSX.Element | null };
+declare const DatasetControlUiViewSwitcherComponents: { onRenderButton: (props: IButtonProps) => JSX.Element | null };
 
 
 /** Which columns of a task record hold what the task grid works with. */
@@ -4132,13 +4132,13 @@ interface ITaskDataProvider extends IDataProvider {
     /** The columns quick find searches, by name. */
     setQuickFindColumns(columnNames: string[]): void;
     /** Changes the available columns, also read as definitions for saved views that list them. */
-    registerAvailableColumns(hook: (columns: IColumn[]) => void, priority?: number): () => void;
+    addAvailableColumnsHook(hook: (columns: IColumn[]) => void, priority?: number): () => void;
     /** Reads the tasks with this column whatever the view shows; returns its unregistration. */
-    registerRequiredColumn(column: IColumn): () => void;
+    addRequiredColumn(column: IColumn): () => void;
     /** Answers filters and quick find for the columns the matcher claims. */
-    registerColumnMatcher(matcher: ITaskColumnMatcher): () => void;
+    addColumnMatcher(matcher: ITaskColumnMatcher): () => void;
     /** Runs before every data load hands its tasks out, and is waited for. */
-    registerLoadWaiter(waiter: TaskLoadWaiter): () => void;
+    addLoadWaiter(waiter: TaskLoadWaiter): () => void;
     /** Whether the current sorting, filtering or quick find reads the column. */
     isColumnQueried(columnName: string): boolean;
     /** Merges raw data into the loaded tasks by their primary id, keeping the user's unsaved edits, and redraws them. */
@@ -4147,7 +4147,7 @@ interface ITaskDataProvider extends IDataProvider {
 
 /** One mount of a TaskDatasetControl: what its modules register on and its parts read. */
 /** How execute shows a run and handles its failure; by default it shows the loading, and the dialog before rethrowing. */
-interface ITaskExecuteOptions {
+interface ITaskExecuteParameters {
     loading?: {
         /** Defaults to true; false for a run in the background. */
         show?: boolean;
@@ -4190,10 +4190,10 @@ interface ITaskRuntime extends IRuntime {
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
     /** Runs the operation with the grid loading, and shows its failure once in a dialog. */
-    execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
-    execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
+    execute<T>(operation: () => Promise<T>, options: ITaskExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
+    execute<T>(operation: () => Promise<T>, options?: ITaskExecuteParameters): Promise<T>;
     /** Registers a hook over every item TaskDatasetControl.Ribbon draws, the ones in its menus included. */
-    registerRibbonCommandUi(hook: (item: IContextualMenuItem) => void, priority?: number): () => void;
+    addRibbonCommandUiHook(hook: (item: IContextualMenuItem) => void, priority?: number): () => void;
 }
 
 interface IDatasetControlModuleMap {
@@ -4246,11 +4246,11 @@ interface IProjectModule extends IDatasetControlModule { }
 /** Where the project comes from. */
 interface IProjectStore<TData = { [key: string]: unknown }> {
     /** Called on every mount, before the tasks load. */
-    onLoadProject(): Promise<IProjectData<TData>>;
+    loadProject(): Promise<IProjectData<TData>>;
 }
 
 /** The project the tasks belong to, loaded on every mount and kept on the task runtime as project. */
-declare const createProjectModule: <TData>(parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => IProjectStore<TData> }) => IProjectModule;
+declare const createProjectModule: <TData>(parameters: { createStore: (taskRuntime: ITaskRuntime) => IProjectStore<TData> }) => IProjectModule;
 /** The project module for a project held in memory. */
 declare const createMemoryProjectModule: <TData>(parameters: { project: IProjectData<TData> }) => IProjectModule;
 
@@ -4302,11 +4302,11 @@ declare class LocalStorageUserQueriesStore<TData = unknown> implements IUserQuer
     createManageProvider(): IDataProvider;
 }
 /** The quick find's default slots. */
-declare const QuickFindUiComponents: IQuickFindUiComponents;
+declare const DatasetControlUiQuickFindComponents: IDatasetControlUiQuickFindComponents;
 /** The pagination's default slots. */
-declare const PaginationUiComponents: { onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null };
+declare const DatasetControlUiPaginationComponents: { onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null };
 /** The empty state part's default slots. */
-declare const EmptyStateUiComponents: IEmptyStateUiComponents;
+declare const DatasetControlUiEmptyStateComponents: IDatasetControlUiEmptyStateComponents;
 
 /** The task runtime of the TaskDatasetControl around the component. */
 declare const useTaskRuntime: () => ITaskRuntime;
@@ -4329,17 +4329,17 @@ declare const createTaskDraggingModule: (parameters?: {
 
 /** Where custom column definitions and values are kept. */
 interface ICustomColumnsStore {
-    onLoadColumns(): Promise<IColumn[]>;
-    onLoadValues(taskIds: string[]): Promise<Map<string, IRawRecord>>;
-    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<any>;
-    onCreateColumn(): Promise<string | null>;
-    onUpdateColumn(columnName: string): Promise<string | null>;
-    onDeleteColumn(columnName: string): Promise<string | null>;
+    loadColumns(): Promise<IColumn[]>;
+    loadValues(taskIds: string[]): Promise<Map<string, IRawRecord>>;
+    saveValue(record: IRecord, column: IColumn, value: unknown): Promise<any>;
+    createColumn(): Promise<string | null>;
+    updateColumn(columnName: string): Promise<string | null>;
+    deleteColumn(columnName: string): Promise<string | null>;
 }
 
 /** The user's own task columns, loaded on every mount before the tasks. */
 declare const createCustomColumnsModule: (parameters: {
-    onCreateStore: (taskRuntime: ITaskRuntime) => ICustomColumnsStore;
+    createStore: (taskRuntime: ITaskRuntime) => ICustomColumnsStore;
     /** The Add custom column command in Edit columns. */
     enableCreation?: boolean;
     /** The edit command on each custom column in Edit columns. */
@@ -4397,17 +4397,17 @@ interface ILookupManyOptionsParameters<TColumn extends ILookupManyColumn = ILook
 /** Where lookup-many values are kept. */
 interface ILookupManyStore<TColumn extends ILookupManyColumn = ILookupManyColumn> {
     /** Every mapped column's references of these tasks, by task id and column name. */
-    onLoadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: ComponentFramework.EntityReference[] }>>;
-    onSaveValue(taskId: string, columnName: string, value: ComponentFramework.EntityReference[]): Promise<void>;
+    loadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: ComponentFramework.EntityReference[] }>>;
+    saveValue(taskId: string, columnName: string, value: ComponentFramework.EntityReference[]): Promise<void>;
     /** A provider over the records the column can take; undefined leaves the cell read-only. */
-    onCreateOptionsProvider(parameters: ILookupManyOptionsParameters<TColumn>): IDataProvider | undefined;
+    createOptionsProvider(parameters: ILookupManyOptionsParameters<TColumn>): IDataProvider | undefined;
 }
 
 /** The task columns in columns, drawn as pills and picked in a pop-out editor. */
 declare const createLookupManyModule: <TColumn extends ILookupManyColumn>(parameters: {
     /** The lookup-many columns by name. */
     columns: { [columnName: string]: TColumn };
-    onCreateStore: (taskRuntime: ITaskRuntime) => ILookupManyStore<TColumn>;
+    createStore: (taskRuntime: ITaskRuntime) => ILookupManyStore<TColumn>;
 }) => IDatasetControlModule;
 
 /** Lookup-many columns over records held in memory, starting over on every mount like the memory tasks. */
@@ -4465,7 +4465,7 @@ interface ITemplate {
 type TaskCreatePosition = 'first' | 'last';
 
 /** Where a new task lands, and what it starts with. */
-interface ITaskCreateParams {
+interface ITaskCreateParameters {
     /** None for the top level. */
     parentRecord?: IRecord;
     /** Resolved by the provider; the store saves it as is. */
@@ -4475,7 +4475,7 @@ interface ITaskCreateParams {
 }
 
 /** Where a template's tasks go: the template, and where its own task lands. */
-interface ITemplateTasksCreateParams extends Omit<ITaskCreateParams, 'data'> {
+interface ITemplateTasksCreateParameters extends Omit<ITaskCreateParameters, 'data'> {
     templateId: string;
 }
 
@@ -4488,15 +4488,15 @@ interface ITasksCreateResult {
 /** Where templates are kept, and what creates tasks from them. */
 interface ITemplatesStore {
     /** A provider over the templates, searched by the picker; made each time it opens. */
-    onCreateTemplatesProvider(): IDataProvider;
+    createTemplatesProvider(): IDataProvider;
     /** The tasks created, or null when there were none or the user cancelled. */
-    onCreateTasks(params: ITemplateTasksCreateParams): Promise<ITasksCreateResult | null>;
+    createTasks(params: ITemplateTasksCreateParameters): Promise<ITasksCreateResult | null>;
     /** Without it, tasks cannot be saved as templates. */
-    onCreateTemplate?(template: ITemplate): Promise<void>;
+    createTemplate?(template: ITemplate): Promise<void>;
 }
 
 /** Offers New, From template and Save as template in the ribbon, and From template on each row. */
-declare const createTemplatesModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime) => ITemplatesStore }) => IDatasetControlModule;
+declare const createTemplatesModule: (parameters: { createStore: (taskRuntime: ITaskRuntime) => ITemplatesStore }) => IDatasetControlModule;
 
 /** One task of a memory template, with its subtree. */
 interface IMemoryTemplateTask {
@@ -4515,9 +4515,9 @@ interface IMemoryTemplate extends IMemoryTemplateTask {
 declare class MemoryTemplatesStore implements ITemplatesStore {
     /** Its tasks are created in the database the grid's MemoryTaskStore reads. */
     constructor(parameters: { taskRuntime: ITaskRuntime; database: MemoryTaskDatabase; templates: IMemoryTemplate[] });
-    onCreateTemplatesProvider(): IDataProvider;
-    onCreateTasks(params: ITemplateTasksCreateParams): Promise<ITasksCreateResult | null>;
-    onCreateTemplate(template: ITemplate): Promise<void>;
+    createTemplatesProvider(): IDataProvider;
+    createTasks(params: ITemplateTasksCreateParameters): Promise<ITasksCreateResult | null>;
+    createTemplate(template: ITemplate): Promise<void>;
 }
 
 /** Task templates held in memory, the ones captured since kept for as long as the module is. */
@@ -4527,31 +4527,31 @@ declare const createMemoryTemplatesModule: (parameters: { database: MemoryTaskDa
 declare const TEMPLATES: IMemoryTemplate[];
 
 /** One item of a task's checklist. */
-interface IChecklistItem {
+interface ITaskChecklistItem {
     id: string;
     name: string;
     isCompleted: boolean;
 }
 
 /** Where checklist items are kept. */
-interface IChecklistStore {
+interface ITaskChecklistStore {
     /** The items of these tasks, by task id; a task with none may be left out. */
-    onLoadItems(taskIds: string[]): Promise<Map<string, IChecklistItem[]>>;
+    loadItems(taskIds: string[]): Promise<Map<string, ITaskChecklistItem[]>>;
 }
 
 /** Each task's checklist progress as done/total, in a column Edit columns offers. */
-declare const createChecklistModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime, checklist: any) => IChecklistStore }) => IDatasetControlModule;
+declare const createTaskChecklistModule: (parameters: { createStore: (taskRuntime: ITaskRuntime, checklist: any) => ITaskChecklistStore }) => IDatasetControlModule;
 /** Checklists held in memory, by task id. */
-declare const createMemoryChecklistModule: (parameters: { items: Record<string, IChecklistItem[]> }) => IDatasetControlModule;
+declare const createMemoryTaskChecklistModule: (parameters: { items: Record<string, ITaskChecklistItem[]> }) => IDatasetControlModule;
 /** Checklists stored as JSON on each TALXIS task. */
-declare const createTalxisChecklistModule: (parameters?: {}) => IDatasetControlModule;
+declare const createTalxisTaskChecklistModule: (parameters?: {}) => IDatasetControlModule;
 
 /** The checklists of the sample tasks. */
-declare const CHECKLIST_ITEMS: Record<string, IChecklistItem[]>;
+declare const CHECKLIST_ITEMS: Record<string, ITaskChecklistItem[]>;
 /** The checklist column as a view lists it. */
 declare const CHECKLIST_COLUMN: IColumn;
 /** Checklists for generated tasks, ticked as far as each task's progress. */
-declare const createChecklistItems: (tasks: IRawRecord[]) => Record<string, IChecklistItem[]>;
+declare const createChecklistItems: (tasks: IRawRecord[]) => Record<string, ITaskChecklistItem[]>;
 
 /** How the two tasks of a dependency relate in time. */
 type TaskDependencyType = 'finishToStart' | 'startToStart' | 'finishToFinish' | 'startToFinish';
@@ -4568,10 +4568,10 @@ interface ITaskDependency {
 /** Where dependencies are kept; a read-only one throws from the writes. */
 interface ITaskDependenciesStore {
     /** The dependencies touching any of these tasks, at either end. */
-    onLoadDependencies(taskIds: string[]): Promise<ITaskDependency[]>;
-    onCreateDependency(dependency: Omit<ITaskDependency, 'id'>): Promise<ITaskDependency>;
-    onUpdateDependency(dependency: ITaskDependency): Promise<void>;
-    onDeleteDependency(dependencyId: string): Promise<void>;
+    loadDependencies(taskIds: string[]): Promise<ITaskDependency[]>;
+    createDependency(dependency: Omit<ITaskDependency, 'id'>): Promise<ITaskDependency>;
+    updateDependency(dependency: ITaskDependency): Promise<void>;
+    deleteDependency(dependencyId: string): Promise<void>;
 }
 
 /** A Dataverse table of dependencies: two task lookups and an option set of the type. */
@@ -4584,7 +4584,7 @@ interface IDataverseDependenciesSchema {
 }
 
 /** Holds the tasks' dependencies and shows their counts in the Predecessors and Successors columns. */
-declare const createDependenciesModule: (parameters: { onCreateStore: (taskRuntime: ITaskRuntime, dependencies: any) => ITaskDependenciesStore }) => IDatasetControlModule;
+declare const createDependenciesModule: (parameters: { createStore: (taskRuntime: ITaskRuntime, dependencies: any) => ITaskDependenciesStore }) => IDatasetControlModule;
 /** Dependencies held in memory, starting over on every mount like the memory tasks. */
 declare const createMemoryDependenciesModule: (parameters: { dependencies: ITaskDependency[] }) => IDatasetControlModule;
 /** Dependencies kept in a Dataverse table of two task lookups and a type. */
@@ -4610,7 +4610,7 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
     }) => JSX.Element;
     /** DatasetControl.PageSizeSwitcher showing the task count, always disabled. */
     PageSizeSwitcher: (props: {}) => JSX.Element;
-    /** DatasetControl.Ribbon, its items passed through registerRibbonCommandUi. */
+    /** DatasetControl.Ribbon, its items passed through addRibbonCommandUiHook. */
     Ribbon: (props: { className?: string; disabled?: boolean; components?: { onRenderCommandBar?: (props: { items: ICommandBarItemProps[] }) => JSX.Element | null } }) => JSX.Element;
 };
 
@@ -4620,9 +4620,9 @@ interface ITaskStore {
 }
 
 /** Tasks held in memory. */
-declare const createMemoryTaskDataSource: (parameters: {
+declare const createMemoryTaskProvider: (parameters: {
     taskRuntime: ITaskRuntime;
-    onCreateStore: (taskRuntime: ITaskRuntime) => ITaskStore;
+    createStore: (taskRuntime: ITaskRuntime) => ITaskStore;
     provider?: new (parameters: { store: ITaskStore }) => ITaskDataProvider;
 }) => ITaskDataProvider;
 
@@ -4634,7 +4634,7 @@ declare class MemoryTaskDatabase {
     getTasks(): IRawRecord[];
     getTask(taskId: string): IRawRecord | undefined;
     /** Creates the tasks with their subtrees, the first at the rank params give and the rest after it. */
-    createTasks(trees: ICreateTaskTree[], params: Omit<ITaskCreateParams, 'data'>, shape: { fieldMapping: IFieldMapping; columns: IColumn[] }): IRawRecord[];
+    createTasks(trees: ICreateTaskTree[], params: Omit<ITaskCreateParameters, 'data'>, shape: { fieldMapping: IFieldMapping; columns: IColumn[] }): IRawRecord[];
     updateTask(taskId: string, values: IRawRecord): void;
     deleteTasks(taskIds: string[]): void;
 }
@@ -4665,7 +4665,7 @@ interface IGanttModule {
     name: string;
     /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
     priority?: number;
-    onLoad(gantt: any, context: IModuleLoadContext): any;
+    onLoad(gantt: any, context: IModuleLoadParameters): any;
     onDestroy?(instance: any): void;
 }
 
@@ -4715,7 +4715,7 @@ declare const createLibraryModule: () => IGanttModule;
 /** A PRO build of DHTMLX Gantt, passed as its Gantt export. */
 declare const createProLibraryModule: (parameters: { Gantt: unknown }) => IGanttModule;
 /** Today, the project's start and end, and the store's own markers. */
-declare const createMarkersModule: (parameters?: IMarkersOptions & { onCreateStore?: (taskRuntime: ITaskRuntime) => { onLoadMarkers(): Promise<IMarker[]> } }) => IGanttModule;
+declare const createMarkersModule: (parameters?: IMarkersOptions & { createStore?: (taskRuntime: ITaskRuntime) => { loadMarkers(): Promise<IMarker[]> } }) => IGanttModule;
 /** Markers held in memory. */
 declare const createMemoryMarkersModule: (parameters: IMarkersOptions & { markers: IMarker[] }) => IGanttModule;
 /** A day, or a run of days, on which tasks are not worked on. */
@@ -4751,7 +4751,7 @@ interface INonWorkingDaysOptions {
 declare const NON_WORKING_DAYS: INonWorkingDay[];
 
 /** Weekends and the store's days, shaded on the timeline and hidden from TaskDatasetControl.Settings. */
-declare const createNonWorkingDaysModule: (parameters?: INonWorkingDaysOptions & { onCreateStore?: (taskRuntime: ITaskRuntime) => { onLoadNonWorkingDays(): Promise<INonWorkingDay[]> } }) => IGanttModule;
+declare const createNonWorkingDaysModule: (parameters?: INonWorkingDaysOptions & { createStore?: (taskRuntime: ITaskRuntime) => { loadNonWorkingDays(): Promise<INonWorkingDay[]> } }) => IGanttModule;
 /** Non-working days held in memory. */
 declare const createMemoryNonWorkingDaysModule: (parameters: INonWorkingDaysOptions & { nonWorkingDays: INonWorkingDay[] }) => IGanttModule;
 /** Moves and resizes bars, writing the dates once the bar is dropped. */
@@ -4828,19 +4828,19 @@ declare class DataverseTaskStore implements ITaskStore {
         /** Liquid over project and hostRecord. */
         fetchXml: string;
         hostRecord?: IDataverseHostRecord;
-        form?: { editId?: string; bulkEditId?: string; onGetParameters?: (operation: 'edit' | 'bulkEdit' | 'open', defaults: any) => any };
-        onGetNewTaskDefaults?: (params: ITaskCreateParams) => IRawRecord | Promise<IRawRecord>;
+        form?: { editId?: string; bulkEditId?: string; getParameters?: (operation: 'edit' | 'bulkEdit' | 'open', defaults: any) => any };
+        getNewTaskDefaults?: (params: ITaskCreateParameters) => IRawRecord | Promise<IRawRecord>;
     });
     [operation: string]: any;
 }
 /** Puts a DataverseTaskStore together with a task provider. */
-declare const createDataverseTaskDataSource: typeof createMemoryTaskDataSource;
+declare const createDataverseTaskProvider: typeof createMemoryTaskProvider;
 /** The user's own task columns as TALXIS attribute definitions and values. */
 declare const createTalxisCustomColumnsModule: (parameters: { entityName: string; recordId?: string; navigationPropertyName?: string; enableCreation?: boolean; enableEditing?: boolean; enableDeletion?: boolean }) => IDatasetControlModule;
 /** The project module for a project record in Dataverse. */
 declare const createDataverseProjectModule: (parameters: { entityName: string; id: string; startDateColumn?: string; endDateColumn?: string; columns?: string[] }) => IProjectModule;
 
-declare const ValueRendererUiComponents: typeof import('@talxis/base-controls').ValueRendererUiComponents;
+declare const CellUiValueRendererComponents: typeof import('@talxis/base-controls').CellUiValueRendererComponents;
 declare const CellColumnControlComponents: typeof import('@talxis/base-controls').CellColumnControlComponents;
 declare const CellUiCommandsComponents: typeof import('@talxis/base-controls').CellUiCommandsComponents;
 declare const RecordSaveUiIndicatorComponents: typeof import('@talxis/base-controls').RecordSaveUiIndicatorComponents;

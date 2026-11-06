@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { ITheme } from "@theme";
 
-export const getPageSizeSwitcherUiStyles = (theme: ITheme) => mergeStyleSets({
+export const getDatasetControlUiPageSizeSwitcherStyles = (theme: ITheme) => mergeStyleSets({
     datasetControlPageSizeSwitcher: {
         height: 44,
     },

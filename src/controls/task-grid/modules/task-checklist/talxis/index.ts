@@ -1,1 +1,1 @@
-export * from './createTalxisChecklistModule';
+export * from './createTalxisTaskChecklistModule';

@@ -1,2 +1,2 @@
-export * from './ManageViewsPanel';
+export * from './UserQueriesUiManageViewsPanel';
 export * from './components';

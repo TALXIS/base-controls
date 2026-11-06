@@ -13,7 +13,7 @@
         "baseUrl": ".",
         "paths": {
             "@talxis/base-controls": ["../../dist/index.d.ts"],
-            "@talxis/base-controls/gantt": ["../../dist/controls/task-grid/modules/gantt/index.d.ts"]
+            "@talxis/base-controls/gantt": ["../../dist/controls/task-grid/gantt/index.d.ts"]
         }
     },
     "files": ["smoke.tsx"]

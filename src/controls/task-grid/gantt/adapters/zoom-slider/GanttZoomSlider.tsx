@@ -3,7 +3,7 @@ import { useEventEmitter, useRerender } from "@core";
 import { useLabels } from "@labels";
 import { useDataProviderEvents } from "@data";
 import { GanttUiZoomSlider, IGanttUiZoomSliderComponents } from "../../ui/zoom-slider";
-import { useRequiredDatasetControlRuntime } from "@controls/dataset-control/adapters/root/context";
+import { useDatasetControlInternal } from "@controls/dataset-control/adapters/root/context";
 import type { IGantt, IGanttEvents } from "../../interfaces";
 import type { IGanttZoomingEvents } from "../../zooming";
 import { GANTT_LABELS } from "../../labels";
@@ -18,7 +18,7 @@ export interface IGanttZoomSliderProps {
 
 /** The zoom of the `TaskGantt` in the body, for the header. */
 export const GanttZoomSlider = (props: IGanttZoomSliderProps) => {
-    const datasetControl = useRequiredDatasetControlRuntime();
+    const datasetControl = useDatasetControlInternal();
     const provider = useDataProviderEvents(['onLoading']);
     const [gantt, setGantt] = useState<IGantt | undefined>(() => datasetControl.parts.find('gantt'));
     const zooming = gantt?.services.find('zooming');

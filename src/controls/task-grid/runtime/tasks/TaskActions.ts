@@ -1,6 +1,6 @@
 import type { IRecord } from "@talxis/client-libraries";
 import { ErrorHelper } from "@core/error-handling";
-import type { ICreateTaskOptions, IOpenTasksResult, ITaskDataProvider, ITaskMovePosition } from "../provider";
+import type { INewTaskParameters, IOpenTasksResult, ITaskDataProvider, ITaskMovePosition } from "../provider";
 import { TASK_GRID_LABELS } from "../../labels";
 import type { ITaskRuntime } from "../interfaces";
 
@@ -10,7 +10,7 @@ type TaskErrorLabel = 'taskGrid.openTasksFailed' | 'taskGrid.deleteTasksFailed' 
 /** The task actions, each run under the loading overlay and its error shown. */
 export interface ITaskActions {
     /** @returns The created task, or `null` when it was not created. */
-    create(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null>;
+    create(parentId?: string, parameters?: INewTaskParameters): Promise<IRecord | null>;
     /** Opens the tasks in an editor outside the grid, such as a form. */
     open(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
@@ -30,11 +30,11 @@ export class TaskActions implements ITaskActions {
         this._runtime = runtime;
     }
 
-    public async create(parentId?: string, options?: ICreateTaskOptions): Promise<IRecord | null> {
+    public async create(parentId?: string, parameters?: INewTaskParameters): Promise<IRecord | null> {
         if (!this._runtime.isCreationEnabled()) {
             return null;
         }
-        const task = this._provider.createTask(parentId, options);
+        const task = this._provider.createTask(parentId, parameters);
         if (!task) {
             return null;
         }

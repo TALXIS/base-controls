@@ -40,7 +40,7 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
         name: 'taskRuntime',
         //the task modules read it as they load
         priority: -100,
-        onLoad: datasetControl => new TaskRuntime({ datasetControl, pcfContext, onGetProps: () => propsRef.current }),
+        onLoad: datasetControl => new TaskRuntime({ datasetControl, pcfContext, getProps: () => propsRef.current }),
         onDestroy: taskRuntime => (taskRuntime as TaskRuntime).destroy(),
     };
     //the task runtime sets up the provider your onLoad returns

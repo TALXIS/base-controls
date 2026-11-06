@@ -1,22 +1,22 @@
 import { useMemo } from 'react';
 import { getClassNames } from "@core";
-import { EmptyStateUiComponents, IEmptyStateUiComponents } from './components';
-import { getEmptyStateUiStyles } from './styles';
+import { DatasetControlUiEmptyStateComponents, IDatasetControlUiEmptyStateComponents } from './components';
+import { getDatasetControlUiEmptyStateStyles } from './styles';
 
 /** Props for the empty state, as plain UI. */
-export interface IEmptyStateUiProps {
+export interface IDatasetControlUiEmptyStateProps {
     /** What is said about there being nothing to show. */
     message: string;
     /** Added to its box. */
     className?: string;
     /** Replacements for its slots. */
-    components?: Partial<IEmptyStateUiComponents>;
+    components?: Partial<IDatasetControlUiEmptyStateComponents>;
 }
 
 /** An icon with a message saying there are no records to show. */
-export const EmptyState = (props: IEmptyStateUiProps) => {
-    const components = { ...EmptyStateUiComponents, ...props.components };
-    const styles = useMemo(() => getEmptyStateUiStyles(), []);
+export const DatasetControlUiEmptyState = (props: IDatasetControlUiEmptyStateProps) => {
+    const components = { ...DatasetControlUiEmptyStateComponents, ...props.components };
+    const styles = useMemo(() => getDatasetControlUiEmptyStateStyles(), []);
 
     return components.onRenderContainer({
         className: getClassNames([styles.datasetControlEmptyState, props.className]),

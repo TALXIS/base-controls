@@ -1,10 +1,10 @@
-import { ICellProps } from "../../ui/cell";
+import { IFormUiCellProps } from "../../ui/cell";
 import { FormUi } from "../../ui";
 import { useField } from "../field";
 import { FormRuntime } from "../../runtime/FormRuntime";
 import { useForm } from "../root/context";
 
-export const Cell = (props: ICellProps) => {
+export const Cell = (props: IFormUiCellProps) => {
     const field = useField();
     const form = useForm();
     const hasExplicitLabelProp = Object.prototype.hasOwnProperty.call(props, "label");

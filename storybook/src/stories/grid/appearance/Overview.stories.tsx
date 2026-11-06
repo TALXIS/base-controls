@@ -45,7 +45,7 @@ With a \`height\`, the grid is exactly that tall and its rows scroll inside it, 
 
 ## Colour cells by their data
 
-A column colours its cells with \`context.cell.onGetTheme(builder, { record })\`, as the example at the top does. To colour across columns, such as a whole row, register \`grid.services.get('cells').registerCellTheme(hook, priority?)\` in a module; the column's own \`onGetTheme\` runs after the hooks.
+A column colours its cells with \`context.cell.themeHook(builder, { record })\`, as the example at the top does. To colour across columns, such as a whole row, register \`grid.services.get('cells').addCellThemeHook(hook, priority?)\` in a module; the column's own \`themeHook\` runs after the hooks.
 
 \`builder.tint(hue, strength?)\` tints a cell by a hue: \`'subtle'\` by default, \`'strong'\`, or \`'solid'\`, which fills it. For full control, set \`builder.colors\` (\`primary\`, \`background\`, \`text\`), and the cell's value, links, tags and editor all follow. Colour formats and helpers such as \`getTextColorForBackground\` are on [**Theming**](?path=/docs/concepts-theming--overview).
 
@@ -59,13 +59,13 @@ The theme is applied again whenever the record changes; if it depends on anythin
 
 ## Colour column headers
 
-A column colours its header with \`context.header.onGetTheme(builder)\`. To colour any header, register \`grid.services.get('columns').headers.registerColumnHeaderTheme(hook, priority?)\` in a module; \`onGetTheme\` runs after it. Everything in the header takes the colours, the name, the required marker and the module icons, while its menu draws in the app theme (see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview)). Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`, as the example does.
+A column colours its header with \`context.header.themeHook(builder)\`. To colour any header, register \`grid.services.get('columns').headers.addColumnHeaderThemeHook(hook, priority?)\` in a module; \`themeHook\` runs after it. Everything in the header takes the colours, the name, the required marker and the module icons, while its menu draws in the app theme (see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview)). Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`, as the example does.
 
 {{story: Show which columns need a review}}
 
 ## Change the AG Grid theme
 
-Under the cells, AG Grid draws the row lines, hover and selection, the focus and range borders and its popups, in a theme the grid builds from the app theme: see *The AG Grid theme* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). To change it, register \`registerTheme(hook, priority?)\` on the \`gridTheme\` service in a module and replace \`result.theme\`, usually with \`withParams\`. Colour cells and headers through the hooks above instead.
+Under the cells, AG Grid draws the row lines, hover and selection, the focus and range borders and its popups, in a theme the grid builds from the app theme: see *The AG Grid theme* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). To change it, register \`addThemeHook(hook, priority?)\` on the \`gridTheme\` service in a module and replace \`result.theme\`, usually with \`withParams\`. Colour cells and headers through the hooks above instead.
 
 {{story: Draw lines between columns}}
 
@@ -107,7 +107,7 @@ export const TintEscalatedTickets: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A module's \`registerCellTheme\` tints the whole row of every escalated ticket. Try: turn on *Escalated* for another ticket.`,
+                story: `A module's \`addCellThemeHook\` tints the whole row of every escalated ticket. Try: turn on *Escalated* for another ticket.`,
             },
         },
     },
@@ -143,7 +143,7 @@ export const LinesBetweenColumns: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A module's \`registerTheme\` adds lines between the columns and a frame round the grid. Try: change \`headerHeight\` in the code.`,
+                story: `A module's \`addThemeHook\` adds lines between the columns and a frame round the grid. Try: change \`headerHeight\` in the code.`,
             },
         },
     },

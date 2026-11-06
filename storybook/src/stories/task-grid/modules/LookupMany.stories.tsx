@@ -28,7 +28,7 @@ Clicking a pill opens its record through the store. Editing needs \`enableEditin
 |---|---|
 | \`createMemoryLookupManyModule\` | In memory. \`sources\` holds the records to pick from, by table: \`{ records, metadata, columns }\`. \`values\` holds each task's references, by task id and column name. |
 | \`createDataverseLookupManyModule\` | In Dataverse, through each column's 1:N or N:N relationship. The example's *dataverse.ts* keeps the people assigned there. |
-| \`createLookupManyModule\` | In a store of yours: \`onCreateStore\` returns an \`ILookupManyStore\`. |
+| \`createLookupManyModule\` | In a store of yours: \`createStore\` returns an \`ILookupManyStore\`. |
 
 ## Changing how it looks
 
@@ -36,10 +36,10 @@ Clicking a pill opens its record through the store. Editing needs \`enableEditin
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`cell\` | \`onRenderPill\` | \`LookupManyPillsComponents\` | The pills in a cell |
-| \`editor\` | \`onRenderSelect\`, \`onRenderPill\`, \`onRenderOption\` | \`LookupManySelectComponents\` | The picker in the editor |
-| \`editorPopup\` | \`onRenderContainer\` | \`LookupManyEditorPopupComponents\` | The pop-out the editor sits in |
-| \`filter\` | \`onRenderContainer\`, \`onRenderValue\`, \`onRenderButtons\`, \`onRenderApplyButton\`, \`onRenderClearButton\`; \`callout\` and \`select\` | \`LookupManyFilterComponents\` | The column's filter callout |
+| \`cell\` | \`onRenderPill\` | \`LookupManyUiPillsComponents\` | The pills in a cell |
+| \`editor\` | \`onRenderSelect\`, \`onRenderPill\`, \`onRenderOption\` | \`LookupManyUiSelectComponents\` | The picker in the editor |
+| \`editorPopup\` | \`onRenderContainer\` | \`LookupManyUiEditorPopupComponents\` | The pop-out the editor sits in |
+| \`filter\` | \`onRenderContainer\`, \`onRenderValue\`, \`onRenderButtons\`, \`onRenderApplyButton\`, \`onRenderClearButton\`; \`callout\` and \`select\` | \`LookupManyUiFilterComponents\` | The column's filter callout |
 
 An \`appearance\` draws its pills and options first, and \`cell\`, \`editor\` and \`filter.select\` go over them.
 
@@ -60,9 +60,9 @@ The module also takes \`hostRecord\`, as \`DataverseTaskStore\` does, and each o
 
 | Method | Description |
 |---|---|
-| \`onLoadValues(taskIds)\` | Every column's references of these tasks, by task id and column name. |
-| \`onSaveValue(taskId, columnName, value)\` | Saves a task's references in one column. |
-| \`onCreateOptionsProvider({ record, column, settings, taskRuntime })\` | A provider over the records the column can take, searched by the editor and the filter. \`undefined\` makes the column read-only. \`record\` is missing for the filter. |
+| \`loadValues(taskIds)\` | Every column's references of these tasks, by task id and column name. |
+| \`saveValue(taskId, columnName, value)\` | Saves a task's references in one column. |
+| \`createOptionsProvider({ record, column, settings, taskRuntime })\` | A provider over the records the column can take, searched by the editor and the filter. \`undefined\` makes the column read-only. \`record\` is missing for the filter. |
 
 ## Where next
 

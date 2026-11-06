@@ -1,12 +1,12 @@
 import type { IColumn, IRawRecord } from "@talxis/client-libraries";
-import type { IChecklistItem } from "@talxis/base-controls";
+import type { ITaskChecklistItem } from "@talxis/base-controls";
 import { PRIMARY_ID, TASKS } from "./memoryTaskData";
 
 const CHECKLIST_STEPS = ['Agree the scope', 'Draft the approach', 'Review with the team', 'Hand over the outcome'];
 
 /** Two to four items on most tasks, ticked as far as the task's `percentcomplete`; every third task has none. */
-export const createChecklistItems = (tasks: IRawRecord[]): Record<string, IChecklistItem[]> => {
-    const items: Record<string, IChecklistItem[]> = {};
+export const createChecklistItems = (tasks: IRawRecord[]): Record<string, ITaskChecklistItem[]> => {
+    const items: Record<string, ITaskChecklistItem[]> = {};
     tasks.forEach((task, index) => {
         if (index % 3 === 2) {
             return;

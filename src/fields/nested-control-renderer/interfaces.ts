@@ -4,7 +4,7 @@ import { IControl, IOutputs } from "@pcf/interfaces/context";
 import { NestedControl } from "./NestedControl";
 import { DataType } from "@talxis/client-libraries";
 
-type ControlNameOptions = 'TextField' | 'OptionSet' | 'MultiSelectOptionSet' | 'Lookup' | 'Decimal' | 'Duration' | 'DateTime' | (string & {});
+type NestedControlName = 'TextField' | 'OptionSet' | 'MultiSelectOptionSet' | 'Lookup' | 'Decimal' | 'Duration' | 'DateTime' | (string & {});
 
 export interface INestedControlRenderer extends IControl<INestedControlRendererParameters, IOutputs, INestedControlRendererComponentProps> {
 }
@@ -13,7 +13,7 @@ export interface INestedControlRendererParameters extends IParameters {
     /**
      * Specifies the name of the control to be rendered. This can be either a custom PCF control or a base control.
      */
-    ControlName: ControlNameOptions;
+    ControlName: NestedControlName;
 
     /**
      * Optional bindings that will be passed to the control. These bindings provide data and metadata to the control.

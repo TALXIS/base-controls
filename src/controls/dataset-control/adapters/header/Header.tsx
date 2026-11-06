@@ -1,5 +1,5 @@
-import { DatasetControlUi, IHeaderUiComponents } from "../../ui";
-import { useRequiredDatasetControlRuntime } from "../root/context";
+import { DatasetControlUi, IDatasetControlUiHeaderComponents } from "../../ui";
+import { useDatasetControlInternal } from "../root/context";
 import { HeaderStart } from "./HeaderStart";
 import { HeaderEnd } from "./HeaderEnd";
 
@@ -10,11 +10,11 @@ export interface IHeaderProps {
     /** Added to the header's box. */
     className?: string;
     /** Replacements for the header's slots. */
-    components?: Partial<IHeaderUiComponents>;
+    components?: Partial<IDatasetControlUiHeaderComponents>;
 }
 
 const HeaderRow = (props: IHeaderProps) => {
-    const runtime = useRequiredDatasetControlRuntime();
+    const runtime = useDatasetControlInternal();
     return <DatasetControlUi.Header isPadded={runtime.getHeight() === '100%'} {...props} />;
 };
 

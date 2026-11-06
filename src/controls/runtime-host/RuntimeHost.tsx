@@ -14,7 +14,7 @@ export interface IHostedRuntime extends IRuntime {
 
 export interface IRuntimeHostProps<TRuntime extends IHostedRuntime> {
     /** Creates the runtime of one mount; called again on every remount. */
-    onCreate: () => TRuntime;
+    createRuntime: () => TRuntime;
     /** Called with each new runtime, before its init; subscribe to its events here. */
     onSetup?: (runtime: TRuntime) => void;
     /** Rendered once the runtime is ready; reads it with `useRuntime()`. */
@@ -33,7 +33,7 @@ export const RuntimeHost = <TRuntime extends IHostedRuntime>(props: IRuntimeHost
 
 const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<TRuntime> & { onRemount: () => void }) => {
     const propsRef = useLatest(props);
-    const runtime = useMemo(() => props.onCreate(), []);
+    const runtime = useMemo(() => props.createRuntime(), []);
     const { lifecycle } = runtime;
     const { rerender } = useRerender();
     const openErrorDialog = useOpenErrorDialog();

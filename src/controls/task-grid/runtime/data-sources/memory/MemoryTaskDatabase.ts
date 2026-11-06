@@ -1,6 +1,6 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { StackRank } from "@core/stack-rank";
-import type { ICreateTaskTree, IFieldMapping, ITaskCreateParams } from "../../provider";
+import type { ICreateTaskTree, IFieldMapping, ITaskCreateParameters } from "../../provider";
 
 export interface IMemoryTaskDatabaseParameters {
     /** The tasks to start with, copied. */
@@ -39,7 +39,7 @@ export class MemoryTaskDatabase {
     }
 
     /** Creates the tasks with their subtrees from the rank `params` give. */
-    public createTasks(trees: ICreateTaskTree[], params: Omit<ITaskCreateParams, 'data'>, shape: IMemoryTaskShape): IRawRecord[] {
+    public createTasks(trees: ICreateTaskTree[], params: Omit<ITaskCreateParameters, 'data'>, shape: IMemoryTaskShape): IRawRecord[] {
         const parentReference = params.parentRecord ? [params.parentRecord.getNamedReference()] : null;
         return this._createTrees(trees, shape, parentReference, params.stackRank);
     }

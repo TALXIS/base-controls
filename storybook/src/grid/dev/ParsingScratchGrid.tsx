@@ -105,7 +105,7 @@ const COL_DEFS: NonNullable<IGridProps['colDefs']> = {
 
 const createModules = (autoSave: boolean): IGridModule[] => [
     createClientSideRowModelModule(),
-    createEditingModule({ autoSave }),
+    createEditingModule({ enableAutoSave: autoSave }),
     createClipboardModule(),
     createCellSelectionModule(),
 ]

@@ -1,6 +1,6 @@
 import { AnimationVariables, mergeStyleSets } from "@fluentui/react";
 
-export const getQuickFindUiStyles = (isTakingOver: boolean) => mergeStyleSets({
+export const getDatasetControlUiQuickFindStyles = (isTakingOver: boolean) => mergeStyleSets({
     datasetControlQuickFind: [
         {
             flex: '0 1 230px',

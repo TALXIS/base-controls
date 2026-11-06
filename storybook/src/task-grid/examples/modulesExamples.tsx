@@ -100,7 +100,7 @@ const CHECKLIST_CODE = createModuleCode({
 //a view lists the column as a Lookup.Simple column
 const CHECKLIST: IColumn = { name: 'checklist__virtual', displayName: 'Checklist', dataType: 'Lookup.Simple', visualSizeFactor: 100 }
 `,
-    modules: `[createMemoryChecklistModule({ items: CHECKLIST_ITEMS })]`,
+    modules: `[createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS })]`,
     columns: `[...getTaskColumns('subject', 'statuscode', 'percentcomplete'), CHECKLIST]`,
 })
 
@@ -122,8 +122,8 @@ const VIEWS: ITaskGridView[] = [
     { id: 'all', name: 'All tasks', resolve: () => ({ columns: [...getTaskColumns('subject', 'statuscode', 'percentcomplete'), CHECKLIST_COLUMN] }) },
 ]
 
-const createChecklistStore = (): IChecklistStore => ({
-    onLoadItems: async taskIds => new Map<string, IChecklistItem[]>(taskIds.map(taskId => [taskId, CHECKLIST_ITEMS[taskId] ?? []])),
+const createChecklistStore = (): ITaskChecklistStore => ({
+    loadItems: async taskIds => new Map<string, ITaskChecklistItem[]>(taskIds.map(taskId => [taskId, CHECKLIST_ITEMS[taskId] ?? []])),
 })
 
 const GridExample = () => {
@@ -133,7 +133,7 @@ const GridExample = () => {
     const controlModules = React.useMemo(() => [
         createTaskDraggingModule(),
         //the base factory makes your store on every mount
-        createChecklistModule({ onCreateStore: createChecklistStore }),
+        createTaskChecklistModule({ createStore: createChecklistStore }),
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'taskGridDocs.modules.views' }),
     ], [])
     //Grid modules, read at mount

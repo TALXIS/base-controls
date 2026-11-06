@@ -19,7 +19,7 @@ With \`enableCreation\`, *From template* sits in the ribbon's *New* menu, for to
 | Factory | Keeps the templates |
 |---|---|
 | \`createMemoryTemplatesModule\` | In memory. \`templates\` are the starting templates, and \`database\` is the \`MemoryTaskDatabase\` the tasks are created in, the one the \`MemoryTaskStore\` reads. Templates saved by the user last as long as the module. |
-| \`createTemplatesModule\` | In a store of yours: \`onCreateStore\` returns an \`ITemplatesStore\`. |
+| \`createTemplatesModule\` | In a store of yours: \`createStore\` returns an \`ITemplatesStore\`. |
 
 A memory template is a task: \`data\` holds its column values, and \`children\` its subtasks, each with \`data\` and \`children\` of its own. The template's own task is named after it.
 
@@ -38,9 +38,9 @@ A memory template is a task: \`data\` holds its column values, and \`children\` 
 
 | Method | Description |
 |---|---|
-| \`onCreateTemplatesProvider()\` | A provider over the templates, searched by the picker. Created each time it opens. |
-| \`onCreateTasks({ templateId, parentRecord, stackRank })\` | Creates the template's tasks, its own task under \`parentRecord\` at \`stackRank\`. Returns \`{ records }\` with every task created, or \`null\` when cancelled. |
-| \`onCreateTemplate({ name, tree })\` | Optional. Saves a task and its subtasks as a template. Without it, there is no *Save as template*. |
+| \`createTemplatesProvider()\` | A provider over the templates, searched by the picker. Created each time it opens. |
+| \`createTasks({ templateId, parentRecord, stackRank })\` | Creates the template's tasks, its own task under \`parentRecord\` at \`stackRank\`. Returns \`{ records }\` with every task created, or \`null\` when cancelled. |
+| \`createTemplate({ name, tree })\` | Optional. Saves a task and its subtasks as a template. Without it, there is no *Save as template*. |
 
 ## Where next
 

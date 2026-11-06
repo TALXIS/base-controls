@@ -1,7 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { getTintColors } from "@theme";
 
-export const getLookupManyPillStyles = (theme: ITheme, color: string) => mergeStyleSets({
+export const getLookupManyUiPillStyles = (theme: ITheme, color: string) => mergeStyleSets({
     pill: {
         display: 'inline-flex',
         flexGrow: 0,

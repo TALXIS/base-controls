@@ -1,3 +1,3 @@
-export * from './Header';
+export * from './DatasetControlUiHeader';
 export * from './components';
 export * from './context';

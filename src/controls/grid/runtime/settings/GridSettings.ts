@@ -1,4 +1,4 @@
-import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
+import type { IDatasetControlInternal } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { IGridProps } from "../../interfaces";
 
 const DEFAULT_ROW_HEIGHT = 42;
@@ -6,9 +6,9 @@ const DEFAULT_MAX_VISIBLE_ROWS = 15;
 
 export interface IGridSettingsParameters {
     /** The current props: the mount-only ones are read once, the rest on demand. */
-    onGetProps: () => IGridProps;
+    getProps: () => IGridProps;
     /** The DatasetControl the grid is inside, if any. */
-    datasetControl?: IDatasetControlRuntime;
+    datasetControl?: IDatasetControlInternal;
 }
 
 /** What the caller asked the grid to be. */
@@ -18,7 +18,7 @@ export interface IGridSettings {
     /** Whether every other row takes a background of its own. */
     isZebraEnabled(): boolean;
     /** Whether an option set's own colour is used for its cells. */
-    areOptionSetColorsEnabled(): boolean;
+    isOptionSetColorsEnabled(): boolean;
     /** How tall a row is, in pixels. */
     getDefaultRowHeight(): number;
     /** How many rows the grid grows to fit before it scrolls instead. */
@@ -34,13 +34,13 @@ export interface IGridSettings {
 export class GridSettings implements IGridSettings {
     private _getProps: () => IGridProps;
     private _mountProps: IGridProps;
-    private _datasetControl?: IDatasetControlRuntime;
+    private _datasetControl?: IDatasetControlInternal;
 
     constructor(parameters: IGridSettingsParameters) {
-        this._getProps = parameters.onGetProps;
+        this._getProps = parameters.getProps;
         this._datasetControl = parameters.datasetControl;
         //taken once so a later value cannot reach only some cells
-        this._mountProps = { ...parameters.onGetProps() };
+        this._mountProps = { ...parameters.getProps() };
     }
 
     public isNavigationEnabled(): boolean {
@@ -51,7 +51,7 @@ export class GridSettings implements IGridSettings {
         return this._mountProps.enableZebra !== false;
     }
 
-    public areOptionSetColorsEnabled(): boolean {
+    public isOptionSetColorsEnabled(): boolean {
         return this._mountProps.enableOptionSetColors === true;
     }
 

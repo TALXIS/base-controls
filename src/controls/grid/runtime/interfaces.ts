@@ -55,7 +55,7 @@ export interface IGridServiceMap {
 }
 
 /** The services as the grid's own parts use them: what draws the grid; a module adds what its own parts read by augmenting this. */
-export interface IGridInternalServiceMap extends IGridServiceMap {
+export interface IGridServiceMapInternal extends IGridServiceMap {
     /** The grid's own element, there once it is mounted. */
     gridRoot: HTMLElement;
     rows: IGridRowsInternal;
@@ -72,4 +72,4 @@ export type IGridDeferredService = 'gridRoot' | 'gridApi';
 /** Where the grid's parts find each other; a module passes its own map to see the services it adds. */
 export type IGridServiceLocator<TServices extends IGridServiceMap = IGridServiceMap> = IServiceRegistry<TServices>;
 
-export type IGridInternalServiceLocator<TServices extends IGridInternalServiceMap = IGridInternalServiceMap> = IServiceRegistry<TServices>;
+export type IGridServiceLocatorInternal<TServices extends IGridServiceMapInternal = IGridServiceMapInternal> = IServiceRegistry<TServices>;

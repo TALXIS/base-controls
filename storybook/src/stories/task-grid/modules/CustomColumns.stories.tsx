@@ -26,7 +26,7 @@ The values are edited in the grid, with \`createTaskEditingModule()\`, and saved
 |---|---|
 | \`createIndexedDbCustomColumnsModule\` | In the browser's IndexedDB, under \`databaseName\`. \`columns\` are what a new database starts with. |
 | \`createTalxisCustomColumnsModule\` | In TALXIS attribute definitions and attribute values. A new or edited column opens the definition's form in a side dialog. |
-| \`createCustomColumnsModule\` | In a store of yours: \`onCreateStore\` returns an \`ICustomColumnsStore\`. |
+| \`createCustomColumnsModule\` | In a store of yours: \`createStore\` returns an \`ICustomColumnsStore\`. |
 
 Each of the IndexedDB \`columns\` is a \`displayName\`, a \`dataType\`, and \`isRequired\`, \`precision\` or \`options\` where they apply. A column the user adds is a text column named *Custom column 1*, and so on. The example's *talxis.ts* keeps the project's columns in TALXIS.
 
@@ -44,10 +44,10 @@ Each of the IndexedDB \`columns\` is a \`displayName\`, a \`dataType\`, and \`is
 
 | Method | Description |
 |---|---|
-| \`onLoadColumns()\` | Every custom column, as an \`IColumn\` whose name ends in \`DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX\`. Called before the tasks load. |
-| \`onLoadValues(taskIds)\` | The tasks' values, by task id and column name. |
-| \`onSaveValue(record, column, value)\` | Saves one value and returns the save result. |
-| \`onCreateColumn()\`, \`onUpdateColumn(columnName)\`, \`onDeleteColumn(columnName)\` | Create, change or delete a column, such as in a dialog of yours. Return the column's name, or \`null\` when the user cancelled. |
+| \`loadColumns()\` | Every custom column, as an \`IColumn\` whose name ends in \`DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX\`. Called before the tasks load. |
+| \`loadValues(taskIds)\` | The tasks' values, by task id and column name. |
+| \`saveValue(record, column, value)\` | Saves one value and returns the save result. |
+| \`createColumn()\`, \`updateColumn(columnName)\`, \`deleteColumn(columnName)\` | Create, change or delete a column, such as in a dialog of yours. Return the column's name, or \`null\` when the user cancelled. |
 
 ## Where next
 

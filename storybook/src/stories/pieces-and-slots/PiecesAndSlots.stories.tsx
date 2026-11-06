@@ -14,12 +14,12 @@ Every part of a control draws its UI through small functions you can replace, so
 
 A *slot* is a function named \`onRender…\`. It gets the props its default draws with and returns an element, or \`null\`. A part's own slots sit directly in its \`components\` map, as the ribbon's \`onRenderCommandBar\` does in the example.
 
-Most defaults are exported, named after the UI they belong to, such as \`RibbonUiComponents\` or \`LoadingBoundaryComponents\`, so a slot can still draw the default:
+Most defaults are exported, named after the UI they belong to, such as \`RibbonUiCommandBarComponents\` or \`LoadingBoundaryComponents\`, so a slot can still draw the default:
 
 | To | Write |
 |---|---|
-| Change one prop of the default | \`props => RibbonUiComponents.onRenderCommandBar({ ...props, align: 'end' })\` |
-| Wrap the default | \`props => <TooltipHost content='Views'>{ViewSwitcherUiComponents.onRenderButton(props)}</TooltipHost>\` |
+| Change one prop of the default | \`props => RibbonUiCommandBarComponents.onRenderCommandBar({ ...props, align: 'end' })\` |
+| Wrap the default | \`props => <TooltipHost content='Views'>{DatasetControlUiViewSwitcherComponents.onRenderButton(props)}</TooltipHost>\` |
 | Replace it | \`props => <SearchBox {...props} />\` |
 | Remove it | \`() => null\` |
 
@@ -33,7 +33,7 @@ Each control lists its pieces and slots under *Changing how it looks*, or for Da
 
 ## What slots do not change
 
-A slot changes how something looks, not what it holds. Commands and menu items are added through the part, with \`registerCommands\`, \`registerItems\` or \`registerColumnCommands\`: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview) and *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
+A slot changes how something looks, not what it holds. Commands and menu items are added through the part, with \`addCommandsHook\`, \`addItemsHook\` or \`addColumnCommandsHook\`: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview) and *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
 
 ## Where next
 

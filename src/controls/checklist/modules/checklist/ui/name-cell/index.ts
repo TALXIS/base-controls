@@ -1,2 +1,2 @@
-export * from './NameCellUi';
+export * from './ChecklistUiNameCell';
 export * from './components';

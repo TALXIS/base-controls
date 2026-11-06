@@ -5,11 +5,11 @@ import AsyncSelect from "react-select/async";
 import { AsyncProps } from "react-select/dist/declarations/src/useAsync";
 import { Callout, TooltipHost } from "@ui";
 import { useAppTheme, useTheme } from "@theme";
-import { EditColumnsSelectorUiComponents, IEditColumnsSelectorUiComponents } from "./components";
-import { getEditColumnsSelectorUiStyles } from "./styles";
+import { DatasetControlUiEditColumnsSelectorComponents, IDatasetControlUiEditColumnsSelectorComponents } from "./components";
+import { getDatasetControlUiEditColumnsSelectorStyles } from "./styles";
 
 /** Props for the select the column editor's pickers are built on. */
-export interface IEditColumnsSelectorUiProps<TOption, IsMulti extends boolean = false> extends Omit<AsyncProps<TOption, IsMulti, GroupBase<TOption>>, 'components'> {
+export interface IDatasetControlUiEditColumnsSelectorProps<TOption, IsMulti extends boolean = false> extends Omit<AsyncProps<TOption, IsMulti, GroupBase<TOption>>, 'components'> {
     /** Drawn above the selector. */
     label?: string;
     /** Shown when no option matches. */
@@ -19,15 +19,15 @@ export interface IEditColumnsSelectorUiProps<TOption, IsMulti extends boolean = 
     /** What an option's tooltip says; its label when left out. */
     getOptionTooltip?: (option: TOption) => string;
     /** Replacements for its slots. */
-    components?: Partial<IEditColumnsSelectorUiComponents<TOption>>;
+    components?: Partial<IDatasetControlUiEditColumnsSelectorComponents<TOption>>;
 }
 
-const EditColumnsSelectorWithRef = <TOption, IsMulti extends boolean = false>(props: IEditColumnsSelectorUiProps<TOption, IsMulti>, ref: React.Ref<SelectInstance<TOption, IsMulti>>) => {
+const EditColumnsSelectorWithRef = <TOption, IsMulti extends boolean = false>(props: IDatasetControlUiEditColumnsSelectorProps<TOption, IsMulti>, ref: React.Ref<SelectInstance<TOption, IsMulti>>) => {
     const { label, noResultsText, loadingText, getOptionTooltip, components: componentsProp, ...selectProps } = props;
-    const components = { ...EditColumnsSelectorUiComponents, ...componentsProp } as IEditColumnsSelectorUiComponents<TOption>;
+    const components = { ...DatasetControlUiEditColumnsSelectorComponents, ...componentsProp } as IDatasetControlUiEditColumnsSelectorComponents<TOption>;
     const theme = useTheme();
     const appTheme = useAppTheme();
-    const styles = useMemo(() => getEditColumnsSelectorUiStyles(), []);
+    const styles = useMemo(() => getDatasetControlUiEditColumnsSelectorStyles(), []);
     const id = useMemo(() => `selector-${crypto.randomUUID()}`, []);
 
     //memoized so react-select keeps the menu mounted while its options load
@@ -89,6 +89,6 @@ const EditColumnsSelectorWithRef = <TOption, IsMulti extends boolean = false>(pr
 };
 
 /** An async, searchable selector whose menu opens beside it. */
-export const EditColumnsSelector = forwardRef(EditColumnsSelectorWithRef) as <TOption, IsMulti extends boolean = false>(
-    props: IEditColumnsSelectorUiProps<TOption, IsMulti> & { ref?: React.Ref<SelectInstance<TOption, IsMulti>> }
+export const DatasetControlUiEditColumnsSelector = forwardRef(EditColumnsSelectorWithRef) as <TOption, IsMulti extends boolean = false>(
+    props: IDatasetControlUiEditColumnsSelectorProps<TOption, IsMulti> & { ref?: React.Ref<SelectInstance<TOption, IsMulti>> }
 ) => JSX.Element | null;

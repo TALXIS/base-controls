@@ -1,6 +1,7 @@
 import type { GanttStatic } from "dhtmlx-gantt";
-import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
+import { EventEmitter } from "@talxis/client-libraries";
 import { GANTT_DRAGGING_DISABLED_CLASS, GANTT_TASK_LINE_CLASS } from "../chart";
+import type { IEventSubscriber } from "@core";
 
 export interface IGanttDraggingEvents {
     onDragStarted: (taskId: string) => void;
@@ -11,7 +12,7 @@ export interface IGanttDraggingEvents {
 
 /** Who owns the pointer on the chart, and when a bar is being dragged. */
 export interface IGanttDragging {
-    readonly events: IEventEmitter<IGanttDraggingEvents>;
+    readonly events: IEventSubscriber<IGanttDraggingEvents>;
     /**
      * Keeps bars still while any caller holds the pointer for another gesture.
      * @returns Gives the pointer back.

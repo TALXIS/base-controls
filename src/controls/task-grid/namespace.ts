@@ -7,7 +7,7 @@ export interface ITaskDatasetControlParts {
     Settings: typeof Settings;
     /** `DatasetControl.PageSizeSwitcher` showing the task count, always disabled. */
     PageSizeSwitcher: typeof PageSizeSwitcher;
-    /** `DatasetControl.Ribbon`, its items passed through `registerRibbonCommandUi`. */
+    /** `DatasetControl.Ribbon`, its items passed through `addRibbonCommandUiHook`. */
     Ribbon: typeof Ribbon;
 }
 

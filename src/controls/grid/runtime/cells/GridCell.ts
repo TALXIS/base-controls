@@ -1,8 +1,8 @@
 import { ColDef, IRowNode } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
-import { IAlignment } from "@core";
+import { IAlignment, IEventSubscriber } from "@core";
 import { IControlHostCell } from "@pcf";
-import { IGridInternalServiceLocator } from "..";
+import { IGridServiceLocatorInternal } from "..";
 import { getColumnContext, IGridColumnContext } from "../columns/colDef";
 import { IGridCellCommands, IGridCellLoading } from "./GridCells";
 import { GridCellTheme, IGridCellTheme } from "./GridCellTheme";
@@ -10,7 +10,7 @@ import { IGridField } from "../fields";
 import { GridControl, IGridControl } from "./GridControl";
 
 export interface IGridCellParameters {
-    services: IGridInternalServiceLocator;
+    services: IGridServiceLocatorInternal;
     record: IRecord;
     /** The column AG Grid is drawing. */
     colDef: ColDef<IRecord>;
@@ -33,7 +33,7 @@ export interface IGridCellEvents {
 
 /** One cell of the grid, for as long as it is on screen. */
 export interface IGridCell extends IControlHostCell {
-    readonly events: IEventEmitter<IGridCellEvents>;
+    readonly events: IEventSubscriber<IGridCellEvents>;
     /** Draws the cell again, for a change its record does not carry. */
     render(): void;
     /** What tells this cell apart from every other one, this render of it included. */
@@ -72,7 +72,7 @@ export interface IGridCell extends IControlHostCell {
 
 export class GridCell implements IGridCell {
     public readonly events: IEventEmitter<IGridCellEvents> = new EventEmitter<IGridCellEvents>();
-    private _services: IGridInternalServiceLocator;
+    private _services: IGridServiceLocatorInternal;
     private _record: IRecord;
     private _colDef: ColDef<IRecord>;
     private _node?: IRowNode<IRecord>;
@@ -129,13 +129,13 @@ export class GridCell implements IGridCell {
     public isLoading(): boolean {
         const result: IGridCellLoading = { isLoading: false };
         this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this.getColumnName() });
-        this.getContext().cell?.onGetLoading?.(result, { record: this._record });
+        this.getContext().cell?.loadingHook?.(result, { record: this._record });
         return result.isLoading;
     }
 
     public takesInput(): boolean {
         //a one-click column takes input where its cell stands
-        return this._takesInput || (!!this._editing && !!this.getContext().cell?.oneClickEdit);
+        return this._takesInput || (!!this._editing && !!this.getContext().cell?.enableOneClickEdit);
     }
 
     public getContext(): IGridColumnContext {
@@ -174,7 +174,7 @@ export class GridCell implements IGridCell {
     public getCommands(): IGridCellCommands {
         const result: IGridCellCommands = { items: [], overflowItems: [] };
         this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this.getColumnName() });
-        this.getContext().cell?.onGetCommands?.(result, { record: this._record });
+        this.getContext().cell?.commandsHook?.(result, { record: this._record });
         return result;
     }
 

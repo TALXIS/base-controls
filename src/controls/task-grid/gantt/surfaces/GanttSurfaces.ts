@@ -10,13 +10,13 @@ export interface IGanttSurface {
 /** A hook over what the modules draw over the Gantt. */
 export type GanttSurfacesHook = (surfaces: IGanttSurface[]) => void;
 
-/** What the modules draw over the Gantt, assembled from what they registered. */
+/** What the modules draw over the Gantt, assembled from what they added. */
 export interface IGanttSurfaces {
     /**
-     * Registers a hook over what the modules draw over the Gantt, once its chart is drawn.
-     * @param priority Ascending: a lower number is drawn first.
+     * Adds a hook over what the modules draw over the Gantt, once its chart is drawn.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerSurface(hook: GanttSurfacesHook, priority?: number): () => void;
+    addSurfacesHook(hook: GanttSurfacesHook, priority?: number): () => void;
 }
 
 /** What the Gantt's own parts read of it. */
@@ -28,8 +28,8 @@ export interface IGanttSurfacesInternal extends IGanttSurfaces {
 export class GanttSurfaces implements IGanttSurfacesInternal {
     private _surfaceHooks = new HookRegistry<GanttSurfacesHook>();
 
-    public registerSurface(hook: GanttSurfacesHook, priority?: number): () => void {
-        return this._surfaceHooks.register(hook, priority);
+    public addSurfacesHook(hook: GanttSurfacesHook, priority?: number): () => void {
+        return this._surfaceHooks.add(hook, priority);
     }
 
     public getSurfaces(): IGanttSurface[] {

@@ -13,16 +13,16 @@ export interface IGanttSpan {
 
 export type GanttSpanEdge = 'start' | 'end';
 
-export interface IGanttDurationParameters {
+export interface IGanttDurationHookParameters {
     span: IGanttSpan;
     /** Absent for a task still being drawn. */
     record?: IRecord;
 }
 
 /** Changes a calculated duration in clock minutes. */
-export type GanttDurationHook = (result: { duration: number }, parameters: IGanttDurationParameters) => void;
+export type GanttDurationHook = (result: { duration: number }, parameters: IGanttDurationHookParameters) => void;
 
-export interface IGanttSnapParameters {
+export interface IGanttSnapHookParameters {
     /** What the pointer changed: the whole bar, one of its edges, or a span drawn anew. */
     change: 'move' | GanttSpanEdge | 'span';
     /** The span before the change, for a move or an edge. */
@@ -30,7 +30,7 @@ export interface IGanttSnapParameters {
 }
 
 /** Changes a span after it is snapped to the scale, such as to keep it off certain days. */
-export type GanttSnapHook = (result: { span: IGanttSpan }, parameters: IGanttSnapParameters) => void;
+export type GanttSnapHook = (result: { span: IGanttSpan }, parameters: IGanttSnapHookParameters) => void;
 
 /** The `schedule` service: how a task's record maps to the span its bar runs over, and back. */
 export interface IGanttSchedule {
@@ -48,15 +48,15 @@ export interface IGanttSchedule {
     getDuration(record: IRecord): number | undefined;
     calculateDuration(span: IGanttSpan, record?: IRecord): number;
     /**
-     * Registers a hook over each calculated duration.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over each calculated duration.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerDuration(hook: GanttDurationHook, priority?: number): () => void;
+    addDurationHook(hook: GanttDurationHook, priority?: number): () => void;
     /**
-     * Registers a hook over each span a drag or a drawn task snaps to.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over each span a drag or a drawn task snaps to.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerSnap(hook: GanttSnapHook, priority?: number): () => void;
+    addSnapHook(hook: GanttSnapHook, priority?: number): () => void;
     /** The minutes a dragged edge snaps by at the current zoom. */
     getSnapMinutes(edge: GanttSpanEdge): number;
     /**
@@ -156,12 +156,12 @@ export class GanttSchedule implements IGanttSchedule {
         return this._toWorkingMinutes(result.duration);
     }
 
-    public registerDuration(hook: GanttDurationHook, priority?: number): () => void {
-        return this._durationHooks.register(hook, priority);
+    public addDurationHook(hook: GanttDurationHook, priority?: number): () => void {
+        return this._durationHooks.add(hook, priority);
     }
 
-    public registerSnap(hook: GanttSnapHook, priority?: number): () => void {
-        return this._snapHooks.register(hook, priority);
+    public addSnapHook(hook: GanttSnapHook, priority?: number): () => void {
+        return this._snapHooks.add(hook, priority);
     }
 
     public getSnapMinutes(edge: GanttSpanEdge): number {
@@ -225,7 +225,7 @@ export class GanttSchedule implements IGanttSchedule {
         return this._isDateOnly(edge) ? date.startOf('day').toDate() : date.toDate();
     }
 
-    private _applySnapHooks(span: IGanttSpan, parameters: IGanttSnapParameters): IGanttSpan {
+    private _applySnapHooks(span: IGanttSpan, parameters: IGanttSnapHookParameters): IGanttSpan {
         const result = { span };
         this._snapHooks.apply(result, parameters);
         return result.span;

@@ -1,12 +1,12 @@
-import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IRecord, IRecordSaveOperationResult, Localization } from "@talxis/client-libraries";
+import { EventEmitter, IField, IFieldValidationResult, IRecord, IRecordSaveOperationResult, Localization } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import { ErrorHelper, HookRegistry } from "@core";
-import { IFormAfterSaveParams, IFormEventHandlers, IValidation } from "../interfaces";
+import { ErrorHelper, HookRegistry, IEventSubscriber } from "@core";
+import { IFormAfterSaveParameters, IFormEventProps, IValidation } from "../interfaces";
 
 export interface IFormRuntimeParameters {
     record: IRecord;
     /** Saves the record after each change committed to it. */
-    autoSave?: boolean;
+    enableAutoSave?: boolean;
 }
 
 /** A save about to happen; a blocker sets `isBlocked` to stop it. */
@@ -17,20 +17,20 @@ export interface IFormSaveRequest {
 /** Runs before every save, and may stop it. */
 export type FormSaveBlocker = (request: IFormSaveRequest) => Promise<void> | void;
 
-export interface IFormEvents extends IFormEventHandlers {
-    onRefreshRequested: () => void;
-    onDestroy: () => void;
+export interface IFormEvents extends IFormEventProps {
+    onReloadRequested: () => void;
+    onDestroyed: () => void;
 }
 
-export interface IFormRuntime {
-    events: IEventEmitter<IFormEvents>;
+export interface IForm {
+    readonly events: IEventSubscriber<IFormEvents>;
     saveOperationPerformed: boolean;
     getRecordReference: () => ComponentFramework.EntityReference;
     getValidationSummary: () => IValidation[];
     getMetadata: () => { PrimaryIdAttribute: string; PrimaryNameAttribute: string };
     isDirty: () => boolean;
     isValid: () => boolean;
-    refresh: () => void;
+    reload: () => void;
 
     /**
      * Returns the current data held by the form, including in-progress values
@@ -39,7 +39,7 @@ export interface IFormRuntime {
     getData: () => { [key: string]: any };
     save: () => Promise<void>;
     /** Runs `blocker` before every save from now on; returns what takes it off again. */
-    registerSaveBlocker: (blocker: FormSaveBlocker) => () => void;
+    addSaveBlocker: (blocker: FormSaveBlocker) => () => void;
     destroy: () => void;
     getRecord(): IRecord;
     getFields: () => IField[];
@@ -49,7 +49,7 @@ export interface IFormRuntime {
     /** The form's own required level for the field when set, otherwise the record's. */
     getFieldRequiredLevel: (fieldName: string) => Xrm.Attributes.RequirementLevel;
     /** The form's own rules for the field first, then the record's. */
-    isFieldValid: (fieldName: string) => IFieldValidationResult;
+    getFieldValidation: (fieldName: string) => IFieldValidationResult;
 }
 
 const VALID: IFieldValidationResult = { error: false, errorMessage: '' };
@@ -58,7 +58,7 @@ const isEmpty = (value: unknown) => value === undefined || value === null || val
 
 const getRequiredMessage = () => Localization.GetString('utils/dataset/data-providers/Record/Field/Validation/ColumnRequired');
 
-export class FormRuntime implements IFormRuntime {
+export class FormRuntime implements IForm {
     public readonly events: EventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
     private _record: IRecord;
     private _saveOperationPerformed: boolean = false;
@@ -73,11 +73,11 @@ export class FormRuntime implements IFormRuntime {
     //a change committed while a save runs is saved once that save ends
     private _isAutoSavePending = false;
 
-    constructor(params: IFormRuntimeParameters) {
-        this._record = params.record;
-        this._isAutoSaveEnabled = !!params.autoSave;
+    constructor(parameters: IFormRuntimeParameters) {
+        this._record = parameters.record;
+        this._isAutoSaveEnabled = !!parameters.enableAutoSave;
         this._isDirty = this.isDirty();
-        this._registerEventHandlers();
+        this._addEventListeners();
     }
 
     public get saveOperationPerformed(): boolean {
@@ -117,7 +117,7 @@ export class FormRuntime implements IFormRuntime {
         return this._requiredLevelExpressions.get(fieldName)?.() ?? this.getField(fieldName).getRequiredLevel();
     }
 
-    public isFieldValid(fieldName: string): IFieldValidationResult {
+    public getFieldValidation(fieldName: string): IFieldValidationResult {
         const field = this.getField(fieldName);
         const ownResult = this._validationExpressions.get(fieldName)?.();
         if (ownResult?.error) {
@@ -136,7 +136,7 @@ export class FormRuntime implements IFormRuntime {
     }
 
     public destroy(): void {
-        this.events.dispatchEvent('onDestroy');
+        this.events.dispatchEvent('onDestroyed');
         this.events.clearEventListeners();
         this._record.removeEventListener('onFieldValueChanged', this._handleFieldValueChanged);
     }
@@ -146,23 +146,23 @@ export class FormRuntime implements IFormRuntime {
     }
 
     public isValid(): boolean {
-        return this.getFields().every(field => !this.isFieldValid(field.getColumn().name).error);
+        return this.getFields().every(field => !this.getFieldValidation(field.getColumn().name).error);
     }
 
     public getData(): { [key: string]: any } {
         return this._record.toRawData();
     }
 
-    public refresh() {
-        this.events.dispatchEvent('onRefreshRequested');
+    public reload() {
+        this.events.dispatchEvent('onReloadRequested');
     }
 
     public getValidationSummary(): IValidation[] {
         return this._validationSummary;
     }
 
-    public registerSaveBlocker(blocker: FormSaveBlocker): () => void {
-        return this._saveBlockers.register(blocker);
+    public addSaveBlocker(blocker: FormSaveBlocker): () => void {
+        return this._saveBlockers.add(blocker);
     }
 
     public async save(): Promise<void> {
@@ -208,7 +208,7 @@ export class FormRuntime implements IFormRuntime {
                 this._dispatchAfterSave({ success: true });
             },
             onError: (error, message) => {
-                this.events.dispatchEvent('onError', error, message);
+                this.events.dispatchEvent('onError', message, error);
             }
         });
     }
@@ -236,7 +236,7 @@ export class FormRuntime implements IFormRuntime {
         }
     }
 
-    private _registerEventHandlers(): void {
+    private _addEventListeners(): void {
         this._record.addEventListener('onFieldValueChanged', this._handleFieldValueChanged);
     }
 
@@ -274,8 +274,8 @@ export class FormRuntime implements IFormRuntime {
         }
     }
 
-    private _dispatchAfterSave(params: IFormAfterSaveParams): void {
-        this.events.dispatchEvent('onAfterSave', params);
+    private _dispatchAfterSave(parameters: IFormAfterSaveParameters): void {
+        this.events.dispatchEvent('onAfterSave', parameters);
     }
 
     private _dispatchDirtyStateIfChanged(): void {
@@ -291,7 +291,7 @@ export class FormRuntime implements IFormRuntime {
             .map(field => {
                 return {
                     fieldName: field.getColumn().name,
-                    ...this.isFieldValid(field.getColumn().name)
+                    ...this.getFieldValidation(field.getColumn().name)
                 };
             })
             .filter(validation => !!validation.error);

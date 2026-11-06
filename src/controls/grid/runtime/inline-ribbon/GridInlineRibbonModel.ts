@@ -1,25 +1,25 @@
 import { EventEmitter, ICommand, IDataProvider, IRecord } from "@talxis/client-libraries";
 
 export interface IGridInlineRibbonModelEvents {
-    onBeforeCommandsRefreshed: () => void;
-    onAfterCommandsRefreshed: () => void;
+    onBeforeCommandsRefresh: () => void;
+    onAfterCommandsRefresh: () => void;
 }
 
 interface IDeps {
-    onGetRecord: () => IRecord;
-    onGetCommandButtonIds: () => string[];
-    onGetProvider: () => IDataProvider;
+    getRecord: () => IRecord;
+    getCommandButtonIds: () => string[];
+    getProvider: () => IDataProvider;
 }
 
-export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEvents> {
+export class GridInlineRibbonModel {
+    public readonly events = new EventEmitter<IGridInlineRibbonModelEvents>();
     private _deps: IDeps;
     private _commands: ICommand[] = [];
     private _loading: boolean = true;
     private _recordUnsubscribes: (() => void)[] = [];
     constructor(deps: IDeps) {
-        super();
         this._deps = deps;
-        this._registerEventListeners();
+        this._addEventListeners();
     }
 
     public getCommands(): ICommand[] {
@@ -33,7 +33,7 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
     }
     public refreshCommands = async () => {
         this._loading = true;
-        this.dispatchEvent('onBeforeCommandsRefreshed');
+        this.events.dispatchEvent('onBeforeCommandsRefresh');
         try {
             this._commands = await this._getProvider().retrieveRecordCommand({
                 recordIds: [this._getRecord().getRecordId()],
@@ -44,20 +44,20 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
         }
         finally {
             this._loading = false;
-            this.dispatchEvent('onAfterCommandsRefreshed');
+            this.events.dispatchEvent('onAfterCommandsRefresh');
         }
     }
 
-    private _registerEventListeners() {
+    private _addEventListeners() {
         this._recordUnsubscribes = [
             this._getRecord().addEventListener('onFieldValueChanged', this.refreshCommands),
             this._getRecord().addEventListener('onAfterSaved', this.refreshCommands),
         ];
     }
     private _getRecord() {
-        return this._deps.onGetRecord();
+        return this._deps.getRecord();
     }
     private _getProvider() {
-        return this._deps.onGetProvider();
+        return this._deps.getProvider();
     }
 }

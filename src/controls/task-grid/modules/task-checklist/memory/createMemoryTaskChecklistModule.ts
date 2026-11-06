@@ -1,14 +1,14 @@
-import type { IChecklistItem, IChecklistParameters } from "../Checklist";
-import { createChecklistModule, IChecklistModule } from "../createChecklistModule";
-import { MemoryChecklistStore } from "./MemoryChecklistStore";
+import type { ITaskChecklistItem, ITaskChecklistParameters } from "../TaskChecklist";
+import { createTaskChecklistModule, ITaskChecklistModule } from "../createTaskChecklistModule";
+import { MemoryTaskChecklistStore } from "./MemoryTaskChecklistStore";
 
-export interface IMemoryChecklistModuleParameters extends Omit<IChecklistParameters, 'onCreateStore'> {
+export interface IMemoryTaskChecklistModuleParameters extends Omit<ITaskChecklistParameters, 'createStore'> {
     /** The items of each task, by task id. */
-    items: Record<string, IChecklistItem[]>;
+    items: Record<string, ITaskChecklistItem[]>;
 }
 
 /** Checklists held in memory, starting over on every mount like the memory tasks. */
-export const createMemoryChecklistModule = (parameters: IMemoryChecklistModuleParameters): IChecklistModule => {
+export const createMemoryTaskChecklistModule = (parameters: IMemoryTaskChecklistModuleParameters): ITaskChecklistModule => {
     const { items, ...moduleParameters } = parameters;
-    return createChecklistModule({ ...moduleParameters, onCreateStore: () => new MemoryChecklistStore(items) });
+    return createTaskChecklistModule({ ...moduleParameters, createStore: () => new MemoryTaskChecklistStore(items) });
 };

@@ -33,7 +33,7 @@ A marker is a date marked on the timeline with a line, and a chip on the scale t
 | Factory | Markers |
 |---|---|
 | \`createMemoryMarkersModule\` | \`markers\`: the markers. |
-| \`createMarkersModule\` | Today and the project only, or a store of yours: \`onCreateStore\` returns a store with \`onLoadMarkers()\`, which returns the markers. The chart does not wait for them. |
+| \`createMarkersModule\` | Today and the project only, or a store of yours: \`createStore\` returns a store with \`loadMarkers()\`, which returns the markers. The chart does not wait for them. |
 
 ## Changing how it looks
 

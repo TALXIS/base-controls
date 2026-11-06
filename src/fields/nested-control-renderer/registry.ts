@@ -4,7 +4,7 @@ import type { BaseControl } from "@pcf";
 const registeredControls = new Map<string, ComponentType<any>>();
 
 /** Lets `NestedControlRenderer` draw a base control that lives outside `fields`, such as the grid's. */
-export const registerBaseControl = (name: BaseControl, control: ComponentType<any>): void => {
+export const defineBaseControl = (name: BaseControl, control: ComponentType<any>): void => {
     registeredControls.set(name, control);
 };
 

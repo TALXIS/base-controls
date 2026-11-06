@@ -26,13 +26,13 @@ Two parts page through the records: \`DatasetControl.PageSizeSwitcher\` shows wh
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100, 250 | The sizes the menu offers. At mount. |
-| \`components\` | \`Partial<IPageSizeSwitcherUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IDatasetControlUiPageSizeSwitcherComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ### Pagination
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| \`components\` | \`Partial<IPaginationUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IDatasetControlUiPaginationComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
@@ -46,7 +46,7 @@ Two parts page through the records: \`DatasetControl.PageSizeSwitcher\` shows wh
 | \`setPageSize(size)\` | Loads the records in pages of that size, asking about unsaved changes first. |
 | \`getRecordRange()\` | The range as the switcher shows it: \`{ first: number, last: string, total?: string }\`. |
 | \`isLoading()\` | Whether the provider is loading. |
-| \`events\` | \`onPageSizeChanged\`, whenever the page size or the records on the page change. |
+| \`events\` | \`onChanged\`, whenever the page size or the records on the page change. |
 
 ### Pagination
 

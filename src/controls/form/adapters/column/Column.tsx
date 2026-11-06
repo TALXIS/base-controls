@@ -1,7 +1,7 @@
-import { FormUi, IColumnProps } from "../../ui";
+import { FormUi, IFormUiColumnProps } from "../../ui";
 
-export type { IColumnProps } from "../../ui";
+export type { IFormUiColumnProps } from "../../ui";
 
-export const Column = (props: IColumnProps) => {
+export const Column = (props: IFormUiColumnProps) => {
     return <FormUi.Column {...props} />;
 };

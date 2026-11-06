@@ -1,3 +1,4 @@
 export * from './NestedControlRenderer';
 export * from './interfaces';
-export * from './labels';export { registerBaseControl } from './registry';
+export * from './labels';
+export { defineBaseControl } from './registry';

@@ -1,10 +1,10 @@
-import { GlobalContext, IGlobalContextParams, IGlobalContextUserSettingsParams } from "./GlobalContext";
+import { GlobalContext, IGlobalContextParameters, IGlobalContextUserSettingsParameters } from "./GlobalContext";
 import { Navigation } from "./Navigation";
 import { Utility } from "./Utility";
 import { WebApi } from "./WebApi";
 
-interface IXrmFactoryParams {
-    userSettings?: IGlobalContextUserSettingsParams;
+interface IXrmFactoryParameters {
+    userSettings?: IGlobalContextUserSettingsParameters;
 }
 
 /**
@@ -19,13 +19,13 @@ export class XrmFactory {
      * Returns the active Xrm instance, creating a minimal fallback when the
      * runtime does not provide one.
      */
-    public static createXrm(params: IXrmFactoryParams = {}): Xrm.XrmStatic {
+    public static createXrm(parameters: IXrmFactoryParameters = {}): Xrm.XrmStatic {
         if (window.Xrm) {
             return window.Xrm;
         }
 
-        const globalContextParams: IGlobalContextParams = {
-            userSettings: params.userSettings,
+        const globalContextParams: IGlobalContextParameters = {
+            userSettings: parameters.userSettings,
         };
         const globalContext = new GlobalContext(globalContextParams) as any;
         const utility = new Utility(globalContext);

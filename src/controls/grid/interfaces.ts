@@ -18,7 +18,7 @@ export interface IGridModule<TName extends keyof IGridModuleMap = keyof IGridMod
 export type IGridModuleLocator = IServiceLocator<IGridModuleMap>;
 
 /** What happens inside the grid, for a consumer to react to without reaching into its services. */
-export interface IGridOpenRecordParams {
+export interface IGridOpenRecordParameters {
     record: IRecord;
     /** The record to open: the row's own, or the one a lookup link points to. */
     reference: ComponentFramework.EntityReference;
@@ -26,42 +26,42 @@ export interface IGridOpenRecordParams {
     columnName?: string;
 }
 
-export interface IGridEventHandlers {
-    /** Fired once new data is in the grid. */
+export interface IGridEventProps {
+    /** Fires once new data is in the grid. */
     onDataLoaded: () => void;
-    /** Fired when the grid starts or stops loading. */
+    /** Fires when the grid starts or stops loading. */
     onLoadingChanged: (isLoading: boolean) => void;
-    /** Fired when a value in a record changes. */
+    /** Fires when a value in a record changes. */
     onRecordValueChanged: (record: IRecord, columnName: string, newValue: any) => void;
-    /** Fired when a record starts saving. */
-    onBeforeRecordSaved: (record: IRecord) => void;
-    /** Fired when a record has finished saving, with how it went. */
-    onAfterRecordSaved: (result: IRecordSaveOperationResult) => void;
-    /** Fired when the provider has finished saving its records, with how each went. */
-    onAfterSaved: (results: IRecordSaveOperationResult[]) => void;
-    /** Fired when the provider reports an error. */
+    /** Fires when a record starts saving. */
+    onBeforeRecordSave: (record: IRecord) => void;
+    /** Fires when a record has finished saving, with how it went. */
+    onAfterRecordSave: (result: IRecordSaveOperationResult) => void;
+    /** Fires when the provider has finished saving its records, with how each went. */
+    onAfterSave: (results: IRecordSaveOperationResult[]) => void;
+    /** Fires when the provider reports an error. */
     onError: (message: string, details?: any) => void;
-    /** Fired when a record's cell is double-clicked, whether or not the record then opens. */
+    /** Fires when a record's cell is double-clicked, whether or not the record then opens. */
     onCellDoubleClicked: (record: IRecord, columnName: string) => void;
-    /** Fired when a row with a record is clicked. */
+    /** Fires when a row with a record is clicked. */
     onRowClicked: (record: IRecord) => void;
-    /** Fired when the focus moves to another cell, or out of the rows. */
+    /** Fires when the focus moves to another cell, or out of the rows. */
     onFocusedCellChanged: (record: IRecord | undefined, columnName: string | undefined) => void;
-    /** Fired when the user resizes or moves a column, with the provider's columns after it. */
+    /** Fires when the user resizes or moves a column, with the provider's columns after it. */
     onColumnsChanged: (columns: IColumn[]) => void;
 }
 
 /** The grid reads its provider from `DataProviderContext`, once, at mount. */
-export interface IGridProps extends Partial<IGridEventHandlers> {
+export interface IGridProps extends Partial<IGridEventProps> {
     /** What this grid is made of, in load order; read once, at mount, and must hold a row model. */
     modules: IGridModule[];
     /** Whether a double click on a row opens its record; read once, at mount. */
     enableNavigation?: boolean;
     /** Whether option sets show their colours; read at mount, then control parameter hooks. */
     enableOptionSetColors?: boolean;
-    /** Whether every other row is shaded; read at mount, then through `registerCellTheme`. */
+    /** Whether every other row is shaded; read at mount, then through `addCellThemeHook`. */
     enableZebra?: boolean;
-    /** How tall a row is, in pixels; read at mount, then through `registerRowHeight`. */
+    /** How tall a row is, in pixels; read at mount, then through `addRowHeightHook`. */
     rowHeight?: number;
     /** How many rows the grid grows to fit before it starts scrolling instead. */
     maxVisibleRows?: number;
@@ -79,7 +79,7 @@ export interface IGridProps extends Partial<IGridEventHandlers> {
     /** Callbacks the grid runs for each row, read whenever it asks. */
     rowSettings?: IGridRowSettings;
     /** Replaces opening a record from the grid. */
-    onOpenRecord?: (params: IGridOpenRecordParams) => void;
+    onOpenRecord?: (parameters: IGridOpenRecordParameters) => void;
     /** Called with each new grid, before it loads; subscribe and keep refs here. */
     onSetup?: (grid: IGrid) => void;
     /** Awaited after the modules load and before AG Grid renders, on every mount. */

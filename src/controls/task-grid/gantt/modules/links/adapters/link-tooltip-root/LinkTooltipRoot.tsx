@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from "react";
 import type { IPoint } from "@fluentui/react";
 import { useEventEmitter } from "@core";
-import type { ITaskDependency } from "../../../../../dependencies";
+import type { ITaskDependency } from "../../../../../modules/dependencies";
 import { GANTT_TASK_LINK_CLASS } from "../../../../chart";
 import { useGantt, useGanttService } from "../../../../context";
 import type { IGanttDraggingEvents } from "../../../../dragging";

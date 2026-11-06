@@ -31,7 +31,7 @@ A module that keeps data comes in variants: one per backend, and a base factory 
 | [**Custom columns**](?path=/docs/controls-taskgrid-modules-custom-columns--overview) | Columns users add to the tasks themselves. | \`createIndexedDbCustomColumnsModule\`, in the browser | | \`createTalxisCustomColumnsModule\` | \`createCustomColumnsModule\` |
 | [**Lookup many**](?path=/docs/controls-taskgrid-modules-lookup-many--overview) | Columns of many related records, such as assignees and tags. | \`createMemoryLookupManyModule\` | \`createDataverseLookupManyModule\` | | \`createLookupManyModule\` |
 | [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) | Tasks created from a template, and saved as one. | \`createMemoryTemplatesModule\` | | | \`createTemplatesModule\` |
-| [**Checklist**](?path=/docs/controls-taskgrid-modules-checklist--overview) | Each task's checklist progress. | \`createMemoryChecklistModule\` | | \`createTalxisChecklistModule\` | \`createChecklistModule\` |
+| [**Checklist**](?path=/docs/controls-taskgrid-modules-checklist--overview) | Each task's checklist progress. | \`createMemoryTaskChecklistModule\` | | \`createTalxisTaskChecklistModule\` | \`createTaskChecklistModule\` |
 | [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) | Which tasks wait on which. | \`createMemoryDependenciesModule\` | \`createDataverseDependenciesModule\` | \`createTalxisDependenciesModule\` | \`createDependenciesModule\` |
 | Dragging | Moving tasks by dragging their rows. See *Dragging* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). | | | | |
 
@@ -39,7 +39,7 @@ A module that keeps data comes in variants: one per backend, and a base factory 
 
 ## Your own store
 
-The base factory takes \`onCreateStore\`, which the module calls with the task runtime on every mount; the checklist in the example uses one. A store implements the module's \`I…Store\`, listed on each module's page. Its writes are required, so throw "Not implemented." from one your backend lacks; an optional \`destroy()\` runs when the module goes.
+The base factory takes \`createStore\`, which the module calls with the task runtime on every mount; the checklist in the example uses one. A store implements the module's \`I…Store\`, listed on each module's page. Its writes are required, so throw "Not implemented." from one your backend lacks; an optional \`destroy()\` runs when the module goes.
 
 ## Columns from modules
 

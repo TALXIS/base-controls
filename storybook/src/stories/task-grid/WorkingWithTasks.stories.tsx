@@ -26,7 +26,7 @@ Three props turn on what the user may do with tasks, and two modules add editing
 
 A new task shows straight away, its cells loading until the store has created it. It goes first among its siblings, or last with \`defaultCreatePosition='last'\`; under a root task, *New* puts it under the root. The [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) module adds *From template* next to both.
 
-Deleting takes every subtask along. Tasks that could not be deleted are listed in a dialog and keep their ancestors; a store keeps a task from being deleted with \`onCanDeleteTask\`.
+Deleting takes every subtask along. Tasks that could not be deleted are listed in a dialog and keep their ancestors; a store keeps a task from being deleted with \`canDeleteTask\`.
 
 ## Inactive tasks
 

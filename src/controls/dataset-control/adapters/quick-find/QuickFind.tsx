@@ -1,6 +1,6 @@
 import { useEventEmitter, useRerender } from "@core";
 import { useLabels } from "@labels";
-import { DatasetControlUi, IQuickFindUiComponents } from "../../ui";
+import { DatasetControlUi, IDatasetControlUiQuickFindComponents } from "../../ui";
 import { useDataProviderEvents } from "@data";
 import { useRegisterDatasetControlPart } from "../root";
 import { QUICK_FIND_LABELS } from "./labels";
@@ -9,7 +9,7 @@ import { DatasetControlQuickFind, IDatasetControlQuickFindEvents } from "../../r
 /** Props for `DatasetControl.QuickFind`. */
 export interface IQuickFindProps {
     /** Replacements for the quick find's slots. */
-    components?: Partial<IQuickFindUiComponents>;
+    components?: Partial<IDatasetControlUiQuickFindComponents>;
 }
 
 /** Searches the provider for what the user types. */

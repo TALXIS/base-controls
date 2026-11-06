@@ -38,7 +38,7 @@ export class FormXmlSection implements IFormXmlSection {
         this.formXmlModel = formXmlModel;
         this._columnsString = section.columns?.toString() ?? '1';
         this._cells = section.rows?.row?.flatMap(row => row.cell?.map(cell => new FormXmlCell(cell, formXmlModel)) ?? []) ?? [];
-        this._registerCellEvents(this._cells);
+        this._addCellEventListeners(this._cells);
     }
 
     public getLabel(): string | null {
@@ -88,7 +88,7 @@ export class FormXmlSection implements IFormXmlSection {
         return this.celllabelposition ?? "Left";
     }
 
-    private _registerCellEvents(cells: IFormXmlCell[]): void {
+    private _addCellEventListeners(cells: IFormXmlCell[]): void {
         for (const cell of cells) {
             cell.events.addEventListener("onVisibilityChanged", (visible) => {
                 this.events.dispatchEvent("onCellVisibilityChanged", cell.id ?? "", visible);

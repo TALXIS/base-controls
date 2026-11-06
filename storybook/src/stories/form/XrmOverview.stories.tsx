@@ -34,7 +34,7 @@ Take a form's FormXml as Dataverse stores it, in the \`formxml\` of its \`system
 |---|---|
 | \`onLoad\` | Resolves \`{ record, formXml }\`, at mount and on refresh. |
 | \`onFormReady\` | Called with \`{ formContext, api }\` after each load: see [**Form context**](?path=/docs/controls-form-xrm-form-context--overview). |
-| \`autoSave\` | Saves each change as it reaches the record. At mount. |
+| \`enableAutoSave\` | Saves each change as it reaches the record. At mount. |
 | \`components\` | Draws the controls, the tabs, the ribbon or the notifications your own way: see [**Your own UI**](?path=/docs/controls-form-xrm-your-own-ui--overview). |
 | \`onFieldValueChanged\`, \`onDirtyStateChanged\`, \`onValidationSummaryChanged\`, \`onBeforeSave\`, \`onAfterSave\`, \`onError\` | The events of \`Form.Root\`: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview). |
 

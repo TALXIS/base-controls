@@ -2,7 +2,7 @@ import { createElement } from "react";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { IGanttSpan } from "../../schedule";
-import { runQuietly } from "../../../../runtime/runQuietly";
+import { runQuietly } from "../../../runtime/runQuietly";
 import { TaskDrawingLayer } from "./adapters/task-drawing-layer";
 import type { ITaskDrawingUiPreviewComponents } from "./ui/preview";
 import { getTaskDrawingStyles } from "./styles";
@@ -32,8 +32,8 @@ export class TaskDrawing implements ITaskDrawing {
     constructor(gantt: IGantt, parameters: ITaskDrawingParameters) {
         this._gantt = gantt;
         this._parameters = parameters;
-        gantt.surfaces.registerSurface(this._onSurfaces);
-        gantt.services.get('theme').registerStyles(result => result.styles.push(getTaskDrawingStyles()));
+        gantt.surfaces.addSurfacesHook(this._onSurfaces);
+        gantt.services.get('theme').addStylesHook(result => result.styles.push(getTaskDrawingStyles()));
     }
 
     public isEnabled(): boolean {

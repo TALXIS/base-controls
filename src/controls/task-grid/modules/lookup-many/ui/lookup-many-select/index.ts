@@ -1,2 +1,2 @@
-export * from './LookupManySelect';
+export * from './LookupManyUiSelect';
 export * from './components';

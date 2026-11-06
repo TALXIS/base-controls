@@ -4,7 +4,7 @@ import path from 'path';
 
 const ENTRIES = {
     '.': 'src/index.ts',
-    './gantt': 'src/controls/task-grid/modules/gantt/index.ts',
+    './gantt': 'src/controls/task-grid/gantt/index.ts',
 };
 
 const configPath = path.resolve('tsconfig.json');

@@ -1,15 +1,15 @@
-import { ISkeletonUiComponents, SkeletonUiComponents } from "./components";
-import { ISkeletonShimmerProps } from "./SkeletonShimmer";
+import { IDatasetControlUiSkeletonComponents, DatasetControlUiSkeletonComponents } from "./components";
+import { IDatasetControlUiSkeletonShimmerProps } from "./DatasetControlUiSkeletonShimmer";
 
 /** Props for the placeholder shown while the control loads. */
-export interface ISkeletonUiProps extends ISkeletonShimmerProps {
+export interface IDatasetControlUiSkeletonProps extends IDatasetControlUiSkeletonShimmerProps {
     /** Replacements for its slots. */
-    components?: Partial<ISkeletonUiComponents>;
+    components?: Partial<IDatasetControlUiSkeletonComponents>;
 }
 
 /** What stands in for the control while it loads. */
-export const Skeleton = (props: ISkeletonUiProps) => {
+export const DatasetControlUiSkeleton = (props: IDatasetControlUiSkeletonProps) => {
     const { components: componentsProp, ...shimmerProps } = props;
-    const components = { ...SkeletonUiComponents, ...componentsProp };
+    const components = { ...DatasetControlUiSkeletonComponents, ...componentsProp };
     return components.onRenderSkeleton(shimmerProps);
 };

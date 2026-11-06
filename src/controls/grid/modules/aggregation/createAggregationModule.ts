@@ -5,9 +5,9 @@ import { IGridAggregationComponents } from "./components";
 import { GridAggregation } from "./GridAggregation";
 import { IGridAggregationServiceMap } from "./runtime";
 
-export interface IAggregationModuleOptions {
+export interface IAggregationModuleParameters {
     /** Whether a column's menu offers the totals. */
-    allowUserAggregation?: boolean;
+    enableUserAggregation?: boolean;
     /** Overrides for the parts of what this module draws, by piece. */
     components?: IGridAggregationComponents;
 }
@@ -15,15 +15,15 @@ export interface IAggregationModuleOptions {
 export interface IAggregationModule extends IGridModule<'aggregation'> { }
 
 /** Builds the module that shows totals in a row pinned under the rest. */
-export const createAggregationModule = (options?: IAggregationModuleOptions): IAggregationModule => ({
+export const createAggregationModule = (parameters?: IAggregationModuleParameters): IAggregationModule => ({
     name: 'aggregation',
     agGridModules: [PinnedRowModule],
     onLoad: ({ services: gridServices }) => {
         //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridAggregationServiceMap>();
         services.register('gridServices', () => gridServices);
-        services.register('components', () => options?.components ?? {});
-        return new GridAggregation({ services, allowUserAggregation: options?.allowUserAggregation });
+        services.register('components', () => parameters?.components ?? {});
+        return new GridAggregation({ services, enableUserAggregation: parameters?.enableUserAggregation });
     },
     onDestroy: aggregation => aggregation.destroy(),
 });

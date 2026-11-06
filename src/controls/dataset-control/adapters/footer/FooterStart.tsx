@@ -1,4 +1,4 @@
-import { DatasetControlUi, IFooterStartUiComponents } from "../../ui";
+import { DatasetControlUi, IDatasetControlUiFooterStartComponents } from "../../ui";
 import { DatasetControlRegionContext } from "../region";
 
 /** Props for `DatasetControl.Footer.Start`. */
@@ -8,7 +8,7 @@ export interface IFooterStartProps {
     /** Added to the region's box. */
     className?: string;
     /** Replacements for the region's slots. */
-    components?: Partial<IFooterStartUiComponents>;
+    components?: Partial<IDatasetControlUiFooterStartComponents>;
 }
 
 /** The footer's left region, such as for the record count. */

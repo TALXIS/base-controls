@@ -1,9 +1,9 @@
 import { createElement } from "react";
 import type { GanttStatic, Link } from "dhtmlx-gantt";
 import type { LabelsOf } from "@labels";
-import type { IDependencies, TaskDependencyType } from "../../../dependencies";
+import type { IDependencies, TaskDependencyType } from "../../../modules/dependencies";
 import { extendTaskVisibility, GANTT_DRAG_MARKER_CLASS, GANTT_LINK_CONTROL_CLASS, GANTT_LINK_CONTROL_START_CLASS, GANTT_LINK_TOOLTIP_CLASS } from "../../chart";
-import { runQuietly } from "../../../../runtime/runQuietly";
+import { runQuietly } from "../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import { ILinkTooltipRendererComponents } from "./adapters/renderer/components";
@@ -74,9 +74,9 @@ export class Links implements ILinks {
         if (!this._dependencies) {
             return;
         }
-        gantt.registerChartConfig(this._configureChart);
-        gantt.services.get('theme').registerStyles((result, theme) => result.styles.push(getLinksStyles(theme)));
-        gantt.surfaces.registerSurface(this._onSurfaces);
+        gantt.addChartConfigHook(this._configureChart);
+        gantt.services.get('theme').addStylesHook((result, theme) => result.styles.push(getLinksStyles(theme)));
+        gantt.surfaces.addSurfacesHook(this._onSurfaces);
         gantt.events.addEventListener('onTasksParsed', this._syncLinks);
         this._offDependenciesChanged = this._dependencies.events.addEventListener('onDependenciesChanged', this._syncLinks);
         gantt.services.observe('chart', this._onChartReady);

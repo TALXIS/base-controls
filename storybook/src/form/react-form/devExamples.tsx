@@ -46,7 +46,7 @@ export const createDemoRecord = () => createMemoryRecord({
         twooptions: true,
     },
     metadata: { PrimaryIdAttribute: 'id', PrimaryNameAttribute: 'text' },
-    onSave: async record => {
+    save: async record => {
         await new Promise(resolve => setTimeout(resolve, 3000))
         const fields = record.getFields().filter(field => field.isDirty()).map(field => field.getColumn().name)
         if (saves.fail) {
@@ -65,7 +65,7 @@ const DemoRibbon = (props: ICommandBarProps) => {
     const form = useForm()
     const [isFailing, setIsFailing] = React.useState(saves.fail)
     const commands: ICommandBarItemProps[] = [
-        { key: 'refresh', text: 'Refresh', iconProps: { iconName: 'Refresh' }, onClick: () => form.refresh() },
+        { key: 'refresh', text: 'Refresh', iconProps: { iconName: 'Refresh' }, onClick: () => form.reload() },
         { key: 'fail', text: 'Saves fail', canCheck: true, checked: isFailing, iconProps: { iconName: 'Warning' }, onClick: () => {
             saves.fail = !saves.fail
             setIsFailing(saves.fail)
@@ -79,7 +79,7 @@ const field = (name: string) => <Form.Field key={name} name={name}><Form.Cell><F
 const GridExample = () => {
     const [tab, setTab] = React.useState('general')
 
-    return <Form.Root onLoad={async () => ({ record })} autoSave>
+    return <Form.Root onLoad={async () => ({ record })} enableAutoSave>
         <Form.Ribbon components={{ onRenderCommandBar: props => <DemoRibbon {...props} /> }} />
         <Form.Notifications />
         <Form.Tabs expandedTab={tab} onTabChange={setTab}>

@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef } from "react";
 import { DndContext, PointerSensor, useSensor } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { EditColumnsColumnListUiComponents, IEditColumnsColumnListUiComponents, IEditColumnsListColumn } from "./components";
-import { getEditColumnsColumnListUiStyles } from "./styles";
+import { DatasetControlUiEditColumnsColumnListComponents, IDatasetControlUiEditColumnsColumnListComponents, IEditColumnsListColumn } from "./components";
+import { getDatasetControlUiEditColumnsColumnListStyles } from "./styles";
 
 /** Props for the list of chosen columns, as plain UI. */
-export interface IEditColumnsColumnListUiProps {
+export interface IDatasetControlUiEditColumnsColumnListProps {
     /** The chosen columns, in order. */
     columns: IEditColumnsListColumn[];
     /** The column scrolled into view, e.g. the one just added. */
@@ -14,13 +14,13 @@ export interface IEditColumnsColumnListUiProps {
     /** Puts the column where `targetName` is. */
     onMove: (name: string, targetName: string) => void;
     /** Replacements for its slots. */
-    components?: Partial<IEditColumnsColumnListUiComponents>;
+    components?: Partial<IDatasetControlUiEditColumnsColumnListComponents>;
 }
 
 /** The chosen columns, dragged to reorder. */
-export const EditColumnsColumnList = (props: IEditColumnsColumnListUiProps) => {
-    const components = { ...EditColumnsColumnListUiComponents, ...props.components };
-    const styles = useMemo(() => getEditColumnsColumnListUiStyles(), []);
+export const DatasetControlUiEditColumnsColumnList = (props: IDatasetControlUiEditColumnsColumnListProps) => {
+    const components = { ...DatasetControlUiEditColumnsColumnListComponents, ...props.components };
+    const styles = useMemo(() => getDatasetControlUiEditColumnsColumnListStyles(), []);
     const sensor = useSensor(PointerSensor);
     const rootRef = useRef<HTMLDivElement>(null);
 
@@ -39,4 +39,4 @@ export const EditColumnsColumnList = (props: IEditColumnsColumnListUiProps) => {
     </DndContext>;
 };
 
-const ColumnListItem = (props: { item: IEditColumnsListColumn; components: IEditColumnsColumnListUiComponents }) => props.components.onRenderColumn(props.item);
+const ColumnListItem = (props: { item: IEditColumnsListColumn; components: IDatasetControlUiEditColumnsColumnListComponents }) => props.components.onRenderColumn(props.item);

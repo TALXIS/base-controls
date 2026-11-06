@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { ITheme } from "@theme";
 
-export const getPaginationUiStyles = (theme: ITheme, align: 'start' | 'end') => mergeStyleSets({
+export const getDatasetControlUiPaginationStyles = (theme: ITheme, align: 'start' | 'end') => mergeStyleSets({
     //its first and last buttons line up with the footer's edges
     datasetControlPagination: {
         flex: '1 1 auto',

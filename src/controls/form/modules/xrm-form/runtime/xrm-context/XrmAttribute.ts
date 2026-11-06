@@ -18,7 +18,7 @@ export class XrmAttribute implements IXrmAttributeContext {
         this._attribute = attribute;
         this._field = attribute.getField();
         this._formContext = formContext;
-        this._registerEventListeners();
+        this._addEventListeners();
     }
 
     public getName(): string {
@@ -30,7 +30,7 @@ export class XrmAttribute implements IXrmAttributeContext {
     }
 
     public isValid(): boolean {
-        return !this._formContext.getFormXmlModel().getForm().isFieldValid(this.getName()).error
+        return !this._formContext.getFormXmlModel().getForm().getFieldValidation(this.getName()).error
     }
 
     public setValue(value: any): void {
@@ -146,9 +146,9 @@ export class XrmAttribute implements IXrmAttributeContext {
         return this._formContext.getFormXmlModel().getForm().getField(this.getName());
     }
 
-    private _registerEventListeners() {
+    private _addEventListeners() {
         this._formContext.getFormXmlModel().getForm().events.addEventListener('onFieldValueChanged', this._formFieldValueChangedHandler);
-        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroy', this._formDestroyedHandler);
+        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroyed', this._formDestroyedHandler);
     }
 
     private _formFieldValueChangedHandler = (fieldName: string): void => {

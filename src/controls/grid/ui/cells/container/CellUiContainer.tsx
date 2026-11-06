@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 import { getClassNames } from "@core";
 import { CellUiContainerComponents, ICellUiContainerComponents } from "./components";
-import { CELL_CONTAINER_CLASS_NAME, getCellUiContainerStyles } from "./styles";
+import { CELL_CONTAINER_CLASS, getCellUiContainerStyles } from "./styles";
 
 export interface ICellUiContainerProps extends React.HTMLAttributes<HTMLDivElement> {
     components?: Partial<ICellUiContainerComponents>;
@@ -17,5 +17,5 @@ export const CellUiContainer = (props: ICellUiContainerProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getCellUiContainerStyles(theme), [theme]);
 
-    return components.onRenderContainer({ ...divProps, className: getClassNames([CELL_CONTAINER_CLASS_NAME, styles.cellContainer, className]) });
+    return components.onRenderContainer({ ...divProps, className: getClassNames([CELL_CONTAINER_CLASS, styles.cellContainer, className]) });
 };

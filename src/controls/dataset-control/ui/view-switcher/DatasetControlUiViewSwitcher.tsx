@@ -3,11 +3,11 @@ import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { useAppTheme } from "@theme";
 import { useSurfaceMenuProps } from "@ui";
 import { getClassNames } from "@core";
-import { IViewSwitcherUiComponents, ViewSwitcherUiComponents } from "./components";
-import { getViewSwitcherUiStyles } from "./styles";
+import { IDatasetControlUiViewSwitcherComponents, DatasetControlUiViewSwitcherComponents } from "./components";
+import { getDatasetControlUiViewSwitcherStyles } from "./styles";
 
 /** Props for the view switcher, as plain UI. */
-export interface IViewSwitcherUiProps {
+export interface IDatasetControlUiViewSwitcherProps {
     /** The current view's name. */
     text: string;
     /** The menu's items: the views, under their group headers. */
@@ -18,14 +18,14 @@ export interface IViewSwitcherUiProps {
     onMenuClick?: () => void;
     disabled?: boolean;
     /** Replacements for its slots. */
-    components?: Partial<IViewSwitcherUiComponents>;
+    components?: Partial<IDatasetControlUiViewSwitcherComponents>;
 }
 
 /** A button named after the current view, opening the list of views. */
-export const ViewSwitcher = (props: IViewSwitcherUiProps) => {
-    const components = { ...ViewSwitcherUiComponents, ...props.components };
+export const DatasetControlUiViewSwitcher = (props: IDatasetControlUiViewSwitcherProps) => {
+    const components = { ...DatasetControlUiViewSwitcherComponents, ...props.components };
     const appTheme = useAppTheme();
-    const styles = useMemo(() => getViewSwitcherUiStyles(appTheme), [appTheme]);
+    const styles = useMemo(() => getDatasetControlUiViewSwitcherStyles(appTheme), [appTheme]);
     const items = props.items.map(item => item.key === props.selectedKey ? { ...item, className: getClassNames([item.className, styles.selectedItem]) } : item);
     const menuProps = useSurfaceMenuProps({ items: getGroupSections(items), className: styles.menu });
 

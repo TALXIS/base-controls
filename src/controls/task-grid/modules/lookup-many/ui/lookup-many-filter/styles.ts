@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getLookupManyFilterStyles = () => mergeStyleSets({
+export const getLookupManyUiFilterStyles = () => mergeStyleSets({
     root: {
         display: 'flex',
         flexDirection: 'column',

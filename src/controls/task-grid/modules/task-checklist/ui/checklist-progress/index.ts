@@ -1,2 +1,2 @@
-export * from './ChecklistProgress';
+export * from './TaskChecklistUiProgress';
 export * from './components';

@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getColorfulLookupManyOptionStyles = (color: string) => mergeStyleSets({
+export const getLookupManyUiColorfulOptionStyles = (color: string) => mergeStyleSets({
     option: {
         display: 'flex',
         alignItems: 'center',

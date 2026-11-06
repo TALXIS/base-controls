@@ -8,7 +8,7 @@ export interface IDataverseUserQueriesModuleParameters<TData> extends IDataverse
 
 /** The user's views as records of a Dataverse table, with their columns, linking and data as JSON in `table`'s layout column. */
 export const createDataverseUserQueriesModule = <TData,>(parameters: IDataverseUserQueriesModuleParameters<TData>): IUserQueriesModule<TData> => createUserQueriesModule<TData>({
-    onCreateStore: () => new DataverseUserQueriesStore<TData>(parameters),
+    createStore: () => new DataverseUserQueriesStore<TData>(parameters),
     enableSaveAsNewView: parameters.enableSaveAsNewView,
     enableSaveChanges: parameters.enableSaveChanges,
     enableManageViews: parameters.enableManageViews,

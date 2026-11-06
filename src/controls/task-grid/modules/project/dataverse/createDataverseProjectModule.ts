@@ -15,5 +15,5 @@ export interface IDataverseProjectModuleParameters {
 
 /** The project module for a project record in Dataverse. */
 export const createDataverseProjectModule = (parameters: IDataverseProjectModuleParameters): IProjectModule => {
-    return createProjectModule({ onCreateStore: taskRuntime => new DataverseProjectStore(taskRuntime, parameters) });
+    return createProjectModule({ createStore: taskRuntime => new DataverseProjectStore(taskRuntime, parameters) });
 };

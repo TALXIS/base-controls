@@ -98,7 +98,7 @@ const weekOfYear = (date: Date) => {
 const fiscalScaleModule = {
     name: 'fiscalScale',
     onLoad: (gantt: any) => {
-        gantt.services.observe('zooming', (zooming: any) => zooming.registerScaleLabel((result: { label: string }, cell: { date: Date, unit: string, row: number }) => {
+        gantt.services.observe('zooming', (zooming: any) => zooming.addScaleLabelHook((result: { label: string }, cell: { date: Date, unit: string, row: number }) => {
             if (cell.unit === 'quarter') {
                 const fiscalYear = cell.date.getMonth() >= 6 ? cell.date.getFullYear() + 1 : cell.date.getFullYear()
                 result.label = 'FY' + String(fiscalYear).slice(2) + ' Q' + (Math.floor(((cell.date.getMonth() + 6) % 12) / 3) + 1)
@@ -139,7 +139,7 @@ const GridExample = () => {
         }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: LOOKUP_MANY_VALUES }),
         createMemoryTemplatesModule({ database, templates: TEMPLATES }),
-        createMemoryChecklistModule({ items: CHECKLIST_ITEMS }),
+        createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS }),
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
     ], [database])
     const ganttModules = React.useMemo(() => [
@@ -175,7 +175,7 @@ const GridExample = () => {
 
     const onLoad = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
         const taskRuntime = control.modules.get('taskRuntime')
-        return { provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: ${data.columns} }) }), fieldMapping, views: VIEWS }
+        return { provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: ${data.columns} }) }), fieldMapping, views: VIEWS }
     }
 
     return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion stateKey='${data.storageKey}' height='100%' onLoad={onLoad}>

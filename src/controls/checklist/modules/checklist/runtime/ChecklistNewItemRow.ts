@@ -3,18 +3,18 @@ import { IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { IParameters } from "@pcf/interfaces";
 import { StackRank } from "@core/stack-rank";
 import { IGridAgGridOptions, IGrid, IGridCellHookParameters, IGridEditedCell, GRID_MODULE_PRIORITY } from "@controls/grid";
-import { IGridCheckList } from "../GridCheckList";
-import { CHECK_LIST_LABELS } from "../../../labels";
+import { IGridChecklist } from "../GridChecklist";
+import { CHECKLIST_LABELS } from "../../../labels";
 
-export interface ICheckListNewItemRowParameters {
+export interface IChecklistNewItemRowParameters {
     grid: IGrid;
-    checkList: IGridCheckList;
+    checklist: IGridChecklist;
 }
 
 /** A row pinned below the list; naming an item in it appends that item and readies the row for the next. */
-export class CheckListNewItemRow {
+export class ChecklistNewItemRow {
     private _grid: IGrid;
-    private _checkList: IGridCheckList;
+    private _checklist: IGridChecklist;
     //its own provider, so typing into the row saves nothing until the item is committed
     private _draftProvider?: MemoryDataProvider;
     //the grid reads a last value out of a replaced draft while its editor is taken down
@@ -26,12 +26,12 @@ export class CheckListNewItemRow {
     private _upstreamPinnedRows?: IRecord[];
     private _startEditingTimeout?: ReturnType<typeof setTimeout>;
 
-    constructor(parameters: ICheckListNewItemRowParameters) {
+    constructor(parameters: IChecklistNewItemRowParameters) {
         this._grid = parameters.grid;
-        this._checkList = parameters.checkList;
+        this._checklist = parameters.checklist;
         //after the totals row, so the new-item row sits between the items and the totals
-        this._grid.registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation + 1);
-        this._grid.services.get('cells').registerControlParameters(this._onControlParameters);
+        this._grid.addAgGridOptionsHook(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation + 1);
+        this._grid.services.get('cells').addControlParametersHook(this._onControlParameters);
         this._grid.modules.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
         this._grid.services.observe('gridApi', this._onGridApiAvailable);
     }
@@ -51,9 +51,9 @@ export class CheckListNewItemRow {
         result.options.pinnedBottomRowData = this._pinnedRows;
     };
 
-    private _onControlParameters = (result: IParameters, params: IGridCellHookParameters): void => {
-        if (params.record === this._draft && params.columnName === this._checkList.getFieldMapping().name) {
-            result.Placeholder = { raw: this._grid.getLabels(CHECK_LIST_LABELS).get('checkList.newItemPlaceholder') };
+    private _onControlParameters = (result: IParameters, parameters: IGridCellHookParameters): void => {
+        if (parameters.record === this._draft && parameters.columnName === this._checklist.getFieldMapping().name) {
+            result.Placeholder = { raw: this._grid.getLabels(CHECKLIST_LABELS).get('checklist.newItemPlaceholder') };
         }
     };
 
@@ -78,7 +78,7 @@ export class CheckListNewItemRow {
         if (!draft || previous?.recordId !== draft.getRecordId()) {
             return;
         }
-        const name = draft.getValue(this._checkList.getFieldMapping().name);
+        const name = draft.getValue(this._checklist.getFieldMapping().name);
         if (name !== null && name !== undefined && name !== '') {
             this._commitDraft(draft);
         }
@@ -86,7 +86,7 @@ export class CheckListNewItemRow {
 
     private _commitDraft(draft: IRecord): void {
         const gridApi = this._grid.services.get('gridApi');
-        const stackRankColumn = this._checkList.getFieldMapping().stackRank;
+        const stackRankColumn = this._checklist.getFieldMapping().stackRank;
         const rowCount = gridApi.getDisplayedRowCount();
         const lastRecord = rowCount > 0 ? gridApi.getDisplayedRowAtIndex(rowCount - 1)?.data : undefined;
         const record = this._grid.services.get('provider').newRecord({ rawData: draft.toRawData() });
@@ -99,7 +99,7 @@ export class CheckListNewItemRow {
     }
 
     private _startEditingDraft(gridApi: GridApi<IRecord>): void {
-        gridApi.startEditingCell({ rowIndex: 0, rowPinned: 'bottom', colKey: this._checkList.getFieldMapping().name });
+        gridApi.startEditingCell({ rowIndex: 0, rowPinned: 'bottom', colKey: this._checklist.getFieldMapping().name });
     }
 
     private _resetDraft(): void {

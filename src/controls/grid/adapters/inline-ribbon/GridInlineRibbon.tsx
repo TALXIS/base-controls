@@ -8,7 +8,7 @@ import { ICommandBar } from "@fluentui/react";
 import { getGridInlineRibbonStyles } from "../../ui/inline-ribbon/styles";
 import { DataProvider } from "@talxis/client-libraries";
 
-const MODEL_EVENTS: (keyof IGridInlineRibbonModelEvents)[] = ['onBeforeCommandsRefreshed', 'onAfterCommandsRefreshed'];
+const MODEL_EVENTS: (keyof IGridInlineRibbonModelEvents)[] = ['onBeforeCommandsRefresh', 'onAfterCommandsRefresh'];
 
 export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const propsRef = useLatest(props);
@@ -16,9 +16,9 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const record = props.parameters.Record.raw;
     //one model per record: a reload can hand the same row a new one
     const model = useMemo(() => new GridInlineRibbonModel({
-        onGetProvider: () => propsRef.current.parameters.Provider.raw,
-        onGetRecord: () => record,
-        onGetCommandButtonIds: () => propsRef.current.parameters.CommandButtonIds?.raw?.split(',').map(id => id.trim()) ?? []
+        getProvider: () => propsRef.current.parameters.Provider.raw,
+        getRecord: () => record,
+        getCommandButtonIds: () => propsRef.current.parameters.CommandButtonIds?.raw?.split(',').map(id => id.trim()) ?? []
     }), [record]);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const componentProps = onOverrideComponentProps({
@@ -28,7 +28,7 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const { rerender } = useRerender();
     const styles = useMemo(() => getGridInlineRibbonStyles(props.parameters.ColumnAlignment?.raw ?? 'left', context.mode.allocatedHeight), [props.parameters.ColumnAlignment?.raw, context.mode.allocatedHeight]);
-    useEventEmitter<IGridInlineRibbonModelEvents>(model, MODEL_EVENTS, () => rerender());
+    useEventEmitter<IGridInlineRibbonModelEvents>(model.events, MODEL_EVENTS, () => rerender());
 
     const observe = useResizeObserver(() => {
         commandBarRef.current?.remeasure();

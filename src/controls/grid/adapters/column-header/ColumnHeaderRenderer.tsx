@@ -11,13 +11,13 @@ import { ITheme } from "@theme";
 import { ColumnHeaderTheme } from "./theme/ColumnHeaderTheme";
 
 /** What a consumer sets through `colDef.headerComponentParams` to change a column's header. */
-export interface IColumnHeaderRendererOptions {
+export interface IColumnHeaderRendererParameters {
     /** The seed the header's theme is generated from, in place of the grid's own. */
     theme?: ITheme;
     components?: IColumnHeaderRendererComponents;
 }
 
-export interface IColumnHeaderRendererProps extends IColumnHeaderParams, IColumnHeaderRendererOptions { }
+export interface IColumnHeaderRendererProps extends IColumnHeaderParams, IColumnHeaderRendererParameters { }
 
 /** A column's header: its name, and what the modules add to it. */
 export const ColumnHeaderRenderer = (props: IColumnHeaderRendererProps) => {

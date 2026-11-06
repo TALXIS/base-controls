@@ -45,13 +45,13 @@ export interface IGridAggregationParameters {
     /** This module's own locator. */
     services: IGridAggregationServiceLocator;
     /** Whether a column's menu offers the totals. */
-    allowUserAggregation?: boolean;
+    enableUserAggregation?: boolean;
 }
 
 /** The totals a grid shows, in the row pinned under the rest. */
 export interface IGridAggregation {
     /** Whether the column may have a total. */
-    canColumnBeAggregated(column: IColumn): boolean;
+    canAggregateColumn(column: IColumn): boolean;
     /** Adds a total of the column under the rows. */
     addAggregation(columnName: string, aggregationFunction: AggregationFunction): void;
     /** Removes the total with the alias. */
@@ -77,9 +77,9 @@ export class GridAggregation implements IGridAggregation {
 
     constructor(parameters: IGridAggregationParameters) {
         this._services = parameters.services;
-        this._allowUserAggregation = parameters.allowUserAggregation ?? true;
+        this._allowUserAggregation = parameters.enableUserAggregation ?? true;
         this._gridServices.observe('gridApi', () => this._onGridApiAvailable());
-        this._registerHooks();
+        this._addHooks();
     }
 
     private _onTheme = (result: IGridAgTheme, theme: ITheme): void => {
@@ -87,18 +87,18 @@ export class GridAggregation implements IGridAggregation {
     };
 
     /** What this module has to say about what the grid draws, in the order the grid asks. */
-    private _registerHooks(): void {
+    private _addHooks(): void {
         const columnHeaders = this._gridServices.get('columns').headers;
-        this._gridServices.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('gridTheme').registerTheme(this._onTheme, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('grid').addAgGridOptionsHook(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('gridTheme').addThemeHook(this._onTheme, GRID_MODULE_PRIORITY.aggregation);
         //runs after grouping to have the last word on a group row's cell
-        this._gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('cells').registerCellTheme(this._onCellTheme, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('cells').registerCellLoading(this._onCellLoading, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('rows').registerRowHeight(this._onRowHeight, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('cells').addCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('cells').addCellLoadingHook(this._onCellLoading, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('rows').addRowHeightHook(this._onRowHeight, GRID_MODULE_PRIORITY.aggregation);
         //listed in the column menu after grouping
-        columnHeaders.registerColumnMenuSection(this._onMenuSection, GRID_MODULE_PRIORITY.aggregation);
-        columnHeaders.registerColumnHeaderAdornments(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.aggregation);
+        columnHeaders.addColumnMenuSectionsHook(this._onMenuSection, GRID_MODULE_PRIORITY.aggregation);
+        columnHeaders.addColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.aggregation);
     }
 
     /** The total row, created if the dataset now carries an aggregation. */
@@ -109,7 +109,7 @@ export class GridAggregation implements IGridAggregation {
         return this._createTotalRow();
     }
 
-    public canColumnBeAggregated(column: IColumn): boolean {
+    public canAggregateColumn(column: IColumn): boolean {
         return this._allowUserAggregation && (column.metadata?.SupportedAggregations ?? []).length > 0;
     }
 
@@ -122,16 +122,16 @@ export class GridAggregation implements IGridAggregation {
     }
 
     /** Every cell that will hold a total waits, because one fetch answers all of them. */
-    private _onCellLoading = (result: IGridCellLoading, params: { record: IRecord; columnName: string }): void => {
-        if (!this._isTotalRecord(params.record) || !this._provider.getColumnsMap()[params.columnName]?.aggregation?.aggregationFunction) {
+    private _onCellLoading = (result: IGridCellLoading, parameters: { record: IRecord; columnName: string }): void => {
+        if (!this._isTotalRecord(parameters.record) || !this._provider.getColumnsMap()[parameters.columnName]?.aggregation?.aggregationFunction) {
             return;
         }
         result.isLoading = !!this._totalRow?.getDataProvider().isLoading();
     };
 
     /** Styles the total row like a group row. */
-    private _onCellTheme = (builder: ThemeBuilder, params: { record: IRecord; columnName: string }): void => {
-        if (!this._isTotalRecord(params.record)) {
+    private _onCellTheme = (builder: ThemeBuilder, parameters: { record: IRecord; columnName: string }): void => {
+        if (!this._isTotalRecord(parameters.record)) {
             return;
         }
         //the faintest step off the surface Fluent has
@@ -139,8 +139,8 @@ export class GridAggregation implements IGridAggregation {
         builder.edit('aggregation|totalRow', result => { result.fonts.medium.fontWeight = FontWeights.semibold; });
     };
 
-    private _onRowHeight = (result: IGridRowHeight, params: { record: IRecord }): void => {
-        if (!this._isTotalRecord(params.record)) {
+    private _onRowHeight = (result: IGridRowHeight, parameters: { record: IRecord }): void => {
+        if (!this._isTotalRecord(parameters.record)) {
             return;
         }
         result.height = Math.max(result.height ?? this._gridServices.get('settings').getDefaultRowHeight(), MIN_TOTAL_ROW_HEIGHT);
@@ -250,7 +250,7 @@ export class GridAggregation implements IGridAggregation {
     private _onMenuSection = (sections: IColumnMenuSection[], header: IGridColumnHeader): void => {
         const column = header.getColumn();
         const supported = column?.metadata?.SupportedAggregations ?? [];
-        if (!column || !this.canColumnBeAggregated(column) || !supported.length) {
+        if (!column || !this.canAggregateColumn(column) || !supported.length) {
             return;
         }
         const grouping = this._services.get('gridServices').get('grid').modules.find('grouping');

@@ -1,10 +1,10 @@
 import React from 'react'
-import { CheckList, ICheckListFieldMapping, IGrid } from '@talxis/base-controls'
-import { DatasetControl, PcfContextProvider, sortCheckListProvider } from '@talxis/base-controls'
+import { Checklist, IChecklistFieldMapping, IGrid } from '@talxis/base-controls'
+import { DatasetControl, PcfContextProvider, sortChecklistProvider } from '@talxis/base-controls'
 import { Link, Stack, Text } from '@fluentui/react'
 import { COMPLETED_COL, createScratchCheckListProvider, NAME_COL, STACK_RANK_COL } from './scratchCheckListData'
 
-const FIELD_MAPPING: ICheckListFieldMapping = {
+const FIELD_MAPPING: IChecklistFieldMapping = {
     name: NAME_COL,
     stackRank: STACK_RANK_COL,
     completed: COMPLETED_COL,
@@ -77,13 +77,13 @@ export const ScratchCheckList = () => {
                         </div>
                     ))}
                 </div>
-                <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
+                <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>
                     <DatasetControl.Body>
-                        <CheckList
+                        <Checklist
                             fieldMapping={FIELD_MAPPING}
                             onSetup={onSetup}
                             onRecordValueChanged={(record, columnName, newValue) => log('onRecordValueChanged', `${record.getRecordId()} · ${columnName} = ${newValue}`)}
-                            onAfterRecordSaved={result => log('onAfterRecordSaved', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
+                            onAfterRecordSave={result => log('onAfterRecordSave', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
                             onError={message => log('onError', message)} />
                     </DatasetControl.Body>
                 </DatasetControl>

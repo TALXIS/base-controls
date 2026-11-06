@@ -3,11 +3,11 @@ import { getClassNames } from "@core";
 import { useCompactItem } from "@ui";
 import { IsolatedHeaderItemContext } from "../header/context";
 import { HeaderItemContext } from "./context";
-import { getHeaderItemStyles } from "./styles";
+import { getDatasetControlUiHeaderItemStyles } from "./styles";
 
 /** The box around one child of a header region, which hides while another part has the header to itself. */
-export const HeaderItem = (props: { children?: React.ReactNode }) => {
-    const styles = useMemo(() => getHeaderItemStyles(), []);
+export const DatasetControlUiHeaderItem = (props: { children?: React.ReactNode }) => {
+    const styles = useMemo(() => getDatasetControlUiHeaderItemStyles(), []);
     const ref = useRef<HTMLDivElement>(null);
     const isolated = useContext(IsolatedHeaderItemContext);
     const isHidden = !!isolated && !ref.current?.contains(isolated);

@@ -1,7 +1,7 @@
 import type { IRawRecord } from "@talxis/client-libraries";
 import type { GridCellLoadingHook, IGrid } from "@controls/grid";
-import type { ITaskDataProvider, TaskLoadWaiter } from "../../runtime/provider";
-import type { ITaskRuntime } from "../../runtime";
+import type { ITaskDataProvider, TaskLoadWaiter } from "../provider";
+import type { ITaskRuntime } from "..";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 
@@ -10,7 +10,7 @@ export interface ITaskColumnValuesParameters {
     /** The columns the values fill. */
     columnNames: () => string[];
     /** Fetches the tasks' values by task id and column name, or writes them itself. */
-    onLoad: (taskIds: string[]) => Promise<Map<string, IRawRecord> | void>;
+    load: (taskIds: string[]) => Promise<Map<string, IRawRecord> | void>;
     /** What a failed load is kept as. */
     errorMessage: () => string;
     /** Loads a task's values again once its editor closes. */
@@ -56,11 +56,11 @@ export class TaskColumnValues {
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
         const offFirstDataLoaded = provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
-        const unregisterLoadWaiter = provider.registerLoadWaiter(this._waitForValues);
+        const removeLoadWaiter = provider.addLoadWaiter(this._waitForValues);
         const offEditorClosed = this._parameters.reloadOnEditorClosed ? provider.taskEvents.addEventListener('onEditorClosed', this._onEditorClosed) : undefined;
         return () => {
             offFirstDataLoaded();
-            unregisterLoadWaiter();
+            removeLoadWaiter();
             offEditorClosed?.();
         };
     };
@@ -100,7 +100,7 @@ export class TaskColumnValues {
         this._error = undefined;
         this._changeLoadingCount(1);
         try {
-            const values = await this._parameters.onLoad(taskIds);
+            const values = await this._parameters.load(taskIds);
             if (values) {
                 this.write(values);
             }
@@ -123,7 +123,7 @@ export class TaskColumnValues {
 
     private _onGridAvailable = (grid: IGrid): (() => void) => {
         this._grid = grid as IGrid<ITaskGridServiceMap>;
-        grid.services.get('cells').registerCellLoading(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
+        grid.services.get('cells').addCellLoadingHook(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
         return () => this._grid = undefined;
     };
 

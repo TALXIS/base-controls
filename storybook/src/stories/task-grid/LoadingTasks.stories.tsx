@@ -30,13 +30,13 @@ Every other column is an ordinary column of the view.
 
 ## Data sources and stores
 
-A task provider reads and writes its tasks through a *store*, and a data source puts the two together. You pass the data source an \`onCreateStore(taskRuntime)\` that creates the store on every load:
+A task provider reads and writes its tasks through a *store*, and a data source puts the two together. You pass the data source an \`createStore(taskRuntime)\` that creates the store on every load:
 
 | Store | Data source | Tasks are kept |
 |---|---|---|
-| \`MemoryTaskStore\` | \`createMemoryTaskDataSource\` | In a \`MemoryTaskDatabase\`, in the page. For prototypes, tests and these docs. |
-| \`DataverseTaskStore\` | \`createDataverseTaskDataSource\` | In a Dataverse table, read through FetchXML and edited in its forms. TALXIS tasks load with it too. |
-| Your own \`ITaskStore\` | \`createTaskDataSource\` | Wherever your store reads and writes them. See *Your own store* below. |
+| \`MemoryTaskStore\` | \`createMemoryTaskProvider\` | In a \`MemoryTaskDatabase\`, in the page. For prototypes, tests and these docs. |
+| \`DataverseTaskStore\` | \`createDataverseTaskProvider\` | In a Dataverse table, read through FetchXML and edited in its forms. TALXIS tasks load with it too. |
+| Your own \`ITaskStore\` | \`createTaskProvider\` | Wherever your store reads and writes them. See *Your own store* below. |
 
 Every data source also takes \`provider\`, a class extending \`TaskDataProvider\`, to change the provider itself.
 
@@ -50,7 +50,7 @@ The example's *dataverse.ts* loads the tasks from Dataverse; its parameters are 
 
 ## Rescheduled dates
 
-After every save, from a cell, a form, a move or a dependency, the provider asks the store what the backend changed through \`onSynchronize\`, so dates a backend rescheduled show up. \`DataverseTaskStore\` implements it, and it is optional on a store of your own.
+After every save, from a cell, a form, a move or a dependency, the provider asks the store what the backend changed through \`synchronize\`, so dates a backend rescheduled show up. \`DataverseTaskStore\` implements it, and it is optional on a store of your own.
 
 ## Start from a task
 
@@ -60,7 +60,7 @@ Return \`rootTaskId\` to show only the tasks under one task, such as one project
 
 ## Your own store
 
-Implement \`ITaskStore\`, listed under *Reference* below, and pass it to \`createTaskDataSource\`. Throw "Not implemented." from a method your backend does not support.
+Implement \`ITaskStore\`, listed under *Reference* below, and pass it to \`createTaskProvider\`. Throw "Not implemented." from a method your backend does not support.
 
 ## Reference
 
@@ -70,22 +70,22 @@ Implement \`ITaskStore\`, listed under *Reference* below, and pass it to \`creat
 |---|---|
 | \`fetchXml\` | Required. Selects the tasks. It is a Liquid template over \`project\`, from the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module, and \`hostRecord\`. |
 | \`hostRecord\` | \`{ entityName, id?, data? }\`, the record the grid sits on, such as the one the form shows. |
-| \`form\` | How tasks open: \`editId\` and \`bulkEditId\` pick the forms, and \`onGetParameters(operation, defaults)\` changes what \`Xrm.Navigation.navigateTo\` gets. |
-| \`onGetNewTaskDefaults\` | \`(params) => IRawRecord\`, values every new task starts with. |
+| \`form\` | How tasks open: \`editId\` and \`bulkEditId\` pick the forms, and \`getParameters(operation, defaults)\` changes what \`Xrm.Navigation.navigateTo\` gets. |
+| \`getNewTaskDefaults\` | \`(params) => IRawRecord\`, values every new task starts with. |
 
 ### Your own store
 
 | Method | Description |
 |---|---|
-| \`onLoad(provider)\` | Returns \`{ rawData, metadata, columns }\`: every task of the view, the table's metadata, and the columns. |
-| \`onGetAvailableColumns(options?)\`, \`onGetAvailableRelatedColumns()\` | What *Edit columns* offers. |
-| \`onCreateTask(params)\` | Creates the task the grid already shows, from \`{ parentRecord, stackRank, data, taskId }\`. Returns \`{ record }\`, or \`null\` to drop it. |
-| \`onSaveTask(task)\` | Saves what changed on a task, its parent and rank included. |
-| \`onDeleteTasks({ taskIds, tree })\` | Deletes the tasks, deepest first. Returns the ones deleted and the ones that failed, or \`null\` when cancelled. |
-| \`onOpenTasks(taskIds)\` | Opens the tasks outside the grid, such as in a form. \`null\` when nothing changed. |
-| \`onOpenRelatedRecord(reference, columnName)\` | Opens the record a lookup points to. |
-| \`onCanDeleteTask(task)\` | Optional. \`false\` keeps a task from being deleted. |
-| \`onSynchronize()\` | Optional. Returns \`{ updatedRecords }\`, the tasks the backend changed since the last read. |
+| \`load(provider)\` | Returns \`{ rawData, metadata, columns }\`: every task of the view, the table's metadata, and the columns. |
+| \`getAvailableColumns(options?)\`, \`getAvailableRelatedColumns()\` | What *Edit columns* offers. |
+| \`createTask(params)\` | Creates the task the grid already shows, from \`{ parentRecord, stackRank, data, taskId }\`. Returns \`{ record }\`, or \`null\` to drop it. |
+| \`saveTask(task)\` | Saves what changed on a task, its parent and rank included. |
+| \`deleteTasks({ taskIds, tree })\` | Deletes the tasks, deepest first. Returns the ones deleted and the ones that failed, or \`null\` when cancelled. |
+| \`openTasks(taskIds)\` | Opens the tasks outside the grid, such as in a form. \`null\` when nothing changed. |
+| \`openRelatedRecord(reference, columnName)\` | Opens the record a lookup points to. |
+| \`canDeleteTask(task)\` | Optional. \`false\` keeps a task from being deleted. |
+| \`synchronize()\` | Optional. Returns \`{ updatedRecords }\`, the tasks the backend changed since the last read. |
 
 ## Where next
 

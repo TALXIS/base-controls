@@ -1,4 +1,4 @@
-import { CHECK_LIST_LABELS_CS } from '@controls/check-list/labels/cs';
+import { CHECKLIST_LABELS_CS } from '@controls/checklist/labels/cs';
 import { EDIT_COLUMNS_LABELS_CS } from '@controls/dataset-control/adapters/edit-columns/labels/cs';
 import { EMPTY_STATE_LABELS_CS } from '@controls/dataset-control/adapters/empty-state/labels/cs';
 import { PAGE_SIZE_SWITCHER_LABELS_CS } from '@controls/dataset-control/adapters/page-size-switcher/labels/cs';
@@ -22,14 +22,14 @@ import { GRID_SORTING_LABELS_CS } from '@controls/grid/modules/sorting/labels/cs
 import { MAP_LABELS_CS } from '@controls/map/labels/cs';
 import { NESTED_CONTROL_RENDERER_LABELS_CS } from '@fields/nested-control-renderer/labels/cs';
 import { TASK_GRID_LABELS_CS } from '@controls/task-grid/labels/cs';
-import { CHECKLIST_LABELS_CS } from '@controls/task-grid/modules/checklist/labels/cs';
+import { TASK_CHECKLIST_LABELS_CS } from '@controls/task-grid/modules/task-checklist/labels/cs';
 import { CUSTOM_COLUMNS_LABELS_CS } from '@controls/task-grid/modules/custom-columns/labels/cs';
 import { DEPENDENCIES_LABELS_CS } from '@controls/task-grid/modules/dependencies/labels/cs';
-import { GANTT_LABELS_CS } from '@controls/task-grid/modules/gantt/labels/cs';
-import { LINKS_LABELS_CS } from '@controls/task-grid/modules/gantt/modules/links/labels/cs';
-import { MARKERS_LABELS_CS } from '@controls/task-grid/modules/gantt/modules/markers/labels/cs';
-import { NON_WORKING_DAYS_LABELS_CS } from '@controls/task-grid/modules/gantt/modules/non-working-days/labels/cs';
-import { TASK_TOOLTIP_LABELS_CS } from '@controls/task-grid/modules/gantt/modules/task-tooltip/labels/cs';
+import { GANTT_LABELS_CS } from '@controls/task-grid/gantt/labels/cs';
+import { LINKS_LABELS_CS } from '@controls/task-grid/gantt/modules/links/labels/cs';
+import { MARKERS_LABELS_CS } from '@controls/task-grid/gantt/modules/markers/labels/cs';
+import { NON_WORKING_DAYS_LABELS_CS } from '@controls/task-grid/gantt/modules/non-working-days/labels/cs';
+import { TASK_TOOLTIP_LABELS_CS } from '@controls/task-grid/gantt/modules/task-tooltip/labels/cs';
 import { LOOKUP_MANY_LABELS_CS } from '@controls/task-grid/modules/lookup-many/labels/cs';
 import { TEMPLATES_LABELS_CS } from '@controls/task-grid/modules/templates/labels/cs';
 import { LEGACY_DATASET_CONTROL_LABELS_CS } from '@legacy/dataset-control/labels.cs';
@@ -40,7 +40,7 @@ import type { Labels } from '..';
 
 /** The Czech strings of every base-controls component. */
 export const CZECH_LABELS: Labels = {
-    ...CHECK_LIST_LABELS_CS,
+    ...CHECKLIST_LABELS_CS,
     ...EDIT_COLUMNS_LABELS_CS,
     ...EMPTY_STATE_LABELS_CS,
     ...PAGE_SIZE_SWITCHER_LABELS_CS,
@@ -64,7 +64,7 @@ export const CZECH_LABELS: Labels = {
     ...MAP_LABELS_CS,
     ...NESTED_CONTROL_RENDERER_LABELS_CS,
     ...TASK_GRID_LABELS_CS,
-    ...CHECKLIST_LABELS_CS,
+    ...TASK_CHECKLIST_LABELS_CS,
     ...CUSTOM_COLUMNS_LABELS_CS,
     ...DEPENDENCIES_LABELS_CS,
     ...GANTT_LABELS_CS,

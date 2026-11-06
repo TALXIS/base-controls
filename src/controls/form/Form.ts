@@ -8,7 +8,7 @@ import { Root } from './adapters/root';
 import { Section } from './adapters/section';
 import { Tab } from './adapters/tab';
 import { Tabs } from './adapters/tabs';
-import { Skeleton } from './ui/skeleton';
+import { FormUiSkeleton } from './ui/skeleton';
 
 export interface IFormComponents {
     Root: typeof Root;
@@ -21,7 +21,7 @@ export interface IFormComponents {
     Control: typeof Control;
     Ribbon: typeof Ribbon;
     Notifications: typeof Notifications;
-    Skeleton: typeof Skeleton;
+    Skeleton: typeof FormUiSkeleton;
 }
 
 export const Form: IFormComponents = {
@@ -35,5 +35,5 @@ export const Form: IFormComponents = {
     Control,
     Ribbon,
     Notifications,
-    Skeleton,
+    Skeleton: FormUiSkeleton,
 };

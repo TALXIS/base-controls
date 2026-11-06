@@ -44,7 +44,7 @@
             "ribbon",
             "runtime-host"
         ],
-        "check-list": [
+        "checklist": [
             "grid",
             "dataset-control",
             "ribbon",

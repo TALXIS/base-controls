@@ -1,7 +1,7 @@
 import { DefaultButton, IPanelProps, PrimaryButton } from "@fluentui/react";
 import { CommandBar, ICommandBarProps } from "@legacy";
 import { Panel } from "@ui";
-import { getEditColumnsPanelUiStyles } from "./styles";
+import { getDatasetControlUiEditColumnsPanelStyles } from "./styles";
 
 /** Props for the panel's footer. */
 export interface IEditColumnsPanelFooterProps {
@@ -18,7 +18,7 @@ export interface IEditColumnsPanelFooterProps {
 }
 
 /** The replaceable pieces of the column editor's panel. */
-export interface IEditColumnsPanelUiComponents {
+export interface IDatasetControlUiEditColumnsPanelComponents {
     /** The panel. */
     onRenderPanel: (props: IPanelProps & { children?: React.ReactNode }) => JSX.Element | null;
     /** The save and cancel buttons. */
@@ -27,10 +27,10 @@ export interface IEditColumnsPanelUiComponents {
     onRenderCommandBar: (props: ICommandBarProps) => JSX.Element | null;
 }
 
-const styles = getEditColumnsPanelUiStyles();
+const styles = getDatasetControlUiEditColumnsPanelStyles();
 
-/** The defaults for {@link IEditColumnsPanelUiComponents}. */
-export const EditColumnsPanelUiComponents: IEditColumnsPanelUiComponents = {
+/** The defaults for {@link IDatasetControlUiEditColumnsPanelComponents}. */
+export const DatasetControlUiEditColumnsPanelComponents: IDatasetControlUiEditColumnsPanelComponents = {
     onRenderPanel: props => <Panel {...props} />,
     onRenderFooter: props => <div className={styles.footer}>
         <PrimaryButton text={props.saveText} disabled={props.isSaveDisabled} onClick={props.onSave} />

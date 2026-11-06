@@ -4,14 +4,14 @@ import { AgGridReact } from "ag-grid-react";
 import { IRecord } from "@talxis/client-libraries";
 
 import { useControlStateStore } from "@controls/dataset-control/adapters/root/useControlStateStore";
-import { useDatasetControlRuntime } from "@controls/dataset-control/adapters/root/context";
+import { useOptionalDatasetControlInternal } from "@controls/dataset-control/adapters/root/context";
 import { useRegisterDatasetControlPart } from "@controls/dataset-control/adapters/root/useRegisterDatasetControlPart";
 import { RuntimeHost, useRuntime } from "@controls/runtime-host";
 import { BaseControls, usePcfContext } from "@pcf";
 import { getClassNames, useLatest } from "@core";
 import { useLabelsService } from "@labels";
 import { useDataProvider } from "@data";
-import { registerBaseControl } from "@fields";
+import { defineBaseControl } from "@fields";
 import { IGridProps } from "./interfaces";
 import { GridRuntime } from "./runtime/grid";
 import { useGridEventHandlers } from "./useGridEventHandlers";
@@ -23,10 +23,10 @@ import { GridValueRenderer } from "./adapters/value-renderer";
 import { GridInlineRibbon } from "./adapters/inline-ribbon";
 
 //NestedControlRenderer finds the grid's own controls by name
-registerBaseControl(BaseControls.GridValueRenderer, GridValueRenderer);
-registerBaseControl(BaseControls.GridInlineRibbon, GridInlineRibbon);
+defineBaseControl(BaseControls.GridValueRenderer, GridValueRenderer);
+defineBaseControl(BaseControls.GridInlineRibbon, GridInlineRibbon);
 
-const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
+const GRID_CLASS = 'talxis__baseControl__Grid';
 
 
 const NO_COMPONENTS: IGridComponents = {};
@@ -36,21 +36,21 @@ export const GridRoot = (props: IGridProps) => {
     const provider = useDataProvider();
     const theme = useTheme();
     const state = useControlStateStore(props.stateKey);
-    const datasetControl = useDatasetControlRuntime();
+    const datasetControl = useOptionalDatasetControlInternal();
     const labelsServiceRef = useLatest(useLabelsService());
     const propsRef = useLatest(props);
 
-    const onCreate = () => new GridRuntime({
-        onGetProps: () => propsRef.current,
+    const createRuntime = () => new GridRuntime({
+        getProps: () => propsRef.current,
         provider,
         pcfContext,
         theme,
         state,
         datasetControl,
-        onGetLabelsService: () => labelsServiceRef.current,
+        getLabelsService: () => labelsServiceRef.current,
     });
 
-    return <RuntimeHost<GridRuntime> onCreate={onCreate} onSetup={grid => propsRef.current.onSetup?.(grid)}>
+    return <RuntimeHost<GridRuntime> createRuntime={createRuntime} onSetup={grid => propsRef.current.onSetup?.(grid)}>
         <GridMount {...props} />
     </RuntimeHost>;
 };
@@ -83,7 +83,7 @@ const GridMount = (props: IGridProps) => {
     //the locator holds everything a component needs
     return <GridServicesContext.Provider value={runtime.services}>
         <GridComponentsContext.Provider value={components}>
-            <div ref={onGridRootRef} className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot])}>
+            <div ref={onGridRootRef} className={getClassNames([GRID_CLASS, props.className, styles.gridRoot])}>
                 <AgGridReact<IRecord> theme={runtime.services.get('gridTheme').getAgTheme()} {...runtime.getAgGridProps()} />
                 <Surfaces />
             </div>

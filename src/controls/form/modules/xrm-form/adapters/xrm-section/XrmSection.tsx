@@ -2,14 +2,14 @@ import { Form } from "../../../../Form";
 import { IFormXmlSection } from "../../runtime/form-xml-form";
 import { XrmCell } from "../xrm-cell/XrmCell";
 import { XrmField } from "../xrm-field";
-import { useSection } from "./useSection";
+import { useXrmSection } from "./useXrmSection";
 
 export interface IXrmSectionProps {
     section: IFormXmlSection;
 }
 
 export const XrmSection = (props: IXrmSectionProps) => {
-    const section = useSection(props.section);
+    const section = useXrmSection(props.section);
 
     return <Form.Section
         id={section.id ?? section.name ?? undefined}

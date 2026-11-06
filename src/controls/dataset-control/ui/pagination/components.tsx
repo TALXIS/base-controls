@@ -1,12 +1,12 @@
 import { CommandBar, ICommandBarProps } from "@legacy";
 
 /** The replaceable pieces of the pagination. */
-export interface IPaginationUiComponents {
+export interface IDatasetControlUiPaginationComponents {
     /** The paging buttons, as the command bar's `items`. */
     onRenderCommandBar: (props: ICommandBarProps) => JSX.Element | null;
 }
 
-/** The defaults for {@link IPaginationUiComponents}. */
-export const PaginationUiComponents: IPaginationUiComponents = {
+/** The defaults for {@link IDatasetControlUiPaginationComponents}. */
+export const DatasetControlUiPaginationComponents: IDatasetControlUiPaginationComponents = {
     onRenderCommandBar: props => <CommandBar {...props} />,
 };

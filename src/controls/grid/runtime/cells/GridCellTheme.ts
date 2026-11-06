@@ -2,14 +2,14 @@ import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyleProps
 import { DeepPartial } from "@talxis/client-libraries";
 import { createThemeBuilder, ITheme } from "@theme";
 import { getJustifyContent, IAlignment } from "@core";
-import { IGridInternalServiceLocator } from "..";
+import { IGridServiceLocatorInternal } from "..";
 import type { IGridCell } from "./GridCell";
 
 //the component styles depend only on the column alignment
 const componentStylesByAlignment = new Map<IAlignment, DeepPartial<ITheme>['components']>();
 
 export interface IGridCellThemeParameters {
-    services: IGridInternalServiceLocator;
+    services: IGridServiceLocatorInternal;
     /** The cell this is the theme of. */
     cell: IGridCell;
 }
@@ -22,7 +22,7 @@ export interface IGridCellTheme {
 }
 
 export class GridCellTheme implements IGridCellTheme {
-    private _services: IGridInternalServiceLocator;
+    private _services: IGridServiceLocatorInternal;
     private _cell: IGridCell;
     private _seed?: ITheme;
 
@@ -45,7 +45,7 @@ export class GridCellTheme implements IGridCellTheme {
         //before the hooks so a hook gets the last word
         builder.edit(`cell|${this._cell.getAlignment()}`, theme => this._applyCellStyling(theme));
         this._cells.applyCellThemeHooks(builder, { record, columnName: this._cell.getColumnName() });
-        this._cell.getContext().cell?.onGetTheme?.(builder, { record });
+        this._cell.getContext().cell?.themeHook?.(builder, { record });
         return builder.getTheme();
     }
 

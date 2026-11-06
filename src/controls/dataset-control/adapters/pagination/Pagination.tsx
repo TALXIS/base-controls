@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useEventEmitter, useRerender } from "@core";
 import { useLabels } from "@labels";
-import { DatasetControlUi, IPaginationUiComponents } from "../../ui";
+import { DatasetControlUi, IDatasetControlUiPaginationComponents } from "../../ui";
 import { useDataProvider } from "@data";
 import { useRegisterDatasetControlPart } from "../root";
 import { useDatasetControlRegion } from "../region";
@@ -11,7 +11,7 @@ import { DatasetControlPagination, IDatasetControlPaginationEvents } from "../..
 /** Props for `DatasetControl.Pagination`. */
 export interface IPaginationProps {
     /** Replacements for the pagination's slots. */
-    components?: Partial<IPaginationUiComponents>;
+    components?: Partial<IDatasetControlUiPaginationComponents>;
 }
 
 /** Moves between the provider's pages. */

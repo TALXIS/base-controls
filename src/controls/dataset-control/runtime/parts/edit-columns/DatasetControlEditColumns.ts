@@ -37,15 +37,15 @@ export interface IDatasetControlEditColumns {
     /** The edit in progress; there only while the editor is open. */
     getSession(): DatasetControlEditColumnsSession | undefined;
     /**
-     * Registers a hook over the commands at the top of the editor.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over the commands at the top of the editor.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerCommands(hook: EditColumnsCommandsHook, priority?: number): () => void;
+    addCommandsHook(hook: EditColumnsCommandsHook, priority?: number): () => void;
     /**
-     * Registers a hook over each chosen column's commands.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over each chosen column's commands.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerColumnCommands(hook: EditColumnsColumnCommandsHook, priority?: number): () => void;
+    addColumnCommandsHook(hook: EditColumnsColumnCommandsHook, priority?: number): () => void;
 }
 
 /** Whether the column editor is open, and the edit it holds while it is. */
@@ -98,12 +98,12 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
         return this._session;
     }
 
-    public registerCommands(hook: EditColumnsCommandsHook, priority?: number): () => void {
-        return this._commandsHooks.register(hook, priority);
+    public addCommandsHook(hook: EditColumnsCommandsHook, priority?: number): () => void {
+        return this._commandsHooks.add(hook, priority);
     }
 
-    public registerColumnCommands(hook: EditColumnsColumnCommandsHook, priority?: number): () => void {
-        return this._columnCommandsHooks.register(hook, priority);
+    public addColumnCommandsHook(hook: EditColumnsColumnCommandsHook, priority?: number): () => void {
+        return this._columnCommandsHooks.add(hook, priority);
     }
 
     /** The commands at the top of the editor. */

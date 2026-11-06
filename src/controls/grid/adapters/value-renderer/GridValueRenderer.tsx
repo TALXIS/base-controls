@@ -1,7 +1,7 @@
 import { DataTypes } from "@talxis/client-libraries";
 import { getSelectedOptions } from "../../ui/value-renderer/option-set-renderer";
 import { IFileValue } from "../../ui/value-renderer/field-file";
-import { IValueRendererUiValue, ValueRendererUi } from "../../ui/value-renderer/ValueRendererUi";
+import { ICellUiValueRendererValue, CellUiValueRenderer } from "../../ui/value-renderer/CellUiValueRenderer";
 import { IGridValueRenderer } from "./interfaces";
 
 const DEFAULT_PLACEHOLDER = '---';
@@ -18,7 +18,7 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
 
     const openRecord = (reference: ComponentFramework.EntityReference) => () => Runtime.raw.openRecord({ record, reference, columnName: column?.name });
 
-    const getValue = (): IValueRendererUiValue => {
+    const getValue = (): ICellUiValueRendererValue => {
         if (!formattedValue) {
             return { type: 'placeholder', text: Placeholder?.raw ?? DEFAULT_PLACEHOLDER };
         }
@@ -70,7 +70,7 @@ export const GridValueRenderer = (props: IGridValueRenderer) => {
             : { type: 'text', text: formattedValue };
     };
 
-    return <ValueRendererUi
+    return <CellUiValueRenderer
         value={getValue()}
         alignment={ColumnAlignment.raw ?? 'left'}
         isMultiline={!!IsMultiline?.raw}

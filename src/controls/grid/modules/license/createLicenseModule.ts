@@ -1,7 +1,7 @@
 import { LicenseManager } from "ag-grid-enterprise";
 import { IGridModule } from "../../interfaces";
 
-export interface ILicenseModuleOptions {
+export interface ILicenseModuleParameters {
     /** The AG Grid enterprise key, as your host supplies it. */
     key: string;
 }
@@ -16,7 +16,7 @@ declare module "../../interfaces" {
 }
 
 /** Builds the module that licenses AG Grid. */
-export const createLicenseModule = ({ key }: ILicenseModuleOptions): ILicenseModule => ({
+export const createLicenseModule = ({ key }: ILicenseModuleParameters): ILicenseModule => ({
     name: 'license',
     onLoad: () => LicenseManager.setLicenseKey(key),
 });

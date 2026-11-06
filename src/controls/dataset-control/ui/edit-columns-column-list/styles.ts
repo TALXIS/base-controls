@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { ITheme } from "@theme";
 
-export const getEditColumnsColumnListUiStyles = (theme?: ITheme) => mergeStyleSets({
+export const getDatasetControlUiEditColumnsColumnListStyles = (theme?: ITheme) => mergeStyleSets({
     editColumnsColumnList: {
         display: 'flex',
         flexDirection: 'column',

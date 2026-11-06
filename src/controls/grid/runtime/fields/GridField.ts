@@ -1,10 +1,10 @@
 import { IColumn, IField, IFieldValidationResult, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import type { IGridInternalServiceLocator } from "..";
+import type { IGridServiceLocatorInternal } from "..";
 
 export interface IGridFieldParameters {
     record: IRecord;
     columnName: string;
-    services: IGridInternalServiceLocator;
+    services: IGridServiceLocatorInternal;
 }
 
 /** One column of one record. */
@@ -24,7 +24,7 @@ export interface IGridField {
 export class GridField implements IGridField {
     private _record: IRecord;
     private _columnName: string;
-    private _services: IGridInternalServiceLocator;
+    private _services: IGridServiceLocatorInternal;
 
     constructor(parameters: IGridFieldParameters) {
         this._record = parameters.record;

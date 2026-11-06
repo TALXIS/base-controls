@@ -8,7 +8,7 @@ import { IInputParameters } from "../interfaces/parameters";
  * @param {any} value:any
  * @returns {any}
  */
-interface IControlOptions {
+interface IInputBasedControlParameters {
     /**
      * Formatting function that will format the bound value every time a new one comes from the props.
      */
@@ -34,7 +34,7 @@ interface IInputBasedControlController<TValue, TOutputs> extends IControlControl
     setValue: (value: TValue) => void
 }
 
-export const useInputBasedControl = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(name: string, props: IControl<TParameters, TOutputs, any>, options?: IControlOptions): IInputBasedControlController<TValue, TOutputs> => {
+export const useInputBasedControl = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(name: string, props: IControl<TParameters, TOutputs, any>, options?: IInputBasedControlParameters): IInputBasedControlController<TValue, TOutputs> => {
     const { formatter, valueExtractor } = { ...options };
     const rawValue = props.parameters.value.raw;
     const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);

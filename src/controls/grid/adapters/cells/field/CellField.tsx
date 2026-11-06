@@ -1,6 +1,6 @@
 import { IRecord } from "@talxis/client-libraries";
 import { GridFieldContext } from "./context";
-import { useGridInternalService } from "../../../useGridService";
+import { useGridServiceInternal } from "../../../useGridService";
 
 export interface ICellFieldProps {
     record: IRecord;
@@ -12,7 +12,7 @@ export interface ICellFieldProps {
 /** What binds everything drawn inside it to one record's column. */
 export const CellField = (props: ICellFieldProps) => {
     const { record, name, children } = props;
-    const field = useGridInternalService('fields').get(record, name);
+    const field = useGridServiceInternal('fields').get(record, name);
 
     return <GridFieldContext.Provider value={field}>{children}</GridFieldContext.Provider>;
 };

@@ -2,7 +2,7 @@ import { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IRawRecord, 
 import type { ITaskRuntime } from "../..";
 import { simulateBackend } from "./simulateBackend";
 import type { MemoryTaskDatabase } from "./MemoryTaskDatabase";
-import { IDeleteTasksResult, IOpenTasksResult, ITaskCreateResult, ITaskCreateParams, ITaskDeleteParams, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
+import { IDeleteTasksResult, IOpenTasksResult, ITaskCreateResult, ITaskCreateParameters, ITaskDeleteParameters, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
 
 export interface IMemoryTaskStoreParameters {
     taskRuntime: ITaskRuntime;
@@ -20,38 +20,38 @@ export class MemoryTaskStore implements ITaskStore {
         this._parameters = parameters;
     }
 
-    public async onLoad(): Promise<ITaskLoadResult> {
+    public async load(): Promise<ITaskLoadResult> {
         const { database, columns } = this._parameters;
         return { rawData: database.getTasks(), metadata: database.getMetadata(), columns };
     }
 
-    public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
+    public async getAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
         if (options?.entityName && options.entityName !== this._parameters.database.getMetadata().LogicalName) {
             return [];
         }
         return this._parameters.columns.map(column => ({ ...column, isHidden: false }));
     }
 
-    public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
+    public async getAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
         return [];
     }
 
-    public async onCreateTask(params: ITaskCreateParams): Promise<ITaskCreateResult | null> {
+    public async createTask(parameters: ITaskCreateParameters): Promise<ITaskCreateResult | null> {
         await simulateBackend();
         const { database, taskRuntime } = this._parameters;
         const provider = taskRuntime.getProvider();
-        const data = { ...params.data, ...params.taskId && { [provider.getMetadata().PrimaryIdAttribute!]: params.taskId } };
-        const [record] = database.createTasks([{ data }], params, { fieldMapping: provider.getFieldMapping(), columns: provider.getColumns() });
+        const data = { ...parameters.data, ...parameters.taskId && { [provider.getMetadata().PrimaryIdAttribute!]: parameters.taskId } };
+        const [record] = database.createTasks([{ data }], parameters, { fieldMapping: provider.getFieldMapping(), columns: provider.getColumns() });
         return { record };
     }
 
-    public async onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null> {
+    public async deleteTasks(parameters: ITaskDeleteParameters): Promise<IDeleteTasksResult | null> {
         await simulateBackend();
-        this._parameters.database.deleteTasks(params.taskIds);
-        return { success: true, deletedTaskIds: params.taskIds };
+        this._parameters.database.deleteTasks(parameters.taskIds);
+        return { success: true, deletedTaskIds: parameters.taskIds };
     }
 
-    public async onSaveTask(record: IRecord): Promise<IRecordSaveOperationResult> {
+    public async saveTask(record: IRecord): Promise<IRecordSaveOperationResult> {
         const dirtyFields = record.getFields().filter(field => field.isDirty());
         const values: IRawRecord = {};
         for (const field of dirtyFields) {
@@ -61,7 +61,7 @@ export class MemoryTaskStore implements ITaskStore {
         return { recordId: record.getRecordId(), success: true, fields: Object.keys(values) };
     }
 
-    public async onOpenTasks(taskIds: string[]): Promise<IOpenTasksResult | null> {
+    public async openTasks(taskIds: string[]): Promise<IOpenTasksResult | null> {
         await simulateBackend();
         const subject = this._parameters.taskRuntime.getProvider().getFieldMapping().subject;
         const names = taskIds.map(taskId => this._parameters.database.getTask(taskId)?.[subject] ?? taskId).join(', ');
@@ -69,7 +69,7 @@ export class MemoryTaskStore implements ITaskStore {
         return null;
     }
 
-    public async onOpenRelatedRecord(reference: ComponentFramework.EntityReference): Promise<void> {
+    public async openRelatedRecord(reference: ComponentFramework.EntityReference): Promise<void> {
         await simulateBackend();
         await this._parameters.taskRuntime.services.get('pcfContext').navigation.openAlertDialog({ text: `Opening ${reference.name ?? reference.id.guid}` });
     }

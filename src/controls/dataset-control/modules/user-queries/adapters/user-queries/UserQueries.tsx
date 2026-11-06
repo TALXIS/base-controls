@@ -2,15 +2,15 @@ import { useState } from "react";
 import { useEventEmitter, ErrorHelper } from "@core";
 import { useLabels } from "@labels";
 import { usePcfContext } from "@pcf";
-import { useRequiredDatasetControlRuntime } from "../../../../adapters/root/context";
+import { useDatasetControlInternal } from "../../../../adapters/root/context";
 import type { IDatasetControlUserQueriesEvents } from "../../DatasetControlUserQueries";
 import { USER_QUERIES_LABELS } from "../../labels";
-import { IManageViewsPanelUiComponents, ManageViewsPanel } from "../../ui";
+import { IUserQueriesUiManageViewsPanelComponents, UserQueriesUiManageViewsPanel } from "../../ui";
 import { IManageViewsComponents, ManageViews } from "../manage-views";
 
 /** Replacements for the user queries' UI. */
 export interface IUserQueriesComponents {
-    manageViewsPanel?: Partial<IManageViewsPanelUiComponents>;
+    manageViewsPanel?: Partial<IUserQueriesUiManageViewsPanelComponents>;
     /** What the panel holds: the control the views are listed in, and its grid. */
     manageViews?: IManageViewsComponents;
 }
@@ -22,7 +22,7 @@ export interface IUserQueriesProps {
 
 /** The Manage views panel the module's command opens; goes inside `DatasetControl.ViewSwitcher`. */
 export const UserQueries = (props: IUserQueriesProps) => {
-    const runtime = useRequiredDatasetControlRuntime();
+    const runtime = useDatasetControlInternal();
     const pcfContext = usePcfContext();
     const userQueries = runtime.modules.find('userQueries');
     if (!userQueries) {
@@ -45,11 +45,11 @@ export const UserQueries = (props: IUserQueriesProps) => {
     if (!isManaging) {
         return null;
     }
-    return <ManageViewsPanel
+    return <UserQueriesUiManageViewsPanel
         title={labels.get('userQueries.manageViews')}
         closeText={labels.get('userQueries.close')}
         onDismiss={close}
         components={props.components?.manageViewsPanel}>
         <ManageViews components={props.components?.manageViews} />
-    </ManageViewsPanel>;
+    </UserQueriesUiManageViewsPanel>;
 };

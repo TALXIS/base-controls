@@ -1,10 +1,10 @@
 import { ControlComponents, RibbonComponents, FormNotificationsComponents } from "../../../../adapters";
 import { IXrmFormComponents } from "../../interfaces";
-import { TabComponents } from "../../../../ui";
+import { FormUiTabComponents } from "../../../../ui";
 
 export const XrmFormComponents: IXrmFormComponents = {
     control: ControlComponents,
-    tabs: TabComponents,
+    tabs: FormUiTabComponents,
     ribbon: RibbonComponents,
     notifications: FormNotificationsComponents
 }

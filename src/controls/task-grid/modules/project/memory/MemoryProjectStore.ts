@@ -8,7 +8,7 @@ export class MemoryProjectStore<TData> implements IProjectStore<TData> {
         this._project = { ...project, data: structuredClone(project.data) };
     }
 
-    public async onLoadProject(): Promise<IProjectData<TData>> {
+    public async loadProject(): Promise<IProjectData<TData>> {
         return this._project;
     }
 }

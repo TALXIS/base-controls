@@ -39,7 +39,7 @@ With row selection on, selecting a group row selects every record in it, so the 
 
 ## The totals row
 
-The totals row appears while any column has a total and the list has a record, pinned at the bottom. Each column's menu has a *Totals* section with *None* and the functions in its \`metadata.SupportedAggregations\`, unless \`allowUserAggregation\` is \`false\`.
+The totals row appears while any column has a total and the list has a record, pinned at the bottom. Each column's menu has a *Totals* section with *None* and the functions in its \`metadata.SupportedAggregations\`, unless \`enableUserAggregation\` is \`false\`.
 
 {{story: Total the filtered list}}
 
@@ -71,7 +71,7 @@ The options are *At mount*: see *Change a prop that is read at mount* on [**Prop
 
 | \`createGroupingModule\` option | Type | Default | Description |
 |---|---|---|---|
-| \`allowUserGrouping\` | \`boolean\` | \`true\` | Whether column menus offer *Group* and *Ungroup*. Preset grouping and \`toggleColumnGroup\` work either way. |
+| \`enableUserGrouping\` | \`boolean\` | \`true\` | Whether column menus offer *Group* and *Ungroup*. Preset grouping and \`toggleColumnGroup\` work either way. |
 | \`type\` | \`'nested' \\| 'flat'\` | \`'nested'\` | See *Nested or flat*. |
 | \`defaultExpandedLevel\` | \`number\` | \`-1\` | The deepest level that opens by itself. |
 | \`pinGroupedColumns\` | \`boolean\` | \`true\` | Pins grouped columns to the left. They move to the front either way. |
@@ -80,7 +80,7 @@ The options are *At mount*: see *Change a prop that is read at mount* on [**Prop
 
 | \`createAggregationModule\` option | Type | Default | Description |
 |---|---|---|---|
-| \`allowUserAggregation\` | \`boolean\` | \`true\` | Whether column menus have a *Totals* section. Preset totals show either way. |
+| \`enableUserAggregation\` | \`boolean\` | \`true\` | Whether column menus have a *Totals* section. Preset totals show either way. |
 | \`components\` | \`IGridAggregationComponents\` | \`{}\` | See *Changing how it looks*. |
 
 To change the menu texts, tooltips and totals' names, see [**Localization**](?path=/docs/concepts-localization--overview).
@@ -103,7 +103,7 @@ Both modules take \`components\` (see *Options*). How slots work: [**Pieces and 
 
 The cells are \`GroupCell\`, \`TotalCell\` and \`AggregateCell\`, and a key in their own \`components\` prop replaces the module's for that key. To draw one column's group rows or totals your own way, set its \`cellRendererSelector\` in \`colDefs\`, as the totals example below does. It replaces the module's for that column, so return \`undefined\` for the rows it should leave to \`cellRenderer\`, and draw a grouped column's records empty.
 
-The expansion column's header is \`GroupExpansionHeader\`: pass \`headerComponentParams: { components: { expandCollapse } }\` on \`GROUP_EXPANSION_COLUMN_KEY\`, with the slots \`onRenderContainer\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\` (default \`GroupingUiExpandCollapseComponents\`). To change one column's grouping icon, replace the header adornment keyed \`'grouping'\` in its \`context.header.onGetAdornments\`. The alert for a refused selection is the host's own dialog and has no slots.
+The expansion column's header is \`GroupExpansionHeader\`: pass \`headerComponentParams: { components: { expandCollapse } }\` on \`GROUP_EXPANSION_COLUMN_KEY\`, with the slots \`onRenderContainer\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\` (default \`GroupingUiExpandCollapseComponents\`). To change one column's grouping icon, replace the header adornment keyed \`'grouping'\` in its \`context.header.adornmentsHook\`. The alert for a refused selection is the host's own dialog and has no slots.
 
 {{story: Make totals read at a glance}}
 
@@ -123,7 +123,7 @@ The modules are \`grid.modules.find('grouping')\` and \`grid.modules.find('aggre
 | \`isGroupRow(node)\` | Whether the AG Grid row node is a group row. |
 | \`isRowGroupedBy(record, columnName)\` | Whether the record is a group row of that column. |
 | \`isColumnExpandable(record, columnName)\` | Whether the group row's cell in that column carries the chevron. |
-| \`isColumnGrouped(column)\`, \`canColumnBeGrouped(column)\` | Whether the rows are grouped by the column, and whether its menu offers grouping. |
+| \`isColumnGrouped(column)\`, \`canGroupColumn(column)\` | Whether the rows are grouped by the column, and whether its menu offers grouping. |
 | \`getGroupedValueColumnName(record, columnName)\` | The alias a group row holds the column's value under. |
 | \`getGroupedCount(record, columnName)\` | How many records a group row holds, while the grouped column's total is \`count\` or \`countcolumn\`. |
 | \`getMaxGroupLoadsPerSelection()\` | The \`maxGroupLoadsPerSelection\` option. |
@@ -135,7 +135,7 @@ The modules are \`grid.modules.find('grouping')\` and \`grid.modules.find('aggre
 |---|---|
 | \`addAggregation(columnName, aggregationFunction)\` | Totals the column, replacing its total, and names the alias itself, unlike the provider's \`addAggregation({ columnName, alias, aggregationFunction })\`. |
 | \`removeAggregation(alias)\` | Removes a total by its alias. |
-| \`canColumnBeAggregated(column)\` | Whether the column's menu offers totals. |
+| \`canAggregateColumn(column)\` | Whether the column's menu offers totals. |
 | \`getTotalLabel(columnName)\` | What the column's total is called, such as *Sum*. |
 | \`getAggregateValueColumnName(record, columnName)\` | The alias a group row or the totals row holds the column's total under. |
 | \`components\` | The \`components\` the module was given. |
@@ -238,7 +238,7 @@ export const LockSubmittedEntriesOnly: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`rowSettings.onGetLock\` locks every entry past *Draft* or *Rejected*, and skips summary rows by \`getSummarizationType()\`. Try: turn off *Skip summary rows*.`,
+                story: `\`rowSettings.lockHook\` locks every entry past *Draft* or *Rejected*, and skips summary rows by \`getSummarizationType()\`. Try: turn off *Skip summary rows*.`,
             },
         },
     },

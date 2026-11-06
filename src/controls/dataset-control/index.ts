@@ -1,12 +1,12 @@
 export * from './namespace';
-export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_LABELS_CS, USER_QUERIES_GROUP, UserQueriesUi, ManageViewsPanelUiComponents, createTalxisUserQueriesModule, createDataverseUserQueriesModule, createLocalStorageUserQueriesModule, DataverseUserQueriesStore, LocalStorageUserQueriesStore } from './modules/user-queries';
+export { createUserQueriesModule, USER_QUERIES_LABELS, USER_QUERIES_LABELS_CS, USER_QUERIES_GROUP, UserQueriesUi, UserQueriesUiManageViewsPanelComponents, createTalxisUserQueriesModule, createDataverseUserQueriesModule, createLocalStorageUserQueriesModule, DataverseUserQueriesStore, LocalStorageUserQueriesStore } from './modules/user-queries';
 export type { ITalxisUserQueriesModuleParameters, IDataverseUserQueriesModuleParameters, IDataverseUserQueriesTable, ILocalStorageUserQueriesModuleParameters } from './modules/user-queries';
-export type { IUserQueriesModule, IUserQueriesStore, IUserQueryListItem, IUserQueryColumn, IUserQueryView, IUserQuerySavedValueMap, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IManageViewsPanelUiProps, IManageViewsPanelUiComponents } from './modules/user-queries';
+export type { IUserQueriesModule, IUserQueriesStore, IUserQueryListItem, IUserQueryColumn, IUserQueryView, IUserQuerySavedValueMap, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IUserQueriesUiManageViewsPanelProps, IUserQueriesUiManageViewsPanelComponents } from './modules/user-queries';
 export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSurfacesHook } from './runtime/DatasetControlSurfaces';
 export type {
     IDatasetControl, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadResult,
     IDatasetControlView, IDatasetControlViewDefinition, IDatasetControlResolvedView, IDatasetControlViewGroup, IDatasetControlProviderState, IDatasetControlModule, IDatasetControlModuleMap, IDatasetControlModuleLocator,
-    IDatasetControlRuntime, DatasetControlViewsHook,
+    IDatasetControlInternal, DatasetControlViewsHook,
 } from './runtime';
 export { useDatasetControl, useControlStateStore, useRegisterDatasetControlPart, useDatasetControlModule } from './adapters/root';
 export { useDatasetControlHeader } from './ui/header';
@@ -35,7 +35,7 @@ export type { IPageSizeSwitcherProps, IDatasetControlPageSizeSwitcher, IDatasetC
 export type { IEditColumnsProps, IEditColumnsComponents, IDatasetControlEditColumns, IDatasetControlEditColumnsEvents, EditColumnsCommandsHook, EditColumnsColumnCommandsHook, DatasetControlEditColumnsSession } from './adapters/edit-columns';
 export * from './ui';
 export {
-    ContainerUiComponents, SkeletonUiComponents, HeaderUiComponents, BodyUiComponents, FooterUiComponents, ViewSwitcherUiComponents,
-    QuickFindUiComponents, QuickFindCalloutComponents, QuickFindCompactButtonComponents, PaginationUiComponents, PageSizeSwitcherUiComponents, EmptyStateUiComponents, HeaderStartUiComponents, HeaderEndUiComponents, FooterStartUiComponents, FooterEndUiComponents, EditColumnsButtonUiComponents, EditColumnsPanelUiComponents,
-    EditColumnsSelectorUiComponents, EditColumnsColumnListUiComponents,
+    DatasetControlUiContainerComponents, DatasetControlUiSkeletonComponents, DatasetControlUiHeaderComponents, DatasetControlUiBodyComponents, DatasetControlUiFooterComponents, DatasetControlUiViewSwitcherComponents,
+    DatasetControlUiQuickFindComponents, DatasetControlUiQuickFindCalloutComponents, DatasetControlUiQuickFindCompactButtonComponents, DatasetControlUiPaginationComponents, DatasetControlUiPageSizeSwitcherComponents, DatasetControlUiEmptyStateComponents, DatasetControlUiHeaderStartComponents, DatasetControlUiHeaderEndComponents, DatasetControlUiFooterStartComponents, DatasetControlUiFooterEndComponents, DatasetControlUiEditColumnsButtonComponents, DatasetControlUiEditColumnsPanelComponents,
+    DatasetControlUiEditColumnsSelectorComponents, DatasetControlUiEditColumnsColumnListComponents,
 } from './ui/components';

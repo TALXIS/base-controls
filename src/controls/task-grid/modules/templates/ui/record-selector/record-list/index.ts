@@ -1,2 +1,2 @@
-export * from './RecordList';
+export * from './TemplatesUiRecordList';
 export * from './components';

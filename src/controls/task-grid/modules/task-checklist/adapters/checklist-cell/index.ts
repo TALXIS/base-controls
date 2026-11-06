@@ -1,1 +1,1 @@
-export * from './ChecklistCell';
+export * from './TaskChecklistCell';

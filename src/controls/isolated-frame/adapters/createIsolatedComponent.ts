@@ -1,6 +1,6 @@
 import { createElement } from "react";
 import ReactDOM from "react-dom";
-import { IIsolatedComponentOptions } from "../runtime/IsolatedFrame";
+import { IIsolatedComponentParameters } from "../runtime/IsolatedFrame";
 import { IsolatedFrameChannel } from "../runtime/IsolatedFrameChannel";
 import { IsolatedFrameHost } from "./IsolatedFrameHost";
 
@@ -20,10 +20,10 @@ export interface IIsolatedComponentProps {
 /**
  * The component the page renders: an iframe that loads `options.scripts` and renders what they registered under `key`.
  *
- * @param key Unique within the app; the frame's scripts register the content under it with `registerIsolatedContent`.
+ * @param key Unique within the app; the frame's scripts define the content under it with `defineIsolatedContent`.
  * @param options Pass `scripts` when the content is in a script of its own: the default is the script the library was loaded from.
  */
-export const createIsolatedHost = <TProps extends object>(key: string, options?: IIsolatedComponentOptions): React.ComponentType<TProps & IIsolatedComponentProps> => {
+export const createIsolatedHost = <TProps extends object>(key: string, options?: IIsolatedComponentParameters): React.ComponentType<TProps & IIsolatedComponentProps> => {
     const parameters = { key, ...options };
     return ({ frame, ...contentProps }: TProps & IIsolatedComponentProps) => createElement(IsolatedFrameHost, {
         parameters,
@@ -34,16 +34,16 @@ export const createIsolatedHost = <TProps extends object>(key: string, options?:
 };
 
 /**
- * Registers what frames render under `key`; outside a frame it does nothing.
+ * Defines what frames render under `key`; outside a frame it does nothing.
  *
  * @param key The key the page's `createIsolatedHost` names.
  */
-export const registerIsolatedContent = <TProps extends object>(key: string, Content: React.ComponentType<TProps>): void => {
+export const defineIsolatedContent = <TProps extends object>(key: string, Content: React.ComponentType<TProps>): void => {
     const channel = new IsolatedFrameChannel(window);
     if (!channel.isFrame()) {
         return;
     }
-    channel.register(key, {
+    channel.add(key, {
         render: (props, container) => ReactDOM.render(createElement(Content, props as TProps), container),
         unmount: container => ReactDOM.unmountComponentAtNode(container),
     });
@@ -54,10 +54,10 @@ export const registerIsolatedContent = <TProps extends object>(key: string, Cont
  *
  * @param key Unique within the bundle; the frame finds the content in its own copy of the code by it.
  */
-export const createIsolatedComponent = <TProps extends object>(key: string, Content: React.ComponentType<TProps>, options?: IIsolatedComponentOptions): React.ComponentType<TProps & IIsolatedComponentProps> => {
+export const createIsolatedComponent = <TProps extends object>(key: string, Content: React.ComponentType<TProps>, parameters?: IIsolatedComponentParameters): React.ComponentType<TProps & IIsolatedComponentProps> => {
     if (new IsolatedFrameChannel(window).isFrame()) {
-        registerIsolatedContent(key, Content);
+        defineIsolatedContent(key, Content);
         return ({ frame, ...contentProps }: TProps & IIsolatedComponentProps) => createElement(Content, contentProps as TProps);
     }
-    return createIsolatedHost<TProps>(key, options);
+    return createIsolatedHost<TProps>(key, parameters);
 };

@@ -8,5 +8,5 @@ export interface IMemoryProjectModuleParameters<TData> {
 
 /** The project module for a project held in memory. */
 export const createMemoryProjectModule = <TData,>(parameters: IMemoryProjectModuleParameters<TData>): IProjectModule => {
-    return createProjectModule({ onCreateStore: () => new MemoryProjectStore(parameters.project) });
+    return createProjectModule({ createStore: () => new MemoryProjectStore(parameters.project) });
 };

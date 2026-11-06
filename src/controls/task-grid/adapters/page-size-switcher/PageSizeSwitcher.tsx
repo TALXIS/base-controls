@@ -1,5 +1,5 @@
 import { useEventEmitter, useRerender } from "@core";
-import { DatasetControl, IPageSizeSwitcherProps, PageSizeSwitcherUiComponents } from "@controls/dataset-control";
+import { DatasetControl, IPageSizeSwitcherProps, DatasetControlUiPageSizeSwitcherComponents } from "@controls/dataset-control";
 import type { ITaskDataProviderEvents } from "../../runtime/provider";
 import { useTaskRuntime } from "../root/context";
 
@@ -12,6 +12,6 @@ export const PageSizeSwitcher = (props: ITaskPageSizeSwitcherProps) => {
     const { rerender } = useRerender();
     //a created or deleted task changes the count without a new load
     useEventEmitter<ITaskDataProviderEvents>(provider.taskEvents, 'onTreeChanged', rerender);
-    const onRenderButton = props.components?.onRenderButton ?? PageSizeSwitcherUiComponents.onRenderButton;
+    const onRenderButton = props.components?.onRenderButton ?? DatasetControlUiPageSizeSwitcherComponents.onRenderButton;
     return <DatasetControl.PageSizeSwitcher {...props} components={{ ...props.components, onRenderButton: buttonProps => onRenderButton({ ...buttonProps, disabled: true }) }} />;
 };

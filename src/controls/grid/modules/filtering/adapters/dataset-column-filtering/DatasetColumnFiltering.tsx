@@ -37,8 +37,8 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
             filtering: filtering
         })
     }, []);
-    useEventEmitter<IDatasetColumnFilteringModelEvents>(model, 'onSave', (result) => onSave(result));
-    useEventEmitter<IDatasetColumnFilteringModelEvents>(model, 'onConditionValueChanged', rerender);
+    useEventEmitter<IDatasetColumnFilteringModelEvents>(model.events, 'onSaved', (result) => onSave(result));
+    useEventEmitter<IDatasetColumnFilteringModelEvents>(model.events, 'onConditionValueChanged', rerender);
     useEventEmitter<IConditionEvents>(condition, 'onOperatorChanged', () => onOperatorChanged());
 
     const onOperatorChanged = useCallback(() => {

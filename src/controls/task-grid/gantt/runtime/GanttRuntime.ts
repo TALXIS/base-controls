@@ -6,11 +6,11 @@ import { HookRegistry, IServiceLocator, IStateStore, ModuleLoader, ServiceLocato
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
-import type { ITaskGridServiceMap } from "../../../services";
-import type { ITaskRuntime } from "../../../runtime";
+import type { ITaskGridServiceMap } from "../../services";
+import type { ITaskRuntime } from "../../runtime";
 import type { IDatasetControl } from "@controls/dataset-control/runtime";
-import type { ITaskViewData } from "../../../runtime/provider";
-import { TASK_GRID_PRIORITY } from "../../../priorities";
+import type { ITaskViewData } from "../../runtime/provider";
+import { TASK_GRID_PRIORITY } from "../../priorities";
 import { GANTT_LABELS } from "../labels";
 import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
@@ -30,8 +30,8 @@ const DEFAULT_TIMELINE_LIMIT_YEARS = 25;
 export interface IGanttRuntimeParameters {
     taskRuntime: ITaskRuntime;
     state: IStateStore;
-    onGetLabelsService: () => LabelsService;
-    onGetProps: () => ITaskGanttProps;
+    getLabelsService: () => LabelsService;
+    getProps: () => ITaskGanttProps;
 }
 
 export class GanttRuntime implements IGantt {
@@ -41,11 +41,11 @@ export class GanttRuntime implements IGantt {
     public readonly theme = new GanttTheme();
     private _taskRuntime: ITaskRuntime;
     private _datasetControl: IDatasetControl<ITaskViewData>;
-    private _onGetProps: () => ITaskGanttProps;
+    private _getProps: () => ITaskGanttProps;
     private _moduleLoader = new ModuleLoader<IGanttModuleMap, IGantt>();
     private _chartConfigHooks = new HookRegistry<GanttChartConfigHook>();
     private _destroyables: { destroy(): void }[] = [];
-    private _unregisterCellCommands?: () => void;
+    private _removeCellCommandsHook?: () => void;
     private _unsubscribes: (() => void)[] = [];
     private _gridApi?: GridApi<IRecord>;
     private _taskRange?: IGanttSpan;
@@ -59,9 +59,9 @@ export class GanttRuntime implements IGantt {
     constructor(parameters: IGanttRuntimeParameters) {
         this._taskRuntime = parameters.taskRuntime;
         this._datasetControl = parameters.taskRuntime.services.get('datasetControl');
-        this._onGetProps = parameters.onGetProps;
+        this._getProps = parameters.getProps;
         this.services.register('taskRuntime', () => parameters.taskRuntime);
-        this.services.register('labels', parameters.onGetLabelsService);
+        this.services.register('labels', parameters.getLabelsService);
         this.services.register('theme', () => this.theme);
         this.services.register('state', () => parameters.state);
         const schedule = new GanttSchedule(this);
@@ -69,11 +69,11 @@ export class GanttRuntime implements IGantt {
         const overlay = new GanttOverlay(parameters.taskRuntime.getProvider());
         this.services.register('overlay', () => overlay);
         this._destroyables.push(overlay);
-        this._unsubscribes.push(this._datasetControl.parts.observe('ribbon', ribbon => ribbon.registerCommands(this._addCommands)));
+        this._unsubscribes.push(this._datasetControl.parts.observe('ribbon', ribbon => ribbon.addCommandsHook(this._addCommands)));
     }
 
     public getProps(): ITaskGanttProps {
-        return this._onGetProps();
+        return this._getProps();
     }
 
     public getTaskRuntime(): ITaskRuntime {
@@ -88,8 +88,8 @@ export class GanttRuntime implements IGantt {
         return this.modules.get('library');
     }
 
-    public registerChartConfig(hook: GanttChartConfigHook, priority?: number): () => void {
-        return this._chartConfigHooks.register(hook, priority);
+    public addChartConfigHook(hook: GanttChartConfigHook, priority?: number): () => void {
+        return this._chartConfigHooks.add(hook, priority);
     }
 
     public render(): void {
@@ -117,8 +117,8 @@ export class GanttRuntime implements IGantt {
         this.events.dispatchEvent('onDestroyed');
         this._unsubscribes.forEach(unsubscribe => unsubscribe());
         this._datasetControl.parts.find('ribbon')?.reload();
-        this._unregisterCellCommands?.();
-        if (this._unregisterCellCommands && this._gridApi && !this._gridApi.isDestroyed()) {
+        this._removeCellCommandsHook?.();
+        if (this._removeCellCommandsHook && this._gridApi && !this._gridApi.isDestroyed()) {
             this._gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
         }
         this._destroyables.forEach(destroyable => destroyable.destroy());
@@ -128,7 +128,7 @@ export class GanttRuntime implements IGantt {
     }
 
     private async _loadModules(): Promise<void> {
-        const modules = this._onGetProps().modules;
+        const modules = this._getProps().modules;
         if (!modules.some(module => module.name === 'library')) {
             throw new Error('TaskGantt needs a library module: createLibraryModule() or createProLibraryModule({ Gantt }).');
         }
@@ -140,7 +140,7 @@ export class GanttRuntime implements IGantt {
         const chart = this._createChart(grid);
         this._gridApi = gridApi;
         const schedule = this.services.get('schedule');
-        const timeline = new GanttTimeline({ chart, onGetLimits: () => this._getTimelineLimits() });
+        const timeline = new GanttTimeline({ chart, getLimits: () => this._getTimelineLimits() });
         const dragging = new GanttDragging(chart);
         const zooming = new GanttZooming({ chart, taskRuntime: this._taskRuntime, schedule, timeline, state: this.services.get('state') });
         const tasks = new GanttTasks({ chart, gridApi, gantt: this, schedule, onParsed: this._onTasksParsed });
@@ -158,7 +158,7 @@ export class GanttRuntime implements IGantt {
         tasks.parse();
         this.events.dispatchEvent('onChartReady', chart);
         this._datasetControl.parts.find('ribbon')?.reload();
-        this._unregisterCellCommands = grid.services.get('cells').registerCellCommands(this._onCellCommands, TASK_GRID_PRIORITY.tree + 40);
+        this._removeCellCommandsHook = grid.services.get('cells').addCellCommandsHook(this._onCellCommands, TASK_GRID_PRIORITY.tree + 40);
         gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
     }
 
@@ -264,8 +264,8 @@ export class GanttRuntime implements IGantt {
         const labels = this.getLabels(GANTT_LABELS);
         const isDisabled = !this.services.find('zooming');
         commands.push(
-            { id: 'ganttZoomToFit', label: labels.get('gantt.zoomToFit'), iconName: 'ZoomToFit', isDisabled, onExecute: () => this.services.get('zooming').zoomToFit() },
-            { id: 'ganttGoToToday', label: labels.get('gantt.goToToday'), iconName: 'GotoToday', isDisabled, onExecute: () => this.services.get('timeline').jumpToToday() },
+            { id: 'ganttZoomToFit', label: labels.get('gantt.zoomToFit'), iconName: 'ZoomToFit', disabled: isDisabled, onExecute: () => this.services.get('zooming').zoomToFit() },
+            { id: 'ganttGoToToday', label: labels.get('gantt.goToToday'), iconName: 'GotoToday', disabled: isDisabled, onExecute: () => this.services.get('timeline').jumpToToday() },
         );
     };
 }

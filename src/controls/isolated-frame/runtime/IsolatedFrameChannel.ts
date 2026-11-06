@@ -27,7 +27,7 @@ export class IsolatedFrameChannel {
         this._window.__isolatedFrameHost__ = true;
     }
 
-    public register(key: string, content: IIsolatedFrameContent): void {
+    public add(key: string, content: IIsolatedFrameContent): void {
         const frames = this._window.__isolatedFrames__ ??= {};
         if (frames[key]) {
             throw new Error(`A frame is already registered as "${key}".`);

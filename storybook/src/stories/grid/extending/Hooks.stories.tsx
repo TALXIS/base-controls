@@ -45,7 +45,7 @@ Check the context before you read it. A hook that reads \`record\` without check
 
 ## Validation
 
-\`registerValidation\` sets \`result.error\` and \`result.errorMessage\` for a value. An error marks the cell and refuses the record's save, on top of the built-in checks: see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
+\`addValidationHook\` sets \`result.error\` and \`result.errorMessage\` for a value. An error marks the cell and refuses the record's save, on top of the built-in checks: see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
 
 {{story: Keep a day under ten hours}}
 
@@ -53,31 +53,31 @@ The hook runs for every column of every record, so check \`columnName\` first. A
 
 ## Cells
 
-\`registerCellLoading\` draws a shimmer in place of a cell's value while \`result.isLoading\` is set.
+\`addCellLoadingHook\` draws a shimmer in place of a cell's value while \`result.isLoading\` is set.
 
 {{story: Refresh prices from a supplier}}
 
-\`registerCellCommands\` adds commands to a cell: push to \`result.items\` for buttons and to \`result.overflowItems\` for the **…** menu. How they are drawn is under *Add cell commands* on [**Columns**](?path=/docs/controls-grid-columns--overview).
+\`addCellCommandsHook\` adds commands to a cell: push to \`result.items\` for buttons and to \`result.overflowItems\` for the **…** menu. How they are drawn is under *Add cell commands* on [**Columns**](?path=/docs/controls-grid-columns--overview).
 
 {{story: Assign new tickets to yourself}}
 
-\`registerControlParameters\` changes what a cell's control receives, such as its \`Placeholder\`. The parameters \`GridValueRenderer\` reads are under *Control parameters* on [**Columns**](?path=/docs/controls-grid-columns--overview). \`takesInput\` is \`true\` for an editor and for an in-place cell.
+\`addControlParametersHook\` changes what a cell's control receives, such as its \`Placeholder\`. The parameters \`GridValueRenderer\` reads are under *Control parameters* on [**Columns**](?path=/docs/controls-grid-columns--overview). \`takesInput\` is \`true\` for an editor and for an in-place cell.
 
 {{story: Show placeholders for missing values}}
 
 ## Rows
 
-\`registerRowHeight\` sets a row's height in pixels on \`result.height\`; leave it unset for the grid's \`rowHeight\`.
+\`addRowHeightHook\` sets a row's height in pixels on \`result.height\`; leave it unset for the grid's \`rowHeight\`.
 
 {{story: Make urgent tickets taller}}
 
-\`rowSettings.onGetHeight\` runs after the hooks, and a height the user drags on a row's resize grip wins over both. AG Grid asks for a row's height when it lays the row out, so after a change that should resize rows, call \`resetRowHeights()\` on the \`gridApi\` service.
+\`rowSettings.heightHook\` runs after the hooks, and a height the user drags on a row's resize grip wins over both. AG Grid asks for a row's height when it lays the row out, so after a change that should resize rows, call \`resetRowHeights()\` on the \`gridApi\` service.
 
-\`registerRowClass(className, rule)\` puts a class on every row whose record the rule holds for, such as the editing module's \`LOCKED_RECORD_ROW_CLASS\` on a locked record. Pinned rows never take it. AG Grid runs the rules when it updates a row, so call \`rows.refreshRowClasses(records)\` after a change.
+\`addRowClass(className, rule)\` puts a class on every row whose record the rule holds for, such as the editing module's \`LOCKED_RECORD_ROW_CLASS\` on a locked record. Pinned rows never take it. AG Grid runs the rules when it updates a row, so call \`rows.refreshRowClasses(records)\` after a change.
 
 ## Columns
 
-\`registerColumnDefinitions\` receives the column definitions built so far and can change, add, remove or reorder them.
+\`addColumnDefinitionsHook\` receives the column definitions built so far and can change, add, remove or reorder them.
 
 {{story: Show columns by role}}
 
@@ -87,11 +87,11 @@ It runs when the grid is ready and on every load of the provider, so a change to
 
 ## Headers
 
-\`registerColumnMenuSection\` adds sections to a column's menu, each \`{ key, title, items }\`. The built-in sections are \`'sorting'\`, \`'filtering'\`, \`'grouping'\` and \`'aggregation'\`, so a section at the default priority comes above them.
+\`addColumnMenuSectionsHook\` adds sections to a column's menu, each \`{ key, title, items }\`. The built-in sections are \`'sorting'\`, \`'filtering'\`, \`'grouping'\` and \`'aggregation'\`, so a section at the default priority comes above them.
 
 {{story: Copy a column's values}}
 
-\`registerColumnMenuItems\` runs after the sections are laid out and receives every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
+\`addColumnMenuItemsHook\` runs after the sections are laid out and receives every item, each section's heading included, keyed \`'<section key>Header'\`. Use it to move or remove what a section cannot.
 
 Every header hook receives an \`IGridColumnHeader\`:
 
@@ -102,7 +102,7 @@ Every header hook receives an \`IGridColumnHeader\`:
 | \`isRequired()\`, \`getAdornments()\`, \`getMenuItems()\` | What it draws |
 | \`getElement()\`, \`openMenu()\`, \`closeMenu()\` | Its element and its menu |
 
-\`registerColumnHeaderAdornments\` draws \`{ key, placement, title?, onRender? }\` beside the column's name. After the name, the modules add the lock of a locked column (\`'lock'\`, editing), the sort arrow, the filter funnel and the total's title; before it, the group icon. At the default priority, yours come first on the same side.
+\`addColumnHeaderAdornmentsHook\` draws \`{ key, placement, title?, onRender? }\` beside the column's name. After the name, the modules add the lock of a locked column (\`'lock'\`, editing), the sort arrow, the filter funnel and the total's title; before it, the group icon. At the default priority, yours come first on the same side.
 
 {{story: Show the currency in the header}}
 
@@ -112,27 +112,27 @@ Every header hook receives an \`IGridColumnHeader\`:
 
 | Hook | On | Decides | Runs last |
 |---|---|---|---|
-| \`registerCellTheme\` | \`cells\` | A cell's colours, through \`builder\`: see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview) | \`context.cell.onGetTheme\` |
-| \`registerCellLoading\` | \`cells\` | \`result.isLoading\` | \`context.cell.onGetLoading\` |
-| \`registerCellCommands\` | \`cells\` | \`result.items\`, \`result.overflowItems\` | \`context.cell.onGetCommands\` |
-| \`registerControl\` | \`cells\` | \`result.control\`: the control that draws a cell, and its \`bindings\` | None |
-| \`registerControlParameters\` | \`cells\` | The parameters a cell's control receives | \`context.cell.onGetControlParameters\` |
-| \`registerRowHeight\` | \`rows\` | \`result.height\`, in pixels | \`rowSettings.onGetHeight\` |
-| \`registerRowClass(className, rule)\` | \`rows\` | Whether a row takes the class; no priority | None |
-| \`registerLock\` | \`editing.locks\` | \`result.isLocked\` for a column, a row or a cell | \`rowSettings.onGetLock\`, \`context.cell.onGetLock\` |
-| \`registerValidation\` | \`validation\` | \`result.error\`, \`result.errorMessage\` | \`context.cell.onGetValidation\` |
-| \`registerColumnDefinitions\` | \`columns\` | The column definitions AG Grid receives | \`colDefs\` |
-| \`registerColumnMenuSection\` | \`columns.headers\` | A menu's sections | \`context.header.onGetMenuSections\` |
-| \`registerColumnMenuItems\` | \`columns.headers\` | A menu's final items | \`context.header.onGetMenuItems\` |
-| \`registerColumnHeaderAdornments\` | \`columns.headers\` | What a header draws beside the name | \`context.header.onGetAdornments\` |
-| \`registerColumnHeaderTheme\` | \`columns.headers\` | A header's colours, through \`builder\` | \`context.header.onGetTheme\` |
-| \`registerSurface\` | \`surfaces\` | What modules draw inside the grid: see [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview) | None |
-| \`registerFilterControlParameters\` | \`filtering\` | The parameters of the filter callout's controls | None |
-| \`registerSelectRecords\` | \`rowSelection\` | \`selection.recordIds\` or \`selection.isCancelled\`; may be async | None |
-| \`registerSelectionState\` | \`rowSelection\` | \`result.state\` of a row's checkbox | None |
+| \`addCellThemeHook\` | \`cells\` | A cell's colours, through \`builder\`: see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview) | \`context.cell.themeHook\` |
+| \`addCellLoadingHook\` | \`cells\` | \`result.isLoading\` | \`context.cell.loadingHook\` |
+| \`addCellCommandsHook\` | \`cells\` | \`result.items\`, \`result.overflowItems\` | \`context.cell.commandsHook\` |
+| \`addControlHook\` | \`cells\` | \`result.control\`: the control that draws a cell, and its \`bindings\` | None |
+| \`addControlParametersHook\` | \`cells\` | The parameters a cell's control receives | \`context.cell.controlParametersHook\` |
+| \`addRowHeightHook\` | \`rows\` | \`result.height\`, in pixels | \`rowSettings.heightHook\` |
+| \`addRowClass(className, rule)\` | \`rows\` | Whether a row takes the class; no priority | None |
+| \`addLockHook\` | \`editing.locks\` | \`result.isLocked\` for a column, a row or a cell | \`rowSettings.lockHook\`, \`context.cell.lockHook\` |
+| \`addValidationHook\` | \`validation\` | \`result.error\`, \`result.errorMessage\` | \`context.cell.validationHook\` |
+| \`addColumnDefinitionsHook\` | \`columns\` | The column definitions AG Grid receives | \`colDefs\` |
+| \`addColumnMenuSectionsHook\` | \`columns.headers\` | A menu's sections | \`context.header.menuSectionsHook\` |
+| \`addColumnMenuItemsHook\` | \`columns.headers\` | A menu's final items | \`context.header.menuItemsHook\` |
+| \`addColumnHeaderAdornmentsHook\` | \`columns.headers\` | What a header draws beside the name | \`context.header.adornmentsHook\` |
+| \`addColumnHeaderThemeHook\` | \`columns.headers\` | A header's colours, through \`builder\` | \`context.header.themeHook\` |
+| \`addSurfacesHook\` | \`surfaces\` | What modules draw inside the grid: see [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview) | None |
+| \`addFilterControlParametersHook\` | \`filtering\` | The parameters of the filter callout's controls | None |
+| \`addSelectRecordsHook\` | \`rowSelection\` | \`selection.recordIds\` or \`selection.isCancelled\`; may be async | None |
+| \`addSelectionStateHook\` | \`rowSelection\` | \`result.state\` of a row's checkbox | None |
 | \`onKeyDown(handler)\` | \`keyboard\` | Runs for every key pressed inside the grid; no priority | None |
-| \`registerAgGridOptions\`, \`registerAgGridInitialOptions\` | The grid | AG Grid's options: see [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview) | None |
-| \`registerTheme\`, \`registerStyles\` | \`gridTheme\` | The AG Grid theme and the root element's styles | None |
+| \`addAgGridOptionsHook\`, \`addAgGridInitialOptionsHook\` | The grid | AG Grid's options: see [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview) | None |
+| \`addThemeHook\`, \`addStylesHook\` | \`gridTheme\` | The AG Grid theme and the root element's styles | None |
 
 ## Where next
 
@@ -172,7 +172,7 @@ export const KeepADayUnderTenHours: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerValidation\` caps each employee's day at ten hours, and \`cells.render()\` redraws the day's other entries. Try: cut one of Anna Novak's Monday entries.`,
+                story: `\`addValidationHook\` caps each employee's day at ten hours, and \`cells.render()\` redraws the day's other entries. Try: cut one of Anna Novak's Monday entries.`,
             },
         },
     },
@@ -184,7 +184,7 @@ export const RefreshPricesFromASupplier: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerCellLoading\` draws a shimmer in each *Price* cell until the supplier returns that price. Try: press *Refresh prices*.`,
+                story: `\`addCellLoadingHook\` draws a shimmer in each *Price* cell until the supplier returns that price. Try: press *Refresh prices*.`,
             },
         },
     },
@@ -196,7 +196,7 @@ export const AssignNewTicketsToYourself: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerCellCommands\` offers *Assign to me* in the Assigned to cell of every unassigned ticket. Try: hover a New ticket and pick *Assign to me*.`,
+                story: `\`addCellCommandsHook\` offers *Assign to me* in the Assigned to cell of every unassigned ticket. Try: hover a New ticket and pick *Assign to me*.`,
             },
         },
     },
@@ -208,7 +208,7 @@ export const PlaceholdersForMissingValues: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerControlParameters\` gives the *Assigned to* and *Customer* cells and editors a \`Placeholder\` in place of \`---\`. Try: clear a ticket's *Customer*.`,
+                story: `\`addControlParametersHook\` gives the *Assigned to* and *Customer* cells and editors a \`Placeholder\` in place of \`---\`. Try: clear a ticket's *Customer*.`,
             },
         },
     },
@@ -220,7 +220,7 @@ export const TallerRowsForUrgentTickets: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerRowHeight\` makes every High priority row 64px tall, and \`resetRowHeights()\` measures again when a priority changes. Try: change a ticket's *Priority* to High.`,
+                story: `\`addRowHeightHook\` makes every High priority row 64px tall, and \`resetRowHeights()\` measures again when a priority changes. Try: change a ticket's *Priority* to High.`,
             },
         },
     },
@@ -232,7 +232,7 @@ export const ColumnsByRole: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerColumnDefinitions\` hides *Hourly rate* unless a project manager is signed in. Try: switch to Project manager.`,
+                story: `\`addColumnDefinitionsHook\` hides *Hourly rate* unless a project manager is signed in. Try: switch to Project manager.`,
             },
         },
     },
@@ -244,7 +244,7 @@ export const CopyAColumnsValues: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerColumnMenuSection\` adds *Copy column values* to every column's menu, below the modules' sections. Try: copy the *Deal* column from its menu.`,
+                story: `\`addColumnMenuSectionsHook\` adds *Copy column values* to every column's menu, below the modules' sections. Try: copy the *Deal* column from its menu.`,
             },
         },
     },
@@ -256,7 +256,7 @@ export const ShowTheCurrencyInTheHeader: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`registerColumnHeaderAdornments\` draws USD after the name of every currency column, and its \`title\` joins the header's tooltip. Try: sort by *Price*.`,
+                story: `\`addColumnHeaderAdornmentsHook\` draws USD after the name of every currency column, and its \`title\` joins the header's tooltip. Try: sort by *Price*.`,
             },
         },
     },

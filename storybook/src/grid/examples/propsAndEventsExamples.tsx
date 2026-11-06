@@ -62,16 +62,16 @@ const GridExample = () => {
                     <Grid
                         //modules are read at mount
                         key={mountCount + String(isAutoSaveOn)}
-                        modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), createSortingModule()]}
+                        modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), createSortingModule()]}
                         height='440px'
                         onSetup={onSetup}
                         onLoad={() => log('onLoad')}
                         onDataLoaded={() => log('onDataLoaded', provider.getRecords().length + ' tickets')}
                         onLoadingChanged={isLoading => log('onLoadingChanged', String(isLoading))}
                         onRecordValueChanged={(record, columnName) => log('onRecordValueChanged', ticketOf(record) + ' ' + columnName + ' = ' + (record.getFormattedValue(columnName) ?? 'empty'))}
-                        onBeforeRecordSaved={record => log('onBeforeRecordSaved', ticketOf(record))}
-                        onAfterRecordSaved={result => log('onAfterRecordSaved', describeSave(result))}
-                        onAfterSaved={results => log('onAfterSaved', results.length + ' record(s)')}
+                        onBeforeRecordSave={record => log('onBeforeRecordSave', ticketOf(record))}
+                        onAfterRecordSave={result => log('onAfterRecordSave', describeSave(result))}
+                        onAfterSave={results => log('onAfterSave', results.length + ' record(s)')}
                         onError={message => log('onError', message)}
                         onCellDoubleClicked={(record, columnName) => log('onCellDoubleClicked', ticketOf(record) + ' ' + columnName)}
                         onRowClicked={record => log('onRowClicked', ticketOf(record))}

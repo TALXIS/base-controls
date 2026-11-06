@@ -1,6 +1,6 @@
 import { FetchXmlBuilder, FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
-import { IDeleteTasksResult, IOpenTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParams, ITaskDataProvider, ITaskDeleteParams, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
+import { IDeleteTasksResult, IOpenTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParameters, ITaskDataProvider, ITaskDeleteParameters, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
 import type { IPcfContext } from "@pcf/interfaces";
 import type { ITaskRuntime } from "../..";
 import { TASK_GRID_LABELS } from "../../../labels";
@@ -9,17 +9,17 @@ import { TASK_GRID_LABELS } from "../../../labels";
 export type DataverseTaskFormOperation = 'edit' | 'bulkEdit' | 'open';
 
 /** What `Xrm.Navigation.navigateTo` is called with to open a form. */
-export interface IDataverseTaskFormParameters {
+export interface IDataverseTaskFormNavigation {
     pageInput: Xrm.Navigation.PageInputEntityRecord;
     navigationOptions?: Xrm.Navigation.NavigationOptions;
 }
 
 /** How the data source opens task forms. */
-export interface IDataverseTaskFormOptions {
+export interface IDataverseTaskFormParameters {
     editId?: string;
     bulkEditId?: string;
     /** Changes how a form opens. */
-    onGetParameters?: (operation: DataverseTaskFormOperation, defaults: IDataverseTaskFormParameters) => IDataverseTaskFormParameters;
+    getParameters?: (operation: DataverseTaskFormOperation, defaults: IDataverseTaskFormNavigation) => IDataverseTaskFormNavigation;
 }
 
 /** The record the grid sits on, such as the one the form shows. */
@@ -37,9 +37,9 @@ export interface IDataverseTaskStoreParameters {
     fetchXml: string;
     /** The record the grid sits on, as `hostRecord` in the FetchXML. */
     hostRecord?: IDataverseHostRecord;
-    form?: IDataverseTaskFormOptions;
+    form?: IDataverseTaskFormParameters;
     /** Values every new task starts with, by column. */
-    onGetNewTaskDefaults?: (params: ITaskCreateParams) => IRawRecord | Promise<IRawRecord>;
+    getNewTaskDefaults?: (parameters: ITaskCreateParameters) => IRawRecord | Promise<IRawRecord>;
 }
 
 const SIDE_DIALOG: Xrm.Navigation.NavigationOptions = { target: 2, width: { value: 80, unit: '%' }, position: 1 };
@@ -70,7 +70,7 @@ export class DataverseTaskStore implements ITaskStore {
         this._fetchXmlProvider = new FetchXmlDataProvider({ fetchXml: this._fetchXml, loadAllRecords: true });
     }
 
-    public async onLoad(provider: ITaskDataProvider): Promise<ITaskLoadResult> {
+    public async load(provider: ITaskDataProvider): Promise<ITaskLoadResult> {
         const loadStartedOn = Date.now();
         this._fetchXmlProvider.setColumns(provider.getColumns());
         this._fetchXmlProvider.setLinking(provider.getLinking());
@@ -88,33 +88,33 @@ export class DataverseTaskStore implements ITaskStore {
         return { rawData, metadata: metadata as IMemoryProviderEntityMetadata, columns: this._fetchXmlProvider.getColumns() };
     }
 
-    public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
+    public async getAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
         return this._fetchXmlProvider.getAvailableColumns(options);
     }
 
-    public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
+    public async getAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
         return this._fetchXmlProvider.getAvailableRelatedColumns();
     }
 
-    public async onCreateTask(params: ITaskCreateParams): Promise<ITaskCreateResult | null> {
-        const placement = this._getPlacement(params);
-        const defaults = { ...await this._parameters.onGetNewTaskDefaults?.(params), ...params.data };
-        const record = await this._createThroughWebApi({ ...defaults, ...placement, ...params.taskId && { [this._primaryIdAttribute]: params.taskId } });
+    public async createTask(parameters: ITaskCreateParameters): Promise<ITaskCreateResult | null> {
+        const placement = this._getPlacement(parameters);
+        const defaults = { ...await this._parameters.getNewTaskDefaults?.(parameters), ...parameters.data };
+        const record = await this._createThroughWebApi({ ...defaults, ...placement, ...parameters.taskId && { [this._primaryIdAttribute]: parameters.taskId } });
         return record && { record };
     }
 
-    public async onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null> {
-        const { results } = await this._fetchXmlProvider.deleteRecords(params.taskIds);
+    public async deleteTasks(parameters: ITaskDeleteParameters): Promise<IDeleteTasksResult | null> {
+        const { results } = await this._fetchXmlProvider.deleteRecords(parameters.taskIds);
         const deletedTaskIds = results.filter(result => result.success).map(result => result.recordId);
         const errors = results.filter(result => !result.success).map(result => ({ id: result.recordId, error: result.errorMessage }));
         return errors.length === 0 ? { success: true, deletedTaskIds } : { success: false, deletedTaskIds, errors };
     }
 
-    public async onSaveTask(record: IRecord): Promise<IRecordSaveOperationResult> {
+    public async saveTask(record: IRecord): Promise<IRecordSaveOperationResult> {
         return this._fetchXmlProvider.onRecordSave(record);
     }
 
-    public async onSynchronize(): Promise<ITaskChanges> {
+    public async synchronize(): Promise<ITaskChanges> {
         if (this._synchronizedOn === undefined) {
             return { updatedRecords: [] };
         }
@@ -133,11 +133,11 @@ export class DataverseTaskStore implements ITaskStore {
         return { updatedRecords };
     }
 
-    public async onOpenRelatedRecord(reference: ComponentFramework.EntityReference): Promise<void> {
+    public async openRelatedRecord(reference: ComponentFramework.EntityReference): Promise<void> {
         await this._navigate('open', { pageInput: { pageType: 'entityrecord', entityName: reference.etn!, entityId: reference.id.guid }, navigationOptions: SIDE_DIALOG });
     }
 
-    public async onOpenTasks(taskIds: string[]): Promise<IOpenTasksResult | null> {
+    public async openTasks(taskIds: string[]): Promise<IOpenTasksResult | null> {
         if (taskIds.length === 1) {
             await this._navigate('edit', {
                 pageInput: { pageType: 'entityrecord', entityName: this._entityName, entityId: taskIds[0], formId: this._parameters.form?.editId, data: { isEditingEnabled: this._isEditingEnabled() && this._taskRuntime.getProvider().isRecordActive(taskIds[0]) } },
@@ -210,11 +210,11 @@ export class DataverseTaskStore implements ITaskStore {
         return normalize(first) === normalize(second);
     }
 
-    protected _getPlacement(params: ITaskCreateParams): IRawRecord {
+    protected _getPlacement(parameters: ITaskCreateParameters): IRawRecord {
         const fieldMapping = this._taskRuntime.getProvider().getFieldMapping();
-        const placement: IRawRecord = { [fieldMapping.stackRank]: params.stackRank };
-        if (params.parentRecord) {
-            placement[fieldMapping.parentId] = params.parentRecord.getNamedReference();
+        const placement: IRawRecord = { [fieldMapping.stackRank]: parameters.stackRank };
+        if (parameters.parentRecord) {
+            placement[fieldMapping.parentId] = parameters.parentRecord.getNamedReference();
         }
         if (this._projectLookup) {
             placement[this._projectLookup.columnName] = this._projectLookup.reference;
@@ -227,8 +227,8 @@ export class DataverseTaskStore implements ITaskStore {
         return (await this._getRawRecords([id]))[0] ?? null;
     }
 
-    protected async _navigate(operation: DataverseTaskFormOperation, defaults: IDataverseTaskFormParameters): Promise<any> {
-        const { pageInput, navigationOptions } = this._parameters.form?.onGetParameters?.(operation, defaults) ?? defaults;
+    protected async _navigate(operation: DataverseTaskFormOperation, defaults: IDataverseTaskFormNavigation): Promise<any> {
+        const { pageInput, navigationOptions } = this._parameters.form?.getParameters?.(operation, defaults) ?? defaults;
         //the PCF typings leave out navigateTo
         const navigation = this._getPcfContext().navigation as ComponentFramework.Navigation & Pick<Xrm.Navigation, 'navigateTo'>;
         return navigation.navigateTo(pageInput, navigationOptions);

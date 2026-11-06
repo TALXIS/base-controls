@@ -1,7 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { CELL_VALUE_PADDING } from "../../../constants";
 
-export const getChecklistProgressStyles = (theme: ITheme) => mergeStyleSets({
+export const getTaskChecklistUiProgressStyles = (theme: ITheme) => mergeStyleSets({
     root: {
         display: 'flex',
         alignItems: 'center',

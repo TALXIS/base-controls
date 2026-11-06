@@ -6,7 +6,7 @@ const FLEX_STYLES = {
     flexGrow: 1,
 };
 
-export const getPivotStyles = (theme: ITheme) => {
+export const getFormUiPivotStyles = (theme: ITheme) => {
     return mergeStyleSets({
         pivot: {
             //boxShadow: theme.effects.elevation4,

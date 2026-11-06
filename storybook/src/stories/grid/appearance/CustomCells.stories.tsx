@@ -27,7 +27,7 @@ Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound 
 | \`resizeGrip\` | \`onRenderContainer\`, \`onRenderGrip\` | | The grip a row is dragged taller by |
 | \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | | The lock of a locked cell, with the editing module |
 
-To restyle only the value, render \`<GridValueRenderer {...props} components={…} />\` in \`columnControl.onRenderControl\`. Its slots are \`onRenderContainer\`, \`onRenderText\`, \`onRenderPlaceholder\`, \`onRenderLink\`, \`onRenderLookup\`, \`onRenderOptions\`, \`onRenderFile\`, \`onRenderPrefixIcon\` and \`onRenderSuffixIcon\`, with defaults in \`ValueRendererUiComponents\`.
+To restyle only the value, render \`<GridValueRenderer {...props} components={…} />\` in \`columnControl.onRenderControl\`. Its slots are \`onRenderContainer\`, \`onRenderText\`, \`onRenderPlaceholder\`, \`onRenderLink\`, \`onRenderLookup\`, \`onRenderOptions\`, \`onRenderFile\`, \`onRenderPrefixIcon\` and \`onRenderSuffixIcon\`, with defaults in \`CellUiValueRendererComponents\`.
 
 The editor takes \`container\`, \`loading\`, \`control\`, \`columnControl\` and \`resizeGrip\`, and in an editor \`columnControl\` draws the input, as the example's rich text editor does. Group rows and totals draw their own cells, restyled through their modules: see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 

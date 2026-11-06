@@ -1,7 +1,7 @@
 import { DataTypes, IColumn } from "@talxis/client-libraries";
 import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { IRibbonCommand } from "@controls/ribbon";
-import type { IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
+import type { IDatasetControlLoadResult, IDatasetControlInternal } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl, IDatasetControlView } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@pcf/interfaces";
 import { HookRegistry, IRuntimeLifecycle, ServiceLocator } from "@core";
@@ -14,18 +14,18 @@ import { ITaskActions, TaskActions } from "./tasks";
 import { runQuietly } from "./runQuietly";
 import { TaskExecutor } from "./TaskExecutor";
 import { TaskSavingChains } from "./saving";
-import type { ITaskExecuteOptions, ITaskRuntime, ITaskRuntimeServiceMap, TaskRibbonCommandUiHook } from "./interfaces";
+import type { ITaskExecuteParameters, ITaskRuntime, ITaskRuntimeServiceMap, TaskRibbonCommandUiHook } from "./interfaces";
 
 export interface ITaskRuntimeParameters {
-    datasetControl: IDatasetControlRuntime;
+    datasetControl: IDatasetControlInternal;
     pcfContext: IPcfContext;
     /** The `TaskDatasetControl`'s current props. */
-    onGetProps: () => ITaskDatasetControlProps;
+    getProps: () => ITaskDatasetControlProps;
 }
 
 export class TaskRuntime implements ITaskRuntime {
     public readonly services = new ServiceLocator<ITaskRuntimeServiceMap>();
-    private _onGetProps: () => ITaskDatasetControlProps;
+    private _getProps: () => ITaskDatasetControlProps;
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
     public readonly tasks: ITaskActions = new TaskActions(this);
     private _executor = new TaskExecutor(this);
@@ -33,12 +33,12 @@ export class TaskRuntime implements ITaskRuntime {
 
     constructor(parameters: ITaskRuntimeParameters) {
         const datasetControl = parameters.datasetControl;
-        this._onGetProps = parameters.onGetProps;
+        this._getProps = parameters.getProps;
         this.services.register('datasetControl', () => datasetControl as IDatasetControl<ITaskViewData>);
         this.services.register('pcfContext', () => parameters.pcfContext);
         this.services.register('savingChains', () => this._savingChains);
         this.services.observe('provider', provider => this._savingChains.attach(provider));
-        datasetControl.parts.observe('ribbon', ribbon => { ribbon.registerCommands(this._addCommands); });
+        datasetControl.parts.observe('ribbon', ribbon => { ribbon.addCommandsHook(this._addCommands); });
         datasetControl.modules.observe('userQueries', userQueries => {
             userQueries.saveWithView('sorting', () => this.getProvider().getSorting(), sorting => this.getProvider().setSorting(sorting));
             userQueries.saveWithView('filtering', () => this.getProvider().getFiltering(), filtering => this.getProvider().setFiltering(filtering));
@@ -48,14 +48,14 @@ export class TaskRuntime implements ITaskRuntime {
     }
 
     public async load(): Promise<IDatasetControlLoadResult<ITaskViewData>> {
-        const { provider, fieldMapping, rootTaskId, views } = await this._onGetProps().onLoad(this.services.get('datasetControl'));
-        provider.initialize({ fieldMapping, rootTaskId, defaultCreatePosition: this._onGetProps().defaultCreatePosition, hoursPerDay: this._onGetProps().hoursPerDay });
-        provider.registerAvailableColumns(this._addPathColumn);
+        const { provider, fieldMapping, rootTaskId, views } = await this._getProps().onLoad(this.services.get('datasetControl'));
+        provider.configure({ fieldMapping, rootTaskId, defaultCreatePosition: this._getProps().defaultCreatePosition, hoursPerDay: this._getProps().hoursPerDay });
+        provider.addAvailableColumnsHook(this._addPathColumn);
         //modules waiting for it add columns a user view may keep
         this.services.register('provider', () => provider);
-        provider.taskEvents.addEventListener('onTasksCreated', (records, parentId) => this._onGetProps().onTasksCreated?.(records, parentId));
-        provider.taskEvents.addEventListener('onTasksDeleted', taskIds => this._onGetProps().onTasksDeleted?.(taskIds));
-        provider.taskEvents.addEventListener('onTasksUpdated', records => this._onGetProps().onTasksUpdated?.(records));
+        provider.taskEvents.addEventListener('onTasksCreated', (records, parentId) => this._getProps().onTasksCreated?.(records, parentId));
+        provider.taskEvents.addEventListener('onTasksDeleted', taskIds => this._getProps().onTasksDeleted?.(taskIds));
+        provider.taskEvents.addEventListener('onTasksUpdated', records => this._getProps().onTasksUpdated?.(records));
         //a task view is only ever resolved with this task provider
         return { provider, views: views as IDatasetControlView<ITaskViewData>[] | undefined };
     }
@@ -89,23 +89,23 @@ export class TaskRuntime implements ITaskRuntime {
     }
 
     public isCreationEnabled(): boolean {
-        return !!this._onGetProps().enableCreation;
+        return !!this._getProps().enableCreation;
     }
 
     public isEditingEnabled(): boolean {
-        return !!this._onGetProps().enableEditing;
+        return !!this._getProps().enableEditing;
     }
 
     public isDeletionEnabled(): boolean {
-        return !!this._onGetProps().enableDeletion;
+        return !!this._getProps().enableDeletion;
     }
 
     public getHoursPerDay(): number {
-        return this._onGetProps().hoursPerDay ?? 24;
+        return this._getProps().hoursPerDay ?? 24;
     }
 
-    public registerRibbonCommandUi(hook: TaskRibbonCommandUiHook, priority?: number): () => void {
-        return this._ribbonCommandUiHooks.register(hook, priority);
+    public addRibbonCommandUiHook(hook: TaskRibbonCommandUiHook, priority?: number): () => void {
+        return this._ribbonCommandUiHooks.add(hook, priority);
     }
 
     public getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[] {
@@ -149,9 +149,9 @@ export class TaskRuntime implements ITaskRuntime {
         commands.unshift(...taskCommands);
     };
 
-    public execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
-    public execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
-    public execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T | undefined> {
-        return this._executor.execute(operation, options);
+    public execute<T>(operation: () => Promise<T>, options: ITaskExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
+    public execute<T>(operation: () => Promise<T>, parameters?: ITaskExecuteParameters): Promise<T>;
+    public execute<T>(operation: () => Promise<T>, parameters?: ITaskExecuteParameters): Promise<T | undefined> {
+        return this._executor.execute(operation, parameters);
     }
 }

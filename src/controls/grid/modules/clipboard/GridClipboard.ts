@@ -16,12 +16,12 @@ export class GridClipboard {
     constructor(parameters: IGridClipboardParameters) {
         this._services = parameters.services;
         this._options = parameters.options;
-        this._registerHooks();
+        this._addHooks();
     }
 
-    private _registerHooks(): void {
+    private _addHooks(): void {
         const grid = this._services.get('grid');
-        grid.registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.clipboard);
+        grid.addAgGridOptionsHook(this._onAgGridOptions, GRID_MODULE_PRIORITY.clipboard);
     }
 
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {

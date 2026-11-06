@@ -1,4 +1,4 @@
-import { useGridInternalService } from "../../../useGridService";
+import { useGridServiceInternal } from "../../../useGridService";
 import { useLabels } from "@labels";
 import { GRID_LABELS } from "../../../labels";
 import { useGridCell } from "../root/context";
@@ -11,7 +11,7 @@ export interface ICellLockIconProps {
 /** What says a cell is locked for its record, where its column is not. */
 export const CellLockIcon = (props: ICellLockIconProps) => {
     const cell = useGridCell();
-    const locks = useGridInternalService('grid').modules.find('editing')?.locks;
+    const locks = useGridServiceInternal('grid').modules.find('editing')?.locks;
     const labels = useLabels(GRID_LABELS);
 
     //a locked column is marked in its header, a locked record by its muted row

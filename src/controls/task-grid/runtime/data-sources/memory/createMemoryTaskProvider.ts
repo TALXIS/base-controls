@@ -1,6 +1,6 @@
-import { createTaskDataSource, ITaskDataSourceParameters } from "../createTaskDataSource";
+import { createTaskProvider, ITaskProviderParameters } from "../createTaskProvider";
 
-export interface IMemoryTaskDataSourceParameters extends ITaskDataSourceParameters { }
+export interface IMemoryTaskProviderParameters extends ITaskProviderParameters { }
 
 /** Tasks held in memory. */
-export const createMemoryTaskDataSource = createTaskDataSource;
+export const createMemoryTaskProvider = createTaskProvider;

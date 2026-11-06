@@ -5,7 +5,7 @@ import { useLabels } from "@labels";
 import { useDataProviderEvents } from "@data";
 import { IDatasetControlView, IDatasetControlViewGroup } from "../../runtime";
 import { DatasetControlUi } from "../../ui";
-import { useRegisterDatasetControlPart, useRequiredDatasetControlRuntime } from "../root";
+import { useRegisterDatasetControlPart, useDatasetControlInternal } from "../root";
 import { VIEW_SWITCHER_LABELS } from "./labels";
 import { DatasetControlViewSwitcher } from "../../runtime/parts/view-switcher/DatasetControlViewSwitcher";
 import { IViewSwitcherComponents } from "./components";
@@ -20,12 +20,12 @@ export interface IViewSwitcherProps {
 
 /** Switches the control between the views its `onLoad` returns, listed by their group. */
 export const ViewSwitcher = (props: IViewSwitcherProps) => {
-    const runtime = useRequiredDatasetControlRuntime();
+    const runtime = useDatasetControlInternal();
     const provider = useDataProviderEvents(['onLoading']);
     const viewSwitcher = useRegisterDatasetControlPart('viewSwitcher', () => new DatasetControlViewSwitcher({ services: runtime.services }));
     const labels = useLabels(VIEW_SWITCHER_LABELS);
     const views = viewSwitcher.getViews();
-    const currentView = viewSwitcher.getCurrentView();
+    const currentView = viewSwitcher.getView();
     const { rerender } = useRerender();
 
     const getGroups = (): Map<string, { group: IDatasetControlViewGroup; views: IDatasetControlView[] }> => {
@@ -51,7 +51,7 @@ export const ViewSwitcher = (props: IViewSwitcherProps) => {
             text={currentView?.name ?? ''}
             items={viewSwitcher.getItems(viewItems)}
             selectedKey={currentView?.id}
-            //the items are read as the menu opens, so what children registered is in it
+            //the items are read as the menu opens, so what children added is in it
             onMenuClick={rerender}
             disabled={provider.isLoading()}
             components={props.components} />

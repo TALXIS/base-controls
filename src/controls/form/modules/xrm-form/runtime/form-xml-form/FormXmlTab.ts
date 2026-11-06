@@ -33,7 +33,7 @@ export class FormXmlTab implements IFormXmlTab {
         this.events = new EventEmitter<IFormXmlTabEvents>();
         this.id = tab.id ?? tab.name ?? window.crypto.randomUUID();
         this.columns = tab.columns?.column?.map(col => new FormXmlColumn(col, formXmlModel)) ?? [];
-        this._registerSectionEvents(this.getSections());
+        this._addSectionEventListeners(this.getSections());
     }
 
     public getColumns(): IFormXmlColumn[] {
@@ -84,7 +84,7 @@ export class FormXmlTab implements IFormXmlTab {
         this.formXmlModel.requestRender();
     }
 
-    private _registerSectionEvents(sections: IFormXmlSection[]): void {
+    private _addSectionEventListeners(sections: IFormXmlSection[]): void {
         sections.map(section => {
             section.events.addEventListener("onVisibilityChanged", (visible) => {
                 this.events.dispatchEvent("onSectionVisibilityChanged", section.id ?? "", visible);

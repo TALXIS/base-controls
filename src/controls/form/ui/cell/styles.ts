@@ -22,7 +22,7 @@ const getRequirementLevelColor = (theme: ITheme, requiredLevel: RequiredLevelEnu
     }
 }
 
-interface ICellStylesParams {
+interface ICellStylesParameters {
     requiredLevel: RequiredLevelEnum,
     theme: ITheme;
     label?: string | null
@@ -30,8 +30,8 @@ interface ICellStylesParams {
     section?: ISectionContext | null,
 }
 
-const getLabelWidth = (params: { section?: ISectionContext | null, cellLabelPosition: "Top" | "Left", cellLabel?: string | null }): string | undefined => {
-    const { section, cellLabelPosition, cellLabel } = params;
+const getLabelWidth = (parameters: { section?: ISectionContext | null, cellLabelPosition: "Top" | "Left", cellLabel?: string | null }): string | undefined => {
+    const { section, cellLabelPosition, cellLabel } = parameters;
 
     if (!cellLabel || cellLabelPosition === 'Top') return undefined;
     return section?.labelWidth ? `${section.labelWidth}px` : `${CELL_LABEL_DEFAULT_WIDTH}px`;
@@ -49,10 +49,10 @@ const getCellLabelPosition = (section?: ISectionContext | null) => {
 }
 
 
-export const getCellStyles = (params: ICellStylesParams) => {
-    const { section, theme, rowspan = 1, requiredLevel } = params;
+export const getFormUiCellStyles = (parameters: ICellStylesParameters) => {
+    const { section, theme, rowspan = 1, requiredLevel } = parameters;
     const cellLabelPosition = getCellLabelPosition(section);
-    const labelWidth = getLabelWidth({ section, cellLabelPosition, cellLabel: params.label });
+    const labelWidth = getLabelWidth({ section, cellLabelPosition, cellLabel: parameters.label });
 
     return mergeStyleSets({
         cell: {

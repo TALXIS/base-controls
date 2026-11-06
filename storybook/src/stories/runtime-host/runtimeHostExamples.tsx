@@ -62,7 +62,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 16 }}>
         <Toggle label='Service unavailable' inlineLabel onChange={(_, checked) => { isServiceDown.current = !!checked }} />
-        <RuntimeHost onCreate={() => new DealSummaryRuntime(() => isServiceDown.current)} onSetup={onSetup}>
+        <RuntimeHost createRuntime={() => new DealSummaryRuntime(() => isServiceDown.current)} onSetup={onSetup}>
             <DealSummary />
         </RuntimeHost>
         <pre className={styles.log}>{entries.join('\\n')}</pre>
@@ -129,7 +129,7 @@ const DealSummary = () => {
 const GridExample = () => {
     //outlives every runtime, so the next mount opens on the owner this one stored
     const store = useControlStateStore('dealSummary')
-    return <RuntimeHost onCreate={() => new DealSummaryRuntime(store)} components={{ loading: { onRenderContainer: () => <LoadingDeals /> } }}>
+    return <RuntimeHost createRuntime={() => new DealSummaryRuntime(store)} components={{ loading: { onRenderContainer: () => <LoadingDeals /> } }}>
         <DealSummary />
     </RuntimeHost>
 }

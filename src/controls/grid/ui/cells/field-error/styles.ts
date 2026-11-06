@@ -2,7 +2,7 @@ import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IAlignment } from "@core";
 
 /** The class the outline of an invalid cell carries. */
-export const FIELD_ERROR_OUTLINE_CLASS_NAME = 'talxis__baseControl__GridCellFieldErrorOutline';
+export const FIELD_ERROR_OUTLINE_CLASS = 'talxis__baseControl__GridCellFieldErrorOutline';
 
 /** How wide the outline of an invalid cell is drawn, set by the cell it is in. */
 export const FIELD_ERROR_OUTLINE_WIDTH_VARIABLE = '--talxis-grid-cell-error-outline-width';

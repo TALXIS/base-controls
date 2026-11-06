@@ -171,7 +171,7 @@ const VALUE_STRENGTHS: (ITintStrength | undefined)[] = [undefined, 'subtle', 'st
 const statusIcons: IGridModule = {
     name: 'statusIcons',
     onLoad: grid => {
-        grid.services.get('cells').registerControlParameters((parameters, { record, columnName }) => {
+        grid.services.get('cells').addControlParametersHook((parameters, { record, columnName }) => {
             const value = getShownValue(grid, record, columnName)
             const state = columnName === 'closedate' && !isClosed(record) ? getCloseDateState(value) : undefined
             if (state) {
@@ -186,7 +186,7 @@ const colourRules: IGridModule = {
     name: 'colourRules',
     onLoad: grid => {
         //after grouping, which repaints grouped rows
-        grid.services.get('cells').registerCellTheme((builder, { record, columnName }) => {
+        grid.services.get('cells').addCellThemeHook((builder, { record, columnName }) => {
             const value = getShownValue(grid, record, columnName)
             if (value == null || isClosed(record)) {
                 return
@@ -207,7 +207,7 @@ const colourRules: IGridModule = {
 const headerExtras: IGridModule = {
     name: 'headerExtras',
     onLoad: grid => {
-        grid.services.get('columns').headers.registerColumnHeaderAdornments((adornments, header) => {
+        grid.services.get('columns').headers.addColumnHeaderAdornmentsHook((adornments, header) => {
             const legend = LEGENDS[header.getColumn()?.name ?? '']
             if (legend) {
                 adornments.push({ key: 'legend', placement: 'suffix', title: legend, onRender: () => <Icon iconName='Info' /> })
@@ -226,7 +226,7 @@ const overdueActions: IGridModule = {
     onLoad: grid => {
         //the field saves the deal while auto-save is on
         const pushBack = (deal: IRecord, days: number) => grid.services.get('fields').get(deal, 'closedate').setValue(dayjs().add(days, 'day').startOf('day').toDate())
-        grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
+        grid.services.get('cells').addCellCommandsHook((result, { record, columnName }) => {
             if (columnName !== 'closedate' || !isOverdue(record) || getShownValue(grid, record, columnName) == null) {
                 return
             }
@@ -261,7 +261,7 @@ const quickViews: IGridModule = {
             deals.setFiltering(conditions ? { filterOperator: Type.And.Value, conditions } : null)
             deals.refresh()
         }
-        grid.services.get('columns').headers.registerColumnMenuSection((sections, header) => {
+        grid.services.get('columns').headers.addColumnMenuSectionsHook((sections, header) => {
             const views = QUICK_VIEWS[header.getColumn()?.name ?? '']
             if (!views) {
                 return
@@ -306,7 +306,7 @@ const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel i
 const openInForm: IGridModule = {
     name: 'openInForm',
     onLoad: grid => {
-        grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
+        grid.services.get('cells').addCellCommandsHook((result, { record, columnName }) => {
             if (columnName !== 'name' || isSummaryRow(record)) {
                 return
             }
@@ -361,10 +361,10 @@ const getExcelTheme = (theme: ITheme) => {
 export const SPREADSHEET: { [feature: string]: IFeature } = {
     //Recurring flips right in its cell
     editing: ({ switches }) => ({
-        modules: [createEditingModule({ autoSave: !!switches.autoSave })],
-        colDefs: { recurring: { context: { cell: { oneClickEdit: true } } } },
+        modules: [createEditingModule({ enableAutoSave: !!switches.autoSave })],
+        colDefs: { recurring: { context: { cell: { enableOneClickEdit: true } } } },
     }),
-    //saving itself is the editing module's autoSave option, read above
+    //saving itself is the editing module's enableAutoSave option, read above
     autoSave: ({ toasts }) => ({
         onAfterRecordSaved: result => {
             if (!result.success) {
@@ -454,7 +454,7 @@ const dealCommands: IGridModule = {
             const rect = button?.getBoundingClientRect()
             return rect ? { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight } : { x: 0.5, y: 0.5 }
         }
-        grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
+        grid.services.get('cells').addCellCommandsHook((result, { record, columnName }) => {
             if (columnName !== 'actions' || isSummaryRow(record) || isClosed(record)) {
                 return
             }
@@ -469,7 +469,7 @@ const closedDealColours: IGridModule = {
     name: 'closedDealColours',
     onLoad: grid => {
         //after grouping, which repaints grouped rows
-        grid.services.get('cells').registerCellTheme((builder, { record }) => {
+        grid.services.get('cells').addCellThemeHook((builder, { record }) => {
             if (isSummaryRow(record) || !isClosed(record)) {
                 return
             }
@@ -487,7 +487,7 @@ const lockClosedDeals = (result: IGridLock, { record }: { record: IRecord }) => 
 export const CLOSING_DEALS: { [feature: string]: IFeature } = {
     rowActions: () => ({ modules: [dealCommands], colDefs: { actions: { headerName: '', pinned: 'right', initialWidth: 96 } } }),
     closedDealColours: () => ({ modules: [closedDealColours] }),
-    lockClosedDeals: () => ({ rowSettings: { onGetLock: lockClosedDeals } }),
+    lockClosedDeals: () => ({ rowSettings: { lockHook: lockClosedDeals } }),
 }
 `
 

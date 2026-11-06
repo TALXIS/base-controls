@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getIsolatedFrameStyles = () => mergeStyleSets({
+export const getIsolatedFrameUiFrameStyles = () => mergeStyleSets({
     frame: {
         display: 'block',
         width: '100%',

@@ -1,14 +1,14 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { IColumn } from "@talxis/client-libraries";
 import { useCompact } from "@ui";
-import { IQuickFindUiComponents, IQuickFindUiLabels, QuickFindUiComponents } from "./components";
-import { QuickFindCallout } from "./callout";
-import { QuickFindCompactButton } from "./compact-button";
+import { IDatasetControlUiQuickFindComponents, IDatasetControlUiQuickFindLabels, DatasetControlUiQuickFindComponents } from "./components";
+import { DatasetControlUiQuickFindCallout } from "./callout";
+import { DatasetControlUiQuickFindCompactButton } from "./compact-button";
 import { useDatasetControlHeader } from "../header/context";
-import { getQuickFindUiStyles } from "./styles";
+import { getDatasetControlUiQuickFindStyles } from "./styles";
 
 /** Props for the quick find, as plain UI. */
-export interface IQuickFindUiProps {
+export interface IDatasetControlUiQuickFindProps {
     /** The query in the field. */
     value: string;
     /** Shown while the field is empty. */
@@ -20,7 +20,7 @@ export interface IQuickFindUiProps {
     /** Disables the field. */
     disabled?: boolean;
     /** The callout's strings. */
-    labels: IQuickFindUiLabels;
+    labels: IDatasetControlUiQuickFindLabels;
     /** Called with what the user typed. */
     onChange: (value: string) => void;
     /** Called on Enter and by the search button. */
@@ -28,19 +28,19 @@ export interface IQuickFindUiProps {
     /** Called by the clear button. */
     onClear: () => void;
     /** Replacements for its slots. */
-    components?: Partial<IQuickFindUiComponents>;
+    components?: Partial<IDatasetControlUiQuickFindComponents>;
 }
 
 /** A search field, and a callout explaining how it matches while the field is focused; a search button while compact. */
-export const QuickFind = (props: IQuickFindUiProps) => {
-    const components = { ...QuickFindUiComponents, ...props.components };
+export const DatasetControlUiQuickFind = (props: IDatasetControlUiQuickFindProps) => {
+    const components = { ...DatasetControlUiQuickFindComponents, ...props.components };
     const id = useMemo(() => `quickfind-${crypto.randomUUID()}`, []);
     const [isCalloutVisible, setIsCalloutVisible] = useState(false);
     const isCompact = useCompact();
     const [isExpanded, setIsExpanded] = useState(false);
     const header = useDatasetControlHeader();
     const isTakingOver = isCompact && isExpanded;
-    const styles = useMemo(() => getQuickFindUiStyles(isTakingOver), [isTakingOver]);
+    const styles = useMemo(() => getDatasetControlUiQuickFindStyles(isTakingOver), [isTakingOver]);
 
     useEffect(() => {
         if (!isCompact) {
@@ -76,7 +76,7 @@ export const QuickFind = (props: IQuickFindUiProps) => {
     if (isCompact && !isExpanded) {
         return components.onRenderContainer({
             className: styles.compactQuickFind,
-            children: <QuickFindCompactButton
+            children: <DatasetControlUiQuickFindCompactButton
                 text={props.placeholder}
                 hasValue={!!props.value}
                 disabled={props.disabled || props.columns.length === 0}
@@ -104,7 +104,7 @@ export const QuickFind = (props: IQuickFindUiProps) => {
                 deleteButtonProps: props.value ? { key: 'clear', iconProps: { iconName: 'Cancel' }, onClick: clear } : undefined,
                 suffixItems: [{ key: 'search', iconProps: { iconName: 'Search' }, onClick: search }],
             })}
-            {isCalloutVisible && (props.columns.length > 0 || props.isLikeQuery) && <QuickFindCallout
+            {isCalloutVisible && (props.columns.length > 0 || props.isLikeQuery) && <DatasetControlUiQuickFindCallout
                 target={`#${id}`}
                 columns={props.columns}
                 isLikeQuery={props.isLikeQuery}

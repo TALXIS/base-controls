@@ -203,7 +203,7 @@ const OWN_MODULE_CODE = createGanttCode({
 const fiscalScaleModule: IGanttModule = {
     name: 'fiscalScale',
     onLoad: gantt => {
-        gantt.services.observe('zooming', (zooming: any) => zooming.registerScaleLabel((result: { label: string }, cell: { date: Date, unit: string }) => {
+        gantt.services.observe('zooming', (zooming: any) => zooming.addScaleLabelHook((result: { label: string }, cell: { date: Date, unit: string }) => {
             if (cell.unit === 'quarter') {
                 const month = cell.date.getMonth()
                 const fiscalYear = month >= 6 ? cell.date.getFullYear() + 1 : cell.date.getFullYear()
@@ -221,7 +221,7 @@ const criticalTasksModule: IGanttModule = {
     //runs on every mount, before the chart is drawn
     onLoad: gantt => {
         //the tasks service comes with the chart, so observe it
-        gantt.services.observe('tasks', (tasks: any) => tasks.registerTask((task: any, { record }: { record: IRecord }) => {
+        gantt.services.observe('tasks', (tasks: any) => tasks.addTaskHook((task: any, { record }: { record: IRecord }) => {
             if (Number(record.getValue('priority')) === 3) {
                 task.color = '#d13438'
             }

@@ -21,7 +21,7 @@ const GridExample = () => {
         <Stack horizontal tokens={{ childrenGap: 8 }}>
             <DefaultButton text='Set the phone' onClick={() => apiRef.current?.getField('telephone1').setValue('+420 800 123 456')} />
             <DefaultButton text='Show the data' onClick={() => write(JSON.stringify(apiRef.current?.getData()))} />
-            <DefaultButton text='Load again' onClick={() => apiRef.current?.refresh()} />
+            <DefaultButton text='Load again' onClick={() => apiRef.current?.reload()} />
         </Stack>
         {/* every event of Form.Root, written to the log */}
         <Form.Root
@@ -32,7 +32,7 @@ const GridExample = () => {
             onBeforeSave={() => write('onBeforeSave')}
             onAfterSave={({ success }) => write(\`onAfterSave: \${success ? 'saved' : 'not saved'}\`)}
             onValidationSummaryChanged={summary => write(\`onValidationSummaryChanged: \${summary.length} errors\`)}
-            onError={(_, message) => write(\`onError: \${message}\`)}>
+            onError={message => write(\`onError: \${message}\`)}>
             <Form.Ribbon />
             <Form.Notifications />
             <Form.Section label='Account' layout={{ lg: 2 }}>
@@ -60,7 +60,7 @@ const SaveBar = () => {
     React.useEffect(() => form.events.addEventListener('onDirtyStateChanged', setIsDirty), [form])
 
     //asks before every save
-    React.useEffect(() => form.registerSaveBlocker(async request => {
+    React.useEffect(() => form.addSaveBlocker(async request => {
         const { confirmed } = await navigation.openConfirmDialog({ text: \`Save the changes to \${form.getRecord().getValue('name')}?\` })
         request.isBlocked = !confirmed
     }), [form])

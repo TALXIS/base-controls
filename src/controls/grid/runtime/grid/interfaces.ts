@@ -1,11 +1,11 @@
 import type { IEventSubscriber, IRuntime } from "@core";
 import type { ILabels, ILabelSet, Labels } from "@labels";
-import type { IGridEventHandlers, IGridModuleLocator, IGridOpenRecordParams } from "../../interfaces";
+import type { IGridEventProps, IGridModuleLocator, IGridOpenRecordParameters } from "../../interfaces";
 import type { IGridServiceLocator, IGridServiceMap } from "../interfaces";
 import type { GridAgGridInitialOptionsHook, GridAgGridOptionsHook } from "./GridRuntime";
 
 /** What the grid raises while it shows data; its mount's events are on `lifecycle`. */
-export interface IGridEvents extends Pick<IGridEventHandlers, 'onDataLoaded'> { }
+export interface IGridEvents extends Pick<IGridEventProps, 'onDataLoaded'> { }
 
 /** The running grid: what `onSetup` and `onLoad` hand you, and what a module's `onLoad` gets. */
 export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> extends IRuntime {
@@ -16,23 +16,23 @@ export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> exte
     /** The modules the grid was given, by name. */
     readonly modules: IGridModuleLocator;
     /**
-     * Registers a hook over the options AG Grid reads only once, when it is created.
+     * Adds a hook over the options AG Grid reads only once, when it is created.
      *
-     * @param priority Ascending: a higher number gets the later word.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerAgGridInitialOptions(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
+    addAgGridInitialOptionsHook(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
     /**
-     * Registers a hook over options re-applied whenever a value's reference changes.
+     * Adds a hook over options re-applied whenever a value's reference changes.
      *
-     * @param priority Ascending: a higher number gets the later word.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerAgGridOptions(hook: GridAgGridOptionsHook, priority?: number): () => void;
+    addAgGridOptionsHook(hook: GridAgGridOptionsHook, priority?: number): () => void;
     /** The strings of one set, as the grid's labelsService resolves them. */
     getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** Runs the option hooks again and hands AG Grid the ones that changed. */
     refreshAgGridOptions(): void;
     /** Opens a record as the grid does, through `onOpenRecord` when the grid has one. */
-    openRecord(params: IGridOpenRecordParams): void;
+    openRecord(parameters: IGridOpenRecordParameters): void;
 }
 
 declare module "@controls/dataset-control/runtime/interfaces" {

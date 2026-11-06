@@ -24,7 +24,7 @@ export const getNestedControlStyles = (isBaseControl: boolean) => {
     })
 }
 
-export const getInternalNestedControlStyles = () => {
+export const getNestedControlRendererInternalStyles = () => {
     return mergeStyleSets({
         nestedControlContainer: {
             ...FLEX_STYLE

@@ -1,7 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
 /** The class every cell's body carries. */
-export const CELL_CONTAINER_CLASS_NAME = 'talxis__baseControl__GridCellBody';
+export const CELL_CONTAINER_CLASS = 'talxis__baseControl__GridCellBody';
 
 export const getCellUiContainerStyles = (theme: ITheme) => mergeStyleSets({
     //the container sits between `.ag-cell` and the cell's content

@@ -3,7 +3,7 @@ import { CELL_VALUE_PADDING } from "../../../constants";
 
 const GAP = 4;
 
-export const getLookupManyPillsStyles = () => {
+export const getLookupManyUiPillsStyles = () => {
     return mergeStyleSets({
         root: {
             position: 'relative',

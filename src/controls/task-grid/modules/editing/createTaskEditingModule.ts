@@ -1,4 +1,4 @@
-import { createEditingModule, IEditingModule, IEditingModuleOptions } from "@controls/grid";
+import { createEditingModule, IEditingModule, IEditingModuleParameters } from "@controls/grid";
 
 declare const TASK_EDITING: unique symbol;
 
@@ -8,8 +8,8 @@ export interface ITaskEditingModule extends IEditingModule {
 }
 
 /** Lets the task grid's cells be edited, saving each edit straight away. */
-export const createTaskEditingModule = (parameters?: Omit<IEditingModuleOptions, 'autoSave'>): ITaskEditingModule => {
-    return createEditingModule({ ...parameters, autoSave: true }) as ITaskEditingModule;
+export const createTaskEditingModule = (parameters?: Omit<IEditingModuleParameters, 'autoSave'>): ITaskEditingModule => {
+    return createEditingModule({ ...parameters, enableAutoSave: true }) as ITaskEditingModule;
 };
 
 declare module "@controls/task-grid/interfaces" {

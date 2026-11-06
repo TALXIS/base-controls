@@ -1,1 +1,1 @@
-export * from './EditColumnsColumnSelector';
+export * from './DatasetControlUiEditColumnsColumnSelector';

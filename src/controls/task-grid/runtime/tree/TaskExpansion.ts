@@ -32,7 +32,7 @@ export interface ITaskExpansion {
 export interface ITaskExpansionParameters {
     provider: ITaskDataProvider;
     expandedIds: string[];
-    onIsFlatList: () => boolean;
+    isFlatList: () => boolean;
     onExpandedIdsChanged: (expandedIds: string[]) => void;
 }
 
@@ -44,7 +44,7 @@ interface IDisplayedParent {
 
 export class TaskExpansion implements ITaskExpansion {
     private _provider: ITaskDataProvider;
-    private _onIsFlatList: () => boolean;
+    private _isFlatList: () => boolean;
     private _onExpandedIdsChanged: (expandedIds: string[]) => void;
     private _intent = new Map<string, boolean>();
     private _gridApi?: GridApi<IRecord>;
@@ -54,7 +54,7 @@ export class TaskExpansion implements ITaskExpansion {
 
     constructor(parameters: ITaskExpansionParameters) {
         this._provider = parameters.provider;
-        this._onIsFlatList = parameters.onIsFlatList;
+        this._isFlatList = parameters.isFlatList;
         this._onExpandedIdsChanged = parameters.onExpandedIdsChanged;
         for (const recordId of parameters.expandedIds) {
             this._intent.set(recordId, true);
@@ -68,7 +68,7 @@ export class TaskExpansion implements ITaskExpansion {
     }
 
     public isExpanded(recordId: string): boolean {
-        if (this._onIsFlatList()) {
+        if (this._isFlatList()) {
             return false;
         }
         const view = this._provider.getRecordTree().view;
@@ -140,7 +140,7 @@ export class TaskExpansion implements ITaskExpansion {
 
     private _getDisplayedParents(): IDisplayedParent[] {
         const parents: IDisplayedParent[] = [];
-        if (this._onIsFlatList()) {
+        if (this._isFlatList()) {
             return parents;
         }
         const view = this._provider.getRecordTree().view;

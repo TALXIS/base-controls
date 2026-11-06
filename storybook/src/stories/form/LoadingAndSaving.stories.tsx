@@ -26,25 +26,25 @@ A form does not fetch data itself: you hand it a record, and it edits that recor
 | \`columns\` | The fields, as a data provider's columns: see [**Data providers**](?path=/docs/concepts-data-providers--overview). |
 | \`data\` | The values by column name, as Dataverse returns a record. |
 | \`metadata\` | \`PrimaryIdAttribute\` and \`PrimaryNameAttribute\`, the columns of the record's id and name. |
-| \`onSave\` | Optional. Called with the record on every save, before the change is committed; without it, a save only commits in memory. |
+| \`save\` | Optional. Called with the record on every save, before the change is committed; without it, a save only commits in memory. |
 
-\`onSave\` resolves \`{ recordId, success, fields, errors? }\`, where \`fields\` names the columns the save wrote and each error is \`{ fieldName?, message }\`. An \`onSave\` that throws fails the save, with the error's message as its error.
+\`save\` resolves \`{ recordId, success, fields, errors? }\`, where \`fields\` names the columns the save wrote and each error is \`{ fieldName?, message }\`. An \`save\` that throws fails the save, with the error's message as its error.
 
 ## Save the record
 
-**Save** on the ribbon, \`autoSave\` and \`save()\` from your code all save the same way. Every field of the record is checked first, and one that fails stops the save, as [**Fields and validation**](?path=/docs/controls-form-fields-and-validation--overview) describes. The record then saves through its provider: a save that succeeds commits the change, and one that fails commits nothing and shows its errors in \`Form.Notifications\`, an error with a \`fieldName\` after its column's display name.
+**Save** on the ribbon, \`enableAutoSave\` and \`save()\` from your code all save the same way. Every field of the record is checked first, and one that fails stops the save, as [**Fields and validation**](?path=/docs/controls-form-fields-and-validation--overview) describes. The record then saves through its provider: a save that succeeds commits the change, and one that fails commits nothing and shows its errors in \`Form.Notifications\`, an error with a \`fieldName\` after its column's display name.
 
 \`Form.Ribbon\` takes an \`onSave\` of its own, which its **Save** calls in place of saving. The events before and after every save are on [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
 
 ## Save as you go
 
-With \`autoSave\`, the form saves each change as soon as it reaches the record; a text field hands its value over as the user leaves it. Values set together are saved once, a change made while a save runs is saved after it, and each save checks the fields as **Save** does. \`autoSave\` is read at mount.
+With \`enableAutoSave\`, the form saves each change as soon as it reaches the record; a text field hands its value over as the user leaves it. Values set together are saved once, a change made while a save runs is saved after it, and each save checks the fields as **Save** does. \`enableAutoSave\` is read at mount.
 
 {{story: Save as you go}}
 
 ## Edit a record you already have
 
-A record of a grid, or of any other data provider, goes to \`onLoad\` as it is and saves through that provider. \`onLoad\` runs only at mount and on \`refresh()\`, so to show another record, give the form a new \`key\` to mount it anew.
+A record of a grid, or of any other data provider, goes to \`onLoad\` as it is and saves through that provider. \`onLoad\` runs only at mount and on \`reload()\`, so to show another record, give the form a new \`key\` to mount it anew.
 
 {{story: Switch records}}
 
@@ -57,7 +57,7 @@ const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The record loads', hook: 'onLoad', text: 'A placeholder stands in for the form while `onLoad` resolves `{ record }`; when it throws, `onError` gets the error and the placeholder stays.' },
     { title: 'The form is ready', hook: 'onFormReady', text: 'The parts draw over the record, and `onFormReady` gets an `IFormApi` for your code.' },
     { title: 'The user edits and saves', hook: 'onAfterSave', text: 'Every change is made on the record itself, and each save goes through the record\'s provider.' },
-    { title: 'The record loads again', hook: 'refresh()', text: '`refresh()` runs `onLoad` again behind the placeholder and draws the record it returns anew, unsaved changes included, with a new api for `onFormReady`.' },
+    { title: 'The record loads again', hook: 'reload()', text: '`reload()` runs `onLoad` again behind the placeholder and draws the record it returns anew, unsaved changes included, with a new api for `onFormReady`.' },
     { title: 'The form unmounts', text: 'The form stops following the record and leaves it as it is, unsaved changes included.' },
 ]
 

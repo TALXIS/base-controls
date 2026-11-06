@@ -146,11 +146,11 @@ const GridExample = () => {
             <Grid
                 modules={[
                     createClientSideRowModelModule(),
-                    createEditingModule({ autoSave: true }),
+                    createEditingModule({ enableAutoSave: true }),
                     createLegacyClientApiCompatibilityModule(),
                     stockScript,
                 ]}
-                colDefs={{ discontinued: { context: { cell: { oneClickEdit: true } } } }}
+                colDefs={{ discontinued: { context: { cell: { enableOneClickEdit: true } } } }}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -178,7 +178,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
         <Grid
             modules={[
                 createClientSideRowModelModule(),
-                createEditingModule({ autoSave: true }),
+                createEditingModule({ enableAutoSave: true }),
                 createLegacyClientApiCompatibilityModule(),
                 triageScript,
             ]}

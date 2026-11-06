@@ -1,21 +1,21 @@
 import { useTheme } from "@theme";
 import { useMemo } from "react";
 
-import { DependencyCountComponents, IDependencyCountComponents } from "./components";
-import { getDependencyCountStyles } from "./styles";
+import { DependenciesUiCountComponents, IDependenciesUiCountComponents } from "./components";
+import { getDependenciesUiCountStyles } from "./styles";
 
-export interface IDependencyCountProps {
+export interface IDependenciesUiCountProps {
     direction: 'predecessors' | 'successors';
     count: number;
-    components?: Partial<IDependencyCountComponents>;
+    components?: Partial<IDependenciesUiCountComponents>;
 }
 
 /** How many dependencies a task has in one direction. */
-export const DependencyCount = (props: IDependencyCountProps) => {
+export const DependenciesUiCount = (props: IDependenciesUiCountProps) => {
     const { direction, count } = props;
-    const components = { ...DependencyCountComponents, ...props.components };
+    const components = { ...DependenciesUiCountComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getDependencyCountStyles(theme), [theme]);
+    const styles = useMemo(() => getDependenciesUiCountStyles(theme), [theme]);
 
     if (count === 0) {
         return null;

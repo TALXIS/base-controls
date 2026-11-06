@@ -32,7 +32,7 @@ const GridExample = () => {
         createIndexedDbCustomColumnsModule({ databaseName: 'taskGridDocs.showcase.columns', columns: [{ displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }], enableCreation: true, enableDeletion: true }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: LOOKUP_MANY_VALUES }),
         createMemoryTemplatesModule({ database, templates: TEMPLATES }),
-        createMemoryChecklistModule({ items: CHECKLIST_ITEMS }),
+        createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS }),
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
     ], [database])
 
@@ -75,7 +75,7 @@ const GridExample = () => {
         //a module of the control, loaded before onLoad
         const taskRuntime = control.modules.get('taskRuntime')
         return {
-            provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
+            provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
             fieldMapping,
         }
     }
@@ -131,7 +131,7 @@ const GridExample = () => {
     const loadTasks = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
         const taskRuntime = control.modules.get('taskRuntime')
         return {
-            provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: COLUMNS }) }),
+            provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: COLUMNS }) }),
             fieldMapping,
         }
     }
@@ -300,7 +300,7 @@ const GridExample = () => {
             runtimeRef.current = taskRuntime
         })
         //the part exists once TaskDatasetControl.Settings mounts
-        control.parts.observe('taskSettings', (settings: any) => settings.registerSettings((items: any[]) => items.push({
+        control.parts.observe('taskSettings', (settings: any) => settings.addSettingsHook((items: any[]) => items.push({
             key: 'showButtons',
             label: 'Show the buttons',
             isChecked: showButtonsRef.current,
@@ -373,7 +373,7 @@ const fieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'sta
 export const loadTasks = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
     const taskRuntime = control.modules.get('taskRuntime')
     return {
-        provider: createDataverseTaskDataSource({ taskRuntime, onCreateStore: () => new DataverseTaskStore({ taskRuntime, fetchXml: TASKS_FETCH_XML }) }),
+        provider: createDataverseTaskProvider({ taskRuntime, createStore: () => new DataverseTaskStore({ taskRuntime, fetchXml: TASKS_FETCH_XML }) }),
         fieldMapping,
     }
 }

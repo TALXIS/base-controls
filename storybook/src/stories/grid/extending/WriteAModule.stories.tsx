@@ -43,7 +43,7 @@ Add the name to \`IGridModuleMap\` once in your project, next to the module, and
 
 ## Draw inside the grid
 
-The grid's \`surfaces\` service holds what the grid draws inside its own element, after the rows. \`grid.services.get('surfaces').registerSurface(hook, priority?)\` adds to it: the hook pushes \`{ key, onRender }\`, and \`onRender\` returns what to draw, or \`null\` while there is nothing to show. What it draws is inside the grid's React tree, so it can call \`useGridService\` and \`useGridModule\`, and it follows its own state, as the bar subscribes to its module.
+The grid's \`surfaces\` service holds what the grid draws inside its own element, after the rows. \`grid.services.get('surfaces').addSurfacesHook(hook, priority?)\` adds to it: the hook pushes \`{ key, onRender }\`, and \`onRender\` returns what to draw, or \`null\` while there is nothing to show. What it draws is inside the grid's React tree, so it can call \`useGridService\` and \`useGridModule\`, and it follows its own state, as the bar subscribes to its module.
 
 A block, such as the bar, makes a grid without \`height\` taller, while callouts, panels and dialogs take no room. For those, use Base Controls' \`Callout\`, \`Panel\` or \`Dialog\` so they draw in the app theme: see [**Fluent UI**](?path=/docs/concepts-fluent-ui--overview).
 

@@ -9,7 +9,7 @@ import { createSortingModule } from "@controls/grid/modules/sorting/createSortin
 import type { IGridComponents } from "@controls/grid/components";
 import type { IRibbonComponents } from "@controls/ribbon/components";
 import type { IDatasetControlComponents } from "../../../../adapters/root/components";
-import type { IBodyUiComponents, IFooterUiComponents, IHeaderUiComponents, IPaginationUiComponents, IQuickFindUiComponents } from "../../../../ui";
+import type { IDatasetControlUiBodyComponents, IDatasetControlUiFooterComponents, IDatasetControlUiHeaderComponents, IDatasetControlUiPaginationComponents, IDatasetControlUiQuickFindComponents } from "../../../../ui";
 import { Root as DatasetControl } from "../../../../adapters/root/Root";
 import { Body } from "../../../../adapters/body/Body";
 import { Footer } from "../../../../adapters/footer/Footer";
@@ -24,12 +24,12 @@ import { getManageViewsStyles } from "./styles";
 export interface IManageViewsComponents {
     /** The control the views are listed in, and its parts by name. */
     datasetControl?: IDatasetControlComponents & {
-        header?: Partial<IHeaderUiComponents>;
-        body?: Partial<IBodyUiComponents>;
-        footer?: Partial<IFooterUiComponents>;
+        header?: Partial<IDatasetControlUiHeaderComponents>;
+        body?: Partial<IDatasetControlUiBodyComponents>;
+        footer?: Partial<IDatasetControlUiFooterComponents>;
         ribbon?: IRibbonComponents;
-        quickFind?: Partial<IQuickFindUiComponents>;
-        pagination?: Partial<IPaginationUiComponents>;
+        quickFind?: Partial<IDatasetControlUiQuickFindComponents>;
+        pagination?: Partial<IDatasetControlUiPaginationComponents>;
     };
     /** The grid of the views. */
     grid?: IGridComponents;

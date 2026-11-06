@@ -109,7 +109,7 @@ If not, delete it.
 | `ui` | UI that takes only props, shared by more than one widget |
 | `fields` | Field controls and the nested control renderer |
 | `data` | Data provider context |
-| `controls` | Widgets: `ribbon` → `dataset-control` → `grid` → `check-list`/`task-grid`; `form`, `map`, `isolated-frame` |
+| `controls` | Widgets: `ribbon` → `dataset-control` → `grid` → `checklist`/`task-grid`; `form`, `map`, `isolated-frame` |
 | `pcf/entries` | PCF entry points that render the controls from a PCF's `init`/`updateView` |
 | `labels/sets` | Every part's label sets gathered (`BASE_CONTROLS_LABEL_SETS`, `CZECH_LABELS`); the top layer |
 
@@ -137,6 +137,108 @@ If not, delete it.
 | `labels/` | `en.ts` defines the labels, one file per translation (`cs.ts`), `index.ts` exports them |
 
 Every folder with labels keeps them in a `labels/` folder, never as loose files.
+
+## Vocabulary
+
+One meaning per word, one word per meaning. A new name follows these tables; an external API keeps its own.
+
+### Things
+
+| Word | Means |
+|---|---|
+| runtime | A widget's state and logic with a lifecycle: `I<Widget>` (`IGrid`), class `<Widget>Runtime`, wider side `I<Widget>Internal` |
+| module | An optional feature loaded through `modules`; a `modules/` folder holds only modules |
+| part | A named piece of a widget: its UI and, optionally, the runtime object it provides |
+| service | An object a runtime provides by key on its `services` |
+| hook | A priority-ordered function that shapes a result; React hooks are `use…` and never called "hook" |
+| slot | One replaceable piece of a `components` prop |
+| surface | Something a module draws over or inside its host |
+| store | Where something is kept: `IStateStore`, or a module's backend `I…Store` |
+| provider | `IDataProvider`, or a React context provider; never "data source" |
+| context | Only PCF, Xrm and React contexts, and AG Grid's `colDef.context` |
+
+### Inputs
+
+| Shape | Name |
+|---|---|
+| React component props | `I<Component>Props`, `props` |
+| Any other input bag: constructor, factory, hook arguments, control inputs | `I<Thing>Parameters`, `parameters` |
+| `Options` | Only Dataverse option sets and AG Grid's `GridOptions` |
+| `Settings` | Only a runtime's resolved flags (`IGridSettings`) |
+| `Config` | Only dhtmlx's `gantt.config` |
+| `Params` | Only AG Grid's own `…Params` and types that extend them (`IGridCellParams`) |
+
+### Functions handed to the library
+
+Ask who calls it and when:
+
+| Kind | Name |
+|---|---|
+| Plugged into another object's lifecycle, run once at a fixed point | `on<Stage>`: `onSetup`, `onLoad`, `onInit`, `onDestroy` |
+| Notified that something happened; the return value is ignored | `on<Event>` |
+| A render slot | `onRender<Slot>` |
+| A method of an object you implement, called on request | a plain verb: `load`, `saveTask`, `deleteTasks` |
+| Answers a question | `get…`, `is…`, `can…` |
+| Makes something | `create…` |
+| A per-column hook on a column definition | `<thing>Hook` |
+
+The owner's trigger is the verb, and the logic plugged into it is `on<Verb>`: `lifecycle.init()` runs `onInit`.
+A private field that holds or implements a callback is `_on<What>`.
+
+### Extending
+
+| Verb | Means | Returns |
+|---|---|---|
+| `add<Thing>Hook(hook, priority?)` | Adds a priority-ordered hook typed `<Host><Thing>Hook` | its remover |
+| `add<Thing>(thing)` | Adds an unordered contributor: a blocker, matcher, handler | its remover |
+| `define<Thing>(…)` | Registers globally for good, like `defineLabels` | — |
+
+`register` is used only by the `ServiceLocator`. A `priority` is documented as
+`@param priority Ascending: a higher number runs later.`
+
+### Lifecycle verbs
+
+| Verb | Means |
+|---|---|
+| `init()` | Only `RuntimeLifecycle` and the PCF contract |
+| `configure(…)` | Sets something up before it loads |
+| `load()` / `reload()` | Gets from the source: runs `onLoad`, or fetches |
+| `refresh…()` | Re-applies hooks to what is loaded; `IDataProvider.refresh()` is the external exception |
+| `render()` | Redraws |
+| `remount()` | Drops the runtime and builds a new one |
+| `mount(container)` | Attaches to a DOM element |
+| `attach(x)` | Connects to something and returns its detach |
+| `destroy()` | Tears down |
+
+### Events
+
+| Kind | Name |
+|---|---|
+| A fact | `on<Subject><Participle>`: `onTasksCreated`, `onDestroyed` |
+| A state change | `on<Subject>Changed` |
+| An ask | `on<Verb>Requested` |
+| A failure | `on<Verb>Failed` |
+| A pair | `onBefore<Verb>` / `onAfter<Verb>`, the verb stem |
+| A map a runtime emits | `I<Owner>Events` |
+| A map bridged to props | `I<Widget>EventProps` |
+
+- One event name has one signature everywhere.
+- A public interface exposes `readonly events: IEventSubscriber<…>`; `IEventEmitter` stays private.
+- An event's TSDoc reads `Fires when …`.
+
+### Other names
+
+| Kind | Rule |
+|---|---|
+| Feature flag | `enable<Feature>`, read back as `is<Feature>Enabled()` |
+| State on a data object | A bare adjective: `disabled`, `hidden` |
+| Predicate | Returns a boolean; anything else is a `get…` |
+| A widget's or module's UI | Namespace `<Area>Ui`, component `<Area>Ui<Part>`; the shared `ui` layer keeps plain names |
+| React accessor | `use<Thing>()` throws outside its provider, `useOptional<Thing>()` returns `undefined` |
+| React context hook | `use<Thing>Context()` only when it hands back the whole context value |
+| Wider in-library interface | `…Internal`, always a suffix |
+| CSS class constant | `…_CLASS` |
+| Spelling | `checklist`, one word |
 
 ## Component codestyle
 

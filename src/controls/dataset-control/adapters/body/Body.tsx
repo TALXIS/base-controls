@@ -1,4 +1,4 @@
-import { DatasetControlUi, IBodyUiComponents } from "../../ui";
+import { DatasetControlUi, IDatasetControlUiBodyComponents } from "../../ui";
 
 /** Props for `DatasetControl.Body`. */
 export interface IBodyProps {
@@ -7,7 +7,7 @@ export interface IBodyProps {
     /** Added to the body's box. */
     className?: string;
     /** Replacements for the body's slots. */
-    components?: Partial<IBodyUiComponents>;
+    components?: Partial<IDatasetControlUiBodyComponents>;
 }
 
 /** What fills the height the header and footer leave, usually the grid. */

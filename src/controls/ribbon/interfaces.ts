@@ -7,7 +7,7 @@ export interface IRibbonCommandBase {
     /** A Fluent icon name. */
     iconName?: string;
     /** The ribbon also disables an action while it runs. */
-    isDisabled?: boolean;
+    disabled?: boolean;
 }
 
 /** A command the ribbon runs when clicked. */

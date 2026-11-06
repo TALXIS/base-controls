@@ -1,4 +1,4 @@
-import { DatasetControlUi, IHeaderStartUiComponents } from "../../ui";
+import { DatasetControlUi, IDatasetControlUiHeaderStartComponents } from "../../ui";
 import { DatasetControlRegionContext } from "../region";
 
 /** Props for `DatasetControl.Header.Start`. */
@@ -8,7 +8,7 @@ export interface IHeaderStartProps {
     /** Added to the region's box. */
     className?: string;
     /** Replacements for the region's slots. */
-    components?: Partial<IHeaderStartUiComponents>;
+    components?: Partial<IDatasetControlUiHeaderStartComponents>;
 }
 
 /** The header's left region, such as for the view switcher. */

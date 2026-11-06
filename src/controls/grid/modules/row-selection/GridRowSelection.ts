@@ -6,8 +6,8 @@ import { SELECTION_COLUMN_KEY } from "./constants";
 import { IGridRowSelectionServiceLocator } from "./runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
 import { IGridAgGridOptions } from "../../runtime/grid";
-import { CELL_COMMANDS_CLASS_NAME } from "../../ui/cells/commands/styles";
-import { GROUPING_TOGGLE_CLASS_NAME } from "../grouping/ui/toggle/styles";
+import { CELL_COMMANDS_CLASS } from "../../ui/cells/commands/styles";
+import { GROUPING_TOGGLE_CLASS } from "../grouping/ui/toggle/styles";
 
 declare module "../../interfaces" {
     interface IGridModuleMap {
@@ -26,28 +26,28 @@ export interface IGridRecordsSelection {
     isCancelled: boolean;
 }
 
-export interface IGridSelectRecordsContext {
+export interface IGridSelectRecordsHookParameters {
     /** The provider the selection is written to. */
     provider: IDataProvider;
 }
 
 /** Runs before a selection is written, awaited in priority order. */
-export type GridSelectRecordsHook = (selection: IGridRecordsSelection, context: IGridSelectRecordsContext) => void | Promise<void>;
+export type GridSelectRecordsHook = (selection: IGridRecordsSelection, parameters: IGridSelectRecordsHookParameters) => void | Promise<void>;
 
 export interface IGridSelectionStateResult {
     state: IGridRowSelectionState;
 }
 
-export interface IGridSelectionStateContext {
+export interface IGridSelectionStateHookParameters {
     node: IRowNode<IRecord>;
     record: IRecord;
 }
 
 /** Adjusts how a row's checkbox reads, starting from whether the row is selected. */
-export type GridSelectionStateHook = (result: IGridSelectionStateResult, context: IGridSelectionStateContext) => void;
+export type GridSelectionStateHook = (result: IGridSelectionStateResult, parameters: IGridSelectionStateHookParameters) => void;
 
 export interface IGridRowSelectionEvents {
-    /** Fired when the selected records change, with the ids now selected. */
+    /** Fires when the selected records change, with the ids now selected. */
     onSelectionChanged: (selectedRecordIds: string[]) => void;
 }
 
@@ -65,12 +65,12 @@ export interface IGridRowSelection {
     readonly events: IEventSubscriber<IGridRowSelectionEvents>;
     /** How many rows may be selected at once. */
     getMode(): 'single' | 'multiple';
-    /** Selects the records, through the `registerSelectRecords` hooks. */
+    /** Selects the records, through the `addSelectRecordsHook` hooks. */
     selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void>;
-    /** Selects the record, or deselects it, through the `registerSelectRecords` hooks. */
+    /** Selects the record, or deselects it, through the `addSelectRecordsHook` hooks. */
     toggleRecord(record: IRecord): Promise<void>;
-    registerSelectRecords(hook: GridSelectRecordsHook, priority?: number): () => void;
-    registerSelectionState(hook: GridSelectionStateHook, priority?: number): () => void;
+    addSelectRecordsHook(hook: GridSelectRecordsHook, priority?: number): () => void;
+    addSelectionStateHook(hook: GridSelectionStateHook, priority?: number): () => void;
     /** Whether the column carrying the checkboxes is this one. */
     isSelectionColumn(columnName: string | undefined): boolean;
     /** How a row's checkbox should read. */
@@ -94,20 +94,20 @@ export class GridRowSelection implements IGridRowSelection {
         this._services = parameters.services;
         this._mode = parameters.mode;
         this._services.get('gridServices').observe('gridApi', () => this._onGridApiAvailable());
-        this._registerEvents(parameters);
-        this._registerHooks();
+        this._addEventListeners(parameters);
+        this._addHooks();
     }
 
     public getMode(): 'single' | 'multiple' {
         return this._mode;
     }
 
-    public registerSelectRecords(hook: GridSelectRecordsHook, priority?: number): () => void {
-        return this._selectRecordsHooks.register(hook, priority);
+    public addSelectRecordsHook(hook: GridSelectRecordsHook, priority?: number): () => void {
+        return this._selectRecordsHooks.add(hook, priority);
     }
 
-    public registerSelectionState(hook: GridSelectionStateHook, priority?: number): () => void {
-        return this._selectionStateHooks.register(hook, priority);
+    public addSelectionStateHook(hook: GridSelectionStateHook, priority?: number): () => void {
+        return this._selectionStateHooks.add(hook, priority);
     }
 
     public toggleRecord(record: IRecord): Promise<void> {
@@ -154,18 +154,18 @@ export class GridRowSelection implements IGridRowSelection {
         return provider.getSummarizationType() === 'grouping' && this._mode === 'single';
     }
 
-    private _registerEvents(parameters: IGridRowSelectionParameters): void {
+    private _addEventListeners(parameters: IGridRowSelectionParameters): void {
         if (parameters.onSelectionChanged) {
             this.events.addEventListener('onSelectionChanged', parameters.onSelectionChanged);
         }
     }
 
-    private _registerHooks(): void {
+    private _addHooks(): void {
         const gridServices = this._services.get('gridServices');
-        gridServices.get('columns').registerColumnDefinitions(this._onColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection);
+        gridServices.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection);
         //last, so it reaches the columns the caller's `colDefs` add or replace
-        gridServices.get('columns').registerColumnDefinitions(this._onGateClickSelection, Number.MAX_SAFE_INTEGER);
-        gridServices.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowSelection);
+        gridServices.get('columns').addColumnDefinitionsHook(this._onGateClickSelection, Number.MAX_SAFE_INTEGER);
+        gridServices.get('grid').addAgGridOptionsHook(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowSelection);
     }
 
     //the checkboxes are drawn by the selection column, not by AG Grid
@@ -201,7 +201,7 @@ export class GridRowSelection implements IGridRowSelection {
         if (event.type !== 'click') {
             return false;
         }
-        const isCommand = !!(event.target as HTMLElement).closest?.(`.${CELL_COMMANDS_CLASS_NAME}, .${GROUPING_TOGGLE_CLASS_NAME}`);
+        const isCommand = !!(event.target as HTMLElement).closest?.(`.${CELL_COMMANDS_CLASS}, .${GROUPING_TOGGLE_CLASS}`);
         const hasModifier = event.ctrlKey || event.metaKey || event.shiftKey;
         const isGroupRow = !!this._services.get('gridServices').get('grid').modules.find('grouping')?.isGroupRow(params.node);
         return this.isSelectionColumn(params.column?.getColId()) || isCommand || (isGroupRow && !hasModifier);

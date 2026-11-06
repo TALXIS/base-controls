@@ -3,11 +3,11 @@ import { Form } from "../../../../Form";
 import { IFormXmlTab } from "../../runtime/form-xml-form";
 import { getXrmTabGridTemplateColumns } from "./getXrmTabGridTemplateColumns";
 import { XrmSection } from "../xrm-section";
-import { useTab } from "./useTab";
+import { useXrmTab } from "./useXrmTab";
 
 
 export const XrmTab = ({ tab, id, label }: { tab: IFormXmlTab, id: string, label?: string }) => {
-    tab = useTab(tab);
+    tab = useXrmTab(tab);
     const columns = tab.getColumns();
     const [gridTemplateColumnsOverride, setGridTemplateColumnsOverride] = React.useState<string>();
 

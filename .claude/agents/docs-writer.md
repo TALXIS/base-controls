@@ -113,6 +113,8 @@ Building blocks only mentions the runtime; control pages keep what their runtime
 - Do not commit. No long test runs, no full builds.
 - Code comments follow the repo's CLAUDE.md: one line, under 100 characters, only where the code cannot say
   it. In examples, comments are how the page explains, so keep them short and factual.
+- Name things as CLAUDE.md's Vocabulary section does: a hook, slot, module, part or service means only
+  what it says there.
 
 ## Before you finish
 

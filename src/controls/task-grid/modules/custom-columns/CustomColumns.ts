@@ -5,28 +5,28 @@ import { ErrorHelper } from "@core";
 import { type LabelsOf } from "@labels";
 import type { ITaskDataProvider } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
-import { TaskColumnValues } from "../column-values";
+import { TaskColumnValues } from "../../runtime/column-values";
 import { CUSTOM_COLUMNS_LABELS } from "./labels";
 
 /** Where custom column definitions and values are kept. */
 export interface ICustomColumnsStore {
     /** Loads the column definitions on every mount, before the tasks load. */
-    onLoadColumns(): Promise<IColumn[]>;
+    loadColumns(): Promise<IColumn[]>;
     /** The custom columns' values of these tasks, by task id and column name. */
-    onLoadValues(taskIds: string[]): Promise<Map<string, IRawRecord>>;
-    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult>;
+    loadValues(taskIds: string[]): Promise<Map<string, IRawRecord>>;
+    saveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult>;
     /** @returns The new column's name, or `null` when the user cancelled. */
-    onCreateColumn(): Promise<string | null>;
+    createColumn(): Promise<string | null>;
     /** @returns The column's name, or `null` when the user cancelled. */
-    onUpdateColumn(columnName: string): Promise<string | null>;
+    updateColumn(columnName: string): Promise<string | null>;
     /** @returns The column's name, or `null` when the user cancelled. */
-    onDeleteColumn(columnName: string): Promise<string | null>;
+    deleteColumn(columnName: string): Promise<string | null>;
     /** Called as the custom columns go. */
     destroy?(): void;
 }
 
 export interface ICustomColumnsParameters {
-    onCreateStore: (taskRuntime: ITaskRuntime) => ICustomColumnsStore;
+    createStore: (taskRuntime: ITaskRuntime) => ICustomColumnsStore;
     /** The Add custom column command in Edit columns. */
     enableCreation?: boolean;
     /** The edit command on each custom column in Edit columns. */
@@ -58,11 +58,11 @@ export class CustomColumns implements ICustomColumns {
     constructor(taskRuntime: ITaskRuntime, parameters: ICustomColumnsParameters) {
         this._taskRuntime = taskRuntime;
         this._parameters = parameters;
-        this._store = parameters.onCreateStore(taskRuntime);
+        this._store = parameters.createStore(taskRuntime);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => this._columns.map(column => column.name),
-            onLoad: this._loadValues,
+            load: this._loadValues,
             errorMessage: () => this._labels.get('customColumns.loadCustomColumnsFailed'),
         });
     }
@@ -73,7 +73,7 @@ export class CustomColumns implements ICustomColumns {
 
     /** Loads the definitions and plugs the columns into the provider and Edit columns. */
     public async load(): Promise<void> {
-        this._columns = await this._store.onLoadColumns();
+        this._columns = await this._store.loadColumns();
         this._taskRuntime.services.observe('provider', this._onProviderAvailable);
         this._taskRuntime.services.get('datasetControl').parts.observe('editColumns', this._onEditColumnsAvailable);
     }
@@ -99,19 +99,19 @@ export class CustomColumns implements ICustomColumns {
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
-        const unregisters = [
-            provider.registerColumnHandler({
+        const removers = [
+            provider.addColumnHandler({
                 isHandledColumn: columnName => this.isCustomColumn(columnName),
-                onSaveValue: (record, column, value) => this._store.onSaveValue(record, column, value),
+                saveValue: (record, column, value) => this._store.saveValue(record, column, value),
             }),
-            provider.registerAvailableColumns(this._addAvailableColumns),
+            provider.addAvailableColumnsHook(this._addAvailableColumns),
         ];
-        return () => unregisters.forEach(unregister => unregister());
+        return () => removers.forEach(remove => remove());
     };
 
     //a task the store leaves out holds none
     private _loadValues = async (taskIds: string[]): Promise<Map<string, IRawRecord>> => {
-        const loaded = await this._store.onLoadValues(taskIds);
+        const loaded = await this._store.loadValues(taskIds);
         const empty = Object.fromEntries(this._columns.map(column => [column.name, null]));
         return new Map(taskIds.map(taskId => [taskId, { ...empty, ...loaded.get(taskId) }]));
     };
@@ -130,8 +130,8 @@ export class CustomColumns implements ICustomColumns {
     };
 
     private _onEditColumnsAvailable = (editColumns: IDatasetControlEditColumns): void => {
-        editColumns.registerCommands(this._addCommands);
-        editColumns.registerColumnCommands(this._addColumnCommands);
+        editColumns.addCommandsHook(this._addCommands);
+        editColumns.addColumnCommandsHook(this._addColumnCommands);
     };
 
     private _addCommands = (commands: ICommandBarItemProps[], session: DatasetControlEditColumnsSession): void => {
@@ -155,7 +155,7 @@ export class CustomColumns implements ICustomColumns {
 
     private async _createColumn(session: DatasetControlEditColumnsSession): Promise<void> {
         await this._run(async () => {
-            const columnName = await this._store.onCreateColumn();
+            const columnName = await this._store.createColumn();
             if (!columnName) {
                 return;
             }
@@ -169,7 +169,7 @@ export class CustomColumns implements ICustomColumns {
 
     private async _updateColumn(columnName: string, session: DatasetControlEditColumnsSession): Promise<void> {
         await this._run(async () => {
-            if (!await this._store.onUpdateColumn(columnName)) {
+            if (!await this._store.updateColumn(columnName)) {
                 return;
             }
             await this._reloadColumns();
@@ -184,7 +184,7 @@ export class CustomColumns implements ICustomColumns {
             return;
         }
         await this._run(async () => {
-            if (!await this._store.onDeleteColumn(columnName)) {
+            if (!await this._store.deleteColumn(columnName)) {
                 return;
             }
             await this._reloadColumns();
@@ -193,7 +193,7 @@ export class CustomColumns implements ICustomColumns {
     }
 
     private async _reloadColumns(): Promise<void> {
-        this._columns = await this._store.onLoadColumns();
+        this._columns = await this._store.loadColumns();
         await this.reload();
     }
 

@@ -1,7 +1,7 @@
 import { translateLabels } from "@labels";
-import { CHECKLIST_LABELS } from "./en";
+import { TASK_CHECKLIST_LABELS } from "./en";
 
-export const CHECKLIST_LABELS_CS = translateLabels(CHECKLIST_LABELS, {
-    'checklist.checklist': 'Kontrolní seznam',
-    'checklist.loadChecklistFailed': 'Kontrolní seznamy se nepodařilo načíst.',
+export const TASK_CHECKLIST_LABELS_CS = translateLabels(TASK_CHECKLIST_LABELS, {
+    'taskChecklist.checklist': 'Kontrolní seznam',
+    'taskChecklist.loadChecklistFailed': 'Kontrolní seznamy se nepodařilo načíst.',
 });

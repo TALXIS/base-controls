@@ -1,2 +1,2 @@
-export * from './CompletionCheckboxUi';
+export * from './ChecklistUiCompletionCheckbox';
 export * from './components';

@@ -4,7 +4,7 @@ import { ITheme } from "../interfaces";
 import { createThemeBuilder, IThemeBuilderSource, IThemeEdit } from "../theme-builder";
 
 /** What {@link useThemeBuilder} does to the theme its source builds. */
-export interface IUseThemeBuilderOptions {
+export interface IUseThemeBuilderParameters {
     /** A hue the background and text are tinted by, as `ThemeBuilder.tint` does. */
     tint?: { hue: string; strength?: ITintStrength };
     /** One edit over the result, remembered by its key, so the key has to name everything it reads. */
@@ -17,8 +17,8 @@ export interface IUseThemeBuilderOptions {
  * @param source What to start from.
  * @returns The same object across renders while nothing it is keyed on changes.
  */
-export const useThemeBuilder = (source: IThemeBuilderSource, options: IUseThemeBuilderOptions = {}): ITheme => {
-    const { tint, edit } = options;
+export const useThemeBuilder = (source: IThemeBuilderSource, parameters: IUseThemeBuilderParameters = {}): ITheme => {
+    const { tint, edit } = parameters;
     const builder = createThemeBuilder(source);
     const { primary, background, text } = builder.colors;
 

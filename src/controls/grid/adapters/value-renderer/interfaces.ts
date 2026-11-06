@@ -3,7 +3,7 @@ import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty }
 import type { IGridCell } from "../../runtime/cells";
 import type { IGrid } from "../../runtime/grid";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IValueRendererUiComponents } from "../../ui/value-renderer/components";
+import { ICellUiValueRendererComponents } from "../../ui/value-renderer/components";
 
 export interface IGridValueRendererParameters extends IParameters {
     value: { raw: any };
@@ -43,5 +43,5 @@ export interface IGridValueRendererParameters extends IParameters {
 export interface IGridValueRenderer extends IControl<IGridValueRendererParameters, IOutputs, never> {
     /** Put on the element the value is drawn in, alongside its own class. */
     className?: string;
-    components?: Partial<IValueRendererUiComponents>;
+    components?: Partial<ICellUiValueRendererComponents>;
 }

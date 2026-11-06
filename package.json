@@ -13,7 +13,7 @@
   "typesVersions": {
     "*": {
       "gantt": [
-        "./dist/controls/task-grid/modules/gantt/index.d.ts"
+        "./dist/controls/task-grid/gantt/index.d.ts"
       ]
     }
   },
@@ -24,9 +24,9 @@
       "default": "./dist/index.js"
     },
     "./gantt": {
-      "types": "./dist/controls/task-grid/modules/gantt/index.d.ts",
-      "import": "./dist/controls/task-grid/modules/gantt/index.js",
-      "default": "./dist/controls/task-grid/modules/gantt/index.js"
+      "types": "./dist/controls/task-grid/gantt/index.d.ts",
+      "import": "./dist/controls/task-grid/gantt/index.js",
+      "default": "./dist/controls/task-grid/gantt/index.js"
     },
     "./package.json": "./package.json"
   },

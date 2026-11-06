@@ -76,7 +76,7 @@ export type IOpenTasksResult =
 export type TaskCreatePosition = 'first' | 'last';
 
 /** Where a new task lands, and what it starts with. */
-export interface ITaskCreateParams {
+export interface ITaskCreateParameters {
     /** None for the top level. */
     parentRecord?: IRecord;
     /** Resolved by the provider for the store to save as is. */
@@ -91,7 +91,7 @@ export interface ITaskCreateParams {
 export type ITaskMovePosition = 'above' | 'below' | 'child';
 
 /** A move the provider resolved. */
-export interface ITaskMoveParams {
+export interface ITaskMoveParameters {
     movingRecord: IRecord;
     targetRecord: IRecord;
     position: ITaskMovePosition;
@@ -110,13 +110,13 @@ export interface ITaskDeletion {
 }
 
 /** Tasks with no subtasks left to delete, with the whole tree they are in. */
-export interface ITaskDeleteParams {
+export interface ITaskDeleteParameters {
     taskIds: string[];
     tree: IRecordTree;
 }
 
 /** Where a created task lands among its siblings, and what it starts with. */
-export interface ICreateTaskOptions {
+export interface INewTaskParameters {
     /** The provider's default when left out. */
     position?: TaskCreatePosition;
     data?: { [columnName: string]: any };
@@ -139,34 +139,34 @@ export interface ITaskLoadResult {
 /** Where the tasks come from and how changing them is persisted. */
 export interface ITaskStore {
     /** Loads every task of the view the provider was created for. */
-    onLoad(provider: ITaskDataProvider): Promise<ITaskLoadResult>;
+    load(provider: ITaskDataProvider): Promise<ITaskLoadResult>;
     /** The columns Edit columns offers, of `options.entityName` when given. */
-    onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]>;
-    onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]>;
+    getAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]>;
+    getAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]>;
     /** Creates the task the grid already shows under `params.taskId`, or `null` to drop it. */
-    onCreateTask(params: ITaskCreateParams): Promise<ITaskCreateResult | null>;
+    createTask(parameters: ITaskCreateParameters): Promise<ITaskCreateResult | null>;
     /** Whether a task may be deleted. */
-    onCanDeleteTask?(task: IRecord): boolean;
+    canDeleteTask?(task: IRecord): boolean;
     /**
      * Called level by level, deepest first.
      * @returns Which tasks went, or `null` when the user cancelled.
      */
-    onDeleteTasks(params: ITaskDeleteParams): Promise<IDeleteTasksResult | null>;
+    deleteTasks(parameters: ITaskDeleteParameters): Promise<IDeleteTasksResult | null>;
     /** Saves what changed on the task, its parent and rank included. */
-    onSaveTask(task: IRecord): Promise<IRecordSaveOperationResult>;
+    saveTask(task: IRecord): Promise<IRecordSaveOperationResult>;
     /** Opens the tasks in an editor outside the grid, `null` when nothing changed. */
-    onOpenTasks(taskIds: string[]): Promise<IOpenTasksResult | null>;
+    openTasks(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Opens the record a task's lookup points to. */
-    onOpenRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
+    openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
     /** What the backend changed since the store last read its tasks. */
-    onSynchronize?(): Promise<ITaskChanges>;
+    synchronize?(): Promise<ITaskChanges>;
 }
 
 /** What the task provider raises once an operation is done. */
 export interface ITaskDataProviderEvents {
     onTasksCreated: (records: IRecord[], parentId?: string) => void;
     onTasksDeleted: (taskIds: string[]) => void;
-    onTaskMoved: (params: ITaskMoveParams) => void;
+    onTaskMoved: (parameters: ITaskMoveParameters) => void;
     /** Tasks whose data changed in place, whatever changed it. */
     onTasksUpdated: (records: IRecord[]) => void;
     /** The editor the tasks were opened in outside the grid closed. */
@@ -176,7 +176,7 @@ export interface ITaskDataProviderEvents {
 }
 
 /** What the task runtime hands a task provider before it loads. */
-export interface ITaskDataProviderInitializeParameters {
+export interface ITaskDataProviderConfigureParameters {
     /** `stateCode` defaults to `statecode`. */
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & Partial<Pick<IFieldMapping, 'stateCode'>>;
     /** Scopes the tree to the subtree under this task. */
@@ -195,8 +195,8 @@ export interface ITaskColumnHandler {
     /** Whether the handler loads and saves the column. */
     isHandledColumn(columnName: string): boolean;
     /** The handled columns' values of these tasks, by task id and column name. */
-    onLoadValues?(taskIds: string[]): Promise<Map<string, IRawRecord>>;
-    onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult>;
+    loadValues?(taskIds: string[]): Promise<Map<string, IRawRecord>>;
+    saveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult>;
 }
 
 /** Matches tasks against filters and quick find for columns kept apart from the tasks. */
@@ -209,14 +209,14 @@ export interface ITaskColumnMatcher {
 }
 
 /** Holds the tasks back from the tree until it settles. */
-export type TaskLoadWaiter = (params: { taskIds: string[] }) => Promise<void> | void;
+export type TaskLoadWaiter = (parameters: { taskIds: string[] }) => Promise<void> | void;
 
 /** A provider of tasks, every task loaded at once and shown as a tree. */
 export interface ITaskDataProvider extends IDataProvider {
     readonly taskEvents: IEventSubscriber<ITaskDataProviderEvents>;
     /** Takes the control's field mapping and root task before the provider loads. */
-    initialize(parameters: ITaskDataProviderInitializeParameters): void;
-    /** @throws Before `initialize`. */
+    configure(parameters: ITaskDataProviderConfigureParameters): void;
+    /** @throws Before `configure`. */
     getFieldMapping(): IFieldMapping;
     getStore(): ITaskStore;
     /** Every loaded task, whatever the view shows. */
@@ -233,13 +233,13 @@ export interface ITaskDataProvider extends IDataProvider {
      * Shows a new task under `parentId` at once and has the store create it.
      * @returns The task, or `null` under a task the store has not created yet.
      */
-    createTask(parentId?: string, options?: ICreateTaskOptions): IRecord | null;
+    createTask(parentId?: string, parameters?: INewTaskParameters): IRecord | null;
     /** Whether the task is shown but the store has not created it yet. */
     isTaskPending(taskId: string): boolean;
     /** Resolves `false` when the store dropped the task and rejects when it failed. */
     whenTaskCreated(taskId: string): Promise<boolean>;
-    /** Adds the tasks `onCreate` makes in the backend under `parentId`. */
-    createTasksWith(parentId: string | undefined, onCreate: (params: ITaskCreateParams) => Promise<ITasksCreateResult | null>, options?: { position?: TaskCreatePosition }): Promise<IRecord[] | null>;
+    /** Adds the tasks `create` makes in the backend under `parentId`. */
+    createTasksWith(parentId: string | undefined, create: (parameters: ITaskCreateParameters) => Promise<ITasksCreateResult | null>, options?: { position?: TaskCreatePosition }): Promise<IRecord[] | null>;
     /** The position a task created since the view last loaded asked for. */
     getNewTaskPosition(taskId: string): TaskCreatePosition | undefined;
     getDeletion(taskIds: string[]): ITaskDeletion;
@@ -256,15 +256,15 @@ export interface ITaskDataProvider extends IDataProvider {
     /** Applies what the store reports the backend changed. */
     synchronize(): Promise<void>;
     /** Adds to the available columns that complete the columns of every view. */
-    registerAvailableColumns(hook: TaskAvailableColumnsHook, priority?: number): () => void;
+    addAvailableColumnsHook(hook: TaskAvailableColumnsHook, priority?: number): () => void;
     /** Loads and saves the columns the handler claims in place of the store. */
-    registerColumnHandler(handler: ITaskColumnHandler): () => void;
+    addColumnHandler(handler: ITaskColumnHandler): () => void;
     /** Loads the column hidden, whatever the view shows. */
-    registerRequiredColumn(column: IColumn): () => void;
+    addRequiredColumn(column: IColumn): () => void;
     /** Answers filters and quick find for the columns the matcher claims. */
-    registerColumnMatcher(matcher: ITaskColumnMatcher): () => void;
+    addColumnMatcher(matcher: ITaskColumnMatcher): () => void;
     /** Runs before every data load hands its tasks out, and is waited for. */
-    registerLoadWaiter(waiter: TaskLoadWaiter): () => void;
+    addLoadWaiter(waiter: TaskLoadWaiter): () => void;
     /** Whether the current sorting, filtering or quick find reads the column. */
     isColumnQueried(columnName: string): boolean;
 }

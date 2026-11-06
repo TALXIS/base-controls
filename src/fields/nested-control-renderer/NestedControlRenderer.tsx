@@ -12,7 +12,7 @@ import { OptionSet } from '../option-set';
 import { BaseControls } from "@pcf";
 import { useLabels } from "@labels";
 import { useRerender } from "@core";
-import { getInternalNestedControlStyles, getNestedControlStyles } from './ui/styles';
+import { getNestedControlRendererInternalStyles, getNestedControlStyles } from './ui/styles';
 import { MessageBar, MessageBarButton, MessageBarType, SpinnerSize, Spinner } from '@fluentui/react';
 import { Shimmer } from '@ui';
 import ReactDOM from 'react-dom';
@@ -38,7 +38,7 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
     }, [props.parameters.ControlName]);
 
     const styles = useMemo(() => getNestedControlStyles(isBaseControl), [isBaseControl]);
-    const internalControlRendererRef = useRef<IInternalNestedControlRendererRef>(null);
+    const internalControlRendererRef = useRef<INestedControlRendererInternalRef>(null);
     const ref = useRef<Partial<IRef>>();
     
     ref.current = {
@@ -131,9 +131,9 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
     const createControlInstance = () => {
         new NestedControl({
             parentPcfContext: getRef().props.context,
-            onGetContainerElement: () => getRef().controlContainer!,
-            onGetControlName: () => getRef().controlName,
-            onGetBindings: () => {
+            getContainerElement: () => getRef().controlContainer!,
+            getControlName: () => getRef().controlName,
+            getBindings: () => {
                 return getRef().props.parameters.Bindings ?? {};
             },
             callbacks: {
@@ -146,12 +146,12 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                     }
                 },
                 onControlStateChanged: () => internalControlRendererRef.current?.rerender(),
-                onGetControlStates: () => getRef().props.parameters.ControlStates,
+                getControlStates: () => getRef().props.parameters.ControlStates,
                 onNotifyOutputChanged: (outputs) => getRef().props.onNotifyOutputChanged?.(outputs)
             },
             overrides: {
                 //read at the call, like its siblings: an override closes over the render that made it
-                onGetProps: props => getRef().componentProps.onOverrideControlProps(props),
+                getProps: props => getRef().componentProps.onOverrideControlProps(props),
                 onRender: (control: NestedControl, defaultRender) => {
                     getRef().componentProps.onOverrideRender(control, !getRef().isBaseControl, () => {
                         onRender(control, defaultRender);
@@ -160,7 +160,7 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 onUnmount: (control, defaultUnmount) => {
                     getRef().componentProps.onOverrideUnmount(control, () => onUmount(control, defaultUnmount))
                 },
-                onIsLoading: () => getRef().componentProps.onOverrideIsLoading?.()
+                isLoading: () => getRef().componentProps.onOverrideIsLoading?.()
             },
         })
 
@@ -185,7 +185,7 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
         getRef().control?.render();
     })
 
-    return <InternalNestedControlRenderer
+    return <NestedControlRendererInternal
         ref={internalControlRendererRef}
         control={getRef().control ?? undefined}
         baseControl={getRef().isBaseControl ? getBaseControl() : undefined}
@@ -193,7 +193,7 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
         componentProps={getRef().componentProps} />
 }
 
-interface IInternalNestedControlRendererProps {
+interface INestedControlRendererInternalProps {
     parameters: INestedControlRendererParameters;
     componentProps: INestedControlRendererComponentProps;
     loadingType?: 'spinner' | 'shimmer';
@@ -202,19 +202,19 @@ interface IInternalNestedControlRendererProps {
     baseControl?: React.ComponentType<any>;
 }
 
-interface IInternalNestedControlRendererRef {
+interface INestedControlRendererInternalRef {
     getContainer: () => HTMLDivElement;
     rerender: () => void;
 }
 
 
-const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererRef, IInternalNestedControlRendererProps>((props, ref) => {
+const NestedControlRendererInternal = forwardRef<INestedControlRendererInternalRef, INestedControlRendererInternalProps>((props, ref) => {
     //once control is defined, it is initialized
     const { control, parameters, componentProps, baseControl: BaseControl } = props;
     const labels = useLabels(NESTED_CONTROL_RENDERER_LABELS);
     const customControlContainerRef = useRef<HTMLDivElement>(null);
     const errorMessage = control?.getErrorMessage();
-    const styles = useMemo(() => getInternalNestedControlStyles(), []);
+    const styles = useMemo(() => getNestedControlRendererInternalStyles(), []);
     const { rerender } = useRerender();
 
     useImperativeHandle(ref, () => {

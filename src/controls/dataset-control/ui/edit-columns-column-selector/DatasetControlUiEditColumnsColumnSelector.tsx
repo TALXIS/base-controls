@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { InputActionMeta, SelectInstance } from "react-select";
 import { Attribute, IColumn } from "@talxis/client-libraries";
-import { EditColumnsSelector, IEditColumnsSelectorUiComponents } from "../edit-columns-selector";
-import { getEditColumnsColumnSelectorUiStyles } from "./styles";
+import { DatasetControlUiEditColumnsSelector, IDatasetControlUiEditColumnsSelectorComponents } from "../edit-columns-selector";
+import { getDatasetControlUiEditColumnsColumnSelectorStyles } from "./styles";
 
 /** Props for the picker of the column to add, as plain UI. */
-export interface IEditColumnsColumnSelectorUiProps {
+export interface IDatasetControlUiEditColumnsColumnSelectorProps {
     /** The columns already chosen, hidden from the options. */
     value: IColumn[];
     /** Shown while nothing is typed. */
@@ -21,19 +21,19 @@ export interface IEditColumnsColumnSelectorUiProps {
     /** Whether the menu opens as soon as the picker mounts. */
     openMenuOnMount?: boolean;
     /** Loads the columns matching what is typed. */
-    onLoadOptions: (query?: string) => Promise<IColumn[]>;
+    loadOptions: (query?: string) => Promise<IColumn[]>;
     /** Called with the column the user picked. */
     onAdd: (column: IColumn) => void;
     /** Replacements for its slots. */
-    components?: Partial<IEditColumnsSelectorUiComponents<IColumn>>;
+    components?: Partial<IDatasetControlUiEditColumnsSelectorComponents<IColumn>>;
 }
 
 //react-select clears the typed text on these, which would end the search
 const INPUT_CLEARING_ACTIONS = new Set(['menu-close', 'input-blur', 'set-value']);
 
 /** Searches the columns that can be added, and adds the one picked. */
-export const EditColumnsColumnSelector = (props: IEditColumnsColumnSelectorUiProps) => {
-    const styles = useMemo(() => getEditColumnsColumnSelectorUiStyles(), []);
+export const DatasetControlUiEditColumnsColumnSelector = (props: IDatasetControlUiEditColumnsColumnSelectorProps) => {
+    const styles = useMemo(() => getDatasetControlUiEditColumnsColumnSelectorStyles(), []);
     const ref = useRef<SelectInstance<IColumn, true>>(null);
     const [defaultOptions, setDefaultOptions] = useState<IColumn[]>([]);
     const [isLoadingDefaultOptions, setIsLoadingDefaultOptions] = useState(true);
@@ -48,7 +48,7 @@ export const EditColumnsColumnSelector = (props: IEditColumnsColumnSelectorUiPro
     }, []);
 
     const loadDefaultOptions = async () => {
-        setDefaultOptions(await props.onLoadOptions());
+        setDefaultOptions(await props.loadOptions());
         setIsLoadingDefaultOptions(false);
     };
 
@@ -64,7 +64,7 @@ export const EditColumnsColumnSelector = (props: IEditColumnsColumnSelectorUiPro
         setTimeout(() => ref.current?.focusInput());
     };
 
-    return <EditColumnsSelector<IColumn, true>
+    return <DatasetControlUiEditColumnsSelector<IColumn, true>
         ref={ref}
         className={styles.editColumnsColumnSelector}
         isMulti
@@ -82,7 +82,7 @@ export const EditColumnsColumnSelector = (props: IEditColumnsColumnSelectorUiPro
         getOptionValue={column => Attribute.GetNameFromAlias(column.name)}
         getOptionLabel={column => column.displayName ?? props.noNameText}
         getOptionTooltip={props.getOptionTooltip}
-        loadOptions={query => props.onLoadOptions(query)}
+        loadOptions={query => props.loadOptions(query)}
         onInputChange={onInputChange}
         onKeyDown={event => event.key === 'Enter' && ref.current?.openMenu('first')}
         //what the provider offers can change while the editor is open

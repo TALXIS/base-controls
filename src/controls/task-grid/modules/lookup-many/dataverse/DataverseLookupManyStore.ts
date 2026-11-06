@@ -65,7 +65,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
         this._hostRecord = parameters.hostRecord;
     }
 
-    public async onLoadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: Reference[] }>> {
+    public async loadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: Reference[] }>> {
         const values = new Map<string, { [columnName: string]: Reference[] }>();
         const columnNames = Object.keys(this._columns);
         if (columnNames.length === 0 || taskIds.length === 0) {
@@ -87,7 +87,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
         return values;
     }
 
-    public async onSaveValue(taskId: string, columnName: string, value: Reference[]): Promise<void> {
+    public async saveValue(taskId: string, columnName: string, value: Reference[]): Promise<void> {
         const key = this._getKey(taskId, columnName);
         const previous = this._savedValues.get(key) ?? [];
         const removed = previous.filter(reference => !value.some(kept => kept.id.guid === reference.id.guid));
@@ -106,7 +106,7 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
     }
 
     //a column offers what its FetchXML selects, rendered for the task
-    public onCreateOptionsProvider(parameters: ILookupManyOptionsParameters<IDataverseLookupManyColumn>): IDataProvider | undefined {
+    public createOptionsProvider(parameters: ILookupManyOptionsParameters<IDataverseLookupManyColumn>): IDataProvider | undefined {
         const { record, settings } = parameters;
         if (!settings.fetchXml) {
             return undefined;

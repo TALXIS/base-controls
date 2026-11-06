@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getNameCellUiStyles = () => mergeStyleSets({
+export const getChecklistUiNameCellStyles = () => mergeStyleSets({
     completed: {
         textDecoration: 'line-through',
     },

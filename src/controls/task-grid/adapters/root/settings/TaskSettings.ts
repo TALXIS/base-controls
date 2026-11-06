@@ -19,39 +19,39 @@ export type TaskGridSettingsHook = (settings: ITaskGridSetting[]) => void;
 /** The toggles of `TaskDatasetControl.Settings`, the `taskSettings` part. */
 export interface ITaskSettings {
     /**
-     * Registers a hook over the toggles the menu shows.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over the toggles the menu shows.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void;
+    addSettingsHook(hook: TaskGridSettingsHook, priority?: number): () => void;
     getSettings(): ITaskGridSetting[];
 }
 
 export interface ITaskSettingsParameters {
     taskRuntime: ITaskRuntime;
-    onGetProps: () => ISettingsProps;
+    getProps: () => ISettingsProps;
 }
 
 export class TaskSettings implements ITaskSettings {
     private _taskRuntime: ITaskRuntime;
-    private _onGetProps: () => ISettingsProps;
+    private _getProps: () => ISettingsProps;
     private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
 
     constructor(parameters: ITaskSettingsParameters) {
         this._taskRuntime = parameters.taskRuntime;
-        this._onGetProps = parameters.onGetProps;
+        this._getProps = parameters.getProps;
     }
 
     private get _labels(): LabelsOf<typeof TASK_GRID_LABELS> {
         return this._taskRuntime.getLabels(TASK_GRID_LABELS);
     }
 
-    public registerSettings(hook: TaskGridSettingsHook, priority?: number): () => void {
-        return this._settingsHooks.register(hook, priority);
+    public addSettingsHook(hook: TaskGridSettingsHook, priority?: number): () => void {
+        return this._settingsHooks.add(hook, priority);
     }
 
     public getSettings(): ITaskGridSetting[] {
         const settings: ITaskGridSetting[] = [];
-        const props = this._onGetProps();
+        const props = this._getProps();
         if (props.enableShowHierarchy !== false) {
             settings.push({
                 key: 'showHierarchy',

@@ -11,7 +11,7 @@ const isClosed = (record: IRecord) => [WON, LOST].includes(Number(record.getValu
 const closedDealsModule: IGridModule = {
     name: 'closedDeals',
     onLoad: grid => {
-        grid.modules.observe('editing', editing => editing.locks.registerLock((result, { record, columnName }) => {
+        grid.modules.observe('editing', editing => editing.locks.addLockHook((result, { record, columnName }) => {
             if (record && columnName && LOCKED_WHEN_CLOSED.includes(columnName) && isClosed(record)) {
                 result.isLocked = true
             }
@@ -25,7 +25,7 @@ const GridExample = () => <LabelsProvider labels={LABELS}>
     <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), closedDealsModule]}
+                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), closedDealsModule]}
                 enableOptionSetColors
                 height='420px' />
         </DatasetControl.Body>
@@ -47,7 +47,7 @@ const dayLimitModule: IGridModule = {
     onLoad: grid => {
         const timesheets = grid.services.get('provider')
         const cells = grid.services.get('cells')
-        grid.services.get('validation').registerValidation((result, { record, columnName }) => {
+        grid.services.get('validation').addValidationHook((result, { record, columnName }) => {
             if (columnName === 'hours' && getHoursThatDay(record) > MAX_HOURS_A_DAY) {
                 result.error = true
                 result.errorMessage = \`\${record.getValue('employee')} logged more than \${MAX_HOURS_A_DAY} hours on this day.\`
@@ -69,7 +69,7 @@ const dayLimitModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), dayLimitModule]}
+            modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), dayLimitModule]}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -88,7 +88,7 @@ const createPriceRefresh = () => {
         name: 'priceRefresh',
         onLoad: grid => {
             cells = grid.services.get('cells')
-            cells.registerCellLoading((result, { record, columnName }) => {
+            cells.addCellLoadingHook((result, { record, columnName }) => {
                 if (columnName === 'price' && refreshing.has(record.getRecordId())) {
                     result.isLoading = true
                 }
@@ -137,7 +137,7 @@ const urgentRowsModule: IGridModule = {
     name: 'urgentRows',
     onLoad: grid => {
         const tickets = grid.services.get('provider')
-        grid.services.get('rows').registerRowHeight((result, { record }) => {
+        grid.services.get('rows').addRowHeightHook((result, { record }) => {
             if (Number(record.getValue('priority')) === HIGH) {
                 result.height = 64
             }
@@ -157,7 +157,7 @@ const urgentRowsModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), urgentRowsModule]}
+            modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), urgentRowsModule]}
             enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
@@ -167,7 +167,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 export const COPY_COLUMN_CODE = `const createCopyColumnModule = (onCopied: (message: string) => void): IGridModule => ({
     name: 'copyColumn',
     onLoad: grid => {
-        grid.services.get('columns').headers.registerColumnMenuSection((sections, header) => {
+        grid.services.get('columns').headers.addColumnMenuSectionsHook((sections, header) => {
             const column = header.getColumn()
             if (!column) {
                 return
@@ -210,7 +210,7 @@ const GridExample = () => {
 export const CURRENCY_IN_HEADER_CODE = `const currencyModule: IGridModule = {
     name: 'currency',
     onLoad: grid => {
-        grid.services.get('columns').headers.registerColumnHeaderAdornments((adornments, header) => {
+        grid.services.get('columns').headers.addColumnHeaderAdornmentsHook((adornments, header) => {
             if (header.getColumn()?.dataType !== DataTypes.Currency) {
                 return
             }
@@ -239,7 +239,7 @@ const IN_PROGRESS = 2
 const assignToMeModule: IGridModule = {
     name: 'assignToMe',
     onLoad: grid => {
-        grid.services.get('cells').registerCellCommands((result, { record, columnName }) => {
+        grid.services.get('cells').addCellCommandsHook((result, { record, columnName }) => {
             if (columnName !== 'assignee' || record.getValue('assignee')) {
                 return
             }
@@ -272,7 +272,7 @@ export const COLUMNS_BY_ROLE_CODE = `type Role = 'consultant' | 'manager'
 const createColumnsByRoleModule = (getRole: () => Role): IGridModule => ({
     name: 'columnsByRole',
     onLoad: grid => {
-        grid.services.get('columns').registerColumnDefinitions(columnDefs => {
+        grid.services.get('columns').addColumnDefinitionsHook(columnDefs => {
             const rate = columnDefs.find(colDef => colDef.colId === 'rate')
             if (rate) {
                 rate.hide = getRole() !== 'manager'
@@ -321,7 +321,7 @@ export const PLACEHOLDERS_CODE = `const PLACEHOLDERS: { [columnName: string]: st
 const placeholdersModule: IGridModule = {
     name: 'placeholders',
     onLoad: grid => {
-        grid.services.get('cells').registerControlParameters((parameters, { columnName }) => {
+        grid.services.get('cells').addControlParametersHook((parameters, { columnName }) => {
             if (PLACEHOLDERS[columnName]) {
                 parameters.Placeholder = { raw: PLACEHOLDERS[columnName] }
             }
@@ -332,7 +332,7 @@ const placeholdersModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true }), placeholdersModule]}
+            modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), placeholdersModule]}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>

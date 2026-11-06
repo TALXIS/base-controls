@@ -1,9 +1,9 @@
 import { IPivotProps, Pivot } from "@fluentui/react";
 
-export interface IPivotComponents {
+export interface IFormUiPivotComponents {
     onRenderPivot: (props: IPivotProps) => JSX.Element;
 }
 
-export const PivotComponents: IPivotComponents = {
+export const FormUiPivotComponents: IFormUiPivotComponents = {
     onRenderPivot: (props) => <Pivot {...props} />
 }

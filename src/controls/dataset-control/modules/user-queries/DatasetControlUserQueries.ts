@@ -1,6 +1,6 @@
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { EventEmitter, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import type { IDatasetControlRuntime } from "../../runtime/DatasetControlRuntime";
+import type { IDatasetControlInternal } from "../../runtime/DatasetControlRuntime";
 import type { IDatasetControlView, IDatasetControlViewDefinition } from "../../runtime/interfaces";
 import type { IEventSubscriber } from "@core";
 import type { LabelsOf } from "@labels";
@@ -19,7 +19,7 @@ export interface IUserQueriesCommands {
 }
 
 export interface IDatasetControlUserQueriesParameters extends IUserQueriesCommands {
-    datasetControl: IDatasetControlRuntime;
+    datasetControl: IDatasetControlInternal;
     store: IUserQueriesStore;
 }
 
@@ -40,7 +40,7 @@ interface ISavedValue {
 /** The user's views of one mount: listed with the control's, saved, and opened with what they kept. */
 export class DatasetControlUserQueries {
     private _events = new EventEmitter<IDatasetControlUserQueriesEvents>();
-    private _datasetControl: IDatasetControlRuntime;
+    private _datasetControl: IDatasetControlInternal;
     private _store: IUserQueriesStore;
     private _commands: IUserQueriesCommands;
     private _savedValues = new Map<string, ISavedValue>();
@@ -52,8 +52,8 @@ export class DatasetControlUserQueries {
         this._datasetControl = datasetControl;
         this._store = store;
         this._commands = commands;
-        datasetControl.registerViews(this._addViews);
-        datasetControl.parts.observe('viewSwitcher', viewSwitcher => viewSwitcher.registerItems(this._addCommands));
+        datasetControl.addViewsHook(this._addViews);
+        datasetControl.parts.observe('viewSwitcher', viewSwitcher => viewSwitcher.addItemsHook(this._addCommands));
     }
 
     public get events(): IEventSubscriber<IDatasetControlUserQueriesEvents> {
@@ -66,16 +66,16 @@ export class DatasetControlUserQueries {
     }
 
     /**
-     * Saves what `onGetValue` returns with every user view, under its key.
-     * @param onGetValue Called on every save; `undefined` saves nothing under the key.
-     * @param onApplyValue Called with the saved value as a user view opens, before its first page loads.
+     * Saves what `getValue` returns with every user view, under its key.
+     * @param getValue Called on every save; `undefined` saves nothing under the key.
+     * @param applyValue Called with the saved value as a user view opens, before its first page loads.
      */
-    public saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, onGetValue: () => IUserQuerySavedValueMap[TKey] | undefined, onApplyValue?: (value: IUserQuerySavedValueMap[TKey], provider: IDataProvider) => void): () => void {
+    public saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, getValue: () => IUserQuerySavedValueMap[TKey] | undefined, applyValue?: (value: IUserQuerySavedValueMap[TKey], provider: IDataProvider) => void): () => void {
         if (this._savedValues.has(key)) {
             throw new Error(`The saved value "${key}" is registered twice.`);
         }
         //what a view kept comes back from the store untyped
-        const savedValue: ISavedValue = { get: onGetValue, apply: onApplyValue && ((value, provider) => onApplyValue(value as IUserQuerySavedValueMap[TKey], provider)) };
+        const savedValue: ISavedValue = { get: getValue, apply: applyValue && ((value, provider) => applyValue(value as IUserQuerySavedValueMap[TKey], provider)) };
         this._savedValues.set(key, savedValue);
         return () => {
             if (this._savedValues.get(key) === savedValue) {

@@ -39,7 +39,7 @@ The days are shaded while the zoom shows single days, and pointing at one on the
 | Factory | Days |
 |---|---|
 | \`createMemoryNonWorkingDaysModule\` | \`nonWorkingDays\`: the days. |
-| \`createNonWorkingDaysModule\` | Weekends only, or a store of yours: \`onCreateStore\` returns a store with \`onLoadNonWorkingDays()\`, which returns the days. |
+| \`createNonWorkingDaysModule\` | Weekends only, or a store of yours: \`createStore\` returns a store with \`loadNonWorkingDays()\`, which returns the days. |
 
 ## Changing how it looks
 

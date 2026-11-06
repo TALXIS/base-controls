@@ -8,7 +8,7 @@ const COLUMN_HEADER_HEIGHT = 42;
 const ROW_HEIGHT = 42;
 const FOOTER_HEIGHT = 44;
 
-export const getSkeletonStyles = (theme: ITheme, hasFixedHeight: boolean, fillsParent: boolean) => {
+export const getDatasetControlUiSkeletonStyles = (theme: ITheme, hasFixedHeight: boolean, fillsParent: boolean) => {
     const shimmerKeyframe = keyframes({
         '0%': { backgroundPosition: '-600px 0' },
         '100%': { backgroundPosition: '600px 0' },

@@ -15,15 +15,15 @@ export interface IDatasetControlViewSwitcher {
     /** The views of this mount, from the control's `onLoad`. */
     getViews(): IDatasetControlView[];
     /** `undefined` when the loaded view is not among the views. */
-    getCurrentView(): IDatasetControlView | undefined;
+    getView(): IDatasetControlView | undefined;
     /** Loads the control for the view. */
     select(viewId: string): void;
     /**
-     * Registers a hook over the switcher's menu.
+     * Adds a hook over the switcher's menu.
      *
-     * @param priority Ascending: a higher number gets the later word.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerItems(hook: ViewSwitcherItemsHook, priority?: number): () => void;
+    addItemsHook(hook: ViewSwitcherItemsHook, priority?: number): () => void;
 }
 
 export class DatasetControlViewSwitcher implements IDatasetControlViewSwitcher {
@@ -38,7 +38,7 @@ export class DatasetControlViewSwitcher implements IDatasetControlViewSwitcher {
         return this._services.get('runtime').getViews();
     }
 
-    public getCurrentView(): IDatasetControlView | undefined {
+    public getView(): IDatasetControlView | undefined {
         const viewId = this._services.get('runtime').getViewId();
         return this.getViews().find(view => view.id === viewId);
     }
@@ -50,8 +50,8 @@ export class DatasetControlViewSwitcher implements IDatasetControlViewSwitcher {
         }
     }
 
-    public registerItems(hook: ViewSwitcherItemsHook, priority?: number): () => void {
-        return this._itemsHooks.register(hook, priority);
+    public addItemsHook(hook: ViewSwitcherItemsHook, priority?: number): () => void {
+        return this._itemsHooks.add(hook, priority);
     }
 
     /** The menu with what the hooks added to it. */

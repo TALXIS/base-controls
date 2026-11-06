@@ -1,12 +1,12 @@
 import { Checkbox, ContextualMenu, Dialog, DialogFooter, DialogType, IContextualMenuItem, PrimaryButton, SearchBox, Stack, Text, TextField, DefaultButton, IconButton, Pivot as FluentPivot } from "@fluentui/react"
 import { DndContext, DragEndEvent, DragMoveEvent, DragOverlay, DragOverEvent, DragStartEvent, PointerSensor, useSensor } from "@dnd-kit/core"
 import { horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable"
-import { XrmForm, Pivot } from "@talxis/base-controls"
+import { XrmForm, FormUiPivot } from "@talxis/base-controls"
 import type { IXrmFormContext, ITabsComponentProps } from "@talxis/base-controls"
 import { serializeFormXml } from "@talxis/client-metadata"
 import type { FormXml, FormXmlCell, FormXmlSection } from "@talxis/client-metadata"
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { TabComponents } from '@talxis/base-controls';
+import { FormUiTabComponents } from '@talxis/base-controls';
 import { DEFAULT_LANGUAGE_CODE, getClassIdForColumn } from "../constants"
 import {
     addColumnToFormXml,
@@ -226,7 +226,7 @@ export const FormXmlBuilderPanel = ({
                         // drag/edit overlay; Fluent's overflow menu would collapse overflowing tabs
                         // out of the layout entirely, so disable it here (builder-only override).
                         onRenderTabs: (tabsProps: ITabsComponentProps) => (
-                            <Pivot
+                            <FormUiPivot
                                 {...tabsProps}
                                 components={{
                                     onRenderPivot: (pivotProps) => <FluentPivot {...pivotProps} overflowBehavior="none" />,

@@ -1,11 +1,11 @@
 import { IRecord } from "@talxis/client-libraries";
 import { IGrid } from "@controls/grid";
-import { CheckListColumns } from "./runtime/CheckListColumns";
-import { CheckListReordering } from "./runtime/CheckListReordering";
-import { CheckListNewItemRow } from "./runtime/CheckListNewItemRow";
+import { ChecklistColumns } from "./runtime/ChecklistColumns";
+import { ChecklistReordering } from "./runtime/ChecklistReordering";
+import { ChecklistNewItemRow } from "./runtime/ChecklistNewItemRow";
 
 /** Which of the provider's columns carry the label, the order and the completion state. */
-export interface ICheckListFieldMapping {
+export interface IChecklistFieldMapping {
     /** Column holding the item's label. */
     name: string;
     /** Column the list is ordered by, hidden from the grid. */
@@ -17,19 +17,19 @@ export interface ICheckListFieldMapping {
 declare module "@controls/grid/interfaces" {
     interface IGridModuleMap {
         /** The checklist, in a grid the `CheckList` draws. */
-        checkList: IGridCheckList;
+        checklist: IGridChecklist;
     }
 }
 
-export interface IGridCheckListParameters {
+export interface IGridChecklistParameters {
     grid: IGrid;
-    fieldMapping: ICheckListFieldMapping;
+    fieldMapping: IChecklistFieldMapping;
 }
 
 /** What makes the grid a checklist. */
-export interface IGridCheckList {
+export interface IGridChecklist {
     /** The columns the checklist works with. */
-    getFieldMapping(): ICheckListFieldMapping;
+    getFieldMapping(): IChecklistFieldMapping;
     /** Whether the record is one of the list's items, not the row that adds one. */
     isItem(record: IRecord): boolean;
     /** Whether the item is finished. */
@@ -38,19 +38,19 @@ export interface IGridCheckList {
     destroy(): void;
 }
 
-export class GridCheckList implements IGridCheckList {
+export class GridChecklist implements IGridChecklist {
     private _grid: IGrid;
-    private _fieldMapping: ICheckListFieldMapping;
-    private _newItemRow?: CheckListNewItemRow;
+    private _fieldMapping: IChecklistFieldMapping;
+    private _newItemRow?: ChecklistNewItemRow;
 
-    constructor(parameters: IGridCheckListParameters) {
+    constructor(parameters: IGridChecklistParameters) {
         this._grid = parameters.grid;
         this._fieldMapping = parameters.fieldMapping;
         this._warnWhenUnsorted();
-        new CheckListColumns({ services: this._grid.services, checkList: this });
+        new ChecklistColumns({ services: this._grid.services, checklist: this });
         if (this._grid.modules.find('editing')) {
-            new CheckListReordering({ grid: this._grid, checkList: this });
-            this._newItemRow = new CheckListNewItemRow({ grid: this._grid, checkList: this });
+            new ChecklistReordering({ grid: this._grid, checklist: this });
+            this._newItemRow = new ChecklistNewItemRow({ grid: this._grid, checklist: this });
         }
     }
 
@@ -61,11 +61,11 @@ export class GridCheckList implements IGridCheckList {
     private _warnWhenUnsorted(): void {
         const sorting = this._grid.services.get('provider').getSorting();
         if (sorting.length !== 1 || sorting[0].name !== this._fieldMapping.stackRank || sorting[0].sortDirection !== 0) {
-            console.warn(`CheckList: the provider is not sorted by '${this._fieldMapping.stackRank}', so the items show out of order. Call sortCheckListProvider before it loads.`);
+            console.warn(`CheckList: the provider is not sorted by '${this._fieldMapping.stackRank}', so the items show out of order. Call sortChecklistProvider before it loads.`);
         }
     }
 
-    public getFieldMapping(): ICheckListFieldMapping {
+    public getFieldMapping(): IChecklistFieldMapping {
         return this._fieldMapping;
     }
 

@@ -2,13 +2,13 @@ import { useTheme } from "@theme";
 import * as React from "react";
 import { Icon, Label, TextField } from "@fluentui/react";
 import { TooltipHost } from "@ui";
-import { getCellStyles } from "./styles";
+import { getFormUiCellStyles } from "./styles";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { DisabledContext } from "./context";
 import { useSectionContext } from "../section";
 import { Layout } from "../layout";
 
-export interface ICellProps {
+export interface IFormUiCellProps {
     id?: string;
     label?: string;
     colspan?: number;
@@ -17,7 +17,7 @@ export interface ICellProps {
     children?: React.ReactNode;
 }
 
-export const Cell = (props: ICellProps) => {
+export const FormUiCell = (props: IFormUiCellProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const section = useSectionContext();
     const theme = useTheme();
@@ -32,7 +32,7 @@ export const Cell = (props: ICellProps) => {
     const shouldRenderLabelWrapper = label || disabled
     const layoutStyle = Layout.getColumnStyles(props.colspan, section?.columnsPerRow);
 
-    const styles = getCellStyles({
+    const styles = getFormUiCellStyles({
         requiredLevel: requiredLevel,
         section,
         theme,

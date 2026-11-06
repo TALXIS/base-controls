@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useEventEmitter, useRerender } from "@core";
 import { useLabels } from "@labels";
-import { DatasetControlUi, IPageSizeSwitcherUiComponents } from "../../ui";
+import { DatasetControlUi, IDatasetControlUiPageSizeSwitcherComponents } from "../../ui";
 import { useDataProvider } from "@data";
 import { useRegisterDatasetControlPart } from "../root";
 import { PAGE_SIZE_SWITCHER_LABELS } from "./labels";
@@ -12,7 +12,7 @@ export interface IPageSizeSwitcherProps {
     /** The sizes the menu offers; read once, at mount. */
     pageSizes?: number[];
     /** Replacements for the switcher's slots. */
-    components?: Partial<IPageSizeSwitcherUiComponents>;
+    components?: Partial<IDatasetControlUiPageSizeSwitcherComponents>;
 }
 
 /** Which records the page shows, and how many a page holds. */
@@ -23,7 +23,7 @@ export const PageSizeSwitcher = (props: IPageSizeSwitcherProps) => {
     const { rerender } = useRerender();
     const range = pageSizeSwitcher.getRecordRange();
 
-    useEventEmitter<IDatasetControlPageSizeSwitcherEvents>(pageSizeSwitcher.events, 'onPageSizeChanged', rerender);
+    useEventEmitter<IDatasetControlPageSizeSwitcherEvents>(pageSizeSwitcher.events, 'onChanged', rerender);
     useEffect(() => () => pageSizeSwitcher.destroy(), []);
 
     const getText = (): string => {

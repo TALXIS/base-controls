@@ -2,7 +2,7 @@ import { createCustomColumnsModule, ICustomColumnsModule } from "../createCustom
 import type { ICustomColumnsParameters } from "../CustomColumns";
 import { ICustomColumnDefinition, IndexedDbCustomColumnsStore } from "./IndexedDbCustomColumnsStore";
 
-export interface IIndexedDbCustomColumnsModuleParameters extends Omit<ICustomColumnsParameters, 'onCreateStore' | 'enableEditing'> {
+export interface IIndexedDbCustomColumnsModuleParameters extends Omit<ICustomColumnsParameters, 'createStore' | 'enableEditing'> {
     /** The IndexedDB database of one control's columns and values. */
     databaseName: string;
     /** The columns a new database starts with. */
@@ -12,5 +12,5 @@ export interface IIndexedDbCustomColumnsModuleParameters extends Omit<ICustomCol
 /** The user's own task columns kept in the browser's IndexedDB. */
 export const createIndexedDbCustomColumnsModule = (parameters: IIndexedDbCustomColumnsModuleParameters): ICustomColumnsModule => {
     const { databaseName, columns, ...moduleParameters } = parameters;
-    return createCustomColumnsModule({ ...moduleParameters, enableEditing: false, onCreateStore: taskRuntime => new IndexedDbCustomColumnsStore({ taskRuntime, databaseName, columns }) });
+    return createCustomColumnsModule({ ...moduleParameters, enableEditing: false, createStore: taskRuntime => new IndexedDbCustomColumnsStore({ taskRuntime, databaseName, columns }) });
 };

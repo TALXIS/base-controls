@@ -1,7 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { RECORD_LIST_ITEM_HEIGHT } from "../constants";
 
-export const getRecordListStyles = (theme: ITheme) => mergeStyleSets({
+export const getTemplatesUiRecordListStyles = (theme: ITheme) => mergeStyleSets({
     root: {
         borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
     },

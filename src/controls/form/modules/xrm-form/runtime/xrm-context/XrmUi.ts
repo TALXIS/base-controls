@@ -23,7 +23,7 @@ export class XrmUi implements IXrmUiContextInternal {
         this._formContext = formContext;
         this.tabs = this._createTabsCollection();
         this.controls = this._createControlsCollection();
-        this._registerEventListeners();
+        this._addEventListeners();
     }
 
     public getFormType(): XrmEnum.FormType {
@@ -94,8 +94,8 @@ export class XrmUi implements IXrmUiContextInternal {
         return makeItemCollection(tabs.map((tab) => new XrmTab(tab, this._formContext)), (tab) => tab.getName()) as any;
     }
 
-    private _registerEventListeners(): void {
-        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroy', () => {
+    private _addEventListeners(): void {
+        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroyed', () => {
             this._onLoadHandlerSet.clear();
             this._notificationMap.clear();
         });

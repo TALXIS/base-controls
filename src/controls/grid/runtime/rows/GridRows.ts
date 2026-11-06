@@ -1,13 +1,13 @@
 import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowNode, RowClassParams, RowClassRules, RowClickedEvent, RowHeightParams } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@core";
-import { IGridInternalServiceLocator } from "..";
+import { IGridServiceLocatorInternal } from "..";
 import { getRowNode } from "./getRowNode";
 
 export interface IGridRowsEvents {
-    /** Fired when the rows the user is at change. */
+    /** Fires when the rows the user is at change. */
     onHighlightedRowsChanged: () => void;
-    /** Fired when a row with a record is clicked. */
+    /** Fires when a row with a record is clicked. */
     onRowClicked: (record: IRecord) => void;
 }
 
@@ -17,45 +17,47 @@ export interface IGridRowHeight {
 }
 
 /** A hook over how tall a row is. */
-export type GridRowHeightHook = (result: IGridRowHeight, params: { record: IRecord; node: IRowNode<IRecord> }) => void;
+export type GridRowHeightHook = (result: IGridRowHeight, parameters: { record: IRecord; node: IRowNode<IRecord> }) => void;
 
 /** Whether a row with a record takes a class. */
-export type GridRowClassRule = (params: { record: IRecord; node: IRowNode<IRecord> }) => boolean;
+export type GridRowClassRule = (parameters: { record: IRecord; node: IRowNode<IRecord> }) => boolean;
 
 /** What the caller decides for each row, after the row-level hooks. */
 export interface IGridRowSettings {
-    /** How tall a row is, after `registerRowHeight`. */
-    onGetHeight?: GridRowHeightHook;
+    /** How tall a row is, after `addRowHeightHook`. */
+    heightHook?: GridRowHeightHook;
 }
 
 export interface IGridRowsParameters {
-    services: IGridInternalServiceLocator;
+    services: IGridServiceLocatorInternal;
 }
 
 /** What is true of a row as a whole. */
 export interface IGridRows {
     /**
-     * Registers a hook over how tall a row is.
+     * Adds a hook over how tall a row is.
      *
-     * @param priority Ascending: a higher number gets the later word.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerRowHeight(hook: GridRowHeightHook, priority?: number): () => void;
+    addRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void;
     /** Puts the class on every row with a record the rule holds for; pinned rows never take it. */
-    registerRowClass(className: string, rule: GridRowClassRule): () => void;
+    addRowClass(className: string, rule: GridRowClassRule): () => void;
     /** Runs the class rules over the records' rows again. */
     refreshRowClasses(records: IRecord[]): void;
 }
 
 /** What the grid's own parts read of it. */
-export interface IGridRowsInternal extends IGridRows, IEventEmitter<IGridRowsEvents> {
+export interface IGridRowsInternal extends IGridRows {
+    readonly events: IEventEmitter<IGridRowsEvents>;
     /** Whether the row is hovered, focused or selected. */
     isHighlighted(record: IRecord): boolean;
     /** Sets how tall the record's row is, over what the hooks decide. */
     setRowHeight(record: IRecord, height: number): void;
 }
 
-export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRowsInternal {
-    private _services: IGridInternalServiceLocator;
+export class GridRows implements IGridRowsInternal {
+    public readonly events = new EventEmitter<IGridRowsEvents>();
+    private _services: IGridServiceLocatorInternal;
     private _hoveredRecordId?: string;
     private _focusedRecordId?: string;
     private _selectedRecordIds = new Set<string>();
@@ -67,10 +69,9 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
     private _rowClassRules: RowClassRules<IRecord> = {};
 
     constructor(parameters: IGridRowsParameters) {
-        super();
         this._services = parameters.services;
         this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
-        this._services.get('grid').registerAgGridOptions(result => {
+        this._services.get('grid').addAgGridOptionsHook(result => {
             result.options.getRowHeight = this._getRowHeight;
             result.options.rowClassRules = this._rowClassRules;
         });
@@ -81,8 +82,8 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         return recordId === this._hoveredRecordId || recordId === this._focusedRecordId || this._selectedRecordIds.has(recordId);
     }
 
-    public registerRowHeight(hook: GridRowHeightHook, priority?: number): () => void {
-        return this._rowHeightHooks.register(hook, priority);
+    public addRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void {
+        return this._rowHeightHooks.add(hook, priority);
     }
 
     public setRowHeight(record: IRecord, height: number): void {
@@ -93,7 +94,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         gridApi.onRowHeightChanged();
     }
 
-    public registerRowClass(className: string, rule: GridRowClassRule): () => void {
+    public addRowClass(className: string, rule: GridRowClassRule): () => void {
         this._rowClassRuleMap.set(className, rule);
         this._onRowClassRulesChanged();
         return () => {
@@ -132,7 +133,7 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
         }
         const result: IGridRowHeight = {};
         this._rowHeightHooks.apply(result, { record: params.data, node: params.node });
-        this._services.get('settings').getRowSettings().onGetHeight?.(result, { record: params.data, node: params.node });
+        this._services.get('settings').getRowSettings().heightHook?.(result, { record: params.data, node: params.node });
         return this._setHeights.get(params.data.getRecordId()) ?? result.height;
     };
 
@@ -157,13 +158,13 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
 
     private _onRowClicked = (event: RowClickedEvent<IRecord>): void => {
         if (event.data) {
-            this.dispatchEvent('onRowClicked', event.data);
+            this.events.dispatchEvent('onRowClicked', event.data);
         }
     };
 
     private _onSelectionChanged = (): void => {
         this._selectedRecordIds = new Set(this._services.get('provider').getSelectedRecordIds({ includeGroupRecordIds: true }));
-        this.dispatchEvent('onHighlightedRowsChanged');
+        this.events.dispatchEvent('onHighlightedRowsChanged');
     };
 
     private _setHighlightedRow(by: 'hovered' | 'focused', recordId: string | undefined): void {
@@ -179,6 +180,6 @@ export class GridRows extends EventEmitter<IGridRowsEvents> implements IGridRows
             }
             this._focusedRecordId = recordId;
         }
-        this.dispatchEvent('onHighlightedRowsChanged');
+        this.events.dispatchEvent('onHighlightedRowsChanged');
     }
 }

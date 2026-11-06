@@ -37,17 +37,17 @@ export interface IGridThemeParameters {
 /** The AG Grid theme the grid is drawn in, made from its Fluent theme. */
 export interface IGridTheme {
     /**
-     * Registers a hook over the AG Grid theme, read once when the grid is created.
+     * Adds a hook over the AG Grid theme, read once when the grid is created.
      *
-     * @param priority Ascending: a higher number gets the later word.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerTheme(hook: GridThemeHook, priority?: number): () => void;
+    addThemeHook(hook: GridThemeHook, priority?: number): () => void;
     /**
-     * Registers a hook over the styles of the grid's root element.
+     * Adds a hook over the styles of the grid's root element.
      *
-     * @param priority Ascending: a later style wins where the selectors are equally specific.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerStyles(hook: GridStylesHook, priority?: number): () => void;
+    addStylesHook(hook: GridStylesHook, priority?: number): () => void;
 }
 
 /** What the grid's own parts read of it. */
@@ -68,8 +68,8 @@ export class GridTheme implements IGridThemeInternal {
         this._parameters = parameters;
     }
 
-    public registerTheme(hook: GridThemeHook, priority?: number): () => void {
-        return this._hooks.register(hook, priority);
+    public addThemeHook(hook: GridThemeHook, priority?: number): () => void {
+        return this._hooks.add(hook, priority);
     }
 
     public getAgTheme(): Theme {
@@ -77,8 +77,8 @@ export class GridTheme implements IGridThemeInternal {
         return this._agTheme;
     }
 
-    public registerStyles(hook: GridStylesHook, priority?: number): () => void {
-        return this._stylesHooks.register(hook, priority);
+    public addStylesHook(hook: GridStylesHook, priority?: number): () => void {
+        return this._stylesHooks.add(hook, priority);
     }
 
     public getStyles(): IStyle[] {

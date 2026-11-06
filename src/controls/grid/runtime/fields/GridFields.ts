@@ -1,9 +1,9 @@
 import { IRecord } from "@talxis/client-libraries";
-import type { IGridInternalServiceLocator } from "..";
+import type { IGridServiceLocatorInternal } from "..";
 import { GridField, IGridField } from "./GridField";
 
 export interface IGridFieldsParameters {
-    services: IGridInternalServiceLocator;
+    services: IGridServiceLocatorInternal;
 }
 
 /** Hands out the fields of the grid's records. */
@@ -13,7 +13,7 @@ export interface IGridFields {
 }
 
 export class GridFields implements IGridFields {
-    private _services: IGridInternalServiceLocator;
+    private _services: IGridServiceLocatorInternal;
     private _fields = new WeakMap<IRecord, Map<string, IGridField>>();
 
     constructor(parameters: IGridFieldsParameters) {

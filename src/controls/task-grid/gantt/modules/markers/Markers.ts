@@ -1,14 +1,15 @@
 import { createElement } from "react";
 import dayjs, { Dayjs } from "dayjs";
-import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
+import { EventEmitter } from "@talxis/client-libraries";
 import type { LabelsOf } from "@labels";
-import type { ITaskRuntime } from "../../../../runtime";
+import type { ITaskRuntime } from "../../../runtime";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import { MARKERS_LABELS } from "./labels";
 import type { MarkerLineStyle, IMarkerUiChipComponents, IMarkerUiColumnComponents, IMarkerUiLayerComponents, IMarkerUiLineComponents, IMarkerUiScaleComponents, IMarkerUiTrackComponents } from "./ui";
 import { MarkerLayer } from "./adapters/marker-layer";
 import { getMarkersStyles } from "./styles";
+import type { IEventSubscriber } from "@core";
 
 /** A date marked on the timeline with a line and a chip on the scale. */
 export interface IMarker {
@@ -24,7 +25,7 @@ export interface IMarker {
 /** Where the markers of the consumer's own come from. */
 export interface IMarkersStore {
     /** Called on every mount and on `reload` while the chart draws without these markers. */
-    onLoadMarkers(): Promise<IMarker[]>;
+    loadMarkers(): Promise<IMarker[]>;
 }
 
 /** The replaceable pieces of every marker, by the part they belong to. */
@@ -56,7 +57,7 @@ export interface IProjectMarkersParameters {
 export interface IMarkersParameters {
     today?: ITodayMarkerParameters;
     project?: IProjectMarkersParameters;
-    onCreateStore?: (taskRuntime: ITaskRuntime) => IMarkersStore;
+    createStore?: (taskRuntime: ITaskRuntime) => IMarkersStore;
     components?: IMarkersComponents;
 }
 
@@ -67,7 +68,7 @@ export interface IMarkersEvents {
 
 /** The `markers` module: today, the project's start and end, and the store's own markers. */
 export interface IMarkers {
-    readonly events: IEventEmitter<IMarkersEvents>;
+    readonly events: IEventSubscriber<IMarkersEvents>;
     getMarkers(): IMarker[];
     /** Reads the store's markers again and redraws every marker. */
     reload(): Promise<void>;
@@ -85,9 +86,9 @@ export class Markers implements IMarkers {
     constructor(gantt: IGantt, parameters: IMarkersParameters) {
         this._gantt = gantt;
         this._parameters = parameters;
-        this._store = parameters.onCreateStore?.(gantt.getTaskRuntime());
-        gantt.surfaces.registerSurface(this._onSurfaces);
-        gantt.services.get('theme').registerStyles(result => result.styles.push(getMarkersStyles()));
+        this._store = parameters.createStore?.(gantt.getTaskRuntime());
+        gantt.surfaces.addSurfacesHook(this._onSurfaces);
+        gantt.services.get('theme').addStylesHook(result => result.styles.push(getMarkersStyles()));
         //not awaited so the chart draws before the store's markers load
         this.reload();
     }
@@ -100,7 +101,7 @@ export class Markers implements IMarkers {
         if (this._store) {
             const store = this._store;
             const errorTitle = this._labels.get('markers.loadMarkersFailed');
-            const markers = await this._gantt.getTaskRuntime().execute(() => store.onLoadMarkers(), { loading: { show: false }, error: { title: errorTitle, rethrow: false } });
+            const markers = await this._gantt.getTaskRuntime().execute(() => store.loadMarkers(), { loading: { show: false }, error: { title: errorTitle, rethrow: false } });
             if (!markers) {
                 return;
             }

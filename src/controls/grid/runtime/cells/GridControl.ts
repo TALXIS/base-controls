@@ -2,14 +2,14 @@ import { IPcfContext, IParameters } from "@pcf/interfaces";
 import { DataTypes, ICustomColumnControl, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { BaseControls } from "@pcf";
 import { IGridValueRenderer, IGridValueRendererParameters } from "../../adapters/value-renderer";
-import { IGridInternalServiceLocator } from "..";
+import { IGridServiceLocatorInternal } from "..";
 import { IGridField } from "../fields";
 import type { IGridCell } from "./GridCell";
 import { GridFieldControl, IGridFieldControl } from "./GridFieldControl";
 import { hasResizeGrip } from "../../adapters/cells/resize-grip/hasResizeGrip";
 
 export interface IGridControlParameters {
-    services: IGridInternalServiceLocator;
+    services: IGridServiceLocatorInternal;
     /** The cell this draws. */
     cell: IGridCell;
     /** The field this draws, where the cell is bound to one. */
@@ -34,7 +34,7 @@ export interface IGridControl {
 }
 
 export class GridControl implements IGridControl {
-    private _services: IGridInternalServiceLocator;
+    private _services: IGridServiceLocatorInternal;
     private _record: IRecord;
     private _columnName: string;
     private _takesInput: boolean;
@@ -93,7 +93,7 @@ export class GridControl implements IGridControl {
 
     public getFinalControlParameters(parameters: IParameters): IParameters {
         this._cells.applyControlParametersHooks(parameters, this._hookParams);
-        this._cell.getContext().cell?.onGetControlParameters?.(parameters, { record: this._record });
+        this._cell.getContext().cell?.controlParametersHook?.(parameters, { record: this._record });
         return parameters;
     }
 
@@ -124,7 +124,7 @@ export class GridControl implements IGridControl {
             FillAvailableSpace: { raw: true, type: DataTypes.TwoOptions },
             IsInlineNewEnabled: { raw: false, type: DataTypes.TwoOptions },
             EnableTypeSuffix: { raw: false, type: DataTypes.TwoOptions },
-            EnableOptionSetColors: { raw: this._settings.areOptionSetColorsEnabled(), type: DataTypes.TwoOptions },
+            EnableOptionSetColors: { raw: this._settings.isOptionSetColorsEnabled(), type: DataTypes.TwoOptions },
         };
         Object.assign(parameters, this._fieldControl?.getParameters());
         //what the column's bindings ask for wins

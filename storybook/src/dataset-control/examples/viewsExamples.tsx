@@ -8,7 +8,7 @@ const PROVIDER_VIEWS_CODE = `import { loadDeals } from './views'
 const GridExample = () => {
     const modules = React.useMemo(() => [
         createClientSideRowModelModule(),
-        createEditingModule({ autoSave: false }),
+        createEditingModule({ enableAutoSave: false }),
         createSortingModule(),
         createFilteringModule(),
     ], [])

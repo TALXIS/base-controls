@@ -3,20 +3,20 @@ import { useMemo } from "react";
 
 import { components, OptionProps } from "react-select";
 import { getReferenceDataValue } from "../lookup-many-pill/getReferenceDataValue";
-import { getColorfulLookupManyOptionStyles } from "./styles";
+import { getLookupManyUiColorfulOptionStyles } from "./styles";
 
-/** Props for {@link ColorfulLookupManyOption}. */
-export interface IColorfulLookupManyOptionProps extends OptionProps<ComponentFramework.EntityReference, true, never> {
+/** Props for {@link LookupManyUiColorfulOption}. */
+export interface ILookupManyUiColorfulOptionProps extends OptionProps<ComponentFramework.EntityReference, true, never> {
     /** The record field holding its colour, `color` by default. */
     colorPropertyName?: string;
 }
 
 /** A record offered with a dot in its colour. */
-export const ColorfulLookupManyOption = (props: IColorfulLookupManyOptionProps) => {
+export const LookupManyUiColorfulOption = (props: ILookupManyUiColorfulOptionProps) => {
     const { colorPropertyName = 'color', ...optionProps } = props;
     const theme = useTheme();
     const color = getReferenceDataValue(props.data, colorPropertyName) ?? theme.palette.neutralLight;
-    const styles = useMemo(() => getColorfulLookupManyOptionStyles(color), [color]);
+    const styles = useMemo(() => getLookupManyUiColorfulOptionStyles(color), [color]);
     return <components.Option {...optionProps}>
         <div className={styles.option}>
             <span className={styles.dot} />

@@ -42,7 +42,7 @@ Tabs, sections and controls each have \`getLabel()\`, \`setLabel(label)\`, \`get
 
 ## Saving
 
-\`data.save()\` saves as the ribbon's **Save** does, and \`data.getIsDirty()\` says whether there is anything to save. \`data.entity.addOnSave(handler)\` runs the handler before every save, whoever starts it: **Save**, \`autoSave\` or \`data.save()\`. It runs only once every value is valid. Calling \`context.getEventArgs().preventDefault()\` in the handler cancels the save, and a handler that returns a promise is waited for.
+\`data.save()\` saves as the ribbon's **Save** does, and \`data.getIsDirty()\` says whether there is anything to save. \`data.entity.addOnSave(handler)\` runs the handler before every save, whoever starts it: **Save**, \`enableAutoSave\` or \`data.save()\`. It runs only once every value is valid. Calling \`context.getEventArgs().preventDefault()\` in the handler cancels the save, and a handler that returns a promise is waited for.
 
 {{story: Cancel a save}}
 

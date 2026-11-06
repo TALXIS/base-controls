@@ -108,7 +108,7 @@ Saving a record can change more than the user edited. Dataverse moves a record t
 |---|---|
 | \`FetchXmlDataProvider\` | The values the user sent and nothing else. \`SaveHandler\` writes back only the \`statecode\` it worked out from a saved \`statuscode\`, so the row's lock follows a status change. |
 | \`MemoryDataProvider\` | The values the user sent, which is all there is. |
-| \`TaskDataProvider\` | The values the user sent, then whatever its store's \`onSynchronize\` reports changed since its last read. The provider asks after every write. \`DataverseTaskStore\` reads back every grid task whose \`modifiedon\` moved, the saved one included. |
+| \`TaskDataProvider\` | The values the user sent, then whatever its store's \`synchronize\` reports changed since its last read. The provider asks after every write. \`DataverseTaskStore\` reads back every grid task whose \`modifiedon\` moved, the saved one included. |
 
 ### What every provider should do
 
@@ -120,16 +120,16 @@ Saving a record can change more than the user edited. Dataverse moves a record t
 ### What would use it
 
 - **Locks:** a row closed through its status locks as soon as the save returns. The \`statecode\` write-back in \`SaveHandler\` then goes.
-- **The task grid:** its synchronize after every write already covers this. It moves into the provider it builds on, and \`DataverseTaskStore.onSynchronize\` keeps only the other tasks a write changed.
+- **The task grid:** its synchronize after every write already covers this. It moves into the provider it builds on, and \`DataverseTaskStore.synchronize\` keeps only the other tasks a write changed.
 - **Every grid:** a column a plugin or business rule sets, and a calculated column, show their new value right after a save.
 
 ## 5. Ask for the definitions of named columns only
 
-\`getAvailableColumns\` is the one place a column's definition comes from: its label, type and metadata. Most callers need only a few of them, the columns a view shows, but every call returns all of them.
+\`onGetAvailableColumns\` is the one place a column's definition comes from: its label, type and metadata. Most callers need only a few of them, the columns a view shows, but every call returns all of them.
 
 ### Today
 
-| Provider | What \`getAvailableColumns\` reads |
+| Provider | What \`onGetAvailableColumns\` reads |
 |---|---|
 | \`FetchXmlDataProvider\` | Every attribute of the entity: \`Xrm.Utility.getEntityMetadata\` for the attribute names, then again with all of them, so each call carries the metadata of the whole table, option sets included. |
 | \`MemoryDataProvider\` | The columns it was created with. |
@@ -202,7 +202,7 @@ A provider can make a new record: \`newRecord()\` marks it new, and saving it cr
 - **\`FetchXmlDataProvider\` refuses most new records before sending them.**
   - A save first validates the record's fields, and on a new record that covers every column the provider knows, not only the ones that were set.
   - So columns Dataverse fills in itself on create, such as \`statecode\` and \`ownerid\`, fail as required (*value is required*). So does any required column the creator leaves to the server, such as a task's name.
-- **What works around it:** \`DataverseTaskStore.onCreateTask\` creates through \`Xrm.WebApi.createRecord\` with its own payload.
+- **What works around it:** \`DataverseTaskStore.createTask\` creates through \`Xrm.WebApi.createRecord\` with its own payload.
   - It has its own lookup binds through the navigation properties.
   - It has its own date conversion: a date-only column must get a bare date, or the Web API rejects the create.
   - Both repeat what the provider's \`SaveHandler\` already does for edits.
@@ -228,9 +228,9 @@ A record's expressions decide how its columns behave: validation, required level
 ### Today
 
 - **One slot per column, last writer wins.** \`record.expressions.setValidationExpression(column, fn)\` and the others replace whatever was set. Nothing can be read back from the record, and nothing can be removed.
-- **The grid takes the validation slot on every record** (\`GridValidation._register\`). A form or a script that sets a validator on the same record replaces the grid's, and the grid replaces theirs.
+- **The grid takes the validation slot on every record** (\`GridValidation._setValidation\`). A form or a script that sets a validator on the same record replaces the grid's, and the grid replaces theirs.
 - **Nothing is taken back.** A rule set by a part that has since unmounted stays on the record and keeps running.
-- **What works around it:** the Form keeps its own validation and required-level rules and combines them with the record's when it reads them, instead of setting them on a record it may share with a grid (\`FormRuntime.isFieldValid\`, \`getFieldRequiredLevel\`).
+- **What works around it:** the Form keeps its own validation and required-level rules and combines them with the record's when it reads them, instead of setting them on a record it may share with a grid (\`FormRuntime.getFieldValidation\`, \`getFieldRequiredLevel\`).
 
 ### What every provider should do
 

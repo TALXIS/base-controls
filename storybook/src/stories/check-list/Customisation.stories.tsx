@@ -38,8 +38,8 @@ The checkbox and name columns are drawn by the checklist's own cells. Through \`
 
 | Column | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`fieldMapping.completed\` | \`checkbox\` | \`onRenderButton\`, \`onRenderCheck\` | \`CompletionCheckboxUiComponents\` | The button an item is ticked off with, and the check inside it |
-| \`fieldMapping.name\` | \`name\` | \`onRenderContainer\` | \`NameCellUiComponents\` | The box around the name, which carries the strike-through |
+| \`fieldMapping.completed\` | \`checkbox\` | \`onRenderButton\`, \`onRenderCheck\` | \`ChecklistUiCompletionCheckboxComponents\` | The button an item is ticked off with, and the check inside it |
+| \`fieldMapping.name\` | \`name\` | \`onRenderContainer\` | \`ChecklistUiNameCellComponents\` | The box around the name, which carries the strike-through |
 
 Replacing a slot keeps the cell's behaviour, so ticking and saving work as before.
 

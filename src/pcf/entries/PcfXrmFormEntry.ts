@@ -27,7 +27,7 @@ export interface IFormConfig {
         PrimaryIdAttribute: string;
         PrimaryNameAttribute: string;
     };
-    onSave?: (params: { updatedData: { [key: string]: any }, recordId: string }) => Promise<ISaveResponse>;
+    onSave?: (parameters: { updatedData: { [key: string]: any }, recordId: string }) => Promise<ISaveResponse>;
 }
 
 export interface IPcfXrmFormEntryRenderProps<IInputs extends IPcfXrmFormEntryInputs> {
@@ -100,7 +100,7 @@ export class PcfXrmFormEntry<IInputs extends IPcfXrmFormEntryInputs> {
             columns: columns!,
             data: data ?? {},
             metadata: metadata!,
-            onSave: onSave && (savedRecord => this._save(onSave, savedRecord)),
+            save: onSave && (savedRecord => this._save(onSave, savedRecord)),
         });
         return { record, formXml: formXml! };
     };

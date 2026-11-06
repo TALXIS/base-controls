@@ -1,21 +1,21 @@
 import { useTheme } from "@theme";
 import { useMemo } from "react";
 
-import { ChecklistProgressComponents, IChecklistProgressComponents } from "./components";
-import { getChecklistProgressStyles } from "./styles";
+import { TaskChecklistUiProgressComponents, ITaskChecklistUiProgressComponents } from "./components";
+import { getTaskChecklistUiProgressStyles } from "./styles";
 
-export interface IChecklistProgressProps {
+export interface ITaskChecklistUiProgressProps {
     completedCount: number;
     totalCount: number;
-    components?: Partial<IChecklistProgressComponents>;
+    components?: Partial<ITaskChecklistUiProgressComponents>;
 }
 
 /** How far a checklist has got, as `done/total`. */
-export const ChecklistProgress = (props: IChecklistProgressProps) => {
+export const TaskChecklistUiProgress = (props: ITaskChecklistUiProgressProps) => {
     const { completedCount, totalCount } = props;
-    const components = { ...ChecklistProgressComponents, ...props.components };
+    const components = { ...TaskChecklistUiProgressComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getChecklistProgressStyles(theme), [theme]);
+    const styles = useMemo(() => getTaskChecklistUiProgressStyles(theme), [theme]);
 
     if (totalCount === 0) {
         return null;

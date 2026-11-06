@@ -1,4 +1,4 @@
-import { CHECK_LIST_LABELS } from '@controls/check-list/labels/en';
+import { CHECKLIST_LABELS } from '@controls/checklist/labels/en';
 import { EDIT_COLUMNS_LABELS } from '@controls/dataset-control/adapters/edit-columns/labels/en';
 import { EMPTY_STATE_LABELS } from '@controls/dataset-control/adapters/empty-state/labels/en';
 import { PAGE_SIZE_SWITCHER_LABELS } from '@controls/dataset-control/adapters/page-size-switcher/labels/en';
@@ -22,14 +22,14 @@ import { GRID_SORTING_LABELS } from '@controls/grid/modules/sorting/labels/en';
 import { MAP_LABELS } from '@controls/map/labels/en';
 import { NESTED_CONTROL_RENDERER_LABELS } from '@fields/nested-control-renderer/labels/en';
 import { TASK_GRID_LABELS } from '@controls/task-grid/labels/en';
-import { CHECKLIST_LABELS } from '@controls/task-grid/modules/checklist/labels/en';
+import { TASK_CHECKLIST_LABELS } from '@controls/task-grid/modules/task-checklist/labels/en';
 import { CUSTOM_COLUMNS_LABELS } from '@controls/task-grid/modules/custom-columns/labels/en';
 import { DEPENDENCIES_LABELS } from '@controls/task-grid/modules/dependencies/labels/en';
-import { GANTT_LABELS } from '@controls/task-grid/modules/gantt/labels/en';
-import { LINKS_LABELS } from '@controls/task-grid/modules/gantt/modules/links/labels/en';
-import { MARKERS_LABELS } from '@controls/task-grid/modules/gantt/modules/markers/labels/en';
-import { NON_WORKING_DAYS_LABELS } from '@controls/task-grid/modules/gantt/modules/non-working-days/labels/en';
-import { TASK_TOOLTIP_LABELS } from '@controls/task-grid/modules/gantt/modules/task-tooltip/labels/en';
+import { GANTT_LABELS } from '@controls/task-grid/gantt/labels/en';
+import { LINKS_LABELS } from '@controls/task-grid/gantt/modules/links/labels/en';
+import { MARKERS_LABELS } from '@controls/task-grid/gantt/modules/markers/labels/en';
+import { NON_WORKING_DAYS_LABELS } from '@controls/task-grid/gantt/modules/non-working-days/labels/en';
+import { TASK_TOOLTIP_LABELS } from '@controls/task-grid/gantt/modules/task-tooltip/labels/en';
 import { LOOKUP_MANY_LABELS } from '@controls/task-grid/modules/lookup-many/labels/en';
 import { TEMPLATES_LABELS } from '@controls/task-grid/modules/templates/labels/en';
 import { LEGACY_DATASET_CONTROL_LABELS } from '@legacy/dataset-control/labels';
@@ -40,7 +40,7 @@ import type { ILabelSet } from '..';
 
 /** Every label set base-controls defines, for reading a consumer's translations of them. */
 export const BASE_CONTROLS_LABEL_SETS: ILabelSet[] = [
-    CHECK_LIST_LABELS,
+    CHECKLIST_LABELS,
     EDIT_COLUMNS_LABELS,
     EMPTY_STATE_LABELS,
     PAGE_SIZE_SWITCHER_LABELS,
@@ -64,7 +64,7 @@ export const BASE_CONTROLS_LABEL_SETS: ILabelSet[] = [
     MAP_LABELS,
     NESTED_CONTROL_RENDERER_LABELS,
     TASK_GRID_LABELS,
-    CHECKLIST_LABELS,
+    TASK_CHECKLIST_LABELS,
     CUSTOM_COLUMNS_LABELS,
     DEPENDENCIES_LABELS,
     GANTT_LABELS,

@@ -2,18 +2,18 @@ import { useTheme } from '@theme';
 import React, { useMemo } from 'react';
 import { ShimmerElementType } from '@fluentui/react';
 import { Shimmer } from '@ui';
-import { getSkeletonStyles } from './styles';
+import { getFormUiSkeletonStyles } from './styles';
 
-export interface ISkeletonProps {
+export interface IFormUiSkeletonProps {
     sectionCount?: number;
     fieldsPerSection?: number;
     showNotifications?: boolean;
     showRibbon?: boolean;
 }
 
-export const Skeleton = (props: ISkeletonProps) => {
+export const FormUiSkeleton = (props: IFormUiSkeletonProps) => {
     const theme = useTheme();
-    const styles = useMemo(() => getSkeletonStyles(theme), [theme]);
+    const styles = useMemo(() => getFormUiSkeletonStyles(theme), [theme]);
     const {
         sectionCount = 6,
         fieldsPerSection = 5,

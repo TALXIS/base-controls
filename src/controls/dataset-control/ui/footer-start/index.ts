@@ -1,2 +1,2 @@
-export * from './FooterStart';
+export * from './DatasetControlUiFooterStart';
 export * from './components';

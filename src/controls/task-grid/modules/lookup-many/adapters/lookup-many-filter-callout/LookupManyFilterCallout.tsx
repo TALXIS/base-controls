@@ -5,7 +5,7 @@ import { usePcfContext } from "@pcf";
 import { useDatasetControlModule } from "@controls/dataset-control";
 import { FILTER_OPERATOR_LABEL_KEYS, FILTER_OPERATORS_LABELS, GRID_FILTERING_LABELS, useGridColumnHeader, useGridService } from "@controls/grid";
 import { useTaskRuntime } from "../../../../adapters/root/context";
-import { LookupManyFilter, LookupManyFilterValueKind } from "../../ui";
+import { LookupManyUiFilter, LookupManyFilterValueKind } from "../../ui";
 import { getLookupManyAppearanceComponents } from "../lookup-many-appearance";
 import { LOOKUP_MANY_LABELS } from "../../labels";
 
@@ -98,7 +98,7 @@ export const LookupManyFilterCallout = () => {
     };
 
     const supportedOperators: number[] = column.metadata?.SupportedFilterConditionOperators ?? [];
-    return <LookupManyFilter
+    return <LookupManyUiFilter
         target={header.getElement()}
         title={filteringLabels.get('gridFiltering.filterMenuFilterBy')}
         context={context}

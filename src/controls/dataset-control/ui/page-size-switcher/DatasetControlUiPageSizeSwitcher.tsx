@@ -2,11 +2,11 @@ import { useMemo } from "react";
 import { ContextualMenuItemType } from "@fluentui/react";
 import { useAppTheme } from "@theme";
 import { useSurfaceMenuProps } from "@ui";
-import { IPageSizeSwitcherUiComponents, PageSizeSwitcherUiComponents } from "./components";
-import { getPageSizeSwitcherUiStyles } from "./styles";
+import { IDatasetControlUiPageSizeSwitcherComponents, DatasetControlUiPageSizeSwitcherComponents } from "./components";
+import { getDatasetControlUiPageSizeSwitcherStyles } from "./styles";
 
 /** Props for the page size switcher, as plain UI. */
-export interface IPageSizeSwitcherUiProps {
+export interface IDatasetControlUiPageSizeSwitcherProps {
     /** Which records the page shows, e.g. "1 - 25 of 120". */
     text: string;
     /** The size drawn as the current one. */
@@ -20,14 +20,14 @@ export interface IPageSizeSwitcherUiProps {
     /** Called with the size the user picked. */
     onPageSizeChange: (pageSize: number) => void;
     /** Replacements for its slots. */
-    components?: Partial<IPageSizeSwitcherUiComponents>;
+    components?: Partial<IDatasetControlUiPageSizeSwitcherComponents>;
 }
 
 /** The record range of the page, opening a menu of page sizes. */
-export const PageSizeSwitcher = (props: IPageSizeSwitcherUiProps) => {
-    const components = { ...PageSizeSwitcherUiComponents, ...props.components };
+export const DatasetControlUiPageSizeSwitcher = (props: IDatasetControlUiPageSizeSwitcherProps) => {
+    const components = { ...DatasetControlUiPageSizeSwitcherComponents, ...props.components };
     const appTheme = useAppTheme();
-    const styles = useMemo(() => getPageSizeSwitcherUiStyles(appTheme), [appTheme]);
+    const styles = useMemo(() => getDatasetControlUiPageSizeSwitcherStyles(appTheme), [appTheme]);
     const menuProps = useSurfaceMenuProps({
         items: [
             { key: 'header', itemType: ContextualMenuItemType.Header, text: props.title },

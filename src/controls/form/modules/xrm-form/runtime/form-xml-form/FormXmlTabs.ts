@@ -19,7 +19,7 @@ export class FormXmlTabs implements IFormXmlTabs {
     constructor(tabs: MetadataFormXmlTabs, formXmlModel: IFormXmlModel) {
         Object.assign(this, tabs);
         this.tab = tabs.tab.map(tab => new FormXmlTab(tab, formXmlModel));
-        this._registerTabEvents(this.tab);
+        this._addTabEventListeners(this.tab);
     }
 
     public getExpandedTab(): IFormXmlTab {
@@ -56,7 +56,7 @@ export class FormXmlTabs implements IFormXmlTabs {
         this.events.dispatchEvent("onExpandedTabChanged", newExpandedTab.id);
     }
 
-    private _registerTabEvents(tabs: IFormXmlTab[]): void {
+    private _addTabEventListeners(tabs: IFormXmlTab[]): void {
         tabs.map(tab => {
             tab.events.addEventListener("onVisibilityChanged", (visible) => {
                 this.events.dispatchEvent("onTabVisibilityChanged", tab.id, visible);

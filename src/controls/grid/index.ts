@@ -8,7 +8,7 @@ export * from './labels';
 export * from './modules';
 export type { IGrid, IGridEvents, IGridAgGridInitialOptions, IGridAgGridOptions, GridAgGridInitialOptionsHook, GridAgGridOptionsHook } from './runtime/grid';
 export type { IGridServiceMap, IGridServiceLocator, IGridDeferredService } from './runtime/interfaces';
-export type { IGridCells, IGridCellsRenderOptions, IGridCell, IGridCellEvents, IGridCellHookParameters, GridControlHook, GridControlParametersHook, GridCellThemeHook, IGridCellLoading, IGridCellCommands, GridCellCommandsHook, GridCellLoadingHook, IGridFieldControl, IGridCellTheme, IGridControl } from './runtime/cells';
+export type { IGridCells, IGridCellsRenderParameters, IGridCell, IGridCellEvents, IGridCellHookParameters, GridControlHook, GridControlParametersHook, GridCellThemeHook, IGridCellLoading, IGridCellCommands, GridCellCommandsHook, GridCellLoadingHook, IGridFieldControl, IGridCellTheme, IGridControl } from './runtime/cells';
 export type { IGridColumnHeaders, IGridColumnHeader, IGridColumnHeaderEvents, IColumnHeaderAdornment, IColumnMenuSection, GridColumnMenuSectionsHook, GridColumnMenuItemsHook, GridColumnHeaderThemeHook, GridColumnHeaderAdornmentsHook, IGridColumnHeaderTheme } from './runtime/column-header';
 export type { IGridColumns, GridColumnDefinitionsHook, IGridColumnCellContext, IGridColumnHeaderContext, IGridColumnContext, IGridColDef, IGridColDefOverride } from './runtime/columns';
 export { DEFAULT_COLUMN_WIDTH, getColumnContext } from './runtime/columns';

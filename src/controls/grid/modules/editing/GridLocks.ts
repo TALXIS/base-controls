@@ -11,16 +11,16 @@ declare module "../../runtime/columns/colDef" {
     }
     interface IGridColumnCellContext {
         /** Whether the control takes input where the cell stands, with no editor to open. */
-        oneClickEdit?: boolean;
-        /** Decides whether a cell is locked, after the cell-level `registerLock` hooks. */
-        onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
+        enableOneClickEdit?: boolean;
+        /** Decides whether a cell is locked, after the cell-level `addLockHook` hooks. */
+        lockHook?: (result: IGridLock, parameters: { record: IRecord }) => void;
     }
 }
 
 declare module "../../runtime/rows/GridRows" {
     interface IGridRowSettings {
-        /** Locks a record as a whole, after the record-level `registerLock` hooks. */
-        onGetLock?: (result: IGridLock, params: { record: IRecord }) => void;
+        /** Locks a record as a whole, after the record-level `addLockHook` hooks. */
+        lockHook?: (result: IGridLock, parameters: { record: IRecord }) => void;
     }
 }
 
@@ -28,7 +28,7 @@ declare module "../../runtime/rows/GridRows" {
 export type IGridLockLevel = 'column' | 'record' | 'cell';
 
 /** What is asked about: a column, a record's row, or both for a cell. */
-export interface IGridLockContext {
+export interface IGridLockHookParameters {
     record?: IRecord;
     columnName?: string;
 }
@@ -44,7 +44,7 @@ export interface IGridLock {
 }
 
 /** A hook over whether something is locked, handed the context it is asked about. */
-export type GridLockHook = (result: IGridLock, context: IGridLockContext) => void;
+export type GridLockHook = (result: IGridLock, parameters: IGridLockHookParameters) => void;
 
 export interface IGridLocksParameters {
     services: IGridServiceLocator;
@@ -53,13 +53,13 @@ export interface IGridLocksParameters {
 /** Whether a column, a record's row or a cell is locked. */
 export interface IGridLocks {
     /** Whether what the context names is locked, and at which level. */
-    get(context?: IGridLockContext): IGridLockResult;
+    get(parameters?: IGridLockHookParameters): IGridLockResult;
     /**
-     * Registers a hook over any level; it is handed the context it is asked about.
+     * Adds a hook over any level; it is handed the context it is asked about.
      *
-     * @param priority Ascending: a higher number gets the later word.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerLock(hook: GridLockHook, priority?: number): () => void;
+    addLockHook(hook: GridLockHook, priority?: number): () => void;
 }
 
 export class GridLocks implements IGridLocks {
@@ -70,8 +70,8 @@ export class GridLocks implements IGridLocks {
         this._services = parameters.services;
     }
 
-    public get(context: IGridLockContext = {}): IGridLockResult {
-        const { record, columnName } = context;
+    public get(parameters: IGridLockHookParameters = {}): IGridLockResult {
+        const { record, columnName } = parameters;
         const colDef = columnName ? this._getColDef(columnName) : undefined;
         if (columnName && this._isColumnLocked(columnName, colDef)) {
             return { isLocked: true, lockedBy: 'column' };
@@ -85,8 +85,8 @@ export class GridLocks implements IGridLocks {
         return { isLocked: false };
     }
 
-    public registerLock(hook: GridLockHook, priority?: number): () => void {
-        return this._hooks.register(hook, priority);
+    public addLockHook(hook: GridLockHook, priority?: number): () => void {
+        return this._hooks.add(hook, priority);
     }
 
     //a column set as locked is final, no hook can open it
@@ -97,20 +97,20 @@ export class GridLocks implements IGridLocks {
     private _isRecordLocked(record: IRecord): boolean {
         const result: IGridLock = { isLocked: !record.isActive() };
         this._hooks.apply(result, { record });
-        this._services.get('settings').getRowSettings().onGetLock?.(result, { record });
+        this._services.get('settings').getRowSettings().lockHook?.(result, { record });
         return result.isLocked;
     }
 
     private _isCellLocked(record: IRecord, columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
         const result: IGridLock = { isLocked: false };
         this._hooks.apply(result, { record, columnName });
-        getColumnContext(colDef).cell?.onGetLock?.(result, { record });
+        getColumnContext(colDef).cell?.lockHook?.(result, { record });
         return result.isLocked;
     }
 
-    private _applyHooks(isLocked: boolean, context: IGridLockContext): boolean {
+    private _applyHooks(isLocked: boolean, parameters: IGridLockHookParameters): boolean {
         const result: IGridLock = { isLocked };
-        this._hooks.apply(result, context);
+        this._hooks.apply(result, parameters);
         return result.isLocked;
     }
 

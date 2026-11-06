@@ -15,7 +15,7 @@ const SCHEMA: IDataverseDependenciesSchema = {
     },
 };
 
-export interface ITalxisDependenciesModuleParameters extends Omit<IDependenciesParameters, 'onCreateStore'> { }
+export interface ITalxisDependenciesModuleParameters extends Omit<IDependenciesParameters, 'createStore'> { }
 
 /** Dependencies kept in TALXIS's task dependency table. */
 export const createTalxisDependenciesModule = (parameters: ITalxisDependenciesModuleParameters = {}): IDependenciesModule => createDataverseDependenciesModule({ ...SCHEMA, ...parameters });

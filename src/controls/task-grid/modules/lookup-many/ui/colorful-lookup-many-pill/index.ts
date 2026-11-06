@@ -1,1 +1,1 @@
-export * from './ColorfulLookupManyPill';
+export * from './LookupManyUiColorfulPill';

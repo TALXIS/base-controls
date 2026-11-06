@@ -3,7 +3,7 @@ import { useOpenErrorDialog } from "@pcf";
 import { ErrorMessageBoundary } from "@ui";
 import { Grid, IGridCellParams, useGridCell, useGridField } from "@controls/grid";
 import { PREDECESSORS_COLUMN_NAME } from "../../constants";
-import { DependencyCount } from "../../ui";
+import { DependenciesUiCount } from "../../ui";
 
 const DependenciesCellCount = () => {
     const cell = useGridCell();
@@ -13,7 +13,7 @@ const DependenciesCellCount = () => {
     const direction = cell.getColumnName() === PREDECESSORS_COLUMN_NAME ? 'predecessors' : 'successors';
     const count = (field?.getValue() ?? []).length;
     return <ErrorMessageBoundary error={dependencies.getError()} onOpenDetails={openErrorDialog}>
-        <DependencyCount direction={direction} count={count} components={dependencies.components.count} />
+        <DependenciesUiCount direction={direction} count={count} components={dependencies.components.count} />
     </ErrorMessageBoundary>;
 };
 

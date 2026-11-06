@@ -1,10 +1,10 @@
 /** The replaceable pieces of the footer. */
-export interface IFooterUiComponents {
+export interface IDatasetControlUiFooterComponents {
     /** The box of the footer. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
-/** The defaults for {@link IFooterUiComponents}. */
-export const FooterUiComponents: IFooterUiComponents = {
+/** The defaults for {@link IDatasetControlUiFooterComponents}. */
+export const DatasetControlUiFooterComponents: IDatasetControlUiFooterComponents = {
     onRenderContainer: props => <div {...props} />,
 };

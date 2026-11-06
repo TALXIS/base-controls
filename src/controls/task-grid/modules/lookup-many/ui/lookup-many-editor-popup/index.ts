@@ -1,2 +1,2 @@
-export * from './LookupManyEditorPopup';
+export * from './LookupManyUiEditorPopup';
 export * from './components';

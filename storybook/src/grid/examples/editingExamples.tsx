@@ -11,7 +11,7 @@ const GridExample = () => {
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
             <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
+                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
                 onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
                 onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
                 height='420px' />
@@ -77,10 +77,10 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
         <DatasetControl.Body>
             <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
+                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
                 colDefs={{
-                    hours: { context: { cell: { onGetValidation: validateHours } } },
-                    comment: { context: { cell: { onGetValidation: validateComment } } },
+                    hours: { context: { cell: { validationHook: validateHours } } },
+                    comment: { context: { cell: { validationHook: validateComment } } },
                 }}
                 height='420px' />
         </DatasetControl.Body>
@@ -112,9 +112,9 @@ const GridExample = () => {
             <DatasetControl.Body>
                 <Grid
                     key={isWeekClosed ? 'closed' : 'open'}
-                    modules={[createClientSideRowModelModule(), ...(isWeekClosed ? [] : [createEditingModule({ autoSave: true })])]}
+                    modules={[createClientSideRowModelModule(), ...(isWeekClosed ? [] : [createEditingModule({ enableAutoSave: true })])]}
                     rowSettings={{
-                        onGetLock: (result, { record }) => {
+                        lockHook: (result, { record }) => {
                             if (Number(record.getValue('status')) === APPROVED) {
                                 result.isLocked = true
                             }
@@ -125,7 +125,7 @@ const GridExample = () => {
                         rate: {
                             context: {
                                 cell: {
-                                    onGetLock: (result, { record }) => {
+                                    lockHook: (result, { record }) => {
                                         if (!isBillable(record)) {
                                             result.isLocked = true
                                         }
@@ -174,7 +174,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
         <DatasetControl.Body>
             <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
+                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -195,8 +195,8 @@ const GridExample = () => {
         <MessageBar>To invoice for last week: {amountToInvoice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</MessageBar>
         <DatasetControl.Body>
             <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
-                colDefs={{ billable: { context: { cell: { oneClickEdit: true } } } }}
+                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
+                colDefs={{ billable: { context: { cell: { enableOneClickEdit: true } } } }}
                 onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
                 height='420px' />
         </DatasetControl.Body>
@@ -240,7 +240,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: products })}>
         <DatasetControl.Body>
             <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
+                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
                 colDefs={{
                     //wide enough for the button's text
                     [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRendererParams: { components: SAVE_STATUS } },

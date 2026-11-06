@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getEmptyStateUiStyles = () => mergeStyleSets({
+export const getDatasetControlUiEmptyStateStyles = () => mergeStyleSets({
     datasetControlEmptyState: {
         flex: 1,
         display: 'flex',

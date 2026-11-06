@@ -35,7 +35,7 @@ export class DataverseDependenciesStore implements IDependenciesStore {
         this._parameters = parameters;
     }
 
-    public async onLoadDependencies(taskIds: string[]): Promise<ITaskDependency[]> {
+    public async loadDependencies(taskIds: string[]): Promise<ITaskDependency[]> {
         const { primaryIdAttribute } = await this._getMetadata();
         const rows = await retrieveInBatches(taskIds, ids => this._retrieve(ids, primaryIdAttribute));
         //a dependency whose ends fall in different batches comes back twice
@@ -49,16 +49,16 @@ export class DataverseDependenciesStore implements IDependenciesStore {
         return [...dependencies.values()];
     }
 
-    public async onCreateDependency(dependency: TaskDependencyCreate): Promise<ITaskDependency> {
+    public async createDependency(dependency: TaskDependencyCreate): Promise<ITaskDependency> {
         const { id } = await this._getPcfContext().webAPI.createRecord(this._parameters.entityName, await this._toPayload(dependency));
         return { ...dependency, id };
     }
 
-    public async onUpdateDependency(dependency: ITaskDependency): Promise<void> {
+    public async updateDependency(dependency: ITaskDependency): Promise<void> {
         await this._getPcfContext().webAPI.updateRecord(this._parameters.entityName, dependency.id, await this._toPayload(dependency));
     }
 
-    public async onDeleteDependency(dependencyId: string): Promise<void> {
+    public async deleteDependency(dependencyId: string): Promise<void> {
         await this._getPcfContext().webAPI.deleteRecord(this._parameters.entityName, dependencyId);
     }
 

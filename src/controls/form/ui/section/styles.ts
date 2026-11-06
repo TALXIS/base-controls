@@ -1,15 +1,15 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { ISectionProps } from "./Section";
+import { IFormUiSectionProps } from "./Section";
 
-interface ISectionStyleParams {
-    section: ISectionProps;
+interface ISectionStyleParameters {
+    section: IFormUiSectionProps;
     theme: ITheme;
 }
 
 const SECTION_LAYOUT_GAP = 10;
 const SECTION_DEFAULT_ROW_HEIGHT = 10;
 
-export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
+export const getFormUiSectionStyles = ({ section, theme }: ISectionStyleParameters) => {
     return mergeStyleSets({
         section: {
             borderRadius: 8,

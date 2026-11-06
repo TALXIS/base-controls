@@ -1,4 +1,4 @@
-import { DatasetControlUi, IHeaderEndUiComponents } from "../../ui";
+import { DatasetControlUi, IDatasetControlUiHeaderEndComponents } from "../../ui";
 import { DatasetControlRegionContext } from "../region";
 
 /** Props for `DatasetControl.Header.End`. */
@@ -8,7 +8,7 @@ export interface IHeaderEndProps {
     /** Added to the region's box. */
     className?: string;
     /** Replacements for the region's slots. */
-    components?: Partial<IHeaderEndUiComponents>;
+    components?: Partial<IDatasetControlUiHeaderEndComponents>;
 }
 
 /** The header's right region, such as for the ribbon, Edit columns and the quick find. */

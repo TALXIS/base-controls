@@ -1,22 +1,22 @@
 import { useMemo } from "react";
-import { HeaderItems } from "../header-item";
+import { DatasetControlUiHeaderItems } from "../header-item";
 import { getClassNames } from "@core";
-import { HeaderStartUiComponents, IHeaderStartUiComponents } from "./components";
-import { getHeaderStartUiStyles } from "./styles";
+import { DatasetControlUiHeaderStartComponents, IDatasetControlUiHeaderStartComponents } from "./components";
+import { getDatasetControlUiHeaderStartStyles } from "./styles";
 
 /** Props for the header's start region, as plain UI. */
-export interface IHeaderStartUiProps {
+export interface IDatasetControlUiHeaderStartProps {
     /** The parts drawn against the left. */
     children?: React.ReactNode;
     /** Added to its box. */
     className?: string;
     /** Replacements for its slots. */
-    components?: Partial<IHeaderStartUiComponents>;
+    components?: Partial<IDatasetControlUiHeaderStartComponents>;
 }
 
 /** The header's left region, sized to what it holds. */
-export const HeaderStart = (props: IHeaderStartUiProps) => {
-    const components = { ...HeaderStartUiComponents, ...props.components };
-    const styles = useMemo(() => getHeaderStartUiStyles(), []);
-    return components.onRenderContainer({ className: getClassNames([styles.datasetControlHeaderStart, props.className]), children: <HeaderItems>{props.children}</HeaderItems> });
+export const DatasetControlUiHeaderStart = (props: IDatasetControlUiHeaderStartProps) => {
+    const components = { ...DatasetControlUiHeaderStartComponents, ...props.components };
+    const styles = useMemo(() => getDatasetControlUiHeaderStartStyles(), []);
+    return components.onRenderContainer({ className: getClassNames([styles.datasetControlHeaderStart, props.className]), children: <DatasetControlUiHeaderItems>{props.children}</DatasetControlUiHeaderItems> });
 };

@@ -1,2 +1,2 @@
-export * from './EmptyState';
+export * from './DatasetControlUiEmptyState';
 export * from './components';

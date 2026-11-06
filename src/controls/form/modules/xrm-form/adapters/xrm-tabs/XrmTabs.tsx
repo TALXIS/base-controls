@@ -1,10 +1,10 @@
 import { Form } from "../../../../Form";
 import { XrmTab } from "../xrm-tab";
-import { useTabs } from "./useTabs";
+import { useXrmTabs } from "./useXrmTabs";
 import { useXrmFormComponents } from "../xrm-form/context";
 
 export const XrmTabs = () => {
-    const tabs = useTabs();
+    const tabs = useXrmTabs();
     const selectedTab = tabs.getExpandedTab();
     const components = useXrmFormComponents();
 

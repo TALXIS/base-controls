@@ -2,7 +2,7 @@ import { mergeStyleSets } from "@fluentui/react";
 import { IAlignment } from "@core";
 
 /** What the grid tells a click on a cell's commands apart by. */
-export const CELL_COMMANDS_CLASS_NAME = 'talxis__baseControl__GridCellCommands';
+export const CELL_COMMANDS_CLASS = 'talxis__baseControl__GridCellCommands';
 
 //what a bar is down to once everything it holds is in the menu: the button that opens it
 const OVERFLOW_BUTTON_WIDTH = 40;

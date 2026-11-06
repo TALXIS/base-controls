@@ -1,8 +1,8 @@
-export * from './CheckList';
+export * from './Checklist';
 export * from './labels';
-export type { ICheckListFieldMapping, IGridCheckList } from './modules/check-list/GridCheckList';
-export * from './modules/check-list/adapters/completion-cell';
-export * from './modules/check-list/adapters/name-cell';
-export * from './modules/check-list/ui/completion-checkbox';
-export * from './modules/check-list/ui/name-cell';
-export * from './sortCheckListProvider';
+export type { IChecklistFieldMapping, IGridChecklist } from './modules/checklist/GridChecklist';
+export * from './modules/checklist/adapters/completion-cell';
+export * from './modules/checklist/adapters/name-cell';
+export * from './modules/checklist/ui/completion-checkbox';
+export * from './modules/checklist/ui/name-cell';
+export * from './sortChecklistProvider';

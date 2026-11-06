@@ -10,12 +10,12 @@ export interface ITaskSavingChainsEvents {
     onChainsChanged: (taskIds: string[]) => void;
 }
 
-export interface ITaskSavingChainLinksParameters {
+export interface ITaskSavingChainLinksHookParameters {
     taskId: string;
 }
 
 /** Adds the tasks a change to one task moves, such as its successors. */
-export type TaskSavingChainLinksHook = (result: { linkedTaskIds: string[] }, parameters: ITaskSavingChainLinksParameters) => void;
+export type TaskSavingChainLinksHook = (result: { linkedTaskIds: string[] }, parameters: ITaskSavingChainLinksHookParameters) => void;
 
 /** The tasks a save can reach, held as saving until the save and the sync after it settle. */
 export interface ITaskSavingChains {
@@ -23,10 +23,10 @@ export interface ITaskSavingChains {
     /** Whether the task is in a chain whose save has run long enough to show. */
     isTaskSaving(taskId: string): boolean;
     /**
-     * Registers a hook over the tasks a change to one task moves.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over the tasks a change to one task moves.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerLinks(hook: TaskSavingChainLinksHook, priority?: number): () => void;
+    addLinksHook(hook: TaskSavingChainLinksHook, priority?: number): () => void;
     /** Runs a write other than a record save, holding the chain of the tasks it touches. */
     track<T>(taskIds: string[], operation: () => Promise<T>): Promise<T>;
 }
@@ -59,8 +59,8 @@ export class TaskSavingChains implements ITaskSavingChains {
         return (this._counts.get(taskId) ?? 0) > 0;
     }
 
-    public registerLinks(hook: TaskSavingChainLinksHook, priority?: number): () => void {
-        return this._linksHooks.register(hook, priority);
+    public addLinksHook(hook: TaskSavingChainLinksHook, priority?: number): () => void {
+        return this._linksHooks.add(hook, priority);
     }
 
     public async track<T>(taskIds: string[], operation: () => Promise<T>): Promise<T> {

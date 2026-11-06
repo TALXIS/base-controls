@@ -1,3 +1,3 @@
-export * from './EditColumnsColumnList';
-export * from './EditColumnsColumn';
+export * from './DatasetControlUiEditColumnsColumnList';
+export * from './DatasetControlUiEditColumnsColumn';
 export * from './components';

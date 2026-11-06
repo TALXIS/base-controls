@@ -12,7 +12,7 @@ export class DataverseProjectStore implements IProjectStore {
         this._parameters = parameters;
     }
 
-    public async onLoadProject(): Promise<IProjectData> {
+    public async loadProject(): Promise<IProjectData> {
         const { entityName, id, startDateColumn, endDateColumn, columns = [] } = this._parameters;
         const pcfContext = this._taskRuntime.services.get('pcfContext');
         const nameColumn = (await pcfContext.utils.getEntityMetadata(entityName, [])).PrimaryNameAttribute;

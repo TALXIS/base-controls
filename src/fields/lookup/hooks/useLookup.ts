@@ -180,7 +180,7 @@ export const useLookup = (props: ILookup): [
     };
 
     const createRecord = async (entityName: string) => {
-        const formParameters = props.onGetOnCreateFormParameters?.(entityName)
+        const formParameters = props.getOnCreateFormParameters?.(entityName)
         const result = await context.navigation.openForm({
             entityName: entityName,
             useQuickCreateForm: true

@@ -1,23 +1,23 @@
 import { useMemo } from "react";
 import { useCompact } from "@ui";
-import { EditColumnsButtonUiComponents, IEditColumnsButtonUiComponents } from "./components";
-import { getEditColumnsButtonUiStyles } from "./styles";
+import { DatasetControlUiEditColumnsButtonComponents, IDatasetControlUiEditColumnsButtonComponents } from "./components";
+import { getDatasetControlUiEditColumnsButtonStyles } from "./styles";
 
 /** Props for the button that opens the column editor. */
-export interface IEditColumnsButtonUiProps {
+export interface IDatasetControlUiEditColumnsButtonProps {
     /** The button's text. */
     text: string;
     /** Opens the editor. */
     onClick: () => void;
     disabled?: boolean;
     /** Replacements for its slots. */
-    components?: Partial<IEditColumnsButtonUiComponents>;
+    components?: Partial<IDatasetControlUiEditColumnsButtonComponents>;
 }
 
 /** The button that opens the column editor; only its icon, with the text as a tooltip, while compact. */
-export const EditColumnsButton = (props: IEditColumnsButtonUiProps) => {
-    const components = { ...EditColumnsButtonUiComponents, ...props.components };
-    const styles = useMemo(() => getEditColumnsButtonUiStyles(), []);
+export const DatasetControlUiEditColumnsButton = (props: IDatasetControlUiEditColumnsButtonProps) => {
+    const components = { ...DatasetControlUiEditColumnsButtonComponents, ...props.components };
+    const styles = useMemo(() => getDatasetControlUiEditColumnsButtonStyles(), []);
     const isCompact = useCompact();
     //always wrapped, so the button is not remounted when it turns compact
     return components.onRenderTooltip({

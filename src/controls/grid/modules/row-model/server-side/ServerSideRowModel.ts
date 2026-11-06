@@ -21,7 +21,7 @@ export class ServerSideRowModel implements IGridRowModel {
     constructor(parameters: IServerSideRowModelParameters) {
         this._services = parameters.services;
         this._datasource = new ServerSideDatasource(this._services);
-        this._services.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
+        this._services.get('grid').addAgGridOptionsHook(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
     }
 
     //AG Grid keeps what is open across the purge, by row id
@@ -53,7 +53,7 @@ export class ServerSideRowModel implements IGridRowModel {
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {
         result.options.serverSideDatasource = this._datasource;
         result.options.isServerSideGroupOpenByDefault = this._isGroupOpenByDefault;
-        this._grouping?.onAgGridOptions();
+        this._grouping?.applyAgGridOptions();
     };
 
     private _isGroupOpenByDefault = (params: IsServerSideGroupOpenByDefaultParams): boolean => this._grouping?.isGroupOpenByDefault(params.rowNode) ?? false;

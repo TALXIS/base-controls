@@ -1,8 +1,8 @@
 import { ColDef, Column } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IColumn, IRecord } from "@talxis/client-libraries";
 import { IContextualMenuItem } from "@fluentui/react";
-import { IAlignment } from "@core";
-import { IGridInternalServiceLocator } from "..";
+import { IAlignment, IEventSubscriber } from "@core";
+import { IGridServiceLocatorInternal } from "..";
 import { getColumnContext, IGridColumnContext } from "../columns/colDef";
 import { GridColumnHeaderTheme, IGridColumnHeaderTheme } from "./GridColumnHeaderTheme";
 import { IColumnHeaderAdornment } from "./GridColumnHeaders";
@@ -13,7 +13,7 @@ export interface IGridColumnHeaderEvents {
 }
 
 export interface IGridColumnHeaderParameters {
-    services: IGridInternalServiceLocator;
+    services: IGridServiceLocatorInternal;
     /** The column AG Grid is drawing. */
     column: Column;
     /** The element AG Grid draws the header in. */
@@ -22,7 +22,7 @@ export interface IGridColumnHeaderParameters {
 
 /** The column a header is drawn for, with what the modules add to it. */
 export interface IGridColumnHeader {
-    readonly events: IEventEmitter<IGridColumnHeaderEvents>;
+    readonly events: IEventSubscriber<IGridColumnHeaderEvents>;
     /** What this header is drawn in. */
     getTheme(): IGridColumnHeaderTheme;
     /** Asks for the menu to open. */
@@ -51,7 +51,7 @@ export interface IGridColumnHeader {
 
 export class GridColumnHeader implements IGridColumnHeader {
     public readonly events: IEventEmitter<IGridColumnHeaderEvents> = new EventEmitter<IGridColumnHeaderEvents>();
-    private _services: IGridInternalServiceLocator;
+    private _services: IGridServiceLocatorInternal;
     private _column: Column;
     private _element?: HTMLElement;
     private _theme: IGridColumnHeaderTheme;

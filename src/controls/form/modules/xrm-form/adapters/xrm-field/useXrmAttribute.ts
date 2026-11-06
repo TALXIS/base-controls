@@ -1,9 +1,9 @@
 import { useRerender, useEventEmitter } from "@core";
 import { IFormXmlAttribute } from "../../runtime/form-xml-form";
-import { useFormXmlContext } from "../context";
+import { useFormXmlModel } from "../context";
 
 export const useXrmAttribute = (name?: string): IFormXmlAttribute | null => {
-    const formXmlModel = useFormXmlContext();
+    const formXmlModel = useFormXmlModel();
     const attribute = name ? formXmlModel.getAttribute(name) : null;
     const { rerender } = useRerender();
 

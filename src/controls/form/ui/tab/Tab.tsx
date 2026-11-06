@@ -2,9 +2,9 @@ import React, { useEffect, useMemo } from "react";
 import { TabContext } from "./context";
 import { ILayoutBreakpoints, Layout } from "../layout";
 import { useCalculatedColumns } from "../layout/useCalculatedColumns";
-import { getTabStyles } from "./styles";
+import { getFormUiTabStyles } from "./styles";
 
-export interface ITabProps {
+export interface IFormUiTabProps {
     id: string;
     label?: string;
     children?: React.ReactNode;
@@ -13,12 +13,12 @@ export interface ITabProps {
     onColumnsPerRowChanged?: (columnsPerRow: number) => void;
 }
 
-export const Tab = (props: ITabProps) => {
+export const FormUiTab = (props: IFormUiTabProps) => {
     const { children, id } = props;
     const containerRef = React.useRef<HTMLDivElement>(null);
     const columnComponents = React.Children.toArray(props.children).filter(child => React.isValidElement(child));
     const breakpoints: Partial<ILayoutBreakpoints> = { ...{ lg: columnComponents.length }, ...props.layout };
-    const styles = useMemo(() => getTabStyles(), []);
+    const styles = useMemo(() => getFormUiTabStyles(), []);
     const columnBreakpoints = { ...Layout.createDefaultColumnBreakpoints(breakpoints), ...props.layout };
 
     const { containerStyles, columnsPerRow } = useCalculatedColumns({

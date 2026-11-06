@@ -1,4 +1,4 @@
-export interface IModeParams {
+export interface IModeParameters {
     allocatedHeight?: number;
     allocatedWidth?: number;
     isControlDisabled?: boolean;
@@ -17,12 +17,12 @@ export class Mode implements ComponentFramework.Mode {
     private _isFullScreen: boolean = false;
     private _trackContainerResize: boolean = false;
 
-    constructor(params: IModeParams = {}) {
-        this.allocatedHeight = params.allocatedHeight ?? -1;
-        this.allocatedWidth = params.allocatedWidth ?? -1;
-        this.isControlDisabled = params.isControlDisabled ?? false;
-        this.isVisible = params.isVisible ?? true;
-        this.label = params.label ?? "";
+    constructor(parameters: IModeParameters = {}) {
+        this.allocatedHeight = parameters.allocatedHeight ?? -1;
+        this.allocatedWidth = parameters.allocatedWidth ?? -1;
+        this.isControlDisabled = parameters.isControlDisabled ?? false;
+        this.isVisible = parameters.isVisible ?? true;
+        this.label = parameters.label ?? "";
     }
 
     public setControlState(state: ComponentFramework.Dictionary): boolean {

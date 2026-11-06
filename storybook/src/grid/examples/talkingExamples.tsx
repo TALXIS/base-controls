@@ -31,7 +31,7 @@ const GridExample = () => {
 
     //the ribbon loads again whenever the selection changes
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
-        { id: 'assign', label: 'Assign to me', iconName: 'AddFriend', isDisabled: provider.getSelectedRecordIds().length === 0, onExecute: assignToMe },
+        { id: 'assign', label: 'Assign to me', iconName: 'AddFriend', disabled: provider.getSelectedRecordIds().length === 0, onExecute: assignToMe },
         { id: 'sort', label: 'Deadline first', iconName: 'SortUp', onExecute: sortByDeadline },
     ]
 
@@ -48,7 +48,7 @@ const GridExample = () => {
             <Grid
                 modules={[
                     createClientSideRowModelModule(),
-                    createEditingModule({ autoSave: true }),
+                    createEditingModule({ enableAutoSave: true }),
                     createRowSelectionModule({ mode: 'multiple' }),
                     createSortingModule(),
                 ]}

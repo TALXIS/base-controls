@@ -1,4 +1,4 @@
-import { Pivot } from "./pivot";
+import { FormUiPivot } from "./pivot";
 
 export interface ITabsComponentProps {
     children: React.ReactNode;
@@ -6,10 +6,10 @@ export interface ITabsComponentProps {
     onTabChange: (tabId: string) => void;
 }
 
-export interface ITabsComponents {
+export interface IFormUiTabsComponents {
     onRenderTabs: (props: ITabsComponentProps) => JSX.Element;
 }
 
-export const TabComponents: ITabsComponents = {
-    onRenderTabs: Pivot
+export const FormUiTabComponents: IFormUiTabsComponents = {
+    onRenderTabs: FormUiPivot
 };

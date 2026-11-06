@@ -1,18 +1,18 @@
 import type { ColDef, SuppressKeyboardEventParams } from "ag-grid-community";
-import { DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IInternalDataProvider, IRawRecord, IRecord, IRecordSaveOperationResult, isQuickFindMatch, LookupCondition, Operators, unwrapConditionValue } from "@talxis/client-libraries";
+import { DataTypes, EventEmitter, IColumn, IDataProvider, IInternalDataProvider, IRawRecord, IRecord, IRecordSaveOperationResult, isQuickFindMatch, LookupCondition, Operators, unwrapConditionValue } from "@talxis/client-libraries";
 import type { IColumnMenuSection, IGrid } from "@controls/grid";
-import { ErrorHelper } from "@core";
+import { ErrorHelper, IEventSubscriber } from "@core";
 import { type LabelsOf } from "@labels";
 import type { ITaskColumnMatcher, ITaskDataProvider } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
-import { TaskColumnValues } from "../column-values";
+import { TaskColumnValues } from "../../runtime/column-values";
 import { LOOKUP_MANY_LABELS } from "./labels";
 import { LookupManyCell } from "./adapters/lookup-many-cell";
 import { LookupManyCellEditor } from "./adapters/lookup-many-cell-editor";
 import { LookupManyColumnHeader } from "./adapters/lookup-many-column-header";
-import type { ILookupManyEditorPopupComponents, ILookupManyFilterComponents, ILookupManyPillsComponents, ILookupManySelectComponents } from "./ui";
+import type { ILookupManyUiEditorPopupComponents, ILookupManyUiFilterComponents, ILookupManyUiPillsComponents, ILookupManyUiSelectComponents } from "./ui";
 
 type Reference = ComponentFramework.EntityReference;
 type Condition = ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression;
@@ -50,10 +50,10 @@ export interface ILookupManyOptionsParameters<TColumn extends ILookupManyColumn 
 /** Where lookup-many values are kept. */
 export interface ILookupManyStore<TColumn extends ILookupManyColumn = ILookupManyColumn> {
     /** Every mapped column's references of these tasks, by task id and column name. */
-    onLoadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: Reference[] }>>;
-    onSaveValue(taskId: string, columnName: string, value: Reference[]): Promise<void>;
+    loadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: Reference[] }>>;
+    saveValue(taskId: string, columnName: string, value: Reference[]): Promise<void>;
     /** A provider over the records the column can take, `undefined` for a read-only cell. */
-    onCreateOptionsProvider(parameters: ILookupManyOptionsParameters<TColumn>): IDataProvider | undefined;
+    createOptionsProvider(parameters: ILookupManyOptionsParameters<TColumn>): IDataProvider | undefined;
     /** Called as the lookup-many columns go. */
     destroy?(): void;
 }
@@ -61,19 +61,19 @@ export interface ILookupManyStore<TColumn extends ILookupManyColumn = ILookupMan
 /** The replaceable parts of what the lookup-many columns draw, by the piece they belong to. */
 export interface ILookupManyComponents {
     /** The records in a cell. */
-    cell?: Partial<ILookupManyPillsComponents>;
+    cell?: Partial<ILookupManyUiPillsComponents>;
     /** The picker a cell is edited in. */
-    editor?: Partial<ILookupManySelectComponents>;
+    editor?: Partial<ILookupManyUiSelectComponents>;
     /** The box the editor pops out in over the cell. */
-    editorPopup?: Partial<ILookupManyEditorPopupComponents>;
+    editorPopup?: Partial<ILookupManyUiEditorPopupComponents>;
     /** A column's filter callout. */
-    filter?: Partial<ILookupManyFilterComponents>;
+    filter?: Partial<ILookupManyUiFilterComponents>;
 }
 
 export interface ILookupManyParameters<TColumn extends ILookupManyColumn = ILookupManyColumn> {
     /** The lookup-many columns by name. */
     columns: { [columnName: string]: TColumn };
-    onCreateStore: (taskRuntime: ITaskRuntime) => ILookupManyStore<TColumn>;
+    createStore: (taskRuntime: ITaskRuntime) => ILookupManyStore<TColumn>;
     components?: ILookupManyComponents;
 }
 
@@ -84,7 +84,7 @@ export interface ILookupManyEvents {
 
 /** The `lookupMany` module with the columns it maps and their values. */
 export interface ILookupMany {
-    events: IEventEmitter<ILookupManyEvents>;
+    readonly events: IEventSubscriber<ILookupManyEvents>;
     readonly components: ILookupManyComponents;
     getColumn(columnName: string): ILookupManyColumn | undefined;
     /** The task's references in the column, none until the first load. */
@@ -124,11 +124,11 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         this._taskRuntime = taskRuntime;
         this._parameters = parameters;
         this.components = parameters.components ?? {};
-        this._store = parameters.onCreateStore(taskRuntime);
+        this._store = parameters.createStore(taskRuntime);
         this._values = new TaskColumnValues({
             taskRuntime,
             columnNames: () => Object.keys(parameters.columns),
-            onLoad: this._loadValues,
+            load: this._loadValues,
             errorMessage: () => this._labels.get('lookupMany.loadLookupManyFailed'),
         });
         taskRuntime.services.observe('provider', this._onProviderAvailable);
@@ -188,7 +188,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     public createOptionsProvider(record: IRecord | undefined, column: IColumn): IDataProvider | undefined {
         const settings = this.getColumn(column.name);
-        return settings && this._store.onCreateOptionsProvider({ record, column, settings, taskRuntime: this._taskRuntime });
+        return settings && this._store.createOptionsProvider({ record, column, settings, taskRuntime: this._taskRuntime });
     }
 
     public destroy(): void {
@@ -196,12 +196,12 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
-        const unregisters = [
-            provider.registerAvailableColumns(this._addColumns),
-            provider.registerColumnHandler({ isHandledColumn: columnName => !!this.getColumn(columnName), onSaveValue: this._saveValue }),
-            provider.registerColumnMatcher(this._matcher),
+        const removers = [
+            provider.addAvailableColumnsHook(this._addColumns),
+            provider.addColumnHandler({ isHandledColumn: columnName => !!this.getColumn(columnName), saveValue: this._saveValue }),
+            provider.addColumnMatcher(this._matcher),
         ];
-        return () => unregisters.forEach(unregister => unregister());
+        return () => removers.forEach(remove => remove());
     };
 
     private _matcher: ITaskColumnMatcher = {
@@ -215,7 +215,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     //a task the store leaves out holds none
     private _loadValues = async (taskIds: string[]): Promise<Map<string, IRawRecord>> => {
-        const loaded = await this._store.onLoadValues(taskIds);
+        const loaded = await this._store.loadValues(taskIds);
         const empty = Object.fromEntries(Object.keys(this._parameters.columns).map(columnName => [columnName, []]));
         return new Map(taskIds.map(taskId => [taskId, { ...empty, ...loaded.get(taskId) }]));
     };
@@ -223,7 +223,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     private _saveValue = async (record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult> => {
         const recordId = record.getRecordId();
         try {
-            await this._store.onSaveValue(recordId, column.name, (value as Reference[] | null) ?? []);
+            await this._store.saveValue(recordId, column.name, (value as Reference[] | null) ?? []);
             return { recordId, success: true, fields: [column.name] };
         }
         catch (error) {
@@ -249,7 +249,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     //after the editing module whose editor this replaces
     private _onGridAvailable = (grid: IGrid): void => {
-        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').registerColumnDefinitions(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
@@ -260,7 +260,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
             colDef.cellRenderer = LookupManyCell;
             colDef.cellEditor = LookupManyCellEditor;
             colDef.headerComponent = LookupManyColumnHeader;
-            colDef.context = { ...colDef.context, header: { ...colDef.context?.header, onGetMenuSections: (sections: IColumnMenuSection[]) => this._redirectFilterItem(sections, colDef.colId!) } };
+            colDef.context = { ...colDef.context, header: { ...colDef.context?.header, menuSectionsHook: (sections: IColumnMenuSection[]) => this._redirectFilterItem(sections, colDef.colId!) } };
             colDef.cellEditorPopup = true;
             colDef.cellEditorPopupPosition = 'over';
             colDef.suppressKeyboardEvent = this._suppressKeyboardEvent;

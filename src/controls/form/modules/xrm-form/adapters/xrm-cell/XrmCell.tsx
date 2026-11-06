@@ -1,10 +1,10 @@
 import { Form } from "../../../../Form"
 import { IFormXmlCell } from "../../runtime/form-xml-form";
 import { XrmControl } from "../xrm-control";
-import { useCell } from "./useCell";
+import { useXrmCell } from "./useXrmCell";
 
 export const XrmCell = ({ cell }: { cell: IFormXmlCell }) => {
-    cell = useCell(cell);
+    cell = useXrmCell(cell);
 
     return <Form.Cell
         id={cell.id ?? cell.control?.datafieldname ?? undefined}

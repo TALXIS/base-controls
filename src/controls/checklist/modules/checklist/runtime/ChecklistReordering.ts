@@ -2,28 +2,28 @@ import { GridApi, IRowDragItem, RowDragEndEvent, RowDragEnterEvent } from "ag-gr
 import { IRecord } from "@talxis/client-libraries";
 import { StackRank } from "@core/stack-rank";
 import { IGridAgGridInitialOptions, IGridAgGridOptions, IGrid, IGridEditedCell, IGridStyles } from "@controls/grid";
-import { IGridCheckList } from "../GridCheckList";
-import { getCheckListReorderingStyles } from "../ui/reordering/styles";
+import { IGridChecklist } from "../GridChecklist";
+import { getChecklistReorderingStyles } from "../ui/reordering/styles";
 
-export interface ICheckListReorderingParameters {
+export interface IChecklistReorderingParameters {
     grid: IGrid;
-    checkList: IGridCheckList;
+    checklist: IGridChecklist;
 }
 
 /** Items reorder by dragging anywhere on their row, and the drop is saved as the item's stack rank. */
-export class CheckListReordering {
+export class ChecklistReordering {
     private _grid: IGrid;
-    private _checkList: IGridCheckList;
+    private _checklist: IGridChecklist;
     private _isEditing = false;
     //the item being dragged, until a drop in the grid settles where it goes
     private _draggedRecord?: IRecord;
 
-    constructor(parameters: ICheckListReorderingParameters) {
+    constructor(parameters: IChecklistReorderingParameters) {
         this._grid = parameters.grid;
-        this._checkList = parameters.checkList;
-        this._grid.registerAgGridInitialOptions(this._onAgGridInitialOptions);
-        this._grid.registerAgGridOptions(this._onAgGridOptions);
-        this._grid.services.get('gridTheme').registerStyles(this._onStyles);
+        this._checklist = parameters.checklist;
+        this._grid.addAgGridInitialOptionsHook(this._onAgGridInitialOptions);
+        this._grid.addAgGridOptionsHook(this._onAgGridOptions);
+        this._grid.services.get('gridTheme').addStylesHook(this._onStyles);
         this._grid.modules.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
         this._grid.services.observe('gridApi', this._onGridApiAvailable);
     }
@@ -41,11 +41,11 @@ export class CheckListReordering {
     };
 
     private _onStyles = (result: IGridStyles): void => {
-        result.styles.push(getCheckListReorderingStyles());
+        result.styles.push(getChecklistReorderingStyles());
     };
 
     private _getRowDragText = (params: IRowDragItem): string => {
-        return params.rowNode?.data?.getFormattedValue(this._checkList.getFieldMapping().name) ?? '';
+        return params.rowNode?.data?.getFormattedValue(this._checklist.getFieldMapping().name) ?? '';
     };
 
     private _onEditedCellChanged = (_previous: IGridEditedCell | undefined, next: IGridEditedCell | undefined): void => {
@@ -81,7 +81,7 @@ export class CheckListReordering {
         if (!record || !gridApi) {
             return;
         }
-        const stackRank = this._checkList.getFieldMapping().stackRank;
+        const stackRank = this._checklist.getFieldMapping().stackRank;
         let index = 0;
         gridApi.forEachNode(node => {
             if (node.data && node.data !== record && StackRank.compare(node.data.getValue(stackRank), record.getValue(stackRank)) < 0) {
@@ -97,7 +97,7 @@ export class CheckListReordering {
         if (!node.data || node.rowPinned || node.rowIndex === null) {
             return;
         }
-        const stackRank = this._checkList.getFieldMapping().stackRank;
+        const stackRank = this._checklist.getFieldMapping().stackRank;
         const previousRank = api.getDisplayedRowAtIndex(node.rowIndex - 1)?.data?.getValue(stackRank);
         const nextRank = api.getDisplayedRowAtIndex(node.rowIndex + 1)?.data?.getValue(stackRank);
         if (!this._isBetween(node.data.getValue(stackRank), previousRank, nextRank)) {

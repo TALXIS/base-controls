@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { concatStyleSets, ICommandBarProps } from "@fluentui/react";
 import { getClassNames, IAlignment } from "@core";
 import { CellUiCommandsComponents, ICellUiCommandsComponents } from "./components";
-import { CELL_COMMANDS_CLASS_NAME, getCellUiCommandsStyles } from "./styles";
+import { CELL_COMMANDS_CLASS, getCellUiCommandsStyles } from "./styles";
 
 export interface ICellUiCommandsProps extends ICommandBarProps {
     /** Where the buttons sit in the width the bar takes. */
@@ -21,7 +21,7 @@ export const CellUiCommands = (props: ICellUiCommandsProps) => {
     }
 
     return components.onRenderContainer({
-        className: getClassNames([CELL_COMMANDS_CLASS_NAME, styles.commandsRoot, className]),
+        className: getClassNames([CELL_COMMANDS_CLASS, styles.commandsRoot, className]),
         children: components.onRenderCommandBar({
             ...commandBarProps,
             items: items,

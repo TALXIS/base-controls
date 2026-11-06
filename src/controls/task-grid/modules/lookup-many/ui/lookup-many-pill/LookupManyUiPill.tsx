@@ -3,10 +3,10 @@ import { useMemo } from "react";
 import { Icon, Link } from "@fluentui/react";
 import { IOptionTagComponents, OptionTag, OptionTagComponents } from "@ui";
 import { getClassNames } from "@core";
-import { getLookupManyPillStyles } from "./styles";
+import { getLookupManyUiPillStyles } from "./styles";
 
-/** Props for {@link LookupManyPill}. */
-export interface ILookupManyPillProps {
+/** Props for {@link LookupManyUiPill}. */
+export interface ILookupManyUiPillProps {
     reference: ComponentFramework.EntityReference;
     /** Opens the record, plain text without it. */
     onOpen?: (reference: ComponentFramework.EntityReference) => void;
@@ -22,11 +22,11 @@ export interface ILookupManyPillProps {
 }
 
 /** One record of a lookup-many value. */
-export const LookupManyPill = (props: ILookupManyPillProps) => {
+export const LookupManyUiPill = (props: ILookupManyUiPillProps) => {
     const { reference, onOpen, onRemove } = props;
     const theme = useTheme();
     const color = props.color || theme.palette.neutralSecondary;
-    const styles = useMemo(() => getLookupManyPillStyles(theme, color), [theme, color]);
+    const styles = useMemo(() => getLookupManyUiPillStyles(theme, color), [theme, color]);
     const components = { ...OptionTagComponents, ...props.components };
 
     //a picker takes the mouse down for itself

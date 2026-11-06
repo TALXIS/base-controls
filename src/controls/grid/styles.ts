@@ -1,5 +1,5 @@
 import { IStyle, mergeStyleSets } from "@fluentui/react";
-import { FIELD_ERROR_OUTLINE_CLASS_NAME, FIELD_ERROR_OUTLINE_WIDTH_VARIABLE } from "./ui/cells/field-error/styles";
+import { FIELD_ERROR_OUTLINE_CLASS, FIELD_ERROR_OUTLINE_WIDTH_VARIABLE } from "./ui/cells/field-error/styles";
 
 /** How tall the rows area stays when there is nothing in it. */
 const EMPTY_ROWS_AREA_HEIGHT = 135;
@@ -41,7 +41,7 @@ export const getGridStyles = (moduleStyles: IStyle[], height?: string | null, ro
                 backgroundColor: 'var(--ag-range-selection-background-color)',
             },
             //a focused invalid cell's outline stands in for the focus, range and editing borders
-            [`.ag-cell:has(.${FIELD_ERROR_OUTLINE_CLASS_NAME})`]: {
+            [`.ag-cell:has(.${FIELD_ERROR_OUTLINE_CLASS})`]: {
                 '--ag-range-selection-border-color': 'transparent',
                 '--ag-cell-editing-border': 'solid 1px transparent',
             },

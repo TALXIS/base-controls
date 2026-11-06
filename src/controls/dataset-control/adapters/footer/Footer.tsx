@@ -1,4 +1,4 @@
-import { DatasetControlUi, IFooterUiComponents } from "../../ui";
+import { DatasetControlUi, IDatasetControlUiFooterComponents } from "../../ui";
 import { FooterStart } from "./FooterStart";
 import { FooterEnd } from "./FooterEnd";
 
@@ -9,7 +9,7 @@ export interface IFooterProps {
     /** Added to the footer's box. */
     className?: string;
     /** Replacements for the footer's slots. */
-    components?: Partial<IFooterUiComponents>;
+    components?: Partial<IDatasetControlUiFooterComponents>;
 }
 
 const FooterRow = (props: IFooterProps) => <DatasetControlUi.Footer {...props} />;

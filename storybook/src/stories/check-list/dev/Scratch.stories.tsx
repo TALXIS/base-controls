@@ -18,7 +18,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * The `CheckList` control over an in-memory provider. Rows come out of the source shuffled, so the
+ * The `Checklist` control over an in-memory provider. Rows come out of the source shuffled, so the
  * ordering you see is the field mapping's stack-rank sort.
  */
 export const Playground: Story = {

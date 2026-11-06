@@ -32,24 +32,26 @@ export interface IGanttTimeline {
     executeWithScrollBlock<T>(callback: () => T): T;
     isScrollBlocked(): boolean;
     /**
-     * Registers a hook over the class names of each background cell.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over the class names of each background cell.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerCellClass(hook: GanttCellClassHook, priority?: number): () => void;
+    addCellClassHook(hook: GanttCellClassHook, priority?: number): () => void;
     /**
-     * Registers a hook over the class names of each scale cell.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over the class names of each scale cell.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerScaleCellClass(hook: GanttCellClassHook, priority?: number): () => void;
+    addScaleCellClassHook(hook: GanttScaleCellClassHook, priority?: number): () => void;
 }
 
-export interface IGanttCellClassParameters {
+export interface IGanttCellClassHookParameters {
     /** Where the cell's column starts. */
     date: Date;
 }
 
 /** Adds class names to a cell of the timeline. */
-export type GanttCellClassHook = (classNames: string[], parameters: IGanttCellClassParameters) => void;
+export type GanttCellClassHook = (classNames: string[], parameters: IGanttCellClassHookParameters) => void;
+
+export type GanttScaleCellClassHook = (classNames: string[], parameters: IGanttCellClassHookParameters) => void;
 
 //the chart lays out every column of the range on each render
 const RANGE_COLUMNS = 2000;
@@ -71,12 +73,12 @@ const MILLISECONDS_PER_UNIT: Record<string, number> = {
 export interface IGanttTimelineParameters {
     chart: GanttStatic;
     /** The dates the range never goes past. */
-    onGetLimits: () => IGanttSpan;
+    getLimits: () => IGanttSpan;
 }
 
 export class GanttTimeline implements IGanttTimeline {
     private _chart: GanttStatic;
-    private _onGetLimits: () => IGanttSpan;
+    private _getLimits: () => IGanttSpan;
     private _rangeBeforeFitting?: IGanttSpan;
     private _scrollBlockDepth = 0;
     private _scrollBlockedUntil = 0;
@@ -85,11 +87,11 @@ export class GanttTimeline implements IGanttTimeline {
     private _view?: Window;
     private _isScrollbarHeld = false;
     private _cellClassHooks = new HookRegistry<GanttCellClassHook>();
-    private _scaleCellClassHooks = new HookRegistry<GanttCellClassHook>();
+    private _scaleCellClassHooks = new HookRegistry<GanttScaleCellClassHook>();
 
     constructor(parameters: IGanttTimelineParameters) {
         this._chart = parameters.chart;
-        this._onGetLimits = parameters.onGetLimits;
+        this._getLimits = parameters.getLimits;
         this._chart.templates.timeline_cell_class = (_task: Task, date: Date) => this._getClass(this._cellClassHooks, date);
         this._chart.templates.scale_cell_class = (date: Date) => this._getClass(this._scaleCellClassHooks, date);
         //scales without a css of their own take scale_cell_class
@@ -98,12 +100,12 @@ export class GanttTimeline implements IGanttTimeline {
         this._chart.attachEvent('onGanttReady', this._onGanttReady);
     }
 
-    public registerCellClass(hook: GanttCellClassHook, priority?: number): () => void {
-        return this._cellClassHooks.register(hook, priority);
+    public addCellClassHook(hook: GanttCellClassHook, priority?: number): () => void {
+        return this._cellClassHooks.add(hook, priority);
     }
 
-    public registerScaleCellClass(hook: GanttCellClassHook, priority?: number): () => void {
-        return this._scaleCellClassHooks.register(hook, priority);
+    public addScaleCellClassHook(hook: GanttScaleCellClassHook, priority?: number): () => void {
+        return this._scaleCellClassHooks.add(hook, priority);
     }
 
     public ensureRange(date: Date, millisecondsPerPixel: number): boolean {
@@ -114,7 +116,7 @@ export class GanttTimeline implements IGanttTimeline {
         const duration = Math.min(RANGE_COLUMNS * columnDuration, MAX_RANGE_DURATION);
         const margin = Math.min(EDGE_MARGIN_VIEWPORTS * this.getViewportWidth() * millisecondsPerPixel, duration / 4);
         const { start_date: startDate, end_date: endDate } = this._chart.config;
-        const limits = this._onGetLimits();
+        const limits = this._getLimits();
         //a side clamped to its limit has all the room it can get
         const isUsable = !!startDate && !!endDate
             && (+date - +startDate >= margin || +startDate <= +this._snapRangeStart(limits.start))
@@ -240,7 +242,7 @@ export class GanttTimeline implements IGanttTimeline {
     }
 
     private _setRange(startDate: Date | undefined, endDate: Date | undefined): void {
-        const limits = this._onGetLimits();
+        const limits = this._getLimits();
         if (startDate) {
             this._chart.config.start_date = this._snapRangeStart(new Date(Math.max(+startDate, +limits.start)));
         }

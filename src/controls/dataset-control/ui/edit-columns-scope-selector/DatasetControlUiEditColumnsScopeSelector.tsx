@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { IAvailableRelatedColumn } from "@talxis/client-libraries";
-import { EditColumnsSelector, IEditColumnsSelectorUiComponents } from "../edit-columns-selector";
+import { DatasetControlUiEditColumnsSelector, IDatasetControlUiEditColumnsSelectorComponents } from "../edit-columns-selector";
 
 /** Props for the picker of the entity columns are added from, as plain UI. */
-export interface IEditColumnsScopeSelectorUiProps {
+export interface IDatasetControlUiEditColumnsScopeSelectorProps {
     /** Drawn above the picker. */
     label: string;
     /** The entity picked at first. */
@@ -15,15 +15,15 @@ export interface IEditColumnsScopeSelectorUiProps {
     /** What an option shows. */
     getOptionLabel: (scope: IAvailableRelatedColumn) => string;
     /** Loads the entities matching what is typed. */
-    onLoadOptions: (query?: string) => Promise<IAvailableRelatedColumn[]>;
+    loadOptions: (query?: string) => Promise<IAvailableRelatedColumn[]>;
     /** Called with the entity the user picked. */
     onChange: (scope: IAvailableRelatedColumn) => void;
     /** Replacements for its slots. */
-    components?: Partial<IEditColumnsSelectorUiComponents<IAvailableRelatedColumn>>;
+    components?: Partial<IDatasetControlUiEditColumnsSelectorComponents<IAvailableRelatedColumn>>;
 }
 
 /** Picks which entity the columns being added come from. */
-export const EditColumnsScopeSelector = (props: IEditColumnsScopeSelectorUiProps) => {
+export const DatasetControlUiEditColumnsScopeSelector = (props: IDatasetControlUiEditColumnsScopeSelectorProps) => {
     const [isDisabled, setIsDisabled] = useState(true);
 
     useEffect(() => {
@@ -31,9 +31,9 @@ export const EditColumnsScopeSelector = (props: IEditColumnsScopeSelectorUiProps
     }, []);
 
     //the provider's own entity alone leaves nothing to pick
-    const checkScopes = async () => setIsDisabled((await props.onLoadOptions()).length <= 1);
+    const checkScopes = async () => setIsDisabled((await props.loadOptions()).length <= 1);
 
-    return <EditColumnsSelector<IAvailableRelatedColumn>
+    return <DatasetControlUiEditColumnsSelector<IAvailableRelatedColumn>
         label={props.label}
         isDisabled={isDisabled}
         defaultValue={props.defaultValue}
@@ -41,7 +41,7 @@ export const EditColumnsScopeSelector = (props: IEditColumnsScopeSelectorUiProps
         loadingText={props.loadingText}
         getOptionValue={scope => `${scope.relatedEntityPrimaryIdAttribute}_${scope.name}`}
         getOptionLabel={props.getOptionLabel}
-        loadOptions={query => props.onLoadOptions(query)}
+        loadOptions={query => props.loadOptions(query)}
         onChange={scope => scope && props.onChange(scope)}
         components={props.components} />;
 };

@@ -12,7 +12,7 @@ A checklist is a to-do list built on a [**Grid**](?path=/docs/controls-grid-get-
 
 ## Build a checklist
 
-\`CheckList\` takes no provider prop: like any grid, it shows the provider around it, such as a DatasetControl's, as *Hand it to controls* on [**Data providers**](?path=/docs/concepts-data-providers--overview) describes. \`fieldMapping\` tells it which of the provider's columns hold an item's name, its position and whether it is finished. The checklist draws items in the order the provider loads them, so sort the provider by position with \`sortCheckListProvider\` before it loads; the checklist warns in the console when it is not sorted.
+\`Checklist\` takes no provider prop: like any grid, it shows the provider around it, such as a DatasetControl's, as *Hand it to controls* on [**Data providers**](?path=/docs/concepts-data-providers--overview) describes. \`fieldMapping\` tells it which of the provider's columns hold an item's name, its position and whether it is finished. The checklist draws items in the order the provider loads them, so sort the provider by position with \`sortChecklistProvider\` before it loads; the checklist warns in the console when it is not sorted.
 
 {{story: Two items}}
 
@@ -28,7 +28,7 @@ Each of the three must be a column of the provider, or the checklist throws. A r
 
 ## Props
 
-\`CheckList\` takes every grid prop on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview), \`colDefs\` and the events included. These are its own, or differ:
+\`Checklist\` takes every grid prop on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview), \`colDefs\` and the events included. These are its own, or differ:
 
 | Prop | Default | Description |
 |---|---|---|

@@ -28,9 +28,9 @@ When a module's \`onLoad\` throws, the error shows in place of the control's par
 | \`services\` | The Gantt's parts by key, with \`get\`, \`find\` and \`observe\`. See below. |
 | \`modules\` | The other modules, by name, with \`get\`, \`find\` and \`observe\`. |
 | \`events\` | \`onChartReady(chart)\`, \`onTasksParsed(isFirstLoad)\` and \`onDestroyed\`. |
-| \`surfaces.registerSurface(hook)\` | Draws React content over the chart: \`surfaces => surfaces.push({ key, onRender })\`. |
-| \`theme.registerStyles(hook)\` | Adds Fluent styles to the chart: \`(result, theme) => result.styles.push(...)\`. |
-| \`registerChartConfig(hook)\` | Sets DHTMLX's config, templates and plugins before the chart is drawn: \`chart => chart.config.min_column_width = 80\`. |
+| \`surfaces.addSurfacesHook(hook)\` | Draws React content over the chart: \`surfaces => surfaces.push({ key, onRender })\`. |
+| \`theme.addStylesHook(hook)\` | Adds Fluent styles to the chart: \`(result, theme) => result.styles.push(...)\`. |
+| \`addChartConfigHook(hook)\` | Sets DHTMLX's config, templates and plugins before the chart is drawn: \`chart => chart.config.min_column_width = 80\`. |
 | \`getTaskRuntime()\` | The task grid's runtime. See [**Talking to the task grid**](?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview). |
 | \`getLibrary()\` | \`{ Gantt, isPro }\`, the DHTMLX build. |
 | \`getProps()\`, \`getLabels(set)\`, \`render()\` | The \`TaskGantt\`'s props, a label set's strings, and a redraw after a hook's answer changed. |
@@ -43,10 +43,10 @@ Every \`register…\` returns the function that unregisters it, and takes an opt
 
 | Key | Hooks and members |
 |---|---|
-| \`tasks\` | \`registerTask((task, { record }) => …)\` changes a bar, such as its \`color\`, \`type\` or \`readonly\`. \`registerTaskClass\` and \`registerRowClass\` add class names to a bar or its row. |
-| \`zooming\` | \`registerScaleLabel((result, { date, unit, step, row }) => …)\` changes a scale cell's label. \`zoomToFit()\`, \`showTask(record)\`, \`getPixelsPerDay()\`. |
-| \`timeline\` | \`registerCellClass\` and \`registerScaleCellClass\` add class names to a day's column or scale cell, by \`date\`. \`jumpToToday()\`. |
-| \`schedule\` | \`registerDuration((result, …) => …)\` changes how a duration is counted. \`registerSnap((result, …) => …)\` changes where a dragged or drawn bar lands. |
+| \`tasks\` | \`addTaskHook((task, { record }) => …)\` changes a bar, such as its \`color\`, \`type\` or \`readonly\`. \`addTaskClassHook\` and \`addRowClassHook\` add class names to a bar or its row. |
+| \`zooming\` | \`addScaleLabelHook((result, { date, unit, step, row }) => …)\` changes a scale cell's label. \`zoomToFit()\`, \`showTask(record)\`, \`getPixelsPerDay()\`. |
+| \`timeline\` | \`addCellClassHook\` and \`addScaleCellClassHook\` add class names to a day's column or scale cell, by \`date\`. \`jumpToToday()\`. |
+| \`schedule\` | \`addDurationHook((result, …) => …)\` changes how a duration is counted. \`addSnapHook((result, …) => …)\` changes where a dragged or drawn bar lands. |
 | \`overlay\` | \`show(key)\` and \`hide(key)\` cover the chart with the loading overlay. |
 | \`dragging\` | \`disableDragging()\` stops bar dragging until the function it returns is called. |
 | \`chart\` | DHTMLX's own \`GanttStatic\`, for what no hook covers. |
@@ -67,10 +67,10 @@ Content you draw over the chart, a marker slot or a tooltip part reads the Gantt
 
 const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The modules load', hook: 'onLoad', text: 'The modules load by `priority`, the library first; modules of the same priority load at the same time, and each is registered under its name.' },
-    { title: 'The chart is set up', hook: 'registerChartConfig', text: 'Once the task grid\'s AG Grid is ready, the chart config hooks run on DHTMLX\'s chart before it is drawn.' },
+    { title: 'The chart is set up', hook: 'addChartConfigHook', text: 'Once the task grid\'s AG Grid is ready, the chart config hooks run on DHTMLX\'s chart before it is drawn.' },
     { title: 'The chart services arrive', hook: 'services.observe', text: '`chart`, `timeline`, `dragging`, `zooming`, `grid` and `tasks` register, so their observers run.' },
     { title: 'The tasks are drawn', hook: 'onTasksParsed', text: 'The chart draws the grid\'s rows as bars and fires `onTasksParsed(true)`, and `false` each time it redraws them.' },
-    { title: 'The chart is ready', hook: 'onChartReady', text: '`onChartReady` fires with the chart, and what the modules registered with `registerSurface` is drawn over it.' },
+    { title: 'The chart is ready', hook: 'onChartReady', text: '`onChartReady` fires with the chart, and what the modules registered with `addSurfacesHook` is drawn over it.' },
     { title: 'The Gantt unmounts', hook: 'onDestroy', text: '`events` fires `onDestroyed`, then each module\'s `onDestroy`, the last loaded first, gets what its `onLoad` returned, and the chart is destroyed.' },
 ]
 

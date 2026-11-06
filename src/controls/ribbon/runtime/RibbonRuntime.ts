@@ -3,15 +3,15 @@ import { HookRegistry, IEventSubscriber, IRuntime, RuntimeLifecycle } from "@cor
 import { IRibbonActionCommand, IRibbonCommand } from "../interfaces";
 
 /** What the ribbon raises; its init and teardown are on `lifecycle.events`. */
-export interface IRibbonRuntimeEvents {
+export interface IRibbonEvents {
     /** The commands were loaded again, after init. */
     onCommandsChanged: () => void;
     /** A reload failed; the commands before it stay. */
     onReloadFailed: (error: unknown) => void;
     onBeforeExecute: (command: IRibbonActionCommand) => void;
-    /** Fired when `onExecute` throws, before `onAfterExecute`. */
+    /** Fires when `onExecute` throws, before `onAfterExecute`. */
     onExecuteFailed: (command: IRibbonActionCommand, error: unknown) => void;
-    /** Fired once `onExecute` settles, whether it resolved or threw. */
+    /** Fires once `onExecute` settles, whether it resolved or threw. */
     onAfterExecute: (command: IRibbonActionCommand) => void;
 }
 
@@ -19,32 +19,32 @@ export interface IRibbonRuntimeEvents {
 export type RibbonCommandsHook = (commands: IRibbonCommand[]) => void;
 
 /** The ribbon's commands, and which of them are running. */
-export interface IRibbonRuntime extends IRuntime {
-    readonly events: IEventSubscriber<IRibbonRuntimeEvents>;
+export interface IRibbon extends IRuntime {
+    readonly events: IEventSubscriber<IRibbonEvents>;
     /** `undefined` until init finishes. */
     getCommands(): IRibbonCommand[] | undefined;
     isRunning(commandId: string): boolean;
     /** Loads the commands again in place; the latest call wins. */
     reload(): Promise<void>;
     /**
-     * Registers a hook over the commands, run after `onLoad` on every load; call `reload` to apply it now.
+     * Adds a hook over the commands, run after `onLoad` on every load; call `reload` to apply it now.
      *
-     * @param priority Ascending: a higher number gets the later word.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerCommands(hook: RibbonCommandsHook, priority?: number): () => void;
+    addCommandsHook(hook: RibbonCommandsHook, priority?: number): () => void;
 }
 
 export interface IRibbonRuntimeParameters {
-    onLoad?: (ribbon: IRibbonRuntime) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
+    onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
 }
 
-export class RibbonRuntime implements IRibbonRuntime {
+export class RibbonRuntime implements IRibbon {
     public readonly lifecycle = new RuntimeLifecycle({
         onInit: () => this._init(),
         onDestroy: () => this._destroy(),
     });
-    public readonly events = new EventEmitter<IRibbonRuntimeEvents>();
-    private _onLoad?: (ribbon: IRibbonRuntime) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
+    public readonly events = new EventEmitter<IRibbonEvents>();
+    private _onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
     private _commandsHooks = new HookRegistry<RibbonCommandsHook>();
     private _commands?: IRibbonCommand[];
     //a slower earlier reload must not overwrite a newer one
@@ -63,8 +63,8 @@ export class RibbonRuntime implements IRibbonRuntime {
         return this._runningCommandIds.has(commandId);
     }
 
-    public registerCommands(hook: RibbonCommandsHook, priority?: number): () => void {
-        return this._commandsHooks.register(hook, priority);
+    public addCommandsHook(hook: RibbonCommandsHook, priority?: number): () => void {
+        return this._commandsHooks.add(hook, priority);
     }
 
     public async reload(): Promise<void> {

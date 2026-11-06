@@ -1,16 +1,16 @@
 import { IColumn, IRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries";
 
-export interface IMemoryRecordParams {
+export interface IMemoryRecordParameters {
     columns: IColumn[];
     data: { [key: string]: any };
     metadata: { PrimaryIdAttribute: string; PrimaryNameAttribute: string };
     /** Saves the record somewhere else first; without it a save only commits in memory. */
-    onSave?: (record: IRecord) => Promise<IRecordSaveOperationResult>;
+    save?: (record: IRecord) => Promise<IRecordSaveOperationResult>;
 }
 
 /** A record held in memory, for a form that has no data provider of its own. */
-export const createMemoryRecord = (params: IMemoryRecordParams): IRecord => {
-    const { columns, data, metadata, onSave } = params;
+export const createMemoryRecord = (parameters: IMemoryRecordParameters): IRecord => {
+    const { columns, data, metadata, save: onSave } = parameters;
     const provider = new MemoryDataProvider({ dataSource: [data], metadata });
     provider.setColumns(columns);
     if (onSave) {

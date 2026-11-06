@@ -8,7 +8,7 @@ import { getFormStyles } from "./styles";
 import React from "react";
 import { FormUi } from "../../ui";
 import { FormApi } from "../../runtime/FormApi";
-import { IFormAfterSaveParams, IFormProps, IValidation } from "../../interfaces";
+import { IFormAfterSaveParameters, IFormProps, IValidation } from "../../interfaces";
 import { applyFieldConfigs } from "./fieldConfigs";
 
 initializeIcons();
@@ -27,7 +27,7 @@ export const Root = (props: IFormProps) => {
             }
         }
         catch (error) {
-            propsRef.current.onError?.(error, (error as Error)?.message ?? String(error));
+            propsRef.current.onError?.((error as Error)?.message ?? String(error), error);
         }
     };
 
@@ -39,12 +39,12 @@ export const Root = (props: IFormProps) => {
         return <FormUi.Skeleton />
     }
 
-    return <RootInternal {...props} record={record} onRefreshRequested={load} />
+    return <RootInternal {...props} record={record} onReloadRequested={load} />
 };
 
-export const RootInternal = (props: IFormProps & { record: IRecord, onRefreshRequested: () => void }) => {
-    const { children, onFormReady, onRefreshRequested } = props;
-    const form = useMemo(() => new FormRuntime({ record: props.record, autoSave: props.autoSave }), []);
+export const RootInternal = (props: IFormProps & { record: IRecord, onReloadRequested: () => void }) => {
+    const { children, onFormReady, onReloadRequested } = props;
+    const form = useMemo(() => new FormRuntime({ record: props.record, enableAutoSave: props.enableAutoSave }), []);
 
     const formApi = useMemo(() => {
         return new FormApi(form);
@@ -54,12 +54,12 @@ export const RootInternal = (props: IFormProps & { record: IRecord, onRefreshReq
     const id = record.getRecordId();
     const styles = useMemo(() => getFormStyles(), []);
 
-    useEventEmitter<IFormEvents>(form.events, 'onAfterSave', (params: IFormAfterSaveParams) => props.onAfterSave?.(params));
+    useEventEmitter<IFormEvents>(form.events, 'onAfterSave', (parameters: IFormAfterSaveParameters) => props.onAfterSave?.(parameters));
     useEventEmitter<IFormEvents>(form.events, 'onBeforeSave', () => props.onBeforeSave?.());
     useEventEmitter<IFormEvents>(form.events, 'onDirtyStateChanged', (isDirty: boolean) => props.onDirtyStateChanged?.(isDirty));
-    useEventEmitter<IFormEvents>(form.events, 'onError', (error: any, message: string) => props.onError?.(error, message));
+    useEventEmitter<IFormEvents>(form.events, 'onError', (message: string, details?: unknown) => props.onError?.(message, details));
     useEventEmitter<IFormEvents>(form.events, 'onFieldValueChanged', (fieldName: string, newValue: any) => props.onFieldValueChanged?.(fieldName, newValue));
-    useEventEmitter(form.events, 'onRefreshRequested', onRefreshRequested);
+    useEventEmitter(form.events, 'onReloadRequested', onReloadRequested);
     useEventEmitter<IFormEvents>(form.events, 'onValidationSummaryChanged', (validationSummary: IValidation[]) => props.onValidationSummaryChanged?.(validationSummary));
 
     React.useEffect(() => {

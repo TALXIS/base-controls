@@ -1,1 +1,1 @@
-export * from './IsolatedFrameUi';
+export * from './IsolatedFrameUiFrame';

@@ -5,7 +5,7 @@ import { useDatasetControlModule } from "@controls/dataset-control";
 import { Grid, IGridCellParams, useGridCell, useGridField, useGridService } from "@controls/grid";
 import { useTaskRuntime } from "../../../../adapters/root/context";
 import { runQuietly } from "../../../../runtime/runQuietly";
-import { LookupManyPills } from "../../ui";
+import { LookupManyUiPills } from "../../ui";
 import { getLookupManyAppearanceComponents } from "../lookup-many-appearance";
 
 const LookupManyCellPills = () => {
@@ -22,7 +22,7 @@ const LookupManyCellPills = () => {
     const onOpen = (reference: ComponentFramework.EntityReference) => runQuietly(() => runtime.tasks.openRelatedRecord(reference, columnName));
 
     return <ErrorMessageBoundary error={lookupMany.getError()} onOpenDetails={openErrorDialog}>
-        <LookupManyPills value={field?.getValue() ?? []} onOpen={isNavigationEnabled ? onOpen : undefined} components={components} />
+        <LookupManyUiPills value={field?.getValue() ?? []} onOpen={isNavigationEnabled ? onOpen : undefined} components={components} />
     </ErrorMessageBoundary>;
 };
 

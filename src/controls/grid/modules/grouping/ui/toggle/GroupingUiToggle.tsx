@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 import { GroupingUiToggleComponents, IGroupingUiToggleComponents } from "./components";
 import { getClassNames } from "@core";
-import { getGroupingUiToggleStyles, GROUPING_TOGGLE_CLASS_NAME } from "./styles";
+import { getGroupingUiToggleStyles, GROUPING_TOGGLE_CLASS } from "./styles";
 
 export interface IGroupingUiToggleProps {
     isExpanded: boolean;
@@ -18,7 +18,7 @@ export const GroupingUiToggle = (props: IGroupingUiToggleProps) => {
     const styles = useMemo(() => getGroupingUiToggleStyles(theme), [theme]);
 
     return components.onRenderContainer({
-        className: getClassNames([GROUPING_TOGGLE_CLASS_NAME, styles.container]),
+        className: getClassNames([GROUPING_TOGGLE_CLASS, styles.container]),
         children: components.onRenderButton({
             isExpanded: props.isExpanded,
             iconProps: { iconName: props.isExpanded ? 'ChevronDown' : 'ChevronRight' },

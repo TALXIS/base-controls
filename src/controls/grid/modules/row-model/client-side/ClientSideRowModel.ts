@@ -20,7 +20,7 @@ export class ClientSideRowModel implements IGridRowModel {
 
     constructor(parameters: IClientSideRowModelParameters) {
         this._services = parameters.services;
-        this._services.get('grid').registerAgGridOptions(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
+        this._services.get('grid').addAgGridOptionsHook(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
     }
 
     public refresh(): void {
@@ -66,7 +66,7 @@ export class ClientSideRowModel implements IGridRowModel {
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {
         result.options.isGroupOpenByDefault = this._isGroupOpenByDefault;
         //ahead of the rows, which `treeData` decides how to read
-        this._grouping?.onAgGridOptions(result);
+        this._grouping?.applyAgGridOptions(result);
         result.options.rowData = this._rows;
     };
 

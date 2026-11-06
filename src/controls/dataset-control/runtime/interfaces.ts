@@ -2,7 +2,7 @@ import type { ITheme } from "@fluentui/react";
 import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
 import type { IRuntime, IRuntimeModule, IServiceLocator, IServiceRegistry } from "@core";
 import type { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
-import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
+import type { IDatasetControlInternal } from "./DatasetControlRuntime";
 import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "./parts/view-switcher/DatasetControlViewSwitcher";
 import type { DatasetControlQuickFind, IDatasetControlQuickFind } from "./parts/quick-find/DatasetControlQuickFind";
 import type { DatasetControlPagination, IDatasetControlPagination } from "./parts/pagination/DatasetControlPagination";
@@ -10,7 +10,7 @@ import type { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcher } 
 import type { DatasetControlNotifications, IDatasetControlNotifications } from "./parts/notifications/DatasetControlNotifications";
 import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "./parts/edit-columns/DatasetControlEditColumns";
 import type { DatasetControlLoadingOverlay, IDatasetControlLoadingOverlay } from "./parts/loading-overlay/DatasetControlLoadingOverlay";
-import type { IRibbonRuntime } from "@controls/ribbon";
+import type { IRibbon } from "@controls/ribbon";
 import type { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
 
 /** A header views are listed under in the view switcher. */
@@ -52,7 +52,7 @@ export interface IDatasetControlPartMap {
     /** `DatasetControl.ViewSwitcher`. */
     viewSwitcher: IDatasetControlViewSwitcher;
     /** `DatasetControl.Ribbon`. */
-    ribbon: IRibbonRuntime;
+    ribbon: IRibbon;
     /** `DatasetControl.QuickFind`. */
     quickFind: IDatasetControlQuickFind;
     /** `DatasetControl.Pagination`. */
@@ -74,7 +74,7 @@ export type IDatasetControlPartLocator = IServiceLocator<IDatasetControlPartMap>
 export interface IDatasetControlModuleMap { }
 
 /** A feature of the control, loaded on every mount before the control's `onLoad`. */
-export interface IDatasetControlModule<TName extends keyof IDatasetControlModuleMap = keyof IDatasetControlModuleMap> extends IRuntimeModule<IDatasetControlModuleMap, TName, IDatasetControlRuntime> { }
+export interface IDatasetControlModule<TName extends keyof IDatasetControlModuleMap = keyof IDatasetControlModuleMap> extends IRuntimeModule<IDatasetControlModuleMap, TName, IDatasetControlInternal> { }
 
 /** Looks up the modules the control loaded. */
 export type IDatasetControlModuleLocator = IServiceLocator<IDatasetControlModuleMap>;
@@ -106,7 +106,7 @@ export interface IDatasetControl<TData = unknown> extends IRuntime {
 }
 
 export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
-    runtime: IDatasetControlRuntime;
+    runtime: IDatasetControlInternal;
     labels: LabelsService;
     surfaces: DatasetControlSurfaces;
     viewSwitcher: DatasetControlViewSwitcher;

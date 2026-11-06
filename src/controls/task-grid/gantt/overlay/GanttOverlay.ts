@@ -1,4 +1,5 @@
-import { EventEmitter, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
+import { EventEmitter, IDataProvider } from "@talxis/client-libraries";
+import type { IEventSubscriber } from "@core";
 
 const PROVIDER_LOADING_KEY = 'providerLoading';
 
@@ -8,7 +9,7 @@ export interface IGanttOverlayEvents {
 
 /** A cover that blocks the Gantt while any key, the provider's loading among them, holds it. */
 export interface IGanttOverlay {
-    readonly events: IEventEmitter<IGanttOverlayEvents>;
+    readonly events: IEventSubscriber<IGanttOverlayEvents>;
     isVisible(): boolean;
     /** Keeps the cover up until `hide` is called with the same key. */
     show(key: string): void;

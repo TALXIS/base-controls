@@ -44,7 +44,7 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 
 ## Settings of your own
 
-\`TaskDatasetControl.Settings\` draws toggles. Add your own through the control's \`taskSettings\` part with \`registerSettings(hook, priority?)\`, as *Show the buttons* in the example does. Each toggle is \`{ key, label, isChecked, onChange }\`.
+\`TaskDatasetControl.Settings\` draws toggles. Add your own through the control's \`taskSettings\` part with \`addSettingsHook(hook, priority?)\`, as *Show the buttons* in the example does. Each toggle is \`{ key, label, isChecked, onChange }\`.
 
 ## The grid
 
@@ -64,7 +64,7 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 | \`isCreationEnabled()\`, \`isEditingEnabled()\`, \`isDeletionEnabled()\` | The control's \`enable…\` props. |
 | \`getHoursPerDay()\` | The control's \`hoursPerDay\`. |
 | \`lifecycle\` | The mount's status and lifecycle events. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
-| \`registerRibbonCommandUi(hook, priority?)\` | Changes every item \`TaskDatasetControl.Ribbon\` draws, those in its menus too, such as \`item => item.disabled = true\`. Returns its unregistration. |
+| \`addRibbonCommandUiHook(hook, priority?)\` | Changes every item \`TaskDatasetControl.Ribbon\` draws, those in its menus too, such as \`item => item.disabled = true\`. Returns its unregistration. |
 | \`getRibbonCommandItems(items)\` | Copies of \`items\` with every ribbon command UI hook applied, menus included. |
 | \`services\` | \`get\`, \`find\` and \`observe\`, by key: \`datasetControl\`, \`pcfContext\`, \`provider\`, \`taskTree\` (the grid's tree, while it is drawn). |
 

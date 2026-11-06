@@ -2,7 +2,7 @@ import React from 'react'
 import { ContextualMenuItemType, IButtonProps } from '@fluentui/react'
 import {
     createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IDatasetControl,
-    IRibbonCommand, PcfContextProvider, useDataProvider, ViewSwitcherUiComponents,
+    IRibbonCommand, PcfContextProvider, useDataProvider, DatasetControlUiViewSwitcherComponents,
 } from '@talxis/base-controls'
 import { loadDeals } from '../dealViews'
 
@@ -33,7 +33,7 @@ const ScratchRibbon = () => {
     return <DatasetControl.Ribbon enableRefresh onLoad={onLoad} />
 }
 
-const ViewSwitcherWithCommand = (props: IButtonProps) => ViewSwitcherUiComponents.onRenderButton({
+const ViewSwitcherWithCommand = (props: IButtonProps) => DatasetControlUiViewSwitcherComponents.onRenderButton({
     ...props,
     menuProps: {
         ...props.menuProps!,

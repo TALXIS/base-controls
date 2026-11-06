@@ -42,7 +42,7 @@ Put \`DatasetControl.Notifications\` between the header and the body. It draws t
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | \`children\` | \`ReactNode\` | None | What shows the records. |
-| \`components\` | \`Partial<IEmptyStateUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| \`components\` | \`Partial<IDatasetControlUiEmptyStateComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 

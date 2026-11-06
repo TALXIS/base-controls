@@ -14,17 +14,17 @@ export class MemoryLookupManyStore implements ILookupManyStore {
         this._values = structuredClone(parameters.values);
     }
 
-    public async onLoadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: Reference[] }>> {
+    public async loadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: Reference[] }>> {
         await simulateBackend(SIMULATED_LOAD_DELAY_MS);
         return new Map(taskIds.filter(taskId => this._values[taskId]).map(taskId => [taskId, structuredClone(this._values[taskId])]));
     }
 
-    public async onSaveValue(taskId: string, columnName: string, value: Reference[]): Promise<void> {
+    public async saveValue(taskId: string, columnName: string, value: Reference[]): Promise<void> {
         await simulateBackend();
         this._values[taskId] = { ...this._values[taskId], [columnName]: value };
     }
 
-    public onCreateOptionsProvider(parameters: ILookupManyOptionsParameters): IDataProvider | undefined {
+    public createOptionsProvider(parameters: ILookupManyOptionsParameters): IDataProvider | undefined {
         const source = this._sources[parameters.settings.entityName];
         if (!source) {
             return undefined;

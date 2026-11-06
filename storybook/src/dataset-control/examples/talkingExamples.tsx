@@ -109,7 +109,7 @@ const CLOSING_SOON: IDatasetControlView = {
 const closingSoonModule: IDatasetControlModule = {
     name: 'closingSoon',
     onLoad: control => {
-        control.registerViews((views: IDatasetControlView[]) => views.push(CLOSING_SOON))
+        control.addViewsHook((views: IDatasetControlView[]) => views.push(CLOSING_SOON))
         //what control.modules.get('closingSoon') returns, typed by types.ts
         return CLOSING_SOON
     },

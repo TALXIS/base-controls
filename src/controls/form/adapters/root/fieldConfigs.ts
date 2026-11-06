@@ -1,15 +1,15 @@
 import React from "react";
-import { IFormRuntime } from "../../runtime/FormRuntime";
+import { IForm } from "../../runtime/FormRuntime";
 import { Field, IFieldProps } from "../field";
 
-interface IRegisteredFieldConfig {
+interface ICollectedField {
     name: string;
     requiredLevel?: IFieldProps["requiredLevel"];
     validation?: IFieldProps["validation"];
 }
 
-const collectFieldConfigs = (children: React.ReactNode): IRegisteredFieldConfig[] => {
-    const fieldConfigs = new Map<string, IRegisteredFieldConfig>();
+const collectFields = (children: React.ReactNode): ICollectedField[] => {
+    const fieldConfigs = new Map<string, ICollectedField>();
 
     const visitNode = (node: React.ReactNode): void => {
         React.Children.forEach(node, (child) => {
@@ -35,8 +35,8 @@ const collectFieldConfigs = (children: React.ReactNode): IRegisteredFieldConfig[
     return Array.from(fieldConfigs.values());
 };
 
-export const applyFieldConfigs = (form: IFormRuntime, children: React.ReactNode): void => {
-    collectFieldConfigs(children).forEach(({ name, requiredLevel, validation }) => {
+export const applyFieldConfigs = (form: IForm, children: React.ReactNode): void => {
+    collectFields(children).forEach(({ name, requiredLevel, validation }) => {
         if (requiredLevel != null) {
             form.setFieldRequiredLevel(name, requiredLevel);
         }

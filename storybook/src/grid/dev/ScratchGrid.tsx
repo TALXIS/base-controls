@@ -82,7 +82,7 @@ const heatmapModule: IGridModule = {
         })
 
         //after the grouping and totals hooks, which reset backgrounds
-        cells.registerCellTheme((builder, { record, columnName }) => {
+        cells.addCellThemeHook((builder, { record, columnName }) => {
             const dataType = provider.getColumnsMap()[columnName]?.dataType
             if (record.getSummarizationType() !== 'none') {
                 return
@@ -347,7 +347,7 @@ const SCRATCH_COL_DEFS: NonNullable<IGridProps['colDefs']> = {
     //a grouped status stays where grouping pins it
     status: colDef => ({ pinned: colDef?.pinned ?? 'right', context: { ...colDef?.context, alignment: 'right' } }),
     //a value the record refuses, so a cell can be seen saying so: an estimate this team would not plan in
-    estimate: { context: { cell: { onGetValidation: validateEstimate } } },
+    estimate: { context: { cell: { validationHook: validateEstimate } } },
     [PAYLOAD_COLUMN]: { cellRenderer: PayloadCell, headerComponent: PayloadHeader },
     [SUMMARY_COLUMN]: { ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader },
 }
@@ -452,7 +452,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule(),
-        ...(props.enableEditing ? [createEditingModule({ autoSave: props.enableAutoSave })] : []),
+        ...(props.enableEditing ? [createEditingModule({ enableAutoSave: props.enableAutoSave })] : []),
         ...(props.clipboard ? [createClipboardModule()] : []),
         createLegacyClientApiCompatibilityModule(),
         ...(props.cellSelection ? [createCellSelectionModule()] : []),

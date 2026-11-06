@@ -41,10 +41,10 @@ export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
     const labelsServiceRef = useLatest(useLabelsService());
     const theme = useTheme();
 
-    const onCreate = () => new DatasetControlRuntime({
-        onGetProps: () => propsRef.current,
+    const createRuntime = () => new DatasetControlRuntime({
+        getProps: () => propsRef.current,
         state,
-        onGetLabelsService: () => labelsServiceRef.current,
+        getLabelsService: () => labelsServiceRef.current,
         theme,
     });
 
@@ -55,7 +55,7 @@ export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
         </DatasetControlUi.Container>,
     };
 
-    return <RuntimeHost<DatasetControlRuntime> onCreate={onCreate} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ errorMessage, loading }}>
+    return <RuntimeHost<DatasetControlRuntime> createRuntime={createRuntime} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ errorMessage, loading }}>
         {/* the mount never reads view data */}
         <DatasetControlMount {...props as IDatasetControlProps} />
     </RuntimeHost>;

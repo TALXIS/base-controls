@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getEditColumnsPanelUiStyles = () => mergeStyleSets({
+export const getDatasetControlUiEditColumnsPanelStyles = () => mergeStyleSets({
     content: {
         display: 'flex',
         flexDirection: 'column',

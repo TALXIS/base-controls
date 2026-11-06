@@ -1,21 +1,21 @@
 import { useMemo } from "react";
 import { getClassNames } from "@core";
-import { FooterStartUiComponents, IFooterStartUiComponents } from "./components";
-import { getFooterStartUiStyles } from "./styles";
+import { DatasetControlUiFooterStartComponents, IDatasetControlUiFooterStartComponents } from "./components";
+import { getDatasetControlUiFooterStartStyles } from "./styles";
 
 /** Props for the footer's start region, as plain UI. */
-export interface IFooterStartUiProps {
+export interface IDatasetControlUiFooterStartProps {
     /** The parts drawn against the left. */
     children?: React.ReactNode;
     /** Added to its box. */
     className?: string;
     /** Replacements for its slots. */
-    components?: Partial<IFooterStartUiComponents>;
+    components?: Partial<IDatasetControlUiFooterStartComponents>;
 }
 
 /** The footer's left region, sized to what it holds. */
-export const FooterStart = (props: IFooterStartUiProps) => {
-    const components = { ...FooterStartUiComponents, ...props.components };
-    const styles = useMemo(() => getFooterStartUiStyles(), []);
+export const DatasetControlUiFooterStart = (props: IDatasetControlUiFooterStartProps) => {
+    const components = { ...DatasetControlUiFooterStartComponents, ...props.components };
+    const styles = useMemo(() => getDatasetControlUiFooterStartStyles(), []);
     return components.onRenderContainer({ className: getClassNames([styles.datasetControlFooterStart, props.className]), children: props.children });
 };

@@ -48,15 +48,15 @@ The provider supplies what the pickers list, fetched anew each time the editor o
 | \`isOpen()\` | Whether the editor is open. |
 | \`events\` | \`onOpenChanged\`, whenever the editor opens or closes. |
 | \`getSession()\` | The edit in progress, while the editor is open. |
-| \`registerCommands(hook, priority?)\` | Adds commands above the pickers. |
-| \`registerColumnCommands(hook, priority?)\` | Adds commands to each chosen column. |
+| \`addCommandsHook(hook, priority?)\` | Adds commands above the pickers. |
+| \`addColumnCommandsHook(hook, priority?)\` | Adds commands to each chosen column. |
 
 The session holds the edit until it is saved:
 
 | Member | Does |
 |---|---|
 | \`getColumns()\` | The visible chosen columns, in order. |
-| \`getAvailableColumns(query?)\` | Fetches the columns the picker offers, filtered by \`query\`. |
+| \`onGetAvailableColumns(query?)\` | Fetches the columns the picker offers, filtered by \`query\`. |
 | \`addColumn(column)\` | Adds the column first. |
 | \`removeColumn(name)\` | Removes the column. |
 | \`moveColumn(name, targetName)\` | Moves the column to where \`targetName\` is. |

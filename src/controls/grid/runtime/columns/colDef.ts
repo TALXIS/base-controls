@@ -11,28 +11,28 @@ import type { IColumnHeaderAdornment, IColumnMenuSection } from "../column-heade
 export interface IGridColumnCellContext {
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
     isRowResizable?: boolean;
-    /** Changes the commands a cell offers, after `registerCellCommands`. */
-    onGetCommands?: (result: IGridCellCommands, params: { record: IRecord }) => void;
-    /** Changes a cell's theme, after `registerCellTheme`. */
-    onGetTheme?: (builder: ThemeBuilder, params: { record: IRecord }) => void;
-    /** Decides whether a cell shows it is loading, after `registerCellLoading`. */
-    onGetLoading?: (result: IGridCellLoading, params: { record: IRecord }) => void;
-    /** Decides whether a record's value is valid, after `registerValidation`. */
-    onGetValidation?: (result: IFieldValidationResult, params: { record: IRecord }) => void;
-    /** Changes the parameters a cell's control is handed, after `registerControlParameters`. */
-    onGetControlParameters?: (parameters: IParameters, params: { record: IRecord }) => void;
+    /** Changes the commands a cell offers, after `addCellCommandsHook`. */
+    commandsHook?: (result: IGridCellCommands, parameters: { record: IRecord }) => void;
+    /** Changes a cell's theme, after `addCellThemeHook`. */
+    themeHook?: (builder: ThemeBuilder, parameters: { record: IRecord }) => void;
+    /** Decides whether a cell shows it is loading, after `addCellLoadingHook`. */
+    loadingHook?: (result: IGridCellLoading, parameters: { record: IRecord }) => void;
+    /** Decides whether a record's value is valid, after `addValidationHook`. */
+    validationHook?: (result: IFieldValidationResult, parameters: { record: IRecord }) => void;
+    /** Changes the parameters a cell's control is handed, after `addControlParametersHook`. */
+    controlParametersHook?: (result: IParameters, parameters: { record: IRecord }) => void;
 }
 
 /** What a column decides for its header, after the header hooks. */
 export interface IGridColumnHeaderContext {
-    /** Changes the header's theme, after `registerColumnHeaderTheme`. */
-    onGetTheme?: (builder: ThemeBuilder) => void;
-    /** Adds what the header draws beside its name, after `registerColumnHeaderAdornments`. */
-    onGetAdornments?: (adornments: IColumnHeaderAdornment[]) => void;
-    /** Adds sections to the column's menu, after `registerColumnMenuSection`. */
-    onGetMenuSections?: (sections: IColumnMenuSection[]) => void;
-    /** Changes the items of the column's menu, after `registerColumnMenuItems`. */
-    onGetMenuItems?: (items: IContextualMenuItem[]) => void;
+    /** Changes the header's theme, after `addColumnHeaderThemeHook`. */
+    themeHook?: (builder: ThemeBuilder) => void;
+    /** Adds what the header draws beside its name, after `addColumnHeaderAdornmentsHook`. */
+    adornmentsHook?: (adornments: IColumnHeaderAdornment[]) => void;
+    /** Adds sections to the column's menu, after `addColumnMenuSectionsHook`. */
+    menuSectionsHook?: (sections: IColumnMenuSection[]) => void;
+    /** Changes the items of the column's menu, after `addColumnMenuItemsHook`. */
+    menuItemsHook?: (items: IContextualMenuItem[]) => void;
 }
 
 /** What the grid's own column is, whatever its cells are bound to. */

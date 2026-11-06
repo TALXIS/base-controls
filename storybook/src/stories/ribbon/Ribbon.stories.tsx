@@ -22,7 +22,7 @@ A command either runs or opens a menu of further commands, as **Download** does 
 | \`commands\` | \`IRibbonCommand[]\` | None | Makes the command a menu of these, instead of running. |
 | \`tooltip\` | \`string\` | None | Shown on hover. |
 | \`iconName\` | \`string\` | None | A Fluent icon name. |
-| \`isDisabled\` | \`boolean\` | \`false\` | Shows the button disabled. |
+| \`disabled\` | \`boolean\` | \`false\` | Shows the button disabled. |
 
 ## How it behaves
 
@@ -36,11 +36,11 @@ When the first load throws, the error shows in place of the commands, with **Det
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
-| \`onLoad\` | \`(ribbon: IRibbonRuntime) => IRibbonCommand[] \\| Promise<IRibbonCommand[]>\` | None | Live | Returns the commands, directly or once loaded; returned directly, they show without a shimmer. Called at mount and on \`reload()\`. |
+| \`onLoad\` | \`(ribbon: IRibbon) => IRibbonCommand[] \\| Promise<IRibbonCommand[]>\` | None | Live | Returns the commands, directly or once loaded; returned directly, they show without a shimmer. Called at mount and on \`reload()\`. |
 | \`align\` | \`'start' \\| 'end'\` | \`'start'\` | Live | The side the commands line up against. |
 | \`disabled\` | \`boolean\` | \`false\` | Live | Disables every command, menus included. |
 | \`className\` | \`string\` | None | Live | Added to the ribbon's box and to its shimmer. |
-| \`onSetup\` | \`(ribbon: IRibbonRuntime) => void\` | None | At mount | Hands over the ribbon of each mount, before it loads. |
+| \`onSetup\` | \`(ribbon: IRibbon) => void\` | None | At mount | Hands over the ribbon of each mount, before it loads. |
 | \`components\` | \`IRibbonComponents\` | Defaults | Live | See *Changing how it looks*. |
 
 ## From your code
@@ -52,7 +52,7 @@ When the first load throws, the error shows in place of the commands, with **Det
 | \`getCommands()\` | The commands of the last load; \`undefined\` until the first one finishes. |
 | \`isRunning(commandId)\` | Whether the command's \`onExecute\` is running. |
 | \`reload()\` | Loads the commands again; the latest call's commands win. Does nothing until the first load succeeds. |
-| \`registerCommands(hook, priority?)\` | Adds to the commands on every load: see *Add your own commands*. |
+| \`addCommandsHook(hook, priority?)\` | Adds to the commands on every load: see *Add your own commands*. |
 | \`events\` | The ribbon's own events, below. |
 
 | Event | Fires |
@@ -65,7 +65,7 @@ When the first load throws, the error shows in place of the commands, with **Det
 
 ## Add your own commands
 
-\`registerCommands(hook, priority?)\` lets code that does not own \`onLoad\`, such as a shared module, add to the commands. The hook gets the commands after every \`onLoad\` and changes them in place; a higher \`priority\` runs later, and the call returns a function that removes the hook. Hooks run on a load, so call \`reload()\` to apply one now.
+\`addCommandsHook(hook, priority?)\` lets code that does not own \`onLoad\`, such as a shared module, add to the commands. The hook gets the commands after every \`onLoad\` and changes them in place; a higher \`priority\` runs later, and the call returns a function that removes the hook. Hooks run on a load, so call \`reload()\` to apply one now.
 
 {{story: Commands from your own code}}
 
@@ -75,8 +75,8 @@ When the first load throws, the error shows in place of the commands, with **Det
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| Top level | \`onRenderCommandBar\`, with the commands as \`items\` | \`RibbonUiComponents\` | The command bar |
-| \`shimmer\` | \`onRenderShimmer\` | \`RibbonShimmerUiComponents\` | The shimmer before the first load |
+| Top level | \`onRenderCommandBar\`, with the commands as \`items\` | \`RibbonUiCommandBarComponents\` | The command bar |
+| \`shimmer\` | \`onRenderShimmer\` | \`RibbonUiShimmerComponents\` | The shimmer before the first load |
 | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed first load |
 
 The commands carry your own labels. To change the wording of **Try again** and **Details**, see [**Localization**](?path=/docs/concepts-localization--overview).

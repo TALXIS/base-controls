@@ -49,7 +49,7 @@ export interface ITaskExecuteError {
     rethrow?: boolean;
 }
 
-export interface ITaskExecuteOptions {
+export interface ITaskExecuteParameters {
     loading?: ITaskExecuteLoading;
     error?: ITaskExecuteError;
 }
@@ -59,7 +59,7 @@ export interface ITaskRuntime extends IRuntime {
     readonly services: IServiceRegistry<ITaskRuntimeServiceMap>;
     /** Every task action, run through the store under the loading overlay and its error shown. */
     readonly tasks: ITaskActions;
-    /** Calls `onLoad`, then initializes and registers the provider it returns. */
+    /** Calls `onLoad`, then configures and registers the provider it returns. */
     load(): Promise<IDatasetControlLoadResult<ITaskViewData>>;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;
@@ -76,13 +76,13 @@ export interface ITaskRuntime extends IRuntime {
     /** How many hours a day of a task's duration holds. */
     getHoursPerDay(): number;
     /** Runs the operation under the loading overlay and shows its failure in a dialog. */
-    execute<T>(operation: () => Promise<T>, options: ITaskExecuteOptions & { error: { rethrow: false } }): Promise<T | undefined>;
-    execute<T>(operation: () => Promise<T>, options?: ITaskExecuteOptions): Promise<T>;
+    execute<T>(operation: () => Promise<T>, options: ITaskExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
+    execute<T>(operation: () => Promise<T>, parameters?: ITaskExecuteParameters): Promise<T>;
     /**
-     * Registers a hook over every item `TaskDatasetControl.Ribbon` draws, menus included.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over every item `TaskDatasetControl.Ribbon` draws, menus included.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerRibbonCommandUi(hook: TaskRibbonCommandUiHook, priority?: number): () => void;
+    addRibbonCommandUiHook(hook: TaskRibbonCommandUiHook, priority?: number): () => void;
     /** Copies of the items with every ribbon command UI hook applied, sub-menus included. */
     getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[];
 }

@@ -2,7 +2,7 @@ import { DataTypes, IMemoryProviderEntityMetadata, MemoryDataProvider } from "@t
 import type { ICreateTaskTree, ITasksCreateResult } from "../../../runtime/provider";
 import type { MemoryTaskDatabase } from "../../../runtime/data-sources/memory/MemoryTaskDatabase";
 import type { ITaskRuntime } from "../../../runtime";
-import type { ITemplate, ITemplatesStore, ITemplateTasksCreateParams } from "../Templates";
+import type { ITemplate, ITemplatesStore, ITemplateTasksCreateParameters } from "../Templates";
 import { simulateBackend } from "../../../runtime/data-sources/memory/simulateBackend";
 import { TEMPLATES_LABELS } from "../labels";
 
@@ -46,25 +46,25 @@ export class MemoryTemplatesStore implements ITemplatesStore {
         this._templates = structuredClone(parameters.templates);
     }
 
-    public onCreateTemplatesProvider(): MemoryDataProvider {
+    public createTemplatesProvider(): MemoryDataProvider {
         const provider = new MemoryDataProvider({ dataSource: this._templates.map(template => ({ id: template.id, name: template.name })), metadata: TEMPLATE_METADATA });
         provider.setColumns([{ name: 'name', displayName: this._taskRuntime.getLabels(TEMPLATES_LABELS).get('templates.name'), dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 200 }]);
         return provider;
     }
 
-    public async onCreateTasks(params: ITemplateTasksCreateParams): Promise<ITasksCreateResult | null> {
+    public async createTasks(parameters: ITemplateTasksCreateParameters): Promise<ITasksCreateResult | null> {
         await simulateBackend();
-        const template = this._templates.find(candidate => candidate.id === params.templateId);
+        const template = this._templates.find(candidate => candidate.id === parameters.templateId);
         if (!template) {
             return null;
         }
         const provider = this._taskRuntime.getProvider();
         const fieldMapping = provider.getFieldMapping();
         const tree: ICreateTaskTree = { data: { ...template.data, [fieldMapping.subject]: template.name }, children: template.children };
-        return { records: this._database.createTasks([tree], params, { fieldMapping, columns: provider.getColumns() }) };
+        return { records: this._database.createTasks([tree], parameters, { fieldMapping, columns: provider.getColumns() }) };
     }
 
-    public async onCreateTemplate(template: ITemplate): Promise<void> {
+    public async createTemplate(template: ITemplate): Promise<void> {
         await simulateBackend();
         this._templates.push({ id: crypto.randomUUID(), name: template.name, ...structuredClone(template.tree) });
     }

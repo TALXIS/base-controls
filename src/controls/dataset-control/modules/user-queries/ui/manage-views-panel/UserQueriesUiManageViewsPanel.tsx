@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { PanelType } from "@fluentui/react";
-import { IManageViewsPanelUiComponents, ManageViewsPanelUiComponents } from "./components";
-import { getManageViewsPanelUiStyles } from "./styles";
+import { IUserQueriesUiManageViewsPanelComponents, UserQueriesUiManageViewsPanelComponents } from "./components";
+import { getUserQueriesUiManageViewsPanelStyles } from "./styles";
 
 /** Props for the panel the user's views are managed in, as plain UI. */
-export interface IManageViewsPanelUiProps {
+export interface IUserQueriesUiManageViewsPanelProps {
     title: string;
     closeText: string;
     /** What lists the views. */
@@ -12,13 +12,13 @@ export interface IManageViewsPanelUiProps {
     /** Called by the close button and on closing the panel. */
     onDismiss: () => void;
     /** Replacements for its slots. */
-    components?: Partial<IManageViewsPanelUiComponents>;
+    components?: Partial<IUserQueriesUiManageViewsPanelComponents>;
 }
 
 /** A panel holding the list of the user's views, with Close in its footer. */
-export const ManageViewsPanel = (props: IManageViewsPanelUiProps) => {
-    const components = { ...ManageViewsPanelUiComponents, ...props.components };
-    const styles = useMemo(() => getManageViewsPanelUiStyles(), []);
+export const UserQueriesUiManageViewsPanel = (props: IUserQueriesUiManageViewsPanelProps) => {
+    const components = { ...UserQueriesUiManageViewsPanelComponents, ...props.components };
+    const styles = useMemo(() => getUserQueriesUiManageViewsPanelStyles(), []);
 
     return components.onRenderPanel({
         isOpen: true,

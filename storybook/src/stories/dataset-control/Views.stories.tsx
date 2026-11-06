@@ -52,7 +52,7 @@ The control opens and lists views with \`loadView\`, \`reload\`, \`getViews\` an
 |---|---|
 | \`getViews()\`, \`getCurrentView()\` | The views, and the open one as listed; \`undefined\` when it is not among them. |
 | \`select(viewId)\` | Opens the view; nothing when it is already open. |
-| \`registerItems(hook, priority?)\` | Adds to the switcher's menu: \`hook(items)\` changes the Fluent \`IContextualMenuItem\`s in place each time the menu opens. Returns its unregistration. |
+| \`addItemsHook(hook, priority?)\` | Adds to the switcher's menu: \`hook(items)\` changes the Fluent \`IContextualMenuItem\`s in place each time the menu opens. Returns its unregistration. |
 
 ## Where next
 

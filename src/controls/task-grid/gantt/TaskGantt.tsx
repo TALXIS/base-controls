@@ -5,7 +5,7 @@ import type { Dayjs } from "dayjs";
 import { useEventEmitter, useLatest, useRerender } from "@core";
 import { useLabelsService } from "@labels";
 import { useControlStateStore, useRegisterDatasetControlPart } from "@controls/dataset-control/adapters/root";
-import { useTaskRuntime } from "../../adapters/root/context";
+import { useTaskRuntime } from "../adapters/root/context";
 import { GanttRuntime } from "./runtime";
 import { GanttContext } from "./context";
 import type { IGanttEvents, IGanttModule } from "./interfaces";
@@ -42,7 +42,7 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
     const state = useControlStateStore(props.stateKey);
     const propsRef = useLatest(props);
     const labelsServiceRef = useLatest(useLabelsService());
-    const gantt = useRegisterDatasetControlPart('gantt', () => new GanttRuntime({ taskRuntime, state, onGetLabelsService: () => labelsServiceRef.current, onGetProps: () => propsRef.current }));
+    const gantt = useRegisterDatasetControlPart('gantt', () => new GanttRuntime({ taskRuntime, state, getLabelsService: () => labelsServiceRef.current, getProps: () => propsRef.current }));
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
     const [error, setError] = useState<unknown>();

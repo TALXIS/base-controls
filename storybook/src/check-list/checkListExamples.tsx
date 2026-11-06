@@ -2,7 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../grid/GridExampleRunner'
 import { createLaunchPlanProvider } from '../grid/data'
 
-const FIELD_MAPPING = `const FIELD_MAPPING: ICheckListFieldMapping = {
+const FIELD_MAPPING = `const FIELD_MAPPING: IChecklistFieldMapping = {
     name: 'name',
     stackRank: 'stackrank',
     completed: 'completed',
@@ -11,9 +11,9 @@ const FIELD_MAPPING = `const FIELD_MAPPING: ICheckListFieldMapping = {
 export const LAUNCH_PLAN_CODE = `${FIELD_MAPPING}
 
 //provider holds the launch plan, as the Data tab shows
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>
     <DatasetControl.Body>
-        <CheckList fieldMapping={FIELD_MAPPING} />
+        <Checklist fieldMapping={FIELD_MAPPING} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -36,18 +36,18 @@ const createLaunchPlan = () => new MemoryDataProvider({
 })
 
 //the checklist draws items in the order the provider loaded them
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(createLaunchPlan(), FIELD_MAPPING) })}>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(createLaunchPlan(), FIELD_MAPPING) })}>
     <DatasetControl.Body>
-        <CheckList fieldMapping={FIELD_MAPPING} />
+        <Checklist fieldMapping={FIELD_MAPPING} />
     </DatasetControl.Body>
 </DatasetControl>
 `
 
 export const READ_ONLY_CODE = `${FIELD_MAPPING}
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>
     <DatasetControl.Body>
-        <CheckList fieldMapping={FIELD_MAPPING} modules={[]} />
+        <Checklist fieldMapping={FIELD_MAPPING} modules={[]} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -77,18 +77,18 @@ const GridExample = () => {
         gridRef.current?.services.get('fields').get(record, 'owner').setValue(CURRENT_USER)
     }
 
-    return <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
+    return <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>
         <DatasetControl.Body>
-            <CheckList
+            <Checklist
                 fieldMapping={FIELD_MAPPING}
                 //the default editing, plus totals for the estimates
-                modules={[createEditingModule({ autoSave: true }), createAggregationModule()]}
+                modules={[createEditingModule({ enableAutoSave: true }), createAggregationModule()]}
                 colDefs={{
-                    name: { context: { cell: { onGetLock: lockWhenDone } } },
+                    name: { context: { cell: { lockHook: lockWhenDone } } },
                     owner: {
                         context: {
                             cell: {
-                                onGetCommands: (result, { record }) => {
+                                commandsHook: (result, { record }) => {
                                     if (checkList()?.isItem(record) && !isDone(record) && !record.getValue('owner')) {
                                         result.items.push({ key: 'assign', text: 'Assign to me', iconProps: { iconName: 'AddFriend' }, onClick: () => assignToMe(record) })
                                     }
@@ -99,8 +99,8 @@ const GridExample = () => {
                     duedate: {
                         context: {
                             cell: {
-                                onGetLock: lockWhenDone,
-                                onGetTheme: (builder, { record }) => {
+                                lockHook: lockWhenDone,
+                                themeHook: (builder, { record }) => {
                                     if (isOverdue(record)) {
                                         builder.tint(OVERDUE)
                                     }
@@ -126,9 +126,9 @@ const StarCheck = (props: ICheckProps) => {
         styles={{ root: { fontSize: 18, color: props.checked ? theme.palette.yellowDark : theme.palette.neutralSecondary } }} />
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>
     <DatasetControl.Body>
-        <CheckList
+        <Checklist
             fieldMapping={FIELD_MAPPING}
             colDefs={{
                 //only the check is replaced: ticking and saving work as before
@@ -167,9 +167,9 @@ const GridExample = () => {
 
     return <Stack horizontal tokens={{ childrenGap: 24 }}>
         <Stack.Item grow>
-            <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
+            <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>
                 <DatasetControl.Body>
-                    <CheckList fieldMapping={FIELD_MAPPING} />
+                    <Checklist fieldMapping={FIELD_MAPPING} />
                 </DatasetControl.Body>
             </DatasetControl>
         </Stack.Item>
@@ -191,7 +191,7 @@ const SECTIONS = [
 
 //edits the checklist's own record and saves each change through its provider
 const ItemForm = (props: { item: IRecord }) => {
-    return <Form.Root onLoad={async () => ({ record: props.item })} autoSave>
+    return <Form.Root onLoad={async () => ({ record: props.item })} enableAutoSave>
         {SECTIONS.map(section => <Form.Section key={section.label} label={section.label} cellLabelPosition='Top'>
             {section.columnNames.map(columnName => <Form.Field key={columnName} name={columnName}>
                 <Form.Cell>
@@ -207,9 +207,9 @@ const GridExample = () => {
     const close = () => setOpenedItem(undefined)
 
     return <>
-        <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
+        <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>
             <DatasetControl.Body>
-                <CheckList
+                <Checklist
                     fieldMapping={FIELD_MAPPING}
                     //draws the names as links
                     colDefs={{ name: { context: { isPrimary: true } } }}

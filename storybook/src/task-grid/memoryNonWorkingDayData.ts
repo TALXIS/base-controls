@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import type { INonWorkingDay } from "@talxis/base-controls/controls/task-grid/modules/gantt";
+import type { INonWorkingDay } from "@talxis/base-controls/controls/task-grid/gantt";
 
 /** Common holidays, plus a few company days, for the sample Gantt. */
 export const NON_WORKING_DAYS: INonWorkingDay[] = [

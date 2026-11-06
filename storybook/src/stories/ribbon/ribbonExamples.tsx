@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const RIBBON_CODE = `import { IRibbonCommand, IRibbonRuntime, Ribbon } from '@talxis/base-controls'
+const RIBBON_CODE = `import { IRibbonCommand, IRibbon, Ribbon } from '@talxis/base-controls'
 import { Stack, Text } from '@fluentui/react'
 
 type Status = 'Draft' | 'Sent' | 'Paid'
@@ -12,7 +12,7 @@ const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resol
 const GridExample = () => {
     const [status, setStatus] = React.useState<Status>('Draft')
     const [note, setNote] = React.useState('')
-    const ribbonRef = React.useRef<IRibbonRuntime>()
+    const ribbonRef = React.useRef<IRibbon>()
 
     //the ribbon calls onLoad at mount and on reload(), so it reloads when the status changes
     React.useEffect(() => {
@@ -47,7 +47,7 @@ const GridExample = () => {
             { id: 'pdf', label: 'As PDF', onExecute: () => setNote('Downloaded as PDF') },
             { id: 'csv', label: 'As CSV', onExecute: () => setNote('Downloaded as CSV') },
         ] })
-        commands.push({ id: 'reopen', label: 'Reopen', iconName: 'Undo', isDisabled: status === 'Draft', onExecute: () => setStatus('Draft') })
+        commands.push({ id: 'reopen', label: 'Reopen', iconName: 'Undo', disabled: status === 'Draft', onExecute: () => setStatus('Draft') })
         return commands
     }
 
@@ -87,13 +87,13 @@ const GridExample = () => {
 }
 `
 
-const OWN_COMMANDS_CODE = `import { IRibbonCommand, IRibbonRuntime, Ribbon } from '@talxis/base-controls'
+const OWN_COMMANDS_CODE = `import { IRibbonCommand, IRibbon, Ribbon } from '@talxis/base-controls'
 import { Stack, Text, Toggle } from '@fluentui/react'
 
 const GridExample = () => {
     const [note, setNote] = React.useState('')
     const isClosed = React.useRef(false)
-    const ribbonRef = React.useRef<IRibbonRuntime>()
+    const ribbonRef = React.useRef<IRibbon>()
 
     //returned directly, so the ribbon draws them without a shimmer
     const onLoad = (): IRibbonCommand[] => [
@@ -102,15 +102,15 @@ const GridExample = () => {
     ]
 
     //code that does not own onLoad adds to the commands of every load
-    const onSetup = (ribbon: IRibbonRuntime) => {
+    const onSetup = (ribbon: IRibbon) => {
         ribbonRef.current = ribbon
-        ribbon.registerCommands(commands => {
+        ribbon.addCommandsHook(commands => {
             commands.push({ id: 'history', label: 'History', iconName: 'History', onExecute: () => setNote('History opened') })
         })
         //a higher priority runs later, so this hook sees History too
-        ribbon.registerCommands(commands => {
+        ribbon.addCommandsHook(commands => {
             for (const command of commands) {
-                command.isDisabled = isClosed.current
+                command.disabled = isClosed.current
             }
         }, 10)
     }

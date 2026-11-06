@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { useRerender } from "@core";
 import { useEventEmitter } from "@core/hooks/useEventEmitter";
 import { IGridRowsEvents } from "../../../runtime/rows";
-import { useGridInternalService } from "../../../useGridService";
+import { useGridServiceInternal } from "../../../useGridService";
 import { useGridCell } from "../root/context";
 import { CellUi, ICellUiCommandsComponents } from "../../../ui/cells";
 
@@ -13,14 +13,14 @@ export interface ICellCommandsProps {
 /** A cell's commands, as the command bar wants them. */
 export const CellCommands = (props: ICellCommandsProps) => {
     const cell = useGridCell();
-    const rows = useGridInternalService('rows');
+    const rows = useGridServiceInternal('rows');
     const { rerender } = useRerender();
     const isHighlighted = rows.isHighlighted(cell.getRecord());
     //what this cell last drew from.
     const wasHighlighted = useRef(isHighlighted);
     wasHighlighted.current = isHighlighted;
 
-    useEventEmitter<IGridRowsEvents>(rows, 'onHighlightedRowsChanged', () => {
+    useEventEmitter<IGridRowsEvents>(rows.events, 'onHighlightedRowsChanged', () => {
         if (rows.isHighlighted(cell.getRecord()) !== wasHighlighted.current) {
             rerender();
         }

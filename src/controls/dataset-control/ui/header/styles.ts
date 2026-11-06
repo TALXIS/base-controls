@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 import { FILLED_HEADER_INSET, HEADER_PART_HEIGHT } from "../layout";
 
-export const getHeaderUiStyles = (isPadded: boolean) => mergeStyleSets({
+export const getDatasetControlUiHeaderStyles = (isPadded: boolean) => mergeStyleSets({
     datasetControlHeader: {
         display: 'flex',
         flexWrap: 'wrap',

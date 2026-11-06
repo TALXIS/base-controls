@@ -1,1 +1,1 @@
-export * from './createMemoryChecklistModule';
+export * from './createMemoryTaskChecklistModule';

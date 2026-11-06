@@ -16,7 +16,7 @@ These are the only pieces \`<Grid>\` itself takes \`components\` for. How slots 
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`overlays.emptyState\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyStateUiComponents\` | The overlay of a grid with no rows |
+| \`overlays.emptyState\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`DatasetControlUiEmptyStateComponents\` | The overlay of a grid with no rows |
 | \`overlays.loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | | The overlay while the provider loads; the text is the provider's loading message, drawn only while there is one |
 | \`rows.loading\` | \`onRenderShimmer\` | | A group's records while they load on the server-side row model |
 | \`rows.error\` | \`onRenderMessageBar\` | | Records or totals that failed to load, with the provider's error message |

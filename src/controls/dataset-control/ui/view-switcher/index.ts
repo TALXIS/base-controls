@@ -1,2 +1,2 @@
-export * from './ViewSwitcher';
+export * from './DatasetControlUiViewSwitcher';
 export * from './components';

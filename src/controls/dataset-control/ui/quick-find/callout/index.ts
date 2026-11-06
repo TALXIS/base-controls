@@ -1,2 +1,2 @@
-export * from './QuickFindCallout';
+export * from './DatasetControlUiQuickFindCallout';
 export * from './components';

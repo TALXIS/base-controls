@@ -26,9 +26,9 @@ export interface IGridRowModelGroupingParameters {
 /** What grouping asks of the row model it runs on. */
 export interface IGridRowModelGrouping {
     /** Options only this row model needs while the rows can be grouped. */
-    onAgGridOptions: (result: IGridAgGridOptions) => void;
+    applyAgGridOptions: (result: IGridAgGridOptions) => void;
     /** What a data column needs for this row model, grouped or not. */
-    onApplyColumnDefinition: (colDef: ColDef<IRecord>, isGrouped: boolean) => void;
+    applyColumnDefinition: (colDef: ColDef<IRecord>, isGrouped: boolean) => void;
 }
 
 declare module "../../interfaces" {

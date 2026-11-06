@@ -1,2 +1,2 @@
-export * from './PageSizeSwitcher';
+export * from './DatasetControlUiPageSizeSwitcher';
 export * from './components';

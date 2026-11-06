@@ -1,2 +1,2 @@
-export * from './HeaderEnd';
+export * from './DatasetControlUiHeaderEnd';
 export * from './components';

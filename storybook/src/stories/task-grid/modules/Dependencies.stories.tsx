@@ -28,7 +28,7 @@ A dependency joins two different tasks, once, without a cycle, and can change wh
 | \`createMemoryDependenciesModule\` | In memory. \`dependencies\` are the starting ones. |
 | \`createDataverseDependenciesModule\` | In a Dataverse table of your own: two lookups to the task table, and an option set of the type. The example's *dataverse.ts* keeps them there. |
 | \`createTalxisDependenciesModule\` | In TALXIS's \`talxis_taskdependency\` table. |
-| \`createDependenciesModule\` | In a store of yours: \`onCreateStore\` returns an \`IDependenciesStore\`. |
+| \`createDependenciesModule\` | In a store of yours: \`createStore\` returns an \`IDependenciesStore\`. |
 
 Every factory also takes \`reloadOnEditorClosed\`, to read a task's dependencies again once its form closes (\`true\` for Dataverse and TALXIS), and \`components\` (see *Changing how it looks* below).
 
@@ -42,7 +42,7 @@ Every dependencies factory takes \`components\`, read at mount. How slots work: 
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`count\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderArrow\`, \`onRenderCount\` | \`DependencyCountComponents\` | The count in the *Predecessors* and *Successors* cells |
+| \`count\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderArrow\`, \`onRenderCount\` | \`DependenciesUiCountComponents\` | The count in the *Predecessors* and *Successors* cells |
 
 ## Reference
 
@@ -59,10 +59,10 @@ Every dependencies factory takes \`components\`, read at mount. How slots work: 
 
 | Method | Description |
 |---|---|
-| \`onLoadDependencies(taskIds)\` | Every dependency with any of these tasks at either end. |
-| \`onCreateDependency(dependency)\` | Creates a dependency and returns it with its \`id\`. |
-| \`onUpdateDependency(dependency)\` | Saves a changed type. |
-| \`onDeleteDependency(dependencyId)\` | Deletes a dependency. |
+| \`loadDependencies(taskIds)\` | Every dependency with any of these tasks at either end. |
+| \`createDependency(dependency)\` | Creates a dependency and returns it with its \`id\`. |
+| \`updateDependency(dependency)\` | Saves a changed type. |
+| \`deleteDependency(dependencyId)\` | Deletes a dependency. |
 
 ## Where next
 

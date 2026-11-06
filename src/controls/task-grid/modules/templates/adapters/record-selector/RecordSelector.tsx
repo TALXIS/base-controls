@@ -3,12 +3,12 @@ import type { IDataProvider } from "@talxis/client-libraries";
 import { DatasetControl } from "@controls/dataset-control";
 import { Labels, LabelsProvider } from "@labels";
 import { useDataProviderEvents } from "@data";
-import { RecordList, RecordSelectorFrame } from "../../ui/record-selector";
+import { TemplatesUiRecordList, TemplatesUiRecordSelectorFrame } from "../../ui/record-selector";
 import { IRecordSelectorComponents } from "./components";
 
 export interface IRecordSelectorProps {
     /** The records to offer, searched and paged through the provider itself. */
-    onCreateProvider: () => IDataProvider;
+    createProvider: () => IDataProvider;
     /** Called with the chosen record's id. */
     onRecordSelected: (recordId: string) => void;
     labels?: { searchPlaceholder?: string; noRecordsFound?: string };
@@ -19,7 +19,7 @@ const RecordSelectorList = (props: Pick<IRecordSelectorProps, 'onRecordSelected'
     const provider = useDataProviderEvents(['onNewDataLoaded']);
     const primaryNameAttribute = provider.getMetadata().PrimaryNameAttribute;
     const records = provider.getRecords().map(record => ({ id: record.getRecordId(), name: record.getFormattedValue(primaryNameAttribute) ?? undefined }));
-    return <RecordList records={records} onRecordSelected={props.onRecordSelected} components={props.components?.list} />;
+    return <TemplatesUiRecordList records={records} onRecordSelected={props.onRecordSelected} components={props.components?.list} />;
 };
 
 /** A searchable, paged, virtualized single-record picker over any provider. */
@@ -30,9 +30,9 @@ export const RecordSelector = (props: IRecordSelectorProps) => {
         ...(noRecordsFound && { 'emptyState.noRecordsFound': noRecordsFound }),
     }), [searchPlaceholder, noRecordsFound]);
 
-    return <RecordSelectorFrame components={props.components?.frame}>
+    return <TemplatesUiRecordSelectorFrame components={props.components?.frame}>
         {parts => <LabelsProvider labels={labels}>
-            <DatasetControl height='100%' onLoad={async () => ({ provider: props.onCreateProvider() })}>
+            <DatasetControl height='100%' onLoad={async () => ({ provider: props.createProvider() })}>
                 <DatasetControl.Header components={parts.header}>
                     <DatasetControl.Header.Start>
                         <DatasetControl.QuickFind components={parts.quickFind} />
@@ -50,5 +50,5 @@ export const RecordSelector = (props: IRecordSelectorProps) => {
                 </DatasetControl.Footer>
             </DatasetControl>
         </LabelsProvider>}
-    </RecordSelectorFrame>;
+    </TemplatesUiRecordSelectorFrame>;
 };

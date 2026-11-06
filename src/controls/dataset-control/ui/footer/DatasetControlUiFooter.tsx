@@ -2,23 +2,23 @@ import { useTheme } from "@theme";
 import { useMemo } from "react";
 
 import { getClassNames } from "@core";
-import { FooterUiComponents, IFooterUiComponents } from "./components";
-import { getFooterUiStyles } from "./styles";
+import { DatasetControlUiFooterComponents, IDatasetControlUiFooterComponents } from "./components";
+import { getDatasetControlUiFooterStyles } from "./styles";
 
 /** Props for the footer, as plain UI. */
-export interface IFooterUiProps {
+export interface IDatasetControlUiFooterProps {
     /** The start and end regions. */
     children?: React.ReactNode;
     /** Added to its box. */
     className?: string;
     /** Replacements for its slots. */
-    components?: Partial<IFooterUiComponents>;
+    components?: Partial<IDatasetControlUiFooterComponents>;
 }
 
 /** The row below the records, holding the paging and the record count. */
-export const Footer = (props: IFooterUiProps) => {
-    const components = { ...FooterUiComponents, ...props.components };
+export const DatasetControlUiFooter = (props: IDatasetControlUiFooterProps) => {
+    const components = { ...DatasetControlUiFooterComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getFooterUiStyles(theme), [theme]);
+    const styles = useMemo(() => getDatasetControlUiFooterStyles(theme), [theme]);
     return components.onRenderContainer({ className: getClassNames([styles.datasetControlFooter, props.className]), children: props.children });
 };

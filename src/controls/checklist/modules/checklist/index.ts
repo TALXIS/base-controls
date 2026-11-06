@@ -1,3 +1,3 @@
-export * from './createCheckListModule';
+export * from './createChecklistModule';
 export * from './ui/completion-checkbox';
-export type { ICheckListFieldMapping } from './GridCheckList';
+export type { IChecklistFieldMapping } from './GridChecklist';

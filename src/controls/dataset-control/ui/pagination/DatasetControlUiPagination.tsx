@@ -1,11 +1,11 @@
 import { useTheme } from "@theme";
 import { useMemo } from "react";
 
-import { IPaginationUiComponents, PaginationUiComponents } from "./components";
-import { getPaginationUiStyles } from "./styles";
+import { IDatasetControlUiPaginationComponents, DatasetControlUiPaginationComponents } from "./components";
+import { getDatasetControlUiPaginationStyles } from "./styles";
 
 /** The strings of the pagination, as plain UI. */
-export interface IPaginationUiLabels {
+export interface IDatasetControlUiPaginationLabels {
     /** The first page button's tooltip. */
     firstPageTooltip: string;
     /** The previous page button's tooltip. */
@@ -17,7 +17,7 @@ export interface IPaginationUiLabels {
 }
 
 /** Props for the pagination, as plain UI. */
-export interface IPaginationUiProps {
+export interface IDatasetControlUiPaginationProps {
     /** Which side the buttons are drawn against; defaults to `'end'`. */
     align?: 'start' | 'end';
     /** Enables the first and previous page buttons. */
@@ -25,7 +25,7 @@ export interface IPaginationUiProps {
     /** Enables the next page button. */
     canMoveNext: boolean;
     /** The pagination's strings. */
-    labels: IPaginationUiLabels;
+    labels: IDatasetControlUiPaginationLabels;
     /** Called by the first page button. */
     onMoveFirst: () => void;
     /** Called by the previous page button. */
@@ -33,14 +33,14 @@ export interface IPaginationUiProps {
     /** Called by the next page button. */
     onMoveNext: () => void;
     /** Replacements for its slots. */
-    components?: Partial<IPaginationUiComponents>;
+    components?: Partial<IDatasetControlUiPaginationComponents>;
 }
 
 /** Moves between pages: first, previous, the current page and next. */
-export const Pagination = (props: IPaginationUiProps) => {
-    const components = { ...PaginationUiComponents, ...props.components };
+export const DatasetControlUiPagination = (props: IDatasetControlUiPaginationProps) => {
+    const components = { ...DatasetControlUiPaginationComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getPaginationUiStyles(theme, props.align ?? 'end'), [theme, props.align]);
+    const styles = useMemo(() => getDatasetControlUiPaginationStyles(theme, props.align ?? 'end'), [theme, props.align]);
     return components.onRenderCommandBar({
         className: styles.datasetControlPagination,
         styles: { primarySet: styles.buttons },

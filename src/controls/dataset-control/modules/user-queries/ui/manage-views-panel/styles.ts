@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getManageViewsPanelUiStyles = () => mergeStyleSets({
+export const getUserQueriesUiManageViewsPanelStyles = () => mergeStyleSets({
     //the views' grid runs to the panel's edges
     content: {
         selectors: {

@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
-import { EventEmitter, IEventEmitter, IFormatting, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IFormatting, IRecord } from "@talxis/client-libraries";
 import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
-import { HookRegistry, IStateStore } from "@core";
-import type { ITaskRuntime } from "../../../runtime";
+import { HookRegistry, IStateStore, IEventSubscriber } from "@core";
+import type { ITaskRuntime } from "../../runtime";
 import { DAYS_PER_UNIT, HOURS_PER_DAY, IGanttSchedule, IGanttSpan, MILLISECONDS_PER_DAY } from "../schedule";
 import type { IGanttTimeline } from "../timeline";
 import { WHEEL_LINE_HEIGHT } from "../chart";
@@ -38,7 +38,7 @@ export interface IGanttZoomingEvents {
 
 /** The chart's zoom, as a continuous number of pixels per day. */
 export interface IGanttZooming {
-    readonly events: IEventEmitter<IGanttZoomingEvents>;
+    readonly events: IEventSubscriber<IGanttZoomingEvents>;
     /** How far in the zoom is, from `0` at the widest view to `1` at the closest. */
     getPosition(): number;
     /** Zooms around the middle of the viewport, clamped to the range. */
@@ -54,13 +54,13 @@ export interface IGanttZooming {
     /** Puts back the session's or the saved view's zoom, or fits the tasks. */
     restore(): void;
     /**
-     * Registers a hook over the label of each scale cell.
-     * @param priority Ascending: a higher number gets the later word.
+     * Adds a hook over the label of each scale cell.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerScaleLabel(hook: GanttScaleLabelHook, priority?: number): () => void;
+    addScaleLabelHook(hook: GanttScaleLabelHook, priority?: number): () => void;
 }
 
-export interface IGanttScaleLabelParameters {
+export interface IGanttScaleLabelHookParameters {
     /** Where the cell starts. */
     date: Date;
     /** Such as `year`, `quarter`, `month`, `week`, `day` or `hour`. */
@@ -72,7 +72,7 @@ export interface IGanttScaleLabelParameters {
 }
 
 /** Changes the label of a scale cell, starting from the built-in one. */
-export type GanttScaleLabelHook = (result: { label: string }, parameters: IGanttScaleLabelParameters) => void;
+export type GanttScaleLabelHook = (result: { label: string }, parameters: IGanttScaleLabelHookParameters) => void;
 
 export interface IGanttZoomingParameters {
     chart: GanttStatic;
@@ -167,8 +167,8 @@ export class GanttZooming implements IGanttZooming {
         return finest?.unit === 'hour' && HOURS_PER_DAY % (finest.step ?? 1) === 0;
     }
 
-    public registerScaleLabel(hook: GanttScaleLabelHook, priority?: number): () => void {
-        return this._scaleLabelHooks.register(hook, priority);
+    public addScaleLabelHook(hook: GanttScaleLabelHook, priority?: number): () => void {
+        return this._scaleLabelHooks.add(hook, priority);
     }
 
     public restore(): void {

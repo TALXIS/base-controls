@@ -4,10 +4,10 @@ import { useEventEmitter, useRerender } from "@core";
 import { useLabels } from "@labels";
 import { useOpenErrorDialog } from "@pcf";
 import { IErrorMessageBarComponents } from "@ui/error-message-bar";
-import { DatasetControlUi, IEditColumnsButtonUiComponents, IEditColumnsColumnListUiComponents, IEditColumnsPanelUiComponents, IEditColumnsSelectorUiComponents } from "../../ui";
+import { DatasetControlUi, IDatasetControlUiEditColumnsButtonComponents, IDatasetControlUiEditColumnsColumnListComponents, IDatasetControlUiEditColumnsPanelComponents, IDatasetControlUiEditColumnsSelectorComponents } from "../../ui";
 import { ErrorMessageBoundary } from "@ui";
 import { useDataProviderEvents } from "@data";
-import { useRegisterDatasetControlPart, useRequiredDatasetControlRuntime } from "../root";
+import { useRegisterDatasetControlPart, useDatasetControlInternal } from "../root";
 import { EDIT_COLUMNS_LABELS } from "./labels";
 import { DatasetControlEditColumns, IDatasetControlEditColumnsEvents } from "../../runtime/parts/edit-columns/DatasetControlEditColumns";
 import { IDatasetControlEditColumnsSessionEvents } from "../../runtime/parts/edit-columns/DatasetControlEditColumnsSession";
@@ -15,15 +15,15 @@ import { IDatasetControlEditColumnsSessionEvents } from "../../runtime/parts/edi
 /** Replacements for the pieces of the column editor. */
 export interface IEditColumnsComponents {
     /** The button that opens the editor. */
-    button?: Partial<IEditColumnsButtonUiComponents>;
+    button?: Partial<IDatasetControlUiEditColumnsButtonComponents>;
     /** The panel the editor sits in. */
-    panel?: Partial<IEditColumnsPanelUiComponents>;
+    panel?: Partial<IDatasetControlUiEditColumnsPanelComponents>;
     /** The picker of the entity columns are added from. */
-    scopeSelector?: Partial<IEditColumnsSelectorUiComponents<IAvailableRelatedColumn>>;
+    scopeSelector?: Partial<IDatasetControlUiEditColumnsSelectorComponents<IAvailableRelatedColumn>>;
     /** The picker of the column to add. */
-    columnSelector?: Partial<IEditColumnsSelectorUiComponents<IColumn>>;
+    columnSelector?: Partial<IDatasetControlUiEditColumnsSelectorComponents<IColumn>>;
     /** The list of the chosen columns. */
-    columnList?: Partial<IEditColumnsColumnListUiComponents>;
+    columnList?: Partial<IDatasetControlUiEditColumnsColumnListComponents>;
     /** How a failed column or scope load looks. */
     errorMessage?: Partial<IErrorMessageBarComponents>;
 }
@@ -38,7 +38,7 @@ const NO_COMPONENTS: IEditColumnsComponents = {};
 
 /** The button that opens the column editor, and the editor while it is open. */
 export const EditColumns = (props: IEditColumnsProps) => {
-    const runtime = useRequiredDatasetControlRuntime();
+    const runtime = useDatasetControlInternal();
     const provider = useDataProviderEvents(['onLoading']);
     const editColumns = useRegisterDatasetControlPart('editColumns', () => new DatasetControlEditColumns({ services: runtime.services, provider }));
     const labels = useLabels(EDIT_COLUMNS_LABELS);
@@ -96,7 +96,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
                     noResultsText={labels.get('editColumns.noResults')}
                     loadingText={labels.get('editColumns.loading')}
                     getOptionLabel={getScopeLabel}
-                    onLoadOptions={query => session.getScopes(query)}
+                    loadOptions={query => session.getScopes(query)}
                     onChange={scope => session.setScope(scope)}
                     components={components.scopeSelector} />}
                 <DatasetControlUi.EditColumnsColumnSelector
@@ -108,7 +108,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
                     loadingText={labels.get('editColumns.loading')}
                     noNameText={labels.get('editColumns.unnamed')}
                     getOptionTooltip={column => column.name.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX) ? labels.get('editColumns.customColumnTooltip') : column.name}
-                    onLoadOptions={query => session.getAvailableColumns(query)}
+                    loadOptions={query => session.getAvailableColumns(query)}
                     onAdd={column => session.addColumn(column)}
                     components={components.columnSelector} />
             </ErrorMessageBoundary>

@@ -48,7 +48,7 @@ Every slot gets the props its default would, so another design system can draw t
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
 | \`Form.Control\` | Top level | \`onRenderControl\`, with \`{ id, disabled }\` | \`ControlComponents\` | The field's control |
-| \`Form.Tabs\` | Top level | \`onRenderTabs\`, with \`{ children, expandedTab, onTabChange }\` | \`TabComponents\` | The tab headers and the open tab |
+| \`Form.Tabs\` | Top level | \`onRenderTabs\`, with \`{ children, expandedTab, onTabChange }\` | \`FormUiTabComponents\` | The tab headers and the open tab |
 | \`Form.Ribbon\` | Top level | \`onRenderCommandBar\`, with \`ICommandBarProps\` | | **Save** and *Unsaved changes* |
 | \`Form.Notifications\` | Top level | \`onRenderNotifications\`, with \`INotificationMessageBarProps\` | | Your messages and the validation summary |
 

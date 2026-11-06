@@ -1,6 +1,6 @@
 import type { IStyle, ITheme } from "@fluentui/react";
-import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { HookRegistry } from "@core";
+import { EventEmitter } from "@talxis/client-libraries";
+import { HookRegistry, IEventSubscriber } from "@core";
 
 /** What the chart is styled with, on top of the Gantt's own styles. */
 export interface IGanttStyles {
@@ -13,10 +13,10 @@ export type GanttStylesHook = (result: IGanttStyles, fluentTheme: ITheme) => voi
 /** The styles the Gantt's chart is drawn with. */
 export interface IGanttTheme {
     /**
-     * Registers a hook over the styles of the chart, read once its modules are loaded.
-     * @param priority Ascending: a later style wins where the selectors are equally specific.
+     * Adds a hook over the styles of the chart, read once its modules are loaded.
+     * @param priority Ascending: a higher number runs later.
      */
-    registerStyles(hook: GanttStylesHook, priority?: number): () => void;
+    addStylesHook(hook: GanttStylesHook, priority?: number): () => void;
 }
 
 export interface IGanttThemeEvents {
@@ -25,8 +25,8 @@ export interface IGanttThemeEvents {
 
 /** What the Gantt's own parts read of it. */
 export interface IGanttThemeInternal extends IGanttTheme {
-    readonly events: IEventEmitter<IGanttThemeEvents>;
-    /** Changes whenever a style hook is registered or unregistered. */
+    readonly events: IEventSubscriber<IGanttThemeEvents>;
+    /** Changes whenever a style hook is added or removed. */
     getVersion(): number;
     /** What the style hooks add to the Gantt's own styles. */
     getStyles(fluentTheme: ITheme): IStyle[];
@@ -37,8 +37,8 @@ export class GanttTheme implements IGanttThemeInternal {
     private _stylesHooks = new HookRegistry<GanttStylesHook>();
     private _version = 0;
 
-    public registerStyles(hook: GanttStylesHook, priority?: number): () => void {
-        const unregister = this._stylesHooks.register(hook, priority);
+    public addStylesHook(hook: GanttStylesHook, priority?: number): () => void {
+        const unregister = this._stylesHooks.add(hook, priority);
         this._onStylesChanged();
         return () => {
             unregister();

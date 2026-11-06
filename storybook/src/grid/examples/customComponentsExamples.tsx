@@ -74,7 +74,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
+                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
                 enableOptionSetColors
                 colDefs={{
                     products: { hide: true },
@@ -85,20 +85,20 @@ const GridExample = () => {
                         context: {
                             alignment: 'left',
                             cell: {
-                                onGetLoading: (result, { record }) => {
+                                loadingHook: (result, { record }) => {
                                     result.isLoading = forecasting.has(record.getRecordId())
                                 },
-                                onGetLock: (result, { record }) => {
+                                lockHook: (result, { record }) => {
                                     result.isLocked = isClosed(record)
                                 },
-                                onGetValidation: (result, { record }) => {
+                                validationHook: (result, { record }) => {
                                     const chance = Number(record.getValue('probability') ?? 0)
                                     if (chance < 0 || chance > 100) {
                                         result.error = true
                                         result.errorMessage = 'A win chance is between 0 and 100 %.'
                                     }
                                 },
-                                onGetCommands: (result, { record }) => {
+                                commandsHook: (result, { record }) => {
                                     if (!isClosed(record)) {
                                         result.items.push({ key: 'forecast', text: 'Forecast', iconOnly: true, iconProps: { iconName: 'Lightbulb' }, onClick: () => { forecast(record) } })
                                     }

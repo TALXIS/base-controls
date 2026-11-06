@@ -54,18 +54,18 @@ export class IndexedDbCustomColumnsStore implements ICustomColumnsStore {
         this._parameters = parameters;
     }
 
-    public async onLoadColumns(): Promise<IColumn[]> {
+    public async loadColumns(): Promise<IColumn[]> {
         const stored = await toPromise<IStoredColumn[]>((await this._getStore(COLUMNS_STORE)).getAll());
         return stored.sort((left, right) => left.createdOn - right.createdOn).map(entry => this._toColumn(entry));
     }
 
-    public async onLoadValues(taskIds: string[]): Promise<Map<string, IRawRecord>> {
+    public async loadValues(taskIds: string[]): Promise<Map<string, IRawRecord>> {
         const taskIdSet = new Set(taskIds);
         const stored = await toPromise<IStoredValues[]>((await this._getStore(VALUES_STORE)).getAll());
         return new Map(stored.filter(entry => taskIdSet.has(entry.taskId)).map(entry => [entry.taskId, entry.values]));
     }
 
-    public async onSaveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult> {
+    public async saveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult> {
         const taskId = record.getRecordId();
         const store = await this._getStore(VALUES_STORE, 'readwrite');
         const stored = await toPromise<IStoredValues | undefined>(store.get(taskId));
@@ -73,7 +73,7 @@ export class IndexedDbCustomColumnsStore implements ICustomColumnsStore {
         return { success: true, recordId: taskId, fields: [column.name] };
     }
 
-    public async onCreateColumn(): Promise<string | null> {
+    public async createColumn(): Promise<string | null> {
         const store = await this._getStore(COLUMNS_STORE, 'readwrite');
         const count = await toPromise(store.count());
         const name = this._toColumnName(crypto.randomUUID());
@@ -83,11 +83,11 @@ export class IndexedDbCustomColumnsStore implements ICustomColumnsStore {
     }
 
     //the store has no dialog to edit a column in
-    public async onUpdateColumn(_columnName: string): Promise<string | null> {
+    public async updateColumn(_columnName: string): Promise<string | null> {
         return null;
     }
 
-    public async onDeleteColumn(columnName: string): Promise<string | null> {
+    public async deleteColumn(columnName: string): Promise<string | null> {
         await toPromise((await this._getStore(COLUMNS_STORE, 'readwrite')).delete(columnName));
         const values = await this._getStore(VALUES_STORE, 'readwrite');
         for (const entry of await toPromise<IStoredValues[]>(values.getAll())) {

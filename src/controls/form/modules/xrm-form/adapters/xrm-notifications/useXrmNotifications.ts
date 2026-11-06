@@ -1,8 +1,8 @@
 import { useRerender, useEventEmitter } from "@core";
-import { useFormXmlContext } from "../context";
+import { useFormXmlModel } from "../context";
 
-export const useNotifications = () => {
-    const form = useFormXmlContext();
+export const useXrmNotifications = () => {
+    const form = useFormXmlModel();
     const { rerender } = useRerender();
     useEventEmitter(form.events, "onNotificationsChanged", rerender);
 
