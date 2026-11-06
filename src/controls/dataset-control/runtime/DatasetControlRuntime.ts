@@ -1,9 +1,9 @@
 import type { ITheme } from "@fluentui/react";
 import { IAvailableRelatedColumn, IColumn, IDataProvider, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { HookRegistry, IStateStore, RuntimeLifecycle, ServiceLocator } from "@core";
+import { HookRegistry, IStateStore, ModuleLoader, RuntimeLifecycle, ServiceLocator } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlProps } from "../adapters/root/Root";
-import { IDatasetControl, IDatasetControlModule, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
+import { IDatasetControl, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
 import { toScopedColumn } from "./parts/edit-columns/toScopedColumn";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
@@ -48,8 +48,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
         onDestroy: () => this._destroy(),
     });
     private _services = new ServiceLocator<IDatasetControlServiceMap>();
-    private _modules = new ServiceLocator<IDatasetControlModuleMap>();
-    private _loadedModules: { module: IDatasetControlModule; instance: unknown }[] = [];
+    private _moduleLoader = new ModuleLoader<IDatasetControlModuleMap, IDatasetControlRuntime>();
     private _surfaces = new DatasetControlSurfaces();
     private _onGetProps: () => IDatasetControlProps;
     private _theme: ITheme;
@@ -79,7 +78,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     public get modules(): IDatasetControlModuleLocator {
-        return this._modules;
+        return this._moduleLoader.modules;
     }
 
     public get surfaces(): IDatasetControlSurfaces {
@@ -132,13 +131,13 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     private _destroy(): void {
-        this._destroyModules();
+        //before the provider is released, which the modules may still read
+        this._moduleLoader.destroy();
         if (this._provider) {
             this._state.save(this._provider, this._viewId);
             this._releaseProvider(this._provider);
         }
         this._services.destroy();
-        this._modules.destroy();
     }
 
     private async _remountBehindBlocker(viewId: string | undefined): Promise<void> {
@@ -156,7 +155,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     }
 
     private async _init(): Promise<void> {
-        await this._loadModules();
+        await this._moduleLoader.load(this._onGetProps().modules ?? [], this);
         const { provider, views = [] } = await this._onGetProps().onLoad(this);
         try {
             //a copy: the hooks change it in place
@@ -224,31 +223,6 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
     //Edit columns builds a link from the scope's id attribute and lookup
     private _isScopeOf(scope: IAvailableRelatedColumn, link: ILinkEntityExposedExpression): boolean {
         return scope.name === link.to && scope.relatedEntityPrimaryIdAttribute === link.from;
-    }
-
-    private async _loadModules(): Promise<void> {
-        const names = new Set<string>();
-        for (const module of this._onGetProps().modules ?? []) {
-            if (names.has(module.name)) {
-                throw new Error(`Module "${module.name}" is registered twice.`);
-            }
-            names.add(module.name);
-            const instance = await module.onLoad(this);
-            if (this.lifecycle.isDestroyed()) {
-                module.onDestroy?.(instance as never);
-                return;
-            }
-            this._loadedModules.push({ module, instance });
-            this._modules.register(module.name, () => instance as IDatasetControlModuleMap[typeof module.name]);
-        }
-    }
-
-    private _destroyModules(): void {
-        for (const { module, instance } of this._loadedModules) {
-            module.onDestroy?.(instance as never);
-            this._modules.unregister(module.name);
-        }
-        this._loadedModules = [];
     }
 
     //a kept view may have been removed since

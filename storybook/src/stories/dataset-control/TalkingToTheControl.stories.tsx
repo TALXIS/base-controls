@@ -50,8 +50,9 @@ A module adds a feature to the control, such as the user's own views. Pass modul
 | Member | Description |
 |---|---|
 | \`name\` | Unique within the control; two modules of one name throw "registered twice". What \`onLoad\` returns is registered under it. |
-| \`onLoad(control)\` | Can be async. A throw fails the load. |
-| \`onDestroy(instance)\` | Optional. Called as the mount goes, before the provider is released. |
+| \`priority\` | Optional, \`0\` by default. Lower loads first, and modules of the same priority load at the same time. |
+| \`onLoad(control, { signal })\` | Can be async. \`signal\` is aborted when the mount goes. A throw fails the load, and the modules already loaded are destroyed. |
+| \`onDestroy(instance)\` | Optional. Called as the mount goes, the last loaded first, before the provider is released. |
 
 Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed, as the example's \`types.ts\` does. The control a module's \`onLoad\` gets can also add views, with \`registerViews\`, as the example does, and a module draws its own dialogs or panels with \`surfaces.registerSurface\`.
 

@@ -77,6 +77,8 @@ const createQueueProvider = () => {
 
 const filterPlaceholdersModule: IGridModule = {
     name: 'filterPlaceholders',
+    //after the filtering module, which it reads as it loads
+    priority: 1,
     onLoad: grid => {
         grid.modules.get('filtering').registerFilterControlParameters((result, { column, control }) => {
             const placeholder = FILTER_PLACEHOLDERS.get(column.name)

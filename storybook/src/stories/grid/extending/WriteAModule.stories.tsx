@@ -21,7 +21,7 @@ A module packages a feature of your own: it registers hooks, follows events, sha
 
 Build a module once, as a constant or in \`useMemo\`, since \`modules\` is read at mount. A module that needs options is a function that builds one, such as \`createCopyColumnModule(onCopied)\` on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview), and reads state that changes through a getter or a ref. Take what the module works on from \`grid.services\`, such as \`grid.services.get('provider')\`, and it works in any grid.
 
-Modules load in the order of the array: in your \`onLoad\`, the ones before yours are there for \`grid.modules.find\`, and later ones are reached with \`grid.modules.observe\`. AG Grid's api arrives later too, through \`grid.services.observe('gridApi', ...)\`; when each step runs is under *From mount to unmount* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+Modules load by \`priority\`, lowest first, and modules of the same priority load at the same time: in your \`onLoad\`, the ones of a lower priority are there for \`grid.modules.find\`, and the rest are reached with \`grid.modules.observe\`. \`onLoad\` also gets \`{ signal }\`, aborted when the mount goes, and \`onDestroy\` runs in the reverse order. AG Grid's api arrives later too, through \`grid.services.observe('gridApi', ...)\`; when each step runs is under *From mount to unmount* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
 ## Clean up
 

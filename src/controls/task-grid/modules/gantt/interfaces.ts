@@ -1,5 +1,5 @@
 import type { GanttStatic } from "dhtmlx-gantt";
-import type { IEventSubscriber, IServiceLocator, IServiceRegistry, IStateStore } from "@core";
+import type { IEventSubscriber, IRuntimeModule, IServiceLocator, IServiceRegistry, IStateStore } from "@core";
 import type { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../../services";
@@ -19,13 +19,7 @@ import type { ILibrary } from "./modules/library";
 export interface IGanttModuleMap { }
 
 /** A feature of the Gantt, loaded on every mount before the chart is drawn. */
-export interface IGanttModule<TName extends keyof IGanttModuleMap = keyof IGanttModuleMap> {
-    /** Unique within the Gantt and the key `onLoad`'s result is registered under. */
-    name: TName;
-    onLoad(gantt: IGantt): IGanttModuleMap[TName] | Promise<IGanttModuleMap[TName]>;
-    /** Called as the Gantt goes, with what `onLoad` returned. */
-    onDestroy?(instance: IGanttModuleMap[TName]): void;
-}
+export interface IGanttModule<TName extends keyof IGanttModuleMap = keyof IGanttModuleMap> extends IRuntimeModule<IGanttModuleMap, TName, IGantt> { }
 
 export type IGanttModuleLocator = IServiceLocator<IGanttModuleMap>;
 

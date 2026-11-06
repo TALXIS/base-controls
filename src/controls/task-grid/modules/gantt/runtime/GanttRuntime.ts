@@ -2,7 +2,7 @@ import type { GanttStatic } from "dhtmlx-gantt";
 import dayjs from "dayjs";
 import type { GridApi } from "ag-grid-community";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
-import { HookRegistry, IStateStore, ServiceLocator } from "@core";
+import { HookRegistry, IServiceLocator, IStateStore, ModuleLoader, ServiceLocator } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
@@ -12,7 +12,7 @@ import type { IDatasetControl } from "@controls/dataset-control/runtime";
 import type { ITaskViewData } from "../../../runtime/provider";
 import { TASK_GRID_PRIORITY } from "../../../priorities";
 import { GANTT_LABELS } from "../labels";
-import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
+import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
 import { GanttTheme } from "../theme";
 import { GanttSchedule, IGanttSpan } from "../schedule";
@@ -37,13 +37,12 @@ export interface IGanttRuntimeParameters {
 export class GanttRuntime implements IGantt {
     public readonly events = new EventEmitter<IGanttEvents>();
     public readonly services = new ServiceLocator<IGanttServiceMap>();
-    public readonly modules = new ServiceLocator<IGanttModuleMap>();
     public readonly surfaces = new GanttSurfaces();
     public readonly theme = new GanttTheme();
     private _taskRuntime: ITaskRuntime;
     private _datasetControl: IDatasetControl<ITaskViewData>;
     private _onGetProps: () => ITaskGanttProps;
-    private _loadedModules: { module: IGanttModule; instance: unknown }[] = [];
+    private _moduleLoader = new ModuleLoader<IGanttModuleMap, IGantt>();
     private _chartConfigHooks = new HookRegistry<GanttChartConfigHook>();
     private _destroyables: { destroy(): void }[] = [];
     private _unregisterCellCommands?: () => void;
@@ -52,6 +51,10 @@ export class GanttRuntime implements IGantt {
     private _taskRange?: IGanttSpan;
     private _isTaskRangeStale = true;
     private _isDestroyed = false;
+
+    public get modules(): IServiceLocator<IGanttModuleMap> {
+        return this._moduleLoader.modules;
+    }
 
     constructor(parameters: IGanttRuntimeParameters) {
         this._taskRuntime = parameters.taskRuntime;
@@ -119,35 +122,17 @@ export class GanttRuntime implements IGantt {
             this._gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
         }
         this._destroyables.forEach(destroyable => destroyable.destroy());
-        for (const { module, instance } of this._loadedModules) {
-            module.onDestroy?.(instance as never);
-        }
+        this._moduleLoader.destroy();
         this.services.find('chart')?.destructor();
         this.services.destroy();
-        this.modules.destroy();
     }
 
     private async _loadModules(): Promise<void> {
         const modules = this._onGetProps().modules;
-        const library = modules.find(module => module.name === 'library');
-        if (!library) {
+        if (!modules.some(module => module.name === 'library')) {
             throw new Error('TaskGantt needs a library module: createLibraryModule() or createProLibraryModule({ Gantt }).');
         }
-        const names = new Set<string>();
-        //other modules read the library as they load
-        for (const module of [library, ...modules.filter(module => module !== library)]) {
-            if (names.has(module.name)) {
-                throw new Error(`Gantt module "${module.name}" is registered twice.`);
-            }
-            names.add(module.name);
-            const instance = await module.onLoad(this);
-            if (this._isDestroyed) {
-                module.onDestroy?.(instance as never);
-                return;
-            }
-            this._loadedModules.push({ module, instance });
-            this.modules.register(module.name, () => instance as IGanttModuleMap[typeof module.name]);
-        }
+        await this._moduleLoader.load(modules, this);
     }
 
     //config hooks run before init and the services register after it

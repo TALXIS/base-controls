@@ -2216,13 +2216,21 @@ declare const ToastBody: typeof import('@fluentui/react-components').ToastBody;
 declare const useToastController: typeof import('@fluentui/react-components').useToastController;
 
 /** An optional feature a grid can be given. */
+/** What a module's onLoad gets besides its host. */
+interface IModuleLoadContext {
+    /** Aborted when the mount goes or another module fails, so a load can cancel what it started. */
+    signal: AbortSignal;
+}
+
 interface IGridModule {
     /** Unique within the grid; what onLoad returns is registered under it. */
     name: string;
+    /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
+    priority?: number;
     /** AG Grid modules the feature needs. */
     agGridModules?: any[];
     /** Called once as the grid loads, before AG Grid exists; may return a promise. */
-    onLoad(grid: IGrid): any;
+    onLoad(grid: IGrid, context: IModuleLoadContext): any;
     /** Called as the grid tears down. */
     onDestroy?(instance: any): void;
 }
@@ -3562,7 +3570,9 @@ interface IViewSwitcherProps {
 interface IDatasetControlModule {
     /** Unique within the control; what onLoad returns is registered under it, for datasetControl.modules. */
     name: string;
-    onLoad(datasetControl: any): any;
+    /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
+    priority?: number;
+    onLoad(datasetControl: any, context: IModuleLoadContext): any;
     /** Called as the mount goes, with what onLoad returned. */
     onDestroy?(instance: any): void;
 }
@@ -4653,7 +4663,9 @@ declare const getDateTimeTaskColumns: (...visibleColumnNames: string[]) => IColu
 /** A feature of the Gantt, loaded on every mount before the chart is drawn. */
 interface IGanttModule {
     name: string;
-    onLoad(gantt: any): any;
+    /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
+    priority?: number;
+    onLoad(gantt: any, context: IModuleLoadContext): any;
     onDestroy?(instance: any): void;
 }
 

@@ -3,13 +3,13 @@ import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowId
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
-import { HookRegistry, IStateStore, RuntimeLifecycle, ServiceLocator } from "@core";
+import { HookRegistry, IStateStore, ModuleLoader, RuntimeLifecycle, ServiceLocator } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import { RowLoading } from "../../adapters/rows/loading";
 import { LoadingOverlay } from "../../adapters/overlays/loading";
 import { EmptyStateOverlay } from "../../adapters/overlays/empty-state";
 import type { IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import { IGridProps, IGridEventHandlers, IGridModule, IGridModuleLocator, IGridModuleMap, IGridOpenRecordParams } from "../../interfaces";
+import { IGridProps, IGridEventHandlers, IGridModuleLocator, IGridModuleMap, IGridOpenRecordParams } from "../../interfaces";
 import { IGridInternalServiceLocator, IGridInternalServiceMap } from "../interfaces";
 import { IGrid, IGridEvents } from "./interfaces";
 import { GridSettings } from "../settings";
@@ -68,8 +68,7 @@ export class GridRuntime implements IGrid {
         onDestroy: () => this._destroy(),
     });
     private _services = new ServiceLocator<IGridInternalServiceMap>();
-    private _modules = new ServiceLocator<IGridModuleMap>();
-    private _loadedModules: { module: IGridModule; instance: IGridModuleMap[keyof IGridModuleMap] }[] = [];
+    private _moduleLoader = new ModuleLoader<IGridModuleMap, IGrid>();
     private _onGetProps: () => IGridProps;
     private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
     private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
@@ -123,7 +122,7 @@ export class GridRuntime implements IGrid {
     }
 
     public get modules(): IGridModuleLocator {
-        return this._modules;
+        return this._moduleLoader.modules;
     }
 
     public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
@@ -174,9 +173,12 @@ export class GridRuntime implements IGrid {
 
     private async _init(): Promise<void> {
         const modules = this._onGetProps().modules;
-        await this._loadModules(modules);
+        await this._moduleLoader.load(modules, this);
         if (this.lifecycle.isDestroyed()) {
             return;
+        }
+        if (!this.modules.find('rowModel')) {
+            throw new Error('The grid needs a row model module, such as createClientSideRowModelModule().');
         }
         //before AG Grid is constructed, which the host renders once the grid is ready
         ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...modules.flatMap(module => module.agGridModules ?? [])]);
@@ -185,42 +187,19 @@ export class GridRuntime implements IGrid {
         this._services.observe('gridApi', () => this._onGridApiAvailable());
     }
 
-    private async _loadModules(modules: IGridModule[]): Promise<void> {
-        for (const module of modules) {
-            if (this._loadedModules.some(loaded => loaded.module.name === module.name)) {
-                throw new Error(`Module "${module.name}" is registered twice.`);
-            }
-            const instance = await module.onLoad(this);
-            //the mount went while it loaded, so _destroy has already run without it
-            if (this.lifecycle.isDestroyed()) {
-                module.onDestroy?.(instance as never);
-                return;
-            }
-            this._loadedModules.push({ module, instance });
-            this._modules.register(module.name, () => instance as never);
-        }
-        if (!this._modules.find('rowModel')) {
-            throw new Error('The grid needs a row model module, such as createClientSideRowModelModule().');
-        }
-    }
-
     private _destroy(): void {
         //AG Grid may unmount after this, so its api listeners clean up while it still answers
         if (this._services.find('gridApi')) {
             this._services.unregister('gridApi');
         }
-        for (const { module, instance } of this._loadedModules) {
-            module.onDestroy?.(instance as never);
-        }
-        this._loadedModules = [];
+        this._moduleLoader.destroy();
         this._services.destroy();
-        this._modules.destroy();
     }
 
     private _evaluateAgGridInitialOptions(): IGridAgGridInitialOptions['options'] {
         const result: IGridAgGridInitialOptions = {
             options: {
-                rowModelType: this._modules.get('rowModel').type,
+                rowModelType: this.modules.get('rowModel').type,
                 rowHeight: this._services.get('settings').getDefaultRowHeight(),
                 enableGroupEdit: true,
                 animateRows: false,
@@ -269,7 +248,7 @@ export class GridRuntime implements IGrid {
         //the server-side model reads grouping off the columns while it reloads
         this._columnDefs = this._services.get('columns').getColumnDefinitions();
         this.refreshAgGridOptions();
-        this._modules.get('rowModel').refresh();
+        this.modules.get('rowModel').refresh();
         this.events.dispatchEvent('onDataLoaded');
     };
 

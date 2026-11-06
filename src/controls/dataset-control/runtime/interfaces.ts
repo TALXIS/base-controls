@@ -1,6 +1,6 @@
 import type { ITheme } from "@fluentui/react";
 import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import type { IRuntime, IServiceLocator, IServiceRegistry } from "@core";
+import type { IRuntime, IRuntimeModule, IServiceLocator, IServiceRegistry } from "@core";
 import type { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlRuntime } from "./DatasetControlRuntime";
 import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "./parts/view-switcher/DatasetControlViewSwitcher";
@@ -73,15 +73,8 @@ export type IDatasetControlPartLocator = IServiceLocator<IDatasetControlPartMap>
 /** The modules a DatasetControl loaded, by name; each module adds its own entry. */
 export interface IDatasetControlModuleMap { }
 
-/** A feature of the control, loaded on every mount. */
-export interface IDatasetControlModule<TName extends keyof IDatasetControlModuleMap = keyof IDatasetControlModuleMap> {
-    /** Unique within the control; what `onLoad` returns is registered under it. */
-    name: TName;
-    /** Registers what the module adds, on every load before the control's `onLoad`. */
-    onLoad(datasetControl: IDatasetControlRuntime): IDatasetControlModuleMap[TName] | Promise<IDatasetControlModuleMap[TName]>;
-    /** Called as the mount goes, with what `onLoad` returned, before the provider is released. */
-    onDestroy?(instance: IDatasetControlModuleMap[TName]): void;
-}
+/** A feature of the control, loaded on every mount before the control's `onLoad`. */
+export interface IDatasetControlModule<TName extends keyof IDatasetControlModuleMap = keyof IDatasetControlModuleMap> extends IRuntimeModule<IDatasetControlModuleMap, TName, IDatasetControlRuntime> { }
 
 /** Looks up the modules the control loaded. */
 export type IDatasetControlModuleLocator = IServiceLocator<IDatasetControlModuleMap>;

@@ -36,9 +36,10 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
     const propsRef = useLatest(props);
     const pcfContext = usePcfContext();
 
-    //first, so the task modules after it find it as they load
     const taskRuntimeModule: IDatasetControlModule<'taskRuntime'> = {
         name: 'taskRuntime',
+        //the task modules read it as they load
+        priority: -100,
         onLoad: datasetControl => new TaskRuntime({ datasetControl, pcfContext, onGetProps: () => propsRef.current }),
         onDestroy: taskRuntime => (taskRuntime as TaskRuntime).destroy(),
     };

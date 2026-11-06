@@ -66,12 +66,12 @@ Content you draw over the chart, a marker slot or a tooltip part reads the Gantt
 `
 
 const LIFECYCLE: ILifecycleStep[] = [
-    { title: 'The modules load', hook: 'onLoad', text: 'The library module\'s `onLoad` runs first, then each other module\'s in the order of `modules`, each awaited and registered under its name.' },
+    { title: 'The modules load', hook: 'onLoad', text: 'The modules load by `priority`, the library first; modules of the same priority load at the same time, and each is registered under its name.' },
     { title: 'The chart is set up', hook: 'registerChartConfig', text: 'Once the task grid\'s AG Grid is ready, the chart config hooks run on DHTMLX\'s chart before it is drawn.' },
     { title: 'The chart services arrive', hook: 'services.observe', text: '`chart`, `timeline`, `dragging`, `zooming`, `grid` and `tasks` register, so their observers run.' },
     { title: 'The tasks are drawn', hook: 'onTasksParsed', text: 'The chart draws the grid\'s rows as bars and fires `onTasksParsed(true)`, and `false` each time it redraws them.' },
     { title: 'The chart is ready', hook: 'onChartReady', text: '`onChartReady` fires with the chart, and what the modules registered with `registerSurface` is drawn over it.' },
-    { title: 'The Gantt unmounts', hook: 'onDestroy', text: '`events` fires `onDestroyed`, then each module\'s `onDestroy` gets what its `onLoad` returned, and the chart is destroyed.' },
+    { title: 'The Gantt unmounts', hook: 'onDestroy', text: '`events` fires `onDestroyed`, then each module\'s `onDestroy`, the last loaded first, gets what its `onLoad` returned, and the chart is destroyed.' },
 ]
 
 const EXPLORE: IExploreCard[] = [

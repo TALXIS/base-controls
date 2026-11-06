@@ -2,7 +2,7 @@ import { Module } from "ag-grid-community";
 import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IGridColDefOverride } from "./runtime/columns/colDef";
 import type { IGrid } from "./runtime/grid";
-import type { IServiceLocator } from "@core";
+import type { IRuntimeModule, IServiceLocator } from "@core";
 import type { IGridComponents } from "./components";
 import type { IGridRowSettings } from "./runtime/rows";
 
@@ -10,14 +10,8 @@ import type { IGridRowSettings } from "./runtime/rows";
 export interface IGridModuleMap { }
 
 /** An optional feature a grid can be given. */
-export interface IGridModule<TName extends keyof IGridModuleMap = keyof IGridModuleMap> {
-    /** Unique within the grid; what `onLoad` returns is registered under it. */
-    name: TName;
+export interface IGridModule<TName extends keyof IGridModuleMap = keyof IGridModuleMap> extends IRuntimeModule<IGridModuleMap, TName, IGrid> {
     agGridModules?: Module[];
-    /** Called once as the grid loads, before AG Grid exists; may return a promise. */
-    onLoad(grid: IGrid): IGridModuleMap[TName] | Promise<IGridModuleMap[TName]>;
-    /** Called as the grid tears down. */
-    onDestroy?(instance: IGridModuleMap[TName]): void;
 }
 
 /** Where the grid's loaded modules are found, by name. */
