@@ -20,11 +20,11 @@ const createScope = (onProviderRendered: (provider: IDataProvider) => void): ISa
         useReportProvider()
         return <Grid {...props} />
     }
-    const Checklist = (props: IChecklistProps) => {
+    const ReportingChecklist = (props: IChecklistProps) => {
         useReportProvider()
         return <ChecklistBase {...props} />
     }
-    const TaskGrid = (props: ITaskGridProps) => {
+    const ReportingTaskGrid = (props: ITaskGridProps) => {
         useReportProvider()
         return <TaskGridBase {...props} />
     }
@@ -34,8 +34,8 @@ const createScope = (onProviderRendered: (provider: IDataProvider) => void): ISa
         ...GRID_SANDBOX_SCOPE,
         Grid: Object.assign(ReportingGrid, { Cell: Grid.Cell, ColumnHeader: Grid.ColumnHeader, Overlay: Grid.Overlay, Row: Grid.Row }),
         DatasetControl: Object.assign(SandboxDatasetControl, DatasetControl),
-        Checklist,
-        TaskGrid,
+        Checklist: Object.assign(ReportingChecklist, ChecklistBase),
+        TaskGrid: Object.assign(ReportingTaskGrid, TaskGridBase),
     }
 }
 

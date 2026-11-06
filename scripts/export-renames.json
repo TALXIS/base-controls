@@ -221,5 +221,11 @@
     ". ITaskGridServiceLocator": "ITaskGridServiceRegistry",
     "./gantt IGanttServiceLocator": "IGanttServiceRegistry",
     ". ServiceLocator": "ServiceRegistry",
-    ". ServiceObserver": "ServiceEffect"
+    ". ServiceObserver": "ServiceEffect",
+    ". IMapParameters": null,
+    ". IMapOutputs": null,
+    ". IMapProvider": null,
+    ". IMapProviderProps": null,
+    ". createGoogleMapsProvider": null,
+    ". IGoogleMapsConfig": null
 }

@@ -1,53 +1,29 @@
-import { IMap } from "./interfaces";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { IMapLocation } from "./runtime/providers";
-import { useEventEmitter } from "@core/hooks/useEventEmitter";
-import { IDataProviderEventListeners } from "@talxis/client-libraries";
-import { getMapStyles } from "./ui/styles";
+import { useLatest } from "@core";
+import { useDataProvider } from "@data";
+import { RuntimeHost, useRuntime } from "@controls/runtime-host";
+import { IMapProps } from "./interfaces";
+import { MapRuntime } from "./runtime/MapRuntime";
+import { MapContext } from "./context";
+import { MapUiContainer } from "./ui";
 
-export const Map = (props: IMap) => {
-    const { Dataset: dataset, PinMetadata: pinMetadata, MapProvider } = props.parameters;
-    const [locations, setLocations] = useState<IMapLocation[]>([]);
-    const styles = useMemo(() => getMapStyles(), []);
+/** Shows the records of the provider around it as pins, drawn by the library adapter in its children. */
+export const Map = (props: IMapProps) => {
+    const provider = useDataProvider();
+    const propsRef = useLatest(props);
+    const createRuntime = () => new MapRuntime({ provider, getProps: () => propsRef.current });
 
-    const loadLocations = useCallback(() => {
-        if (!dataset || !pinMetadata) {
-            setLocations([]);
-            return;
-        }
+    return <RuntimeHost<MapRuntime> createRuntime={createRuntime} onSetup={map => propsRef.current.onSetup?.(map)} components={{ loading: props.components?.loading, errorMessage: props.components?.errorMessage }}>
+        <MapMount {...props} />
+    </RuntimeHost>;
+};
 
-        const records = dataset.getRecords();
-        const result: IMapLocation[] = [];
+const MapMount = (props: IMapProps) => {
+    const runtime = useRuntime<MapRuntime>();
+    const { loading, errorMessage, ...containerComponents } = props.components ?? {};
 
-        for (const record of records) {
-            try {
-                const latValue = record.getValue(pinMetadata.LatitudeAttributeName);
-                const lngValue = record.getValue(pinMetadata.LongitudeAttributeName);
-
-                const lat = typeof latValue === 'number' ? latValue : parseFloat(latValue);
-                const lng = typeof lngValue === 'number' ? lngValue : parseFloat(lngValue);
-
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    result.push({ id: record.getRecordId(), latitude: lat, longitude: lng });
-                }
-            } catch (error) {
-                console.warn(`Failed to extract location from record ${record.getRecordId()}:`, error);
-            }
-        }
-
-        setLocations(result);
-    }, [dataset, pinMetadata]);
-
-    //dataset loading is already handled by the DatasetControl, this only syncs already loaded records into local state
-    useEffect(() => {
-        loadLocations();
-    }, [loadLocations]);
-
-    useEventEmitter<IDataProviderEventListeners>(dataset, 'onNewDataLoaded', loadLocations);
-
-    return (
-        <div className={styles.root}>
-            <MapProvider locations={locations} />
-        </div>
-    );
+    return <MapContext.Provider value={runtime}>
+        <MapUiContainer className={props.className} components={containerComponents}>
+            {props.children}
+        </MapUiContainer>
+    </MapContext.Provider>;
 };

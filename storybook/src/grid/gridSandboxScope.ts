@@ -16,7 +16,8 @@ import {
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, isLightColor, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationCardComponents, NotificationMessageBar, NotificationMessageBarComponents, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
     CommandBar, DataProviderScope, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useDatasetControlRegion, useDatasetControlModule, useProvideDatasetControlPart, createTalxisUserQueriesModule, createDataverseUserQueriesModule, DataverseUserQueriesStore, useCompact, useCompactItem, CompactContext, WrapCompactProvider, BreakpointCompactProvider, useDatasetControlHeader, DatasetControlUiViewSwitcherComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, RibbonUiCommandBar, RibbonUiCommandBarComponents, RuntimeHost, RuntimeLifecycle, useRuntime, Form, FormUi, useField, NestedControlRenderer, BaseControls, createMemoryRecord, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, AppThemeProvider, Callout, useAppTheme, useSurfaceMenuProps, useTheme, useThemeBuilder, TooltipHost, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
 } from '@talxis/base-controls'
-import { CellUiValueRendererComponents, CellColumnControlComponents, CellUiCommandsComponents, RecordSaveUiIndicatorComponents, RecordSaveUiErrorCalloutComponents, RowSelectionUiCheckboxComponents, RowSelectionUiHeaderCheckboxComponents, GroupingUiToggleComponents, GroupingUiCountComponents, AggregationUiTotalValueComponents, GroupingUiExpandCollapseComponents, FilteringUiCalloutComponents, ThemeContext, Dialog, XrmForm, ControlComponents, useForm, useValidationSummary, Map } from '@talxis/base-controls'
+import { CellUiValueRendererComponents, CellColumnControlComponents, CellUiCommandsComponents, RecordSaveUiIndicatorComponents, RecordSaveUiErrorCalloutComponents, RowSelectionUiCheckboxComponents, RowSelectionUiHeaderCheckboxComponents, GroupingUiToggleComponents, GroupingUiCountComponents, AggregationUiTotalValueComponents, GroupingUiExpandCollapseComponents, FilteringUiCalloutComponents, ThemeContext, Dialog, XrmForm, ControlComponents, useForm, useValidationSummary, Map, useMap, useMapModule, useMapRecords, useMapRecord, createGoogleMapsModule, GoogleMaps, GoogleMapsMarkers, createLeafletModule, Leaflet, LeafletMarkers, MapUi, MapUiContainerComponents, LeafletUi, LeafletUiComponents, LeafletUiMarkerComponents, GoogleMapsUi, GoogleMapsUiComponents, GoogleMapsUiMarkerComponents } from '@talxis/base-controls'
+import { CircleMarker, Popup } from 'react-leaflet'
 import * as FluentV8 from '@fluentui/react'
 import * as FluentV9 from '@fluentui/react-components'
 import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastController, webLightTheme } from '@fluentui/react-components'
@@ -105,6 +106,24 @@ export const GRID_SANDBOX_SCOPE = {
     useGridField,
     useGridColumnHeader,
     usePcfContext,
+    useMap,
+    useMapModule,
+    useMapRecords,
+    useMapRecord,
+    createGoogleMapsModule,
+    GoogleMaps,
+    GoogleMapsMarkers,
+    createLeafletModule,
+    Leaflet,
+    LeafletMarkers,
+    MapUi,
+    MapUiContainerComponents,
+    LeafletUi,
+    LeafletUiComponents,
+    LeafletUiMarkerComponents,
+    GoogleMapsUi,
+    GoogleMapsUiComponents,
+    GoogleMapsUiMarkerComponents,
     Form,
     createMemoryRecord,
     FluentProvider,
@@ -316,6 +335,7 @@ export const GRID_SANDBOX_SCOPE = {
 export const GRID_SANDBOX_PACKAGES: { [name: string]: { [name: string]: unknown } } = {
     '@fluentui/react': FluentV8,
     '@fluentui/react-components': FluentV9,
+    'react-leaflet': { CircleMarker, Popup },
     //the icons the examples use, so the whole icon set stays out of the bundle
     '@fluentui/react-icons': { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular },
 }

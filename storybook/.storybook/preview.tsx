@@ -206,6 +206,7 @@ const preview: Preview = {
               ['Overview', 'Form context', 'Your own UI'],
             ],
             'Map',
+            ['Get started', 'Map libraries', 'Talking to the map', 'Your own UI', 'Write a library'],
             'Ribbon',
             'RuntimeHost',
             'IsolatedFrame',

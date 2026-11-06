@@ -158,6 +158,7 @@ One meaning per word, one word per meaning. A new name follows these tables; an 
 |---|---|
 | runtime | A widget's state and logic with a lifecycle: `I<Widget>` (`IGrid`), class `<Widget>Runtime`, wider side `I<Widget>Internal` |
 | module | An optional feature loaded through `modules`; a `modules/` folder holds only modules |
+| adapter | Reads a runtime and renders UI; a module's adapter may be its host's child, like `GoogleMapsAdapter` in `Map` |
 | part | A named piece of a widget: its UI and, optionally, the runtime object it provides |
 | service | An object a runtime provides by key on its `services` |
 | hook | A priority-ordered function that shapes a result; React hooks are `use…` and never called "hook" |

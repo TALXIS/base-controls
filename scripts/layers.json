@@ -60,7 +60,9 @@
             "ribbon",
             "runtime-host"
         ],
-        "map": [],
+        "map": [
+            "runtime-host"
+        ],
         "isolated-frame": []
     }
 }
