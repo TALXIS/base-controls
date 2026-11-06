@@ -2,18 +2,16 @@ import { useEffect } from "react";
 import { useMap as useLeafletInstance } from "react-leaflet";
 import { useMapModule } from "../../../../context";
 import type { ILeafletInternal } from "../../LeafletRuntime";
-import { LeafletUi, ILeafletUiComponents, ILeafletUiMarkerComponents } from "../../ui";
-import { LeafletMarkers } from "../markers";
+import { LeafletUi, ILeafletUiComponents } from "../../ui";
+import { ILeafletMarkersComponents, LeafletMarkers } from "../markers";
 
 //Czechia, shown until the map's viewport moves the view
 const DEFAULT_CENTER = { latitude: 49.8175, longitude: 15.4730 };
 const DEFAULT_ZOOM = 6;
 
 /** Replacements for the Leaflet map's slots and its pins' slots. */
-export interface ILeafletComponents {
+export interface ILeafletComponents extends Partial<ILeafletMarkersComponents> {
     map?: Partial<ILeafletUiComponents>;
-    /** A slot component reads the record of its pin with `useMapRecord()`. */
-    marker?: Partial<ILeafletUiMarkerComponents>;
 }
 
 export interface ILeafletProps {
@@ -24,10 +22,11 @@ export interface ILeafletProps {
 export const Leaflet = (props: ILeafletProps) => {
     const leaflet = useMapModule('library') as ILeafletInternal;
     const { tileUrl, attribution } = leaflet.getTiles();
+    const { map, ...markerComponents } = props.components ?? {};
 
-    return <LeafletUi tileUrl={tileUrl} attribution={attribution} defaultCenter={DEFAULT_CENTER} defaultZoom={DEFAULT_ZOOM} components={props.components?.map}>
+    return <LeafletUi tileUrl={tileUrl} attribution={attribution} defaultCenter={DEFAULT_CENTER} defaultZoom={DEFAULT_ZOOM} components={map}>
         <LeafletInstance leaflet={leaflet} />
-        <LeafletMarkers components={props.components?.marker} />
+        <LeafletMarkers components={markerComponents} />
     </LeafletUi>;
 };
 

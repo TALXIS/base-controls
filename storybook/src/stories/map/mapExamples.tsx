@@ -228,7 +228,7 @@ const GridExample = () => {
 
 export const LeafletInstanceExample = () => run(LEAFLET_CODE)
 
-const CUSTOM_UI_CODE = `import { createLeafletModule, DataProviderScope, ILeafletUiMarkerComponents, IMapComponents, LeafletUiMarkerComponents, Map, MapUiContainerComponents, useMapRecord } from '@talxis/base-controls'
+const CUSTOM_UI_CODE = `import { createLeafletModule, DataProviderScope, ILeafletComponents, ILeafletMarkersComponents, IMapComponents, IMapUiMarkerComponents, LeafletMarkersComponents, Map, MapUiContainerComponents, MapUiMarkerComponents, useMapRecord } from '@talxis/base-controls'
 import { mergeStyleSets } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 
@@ -237,38 +237,36 @@ const styles = mergeStyleSets({
     box: { border: '1px solid #c8c6c4', borderRadius: 8, overflow: 'hidden' },
 })
 
-//each pin slot gets react-leaflet's own props
-type MarkerProps = Parameters<ILeafletUiMarkerComponents['onRenderMarker']>[0]
-type PopupProps = Parameters<ILeafletUiMarkerComponents['onRenderPopup']>[0]
+//the teardrop slot gets a div's props, the popup slot react-leaflet's
+type PinProps = Parameters<IMapUiMarkerComponents['onRenderPin']>[0]
+type PopupProps = Parameters<ILeafletMarkersComponents['onRenderPopup']>[0]
 
 //the map's own slot: draws its default box with one more class
 const MAP_COMPONENTS: IMapComponents = {
     onRenderContainer: props => MapUiContainerComponents.onRenderContainer({ ...props, className: [props.className, styles.box].join(' ') }),
 }
 
-//a large city gets a bigger red circle; the rest keep the default
-const CityMarker = (props: MarkerProps) => {
+//a large city gets a red teardrop; the rest keep the theme's colour
+const CityPin = (props: PinProps) => {
     //the record of the pin being drawn
     const city = useMapRecord()
-    if (Number(city.getValue('population')) < 1000000) {
-        return LeafletUiMarkerComponents.onRenderMarker(props)
-    }
-    return LeafletUiMarkerComponents.onRenderMarker({ ...props, radius: 14, pathOptions: { color: '#a4262c' } })
+    const large = Number(city.getValue('population')) >= 1000000
+    return MapUiMarkerComponents.onRenderPin(large ? { ...props, style: { ...props.style, background: '#a4262c' } } : props)
 }
 
 const CityPopup = (props: PopupProps) => {
     const city = useMapRecord()
-    return LeafletUiMarkerComponents.onRenderPopup({ ...props, children: \`\${city.getValue('name')}: \${Number(city.getValue('population')).toLocaleString()} people\` })
+    return LeafletMarkersComponents.onRenderPopup({ ...props, children: \`\${city.getValue('name')}: \${Number(city.getValue('population')).toLocaleString()} people\` })
 }
 
-//the pins' slots; a component of your own may use hooks
-const MARKER_COMPONENTS: Partial<ILeafletUiMarkerComponents> = {
-    onRenderMarker: props => <CityMarker {...props} />,
+//the pins' slots: marker holds the Fluent pin's own; a component of your own may use hooks
+const COMPONENTS: ILeafletComponents = {
+    marker: { onRenderPin: props => <CityPin {...props} /> },
     onRenderPopup: props => <CityPopup {...props} />,
 }
 
 //the library module draws the map and its pins, with these slots
-const MODULES = [createLeafletModule({ components: { marker: MARKER_COMPONENTS } })]
+const MODULES = [createLeafletModule({ components: COMPONENTS })]
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
@@ -283,7 +281,7 @@ const GridExample = () => {
 
 export const CustomUiExample = () => run(CUSTOM_UI_CODE)
 
-const CUSTOM_POPUP_CODE = `import { createLeafletModule, DataProviderScope, ILeafletUiMarkerComponents, LeafletUiMarkerComponents, Map, useMap, useMapRecord } from '@talxis/base-controls'
+const CUSTOM_POPUP_CODE = `import { createLeafletModule, DataProviderScope, ILeafletComponents, ILeafletMarkersComponents, LeafletMarkersComponents, Map, useMap, useMapRecord } from '@talxis/base-controls'
 import { Link, mergeStyleSets, Stack, Text } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 
@@ -292,7 +290,7 @@ const styles = mergeStyleSets({
 })
 
 //the popup slot gets react-leaflet's own Popup props
-type PopupProps = Parameters<ILeafletUiMarkerComponents['onRenderPopup']>[0]
+type PopupProps = Parameters<ILeafletMarkersComponents['onRenderPopup']>[0]
 
 //drawn inside Leaflet's popup, so hooks reach the map and the pin's record
 const CityCard = () => {
@@ -309,12 +307,12 @@ const CityCard = () => {
 }
 
 //keeps the default popup and its props, with a card of your own inside
-const MARKER_COMPONENTS: Partial<ILeafletUiMarkerComponents> = {
-    onRenderPopup: (props: PopupProps) => LeafletUiMarkerComponents.onRenderPopup({ ...props, minWidth: 180, children: <CityCard /> }),
+const COMPONENTS: ILeafletComponents = {
+    onRenderPopup: (props: PopupProps) => LeafletMarkersComponents.onRenderPopup({ ...props, minWidth: 180, children: <CityCard /> }),
 }
 
 //the library module draws the map and its pins, with these slots
-const MODULES = [createLeafletModule({ components: { marker: MARKER_COMPONENTS } })]
+const MODULES = [createLeafletModule({ components: COMPONENTS })]
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])

@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { CustomPopupExample, CustomUiExample } from './mapExamples'
 
 const DESCRIPTION = `
-The map draws a few things through slots you can replace: its box, its loading and error states, and, through its library module, the map and each pin. Everything inside the box belongs to the map library, so a pin of your own is drawn with what that library draws. Try it below: click one of the large red pins.
+The map draws a few things through slots you can replace: its box, its loading and error states, and, through its library module, the map and each pin. Everything inside the box belongs to the map library, so a pin of your own is drawn with what that library draws. Leaflet draws a Fluent pin, \`MapUi.Marker\`, whose slots it takes under \`marker\`. Try it below: click one of the red pins.
 
 {{canvas: Mark the large cities}}
 
@@ -20,7 +20,8 @@ The map draws a few things through slots you can replace: its box, its loading a
 | \`Map\` | \`loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the map has loaded |
 | \`Map\` | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, such as a map without a library |
 | \`createLeafletModule\` | \`map\` | \`onRenderMap\`, \`onRenderTileLayer\` | \`LeafletUiComponents\` | The react-leaflet map and its tiles |
-| \`createLeafletModule\` | \`marker\` | \`onRenderMarker\`, \`onRenderPopup\` | \`LeafletUiMarkerComponents\` | Each pin: a circle whose popup shows the record's id |
+| \`createLeafletModule\` | None | \`onRenderPopup\` | \`LeafletMarkersComponents\` | The popup a pin opens, showing the record's id |
+| \`createLeafletModule\` | \`marker\` | \`onRenderContainer\`, \`onRenderPin\`, \`onRenderDot\` | \`MapUiMarkerComponents\` | Each pin, the Fluent pin \`MapUi.Marker\`: its box, the teardrop and its white centre |
 | \`createGoogleMapsModule\` | \`map\` | \`onRenderMap\` | \`GoogleMapsUiComponents\` | The vis.gl map |
 | \`createGoogleMapsModule\` | \`marker\` | \`onRenderMarker\` | \`GoogleMapsUiMarkerComponents\` | Each pin: a vis.gl marker |
 
@@ -28,7 +29,7 @@ To change the wording of the loading state and the error, see [**Localization**]
 
 ## Your own pins
 
-Each slot under \`marker\` gets the library's own props and draws inside the library's map. For Leaflet, return react-leaflet layers, such as \`CircleMarker\` and \`Popup\`; for Google Maps, components of \`@vis.gl/react-google-maps\`, such as \`Marker\` and \`InfoWindow\`. A slot component reads the record of its pin with \`useMapRecord()\`, as \`CityMarker\` and \`CityPopup\` do in the example, and hands the rest to the default slot.
+For Leaflet, the slots under \`marker\` are the Fluent pin's own and get a \`div\`'s props, and \`onRenderPopup\` gets react-leaflet's own \`Popup\` props. For Google Maps, \`onRenderMarker\` gets vis.gl's \`Marker\` props. A slot component reads the record of its pin with \`useMapRecord()\`, as \`CityPin\` and \`CityPopup\` do in the example, and hands the rest to the default slot.
 
 \`onRenderPopup\` draws the popup a pin opens on click. Its content is drawn into Leaflet's popup, so a component of yours there can use hooks too: \`CityCard\` below reads its record and where it sits.
 
@@ -40,8 +41,8 @@ Each part is also exported as plain UI that takes only props, for a map with no 
 
 | Namespace | Holds |
 |---|---|
-| \`MapUi\` | \`Container\`: the map's box |
-| \`LeafletUi\` | The Leaflet map over \`tileUrl\` and \`attribution\`, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children. \`LeafletUi.Marker\`: one pin at \`center\`, its popup showing its children |
+| \`MapUi\` | \`Container\`: the map's box. \`Marker\`: the Fluent pin Leaflet draws, in \`color\` or the theme's primary colour, its tip at the bottom centre of its 32 by 40 box |
+| \`LeafletUi\` | The Leaflet map over \`tileUrl\` and \`attribution\`, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children. |
 | \`GoogleMapsUi\` | The Google map, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children; render it inside vis.gl's \`APIProvider\`. \`GoogleMapsUi.Marker\`: one pin at \`position\` |
 
 ## Where next
