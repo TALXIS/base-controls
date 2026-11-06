@@ -7,6 +7,7 @@ import { IRibbonCommand } from "./interfaces";
 import { IRibbon, IRibbonEvents, RibbonRuntime } from "./runtime/RibbonRuntime";
 import { IRibbonComponents } from "./components";
 import { RibbonUiShimmer, RibbonUiCommandBar } from "./ui";
+import { Ribbon } from "./namespace";
 
 export interface IRibbonProps {
     /** Called on init and on every `reload()`, and may return the commands directly; the ones `hooks.commands` adds follow. */
@@ -24,7 +25,7 @@ export interface IRibbonProps {
 }
 
 /** A command bar of the commands `onLoad` returns: actions run when clicked, menus open. */
-export const Ribbon = (props: IRibbonProps) => {
+export const RibbonRoot = (props: IRibbonProps) => {
     const propsRef = useLatest(props);
     const createRuntime = () => new RibbonRuntime({ onLoad: propsRef.current.onLoad && (ribbon => propsRef.current.onLoad!(ribbon)) });
 

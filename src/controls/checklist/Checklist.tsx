@@ -13,7 +13,7 @@ export interface IChecklistProps extends Omit<IGridProps, 'modules'> {
 }
 
 /** A grid over the provider's records as a checklist: tick off, rename, reorder, add and delete items. */
-export const Checklist = (props: IChecklistProps) => {
+export const ChecklistRoot = (props: IChecklistProps) => {
     const { fieldMapping, modules: _, ...gridProps } = props;
     const modules = useMemo((): IGridModule[] => [
         createClientSideRowModelModule(),

@@ -138,6 +138,16 @@ If not, delete it.
 
 Every folder with labels keeps them in a `labels/` folder, never as loose files.
 
+### Widget namespace
+
+A widget with UI parts is exported as a namespace, so consumers reach its adapters and plain UI from it:
+
+- `<Widget>.tsx` exports `<Widget>Root`; `namespace.ts` exports
+  `<Widget> = Object.assign(<Widget>Root, { …adapters, Ui })` typed `typeof <Widget>Root & I<Widget>Parts`.
+- `ui/index.ts` declares `I<Widget>Ui` and exports `<Widget>Ui` holding every UI part.
+- The widget's `index.ts` exports `./namespace` and the props type, never `<Widget>Root`.
+- Follow `dataset-control/namespace.ts` and `dataset-control/ui/index.ts`.
+
 ## Vocabulary
 
 One meaning per word, one word per meaning. A new name follows these tables; an external API keeps its own.

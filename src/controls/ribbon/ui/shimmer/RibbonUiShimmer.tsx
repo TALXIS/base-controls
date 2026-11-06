@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { getClassNames } from "@core";
 import { IRibbonUiShimmerComponents, RibbonUiShimmerComponents } from "./components";
 import { getRibbonUiShimmerStyles } from "./styles";
-import { DatasetControl } from "@controls/dataset-control";
 import { Ribbon } from "@legacy/ribbon";
 
 //as wide as the skeleton's ribbon pill

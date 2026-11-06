@@ -6,6 +6,8 @@ export type { IGanttTheme, IGanttStyles, GanttStylesHook } from './theme';
 export type { IGanttOverlay, IGanttOverlayEvents } from './overlay';
 export { useGantt, useGanttModule, useGanttService, useRegisterGanttService } from './context';
 export type { ITaskGanttProps, ITaskGanttComponents } from './TaskGantt';
+export { GanttUi } from "./ui";
+export type { IGanttUi } from "./ui";
 export { GanttUiSkeleton } from "./ui/skeleton/GanttUiSkeleton";
 export { GanttUiSkeletonShimmer } from "./ui/skeleton-shimmer/GanttUiSkeletonShimmer";
 export { GanttUiSkeletonComponents } from "./ui/skeleton/components";

@@ -5,6 +5,7 @@ import { CellUiCommands } from './commands';
 import { CellUiControl } from './control';
 import { CellUiLoading } from './loading';
 import { CellUiLockIcon } from './lock-icon';
+import { CellUiValueRenderer } from '../value-renderer';
 
 export * from './container';
 export * from './field-error';
@@ -23,6 +24,7 @@ export interface ICellUi {
     Control: typeof CellUiControl;
     Loading: typeof CellUiLoading;
     LockIcon: typeof CellUiLockIcon;
+    ValueRenderer: typeof CellUiValueRenderer;
 }
 
 export const CellUi: ICellUi = {
@@ -33,4 +35,5 @@ export const CellUi: ICellUi = {
     Control: CellUiControl,
     Loading: CellUiLoading,
     LockIcon: CellUiLockIcon,
+    ValueRenderer: CellUiValueRenderer,
 };
