@@ -1,10 +1,10 @@
-import { ITooltipUiFieldRowComponents, TooltipUiFieldRow } from "../../../../ui/tooltip";
+import { IRecordCardFieldRowComponents, RecordCardFieldRow } from "@ui";
 import { useTaskTooltip } from "../task-tooltip-root";
 
 export interface ITaskTooltipFieldRowProps {
     columnName: string;
     iconName?: string;
-    components?: Partial<ITooltipUiFieldRowComponents>;
+    components?: Partial<IRecordCardFieldRowComponents>;
 }
 
 /** One column of the task under its display name, nothing while empty. */
@@ -15,5 +15,5 @@ export const TaskTooltipFieldRow = (props: ITaskTooltipFieldRowProps) => {
         return null;
     }
     const label = gantt.getTaskRuntime().getProvider().getColumnsMap()[props.columnName]?.displayName ?? props.columnName;
-    return <TooltipUiFieldRow label={label} iconName={props.iconName} components={props.components}>{value}</TooltipUiFieldRow>;
+    return <RecordCardFieldRow label={label} iconName={props.iconName} components={props.components}>{value}</RecordCardFieldRow>;
 };

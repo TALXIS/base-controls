@@ -1,5 +1,5 @@
 import { ICalloutProps } from "@fluentui/react";
-import { Callout } from "@ui";
+import { Callout, RecordCard } from "@ui";
 
 /** The replaceable pieces of the tooltip's callout. */
 export interface ITooltipUiCalloutComponents {
@@ -11,5 +11,5 @@ export interface ITooltipUiCalloutComponents {
 /** The defaults for {@link ITooltipUiCalloutComponents}. */
 export const TooltipUiCalloutComponents: ITooltipUiCalloutComponents = {
     onRenderCallout: props => <Callout {...props} />,
-    onRenderContainer: props => <div {...props} />,
+    onRenderContainer: props => <RecordCard className={props.className}>{props.children}</RecordCard>,
 };

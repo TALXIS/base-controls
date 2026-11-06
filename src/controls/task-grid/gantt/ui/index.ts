@@ -4,7 +4,7 @@ import { GanttUiSkeleton } from './skeleton/GanttUiSkeleton';
 import { GanttUiSkeletonShimmer } from './skeleton-shimmer/GanttUiSkeletonShimmer';
 import { GanttUiZoomSlider } from './zoom-slider/GanttUiZoomSlider';
 import { GridGanttUiSplit } from './grid-gantt-split/GridGanttUiSplit';
-import { TooltipUiCallout, TooltipUiDateRange, TooltipUiFieldRow, TooltipUiFieldRows, TooltipUiHeader, TooltipUiProgress } from './tooltip';
+import { TooltipUiCallout } from './tooltip';
 
 /** The Gantt's parts as plain UI, with no runtime behind them. */
 export interface IGanttUi {
@@ -22,16 +22,6 @@ export interface IGanttUi {
     Split: typeof GridGanttUiSplit;
     /** The callout a tooltip is drawn in. */
     TooltipCallout: typeof TooltipUiCallout;
-    /** A tooltip's title, with the status beside it. */
-    TooltipHeader: typeof TooltipUiHeader;
-    /** A tooltip's field rows, one under another. */
-    TooltipFieldRows: typeof TooltipUiFieldRows;
-    /** One field: its icon, its label and its value. */
-    TooltipFieldRow: typeof TooltipUiFieldRow;
-    /** When something runs, with how long it runs after it. */
-    TooltipDateRange: typeof TooltipUiDateRange;
-    /** A bar filled to the progress, with the progress after it. */
-    TooltipProgress: typeof TooltipUiProgress;
 }
 
 /** Every part of the Gantt as plain UI, with no runtime behind it. */
@@ -43,9 +33,4 @@ export const GanttUi: IGanttUi = {
     ZoomSlider: GanttUiZoomSlider,
     Split: GridGanttUiSplit,
     TooltipCallout: TooltipUiCallout,
-    TooltipHeader: TooltipUiHeader,
-    TooltipFieldRows: TooltipUiFieldRows,
-    TooltipFieldRow: TooltipUiFieldRow,
-    TooltipDateRange: TooltipUiDateRange,
-    TooltipProgress: TooltipUiProgress,
 };

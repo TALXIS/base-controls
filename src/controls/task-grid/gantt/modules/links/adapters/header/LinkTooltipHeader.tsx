@@ -1,15 +1,20 @@
 import { useLabels } from "@labels";
 import { LINKS_LABELS } from "../../labels";
-import { ITooltipUiHeaderComponents, TooltipUiHeader } from "../../../../ui/tooltip";
+import { IRecordCardHeaderPartsComponents, RecordCardHeader, RecordCardHeaderStart, RecordCardTitle } from "@ui";
 import { useLinkTooltip } from "../link-tooltip-root";
 
 export interface ILinkTooltipHeaderProps {
-    components?: Partial<ITooltipUiHeaderComponents>;
+    components?: IRecordCardHeaderPartsComponents;
 }
 
 /** The dependency's type. */
 export const LinkTooltipHeader = (props: ILinkTooltipHeaderProps) => {
     const { dependency } = useLinkTooltip();
     const labels = useLabels(LINKS_LABELS);
-    return <TooltipUiHeader title={labels.get(`links.${dependency.type}`)} components={props.components} />;
+    const components = props.components ?? {};
+    return <RecordCardHeader components={components.header}>
+        <RecordCardHeaderStart components={components.headerStart}>
+            <RecordCardTitle components={components.title}>{labels.get(`links.${dependency.type}`)}</RecordCardTitle>
+        </RecordCardHeaderStart>
+    </RecordCardHeader>;
 };

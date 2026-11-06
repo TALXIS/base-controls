@@ -4803,11 +4803,11 @@ type TaskTooltipSlots = Partial<{ [slot: string]: (props: any) => JSX.Element | 
 /** Finds the hovered or dragged bar; its parts go inside it. */
 declare const TaskTooltip: ((props: { children?: React.ReactNode }) => JSX.Element | null) & {
     /** The default tooltip: the name and status, the progress, and when it runs. */
-    Renderer: (props: { components?: { callout?: TaskTooltipSlots; header?: TaskTooltipSlots; progress?: TaskTooltipSlots; dateRange?: TaskTooltipSlots } }) => JSX.Element;
+    Renderer: (props: { components?: { callout?: TaskTooltipSlots; header?: { [part: string]: TaskTooltipSlots }; progress?: TaskTooltipSlots; dateRange?: TaskTooltipSlots } }) => JSX.Element;
     /** The callout next to the pointer: onRenderCallout, onRenderContainer. */
     Callout: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
-    /** The task's name and status pill: onRenderContainer, onRenderTitle, onRenderStatus. */
-    Header: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The task's name and status pill, slots by part: header, headerStart, headerEnd, title, status. */
+    Header: (props: { components?: { [part: string]: TaskTooltipSlots } }) => JSX.Element | null;
     /** Holds the field rows: onRenderContainer. */
     FieldRows: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** Any column: onRenderContainer, onRenderIcon, onRenderLabel, onRenderValue. */

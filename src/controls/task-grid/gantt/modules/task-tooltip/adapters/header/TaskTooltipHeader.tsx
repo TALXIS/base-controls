@@ -1,9 +1,9 @@
 import { useGanttModule } from "../../../../context";
-import { ITooltipUiHeaderComponents, TooltipUiHeader } from "../../../../ui/tooltip";
+import { IRecordCardHeaderPartsComponents, OptionTag, RecordCardHeader, RecordCardHeaderEnd, RecordCardHeaderStart, RecordCardTitle } from "@ui";
 import { useTaskTooltip } from "../task-tooltip-root";
 
 export interface ITaskTooltipHeaderProps {
-    components?: Partial<ITooltipUiHeaderComponents>;
+    components?: IRecordCardHeaderPartsComponents;
 }
 
 /** The task's name, with the status from the module's `statusColumnName` beside it. */
@@ -19,5 +19,14 @@ export const TaskTooltipHeader = (props: ITaskTooltipHeaderProps) => {
         const options = gantt.getTaskRuntime().getProvider().getColumnsMap()[statusColumnName]?.metadata?.OptionSet ?? [];
         return { text, color: options.find(option => String(option.Value) === String(value))?.Color };
     };
-    return <TooltipUiHeader title={task.text} status={getStatus()} components={props.components} />;
+    const status = getStatus();
+    const components = props.components ?? {};
+    return <RecordCardHeader components={components.header}>
+        <RecordCardHeaderStart components={components.headerStart}>
+            <RecordCardTitle components={components.title}>{task.text}</RecordCardTitle>
+        </RecordCardHeaderStart>
+        {status && <RecordCardHeaderEnd components={components.headerEnd}>
+            <OptionTag label={status.text} color={status.color} components={components.status} />
+        </RecordCardHeaderEnd>}
+    </RecordCardHeader>;
 };
