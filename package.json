@@ -78,6 +78,7 @@
     "build-storybook": "npm --prefix ./storybook run build-storybook",
     "check:layers": "node ./scripts/check-layers.mjs",
     "check:exports": "node ./scripts/check-exports.mjs",
+    "check:docs": "node ./scripts/check-docs.mjs",
     "check:consumer": "tsc -p ./scripts/consumer-smoke/tsconfig.json"
   },
   "browserslist": {
