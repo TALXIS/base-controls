@@ -37,7 +37,7 @@ export const Section = (props: ISectionProps) => {
     const theme = useTheme();
     const styles = getSectionStyles({ section: props, theme });
 
-    return <div className={styles.section} data-id={`section-${id}`}>
+    return <div className={styles.section} data-id={id ? `section-${id}` : undefined}>
         {isHeaderVisible && (
             <div className={styles.header}>
                 <Text variant="mediumPlus" className={styles.title}>
