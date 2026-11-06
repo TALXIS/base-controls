@@ -53,6 +53,15 @@ export const loadDeals = async ({ view }: IDatasetControlLoadParameters<IDealVie
     return { provider }
 }
 
+//the keys saveDealViewData saves, declared once in your project
+declare module '@talxis/base-controls' {
+    interface IUserQuerySavedValueMap {
+        sorting: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[]
+        filtering: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null
+        searchQuery: string
+    }
+}
+
 /** Saves the sorting, filter and search with every user view; pass it as the control's onMounted. */
 export const saveDealViewData = (control: IDatasetControl<IDealViewData>) => {
     const provider = () => control.getProvider()!

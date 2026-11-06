@@ -20,7 +20,7 @@ It also keeps what each \`saveWithView\` getter returns, under its key. That com
 
 \`control.modules.get('userQueries').saveWithView(key, getter)\` saves what \`getter\` returns with every user view. Register it in \`onMounted\`, since each mount loads the module anew, as \`saveDealViewData\` in the example's \`views.ts\` does.
 
-\`sorting\`, \`filtering\` and \`searchQuery\` are declared keys; declare a key of your own on \`IUserQuerySavedValueMap\` in \`declare module '@talxis/base-controls'\`. A getter that returns \`undefined\` saves nothing, and one that throws stops the save. \`saveWithView\` returns its unregistration, and registering the same key twice throws.
+Declare each key you save on \`IUserQuerySavedValueMap\` in \`declare module '@talxis/base-controls'\`, as the example's \`views.ts\` does for sorting, filtering and search. A getter that returns \`undefined\` saves nothing, and one that throws stops the save. \`saveWithView\` returns its unregistration, and registering the same key twice throws.
 
 ## Where views are kept
 
