@@ -17,8 +17,8 @@ import type { IGanttUiOverlayComponents } from "./ui/overlay";
 import type { IGanttUiSkeletonComponents } from "./ui/skeleton";
 
 export interface ITaskGanttProps {
-    /** Read once, at mount. */
-    modules?: IGanttModule[];
+    /** Read once, at mount; must include a library module. */
+    modules: IGanttModule[];
     /** Where the zoom is kept per view, read once at mount. */
     stateKey?: string;
     /** How far the timeline scrolls (default today ± 25 years), widened to fit the tasks. */

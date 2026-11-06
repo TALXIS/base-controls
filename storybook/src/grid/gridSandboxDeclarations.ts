@@ -4706,7 +4706,7 @@ declare const useMarker: () => { marker: IMarker; left: number };
 
 /** The tasks on a timeline, row for row with the TaskGrid beside it; needs startDate and endDate in the field mapping. */
 declare const TaskGantt: ((props: {
-    modules?: IGanttModule[];
+    modules: IGanttModule[];
     stateKey?: string;
 }) => JSX.Element) & {
     /** The Gantt's zoom; goes in the header. */

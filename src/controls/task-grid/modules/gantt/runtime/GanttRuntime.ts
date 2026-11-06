@@ -128,7 +128,7 @@ export class GanttRuntime implements IGantt {
     }
 
     private async _loadModules(): Promise<void> {
-        const modules = this._onGetProps().modules ?? [];
+        const modules = this._onGetProps().modules;
         const library = modules.find(module => module.name === 'library');
         if (!library) {
             throw new Error('TaskGantt needs a library module: createLibraryModule() or createProLibraryModule({ Gantt }).');
