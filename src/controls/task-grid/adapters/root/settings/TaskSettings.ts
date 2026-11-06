@@ -1,4 +1,4 @@
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 import type { LabelsOf } from "@labels";
 import { TASK_GRID_LABELS } from "../../../labels";
 import type { ITaskRuntime } from "../../../runtime";
@@ -16,13 +16,14 @@ export interface ITaskGridSetting {
 /** A hook that adds to or changes the toggles `TaskDatasetControl.Settings` shows. */
 export type TaskGridSettingsHook = (settings: ITaskGridSetting[]) => void;
 
+export interface ITaskSettingsHooks {
+    /** The toggles the menu shows. */
+    readonly settings: IHookPoint<TaskGridSettingsHook>;
+}
+
 /** The toggles of `TaskDatasetControl.Settings`, the `taskSettings` part. */
 export interface ITaskSettings {
-    /**
-     * Adds a hook over the toggles the menu shows.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addSettingsHook(hook: TaskGridSettingsHook, priority?: number): () => void;
+    readonly hooks: ITaskSettingsHooks;
     getSettings(): ITaskGridSetting[];
 }
 
@@ -34,7 +35,9 @@ export interface ITaskSettingsParameters {
 export class TaskSettings implements ITaskSettings {
     private _taskRuntime: ITaskRuntime;
     private _getProps: () => ISettingsProps;
-    private _settingsHooks = new HookRegistry<TaskGridSettingsHook>();
+    public readonly hooks = {
+        settings: new HookRegistry<TaskGridSettingsHook>(),
+    };
 
     constructor(parameters: ITaskSettingsParameters) {
         this._taskRuntime = parameters.taskRuntime;
@@ -43,10 +46,6 @@ export class TaskSettings implements ITaskSettings {
 
     private get _labels(): LabelsOf<typeof TASK_GRID_LABELS> {
         return this._taskRuntime.getLabels(TASK_GRID_LABELS);
-    }
-
-    public addSettingsHook(hook: TaskGridSettingsHook, priority?: number): () => void {
-        return this._settingsHooks.add(hook, priority);
     }
 
     public getSettings(): ITaskGridSetting[] {
@@ -69,7 +68,7 @@ export class TaskSettings implements ITaskSettings {
                 onChange: isChecked => { runQuietly(() => provider.setInactiveTasksHidden(isChecked)); },
             });
         }
-        this._settingsHooks.apply(settings);
+        this.hooks.settings.apply(settings);
         return settings;
     }
 }

@@ -36,9 +36,9 @@ The selection belongs to the provider, not to the grid: read and change it with 
 
 ## Refuse or change a selection
 
-\`addSelectRecordsHook(hook, priority?)\` runs before the grid writes a selection to the provider: from a click, a checkbox, the header checkbox or \`selectRecords\`. The hook gets \`(selection, { provider })\`: change \`selection.recordIds\` to select something else, or set \`selection.isCancelled\` to refuse it, and the rows go back to what the provider holds. Hooks may be \`async\`, and each is awaited before the next. Unticking the header checkbox and your own provider calls do not go through them.
+\`hooks.selectRecords.add(hook, priority?)\` runs before the grid writes a selection to the provider: from a click, a checkbox, the header checkbox or \`selectRecords\`. The hook gets \`(selection, { provider })\`: change \`selection.recordIds\` to select something else, or set \`selection.isCancelled\` to refuse it, and the rows go back to what the provider holds. Hooks may be \`async\`, and each is awaited before the next. Unticking the header checkbox and your own provider calls do not go through them.
 
-\`addSelectionStateHook(hook, priority?)\` changes how a row's checkbox reads: the hook gets \`(result, { node, record })\` with \`result.state\` as \`'checked'\`, \`'unchecked'\` or \`'indeterminate'\`. The grouping module uses it to show a partly selected group.
+\`hooks.selectionState.add(hook, priority?)\` changes how a row's checkbox reads: the hook gets \`(result, { node, record })\` with \`result.state\` as \`'checked'\`, \`'unchecked'\` or \`'indeterminate'\`. The grouping module uses it to show a partly selected group.
 
 ## Cell ranges and copying
 
@@ -111,8 +111,8 @@ The row selection module is \`grid.modules.find('rowSelection')\`, or \`useGridM
 | \`getMode()\` | \`'single'\` or \`'multiple'\`. |
 | \`selectRecords(provider, ids)\` | Replaces that provider's selection with \`ids\`, through the hooks. In a grouped grid, each group's records have a provider of their own. |
 | \`toggleRecord(record)\` | What a row's checkbox does: adds the record or takes it out, through the hooks. In \`'single'\` mode it replaces the selection. |
-| \`addSelectRecordsHook(hook, priority?)\` | See *Refuse or change a selection*. Returns its own unregister. |
-| \`addSelectionStateHook(hook, priority?)\` | See *Refuse or change a selection*. Returns its own unregister. |
+| \`hooks.selectRecords.add(hook, priority?)\` | See *Refuse or change a selection*. Returns its own unregister. |
+| \`hooks.selectionState.add(hook, priority?)\` | See *Refuse or change a selection*. Returns its own unregister. |
 | \`getRecordSelectionState(node)\` | How a row's checkbox reads, after the selection state hooks. |
 | \`isRecordSelectionDisabled(record)\` | Whether the record's checkbox is disabled, such as a group row in \`'single'\` mode. |
 | \`isSelectionColumn(columnName)\` | Whether the column is the checkbox column. |

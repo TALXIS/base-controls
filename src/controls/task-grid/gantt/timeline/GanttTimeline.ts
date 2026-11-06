@@ -1,7 +1,14 @@
 import type { GanttStatic, Task } from "dhtmlx-gantt";
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 import { DAYS_PER_UNIT, IGanttSpan, MILLISECONDS_PER_DAY, MILLISECONDS_PER_HOUR, MILLISECONDS_PER_WEEK } from "../schedule";
 import { getHorizontalScrollbar, renderGeometry, shiftTimelineDrag, syncWheelScrollOrigin } from "../chart";
+
+export interface IGanttTimelineHooks {
+    /** The class names of each background cell. */
+    readonly cellClass: IHookPoint<GanttCellClassHook>;
+    /** The class names of each scale cell. */
+    readonly scaleCellClass: IHookPoint<GanttScaleCellClassHook>;
+}
 
 /** The rendered date range: wide enough to scroll freely, re-centred only near its edges. */
 export interface IGanttTimeline {
@@ -31,16 +38,7 @@ export interface IGanttTimeline {
     /** Runs the callback with the timeline's own scroll handling off. */
     executeWithScrollBlock<T>(callback: () => T): T;
     isScrollBlocked(): boolean;
-    /**
-     * Adds a hook over the class names of each background cell.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addCellClassHook(hook: GanttCellClassHook, priority?: number): () => void;
-    /**
-     * Adds a hook over the class names of each scale cell.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addScaleCellClassHook(hook: GanttScaleCellClassHook, priority?: number): () => void;
+    readonly hooks: IGanttTimelineHooks;
 }
 
 export interface IGanttCellClassHookParameters {
@@ -86,26 +84,20 @@ export class GanttTimeline implements IGanttTimeline {
     private _edgeFrame?: number;
     private _view?: Window;
     private _isScrollbarHeld = false;
-    private _cellClassHooks = new HookRegistry<GanttCellClassHook>();
-    private _scaleCellClassHooks = new HookRegistry<GanttScaleCellClassHook>();
+    public readonly hooks = {
+        cellClass: new HookRegistry<GanttCellClassHook>(),
+        scaleCellClass: new HookRegistry<GanttScaleCellClassHook>(),
+    };
 
     constructor(parameters: IGanttTimelineParameters) {
         this._chart = parameters.chart;
         this._getLimits = parameters.getLimits;
-        this._chart.templates.timeline_cell_class = (_task: Task, date: Date) => this._getClass(this._cellClassHooks, date);
-        this._chart.templates.scale_cell_class = (date: Date) => this._getClass(this._scaleCellClassHooks, date);
+        this._chart.templates.timeline_cell_class = (_task: Task, date: Date) => this._getClass(this.hooks.cellClass, date);
+        this._chart.templates.scale_cell_class = (date: Date) => this._getClass(this.hooks.scaleCellClass, date);
         //scales without a css of their own take scale_cell_class
         this._chart.config.inherit_scale_class = true;
         this._chart.attachEvent('onGanttScroll', this._onGanttScroll);
         this._chart.attachEvent('onGanttReady', this._onGanttReady);
-    }
-
-    public addCellClassHook(hook: GanttCellClassHook, priority?: number): () => void {
-        return this._cellClassHooks.add(hook, priority);
-    }
-
-    public addScaleCellClassHook(hook: GanttScaleCellClassHook, priority?: number): () => void {
-        return this._scaleCellClassHooks.add(hook, priority);
     }
 
     public ensureRange(date: Date, millisecondsPerPixel: number): boolean {

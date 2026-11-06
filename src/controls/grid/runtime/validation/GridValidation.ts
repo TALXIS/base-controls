@@ -1,6 +1,6 @@
 import { ColDef, GridApi } from "ag-grid-community";
 import { IDataProvider, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 import { IGridServiceLocatorInternal } from "..";
 import { getColumnContext } from "../columns/colDef";
 
@@ -11,14 +11,14 @@ export interface IGridValidationParameters {
     services: IGridServiceLocatorInternal;
 }
 
+export interface IGridValidationHooks {
+    /** Every column of every record. */
+    readonly validation: IHookPoint<GridValidationHook>;
+}
+
 /** What the grid says about the values its records hold, registered into each record it loads. */
 export interface IGridValidation {
-    /**
-     * Adds a hook over every column of every record.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addValidationHook(hook: GridValidationHook, priority?: number): () => void;
+    readonly hooks: IGridValidationHooks;
 }
 
 /** What the grid's own parts read of it. */
@@ -29,7 +29,9 @@ export interface IGridValidationInternal extends IGridValidation {
 
 export class GridValidation implements IGridValidationInternal {
     private _services: IGridServiceLocatorInternal;
-    private _hooks = new HookRegistry<GridValidationHook>();
+    public readonly hooks = {
+        validation: new HookRegistry<GridValidationHook>({ onChange: () => this._onHooksChanged() }),
+    };
     private _validatedColumnNames = new Set<string>();
     //once set, every column stays registered: an expression cannot be taken off a record
     private _hasHooks = false;
@@ -47,16 +49,14 @@ export class GridValidation implements IGridValidationInternal {
         if (this._isDestroyed) {
             return result;
         }
-        this._hooks.apply(result, parameters);
+        this.hooks.validation.apply(result, parameters);
         getColumnContext(this._getColDef(parameters.columnName)).cell?.validationHook?.(result, { record: parameters.record });
         return result;
     }
 
-    public addValidationHook(hook: GridValidationHook, priority?: number): () => void {
-        const unregister = this._hooks.add(hook, priority);
+    private _onHooksChanged(): void {
         this._hasHooks = true;
         this._syncValidatedColumns();
-        return unregister;
     }
 
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): () => void {

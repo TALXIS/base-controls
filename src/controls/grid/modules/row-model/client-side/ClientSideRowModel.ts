@@ -20,7 +20,7 @@ export class ClientSideRowModel implements IGridRowModel {
 
     constructor(parameters: IClientSideRowModelParameters) {
         this._services = parameters.services;
-        this._services.get('grid').addAgGridOptionsHook(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
+        this._services.get('grid').hooks.agGridOptions.add(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
     }
 
     public refresh(): void {

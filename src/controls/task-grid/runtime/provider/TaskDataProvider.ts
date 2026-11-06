@@ -28,7 +28,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _newTaskPositions = new Map<string, TaskCreatePosition>();
     private _definitions = new Map<string, IColumn>();
     private _declaredColumns: IColumn[] = [];
-    private _availableColumnsHooks = new HookRegistry<TaskAvailableColumnsHook>();
+    public readonly hooks = {
+        availableColumns: new HookRegistry<TaskAvailableColumnsHook>(),
+    };
     private _columnHandlers: ITaskColumnHandler[] = [];
     private _columnMatchers: ITaskColumnMatcher[] = [];
     private _requiredColumns: IColumn[] = [];
@@ -140,10 +142,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         }
         //the hooks add columns of the tasks, such as Path
         return this._withHookColumns(columns).map(this._withHoursPerDay);
-    }
-
-    public addAvailableColumnsHook(hook: TaskAvailableColumnsHook, priority?: number): () => void {
-        return this._availableColumnsHooks.add(hook, priority);
     }
 
     public addColumnHandler(handler: ITaskColumnHandler): () => void {
@@ -484,7 +482,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     private _withHookColumns(columns: IColumn[]): IColumn[] {
         const result = [...columns];
-        this._availableColumnsHooks.apply(result);
+        this.hooks.availableColumns.apply(result);
         return result;
     }
 

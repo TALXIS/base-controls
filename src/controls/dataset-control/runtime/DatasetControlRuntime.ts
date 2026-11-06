@@ -1,6 +1,6 @@
 import type { ITheme } from "@fluentui/react";
 import { IAvailableRelatedColumn, IColumn, IDataProvider, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { HookRegistry, IStateStore, ModuleLoader, RuntimeLifecycle, ServiceLocator } from "@core";
+import { HookRegistry, IStateStore, ModuleLoader, RuntimeLifecycle, ServiceLocator, IHookPoint } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlProps } from "../adapters/root/Root";
 import { IDatasetControl, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceLocator, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
@@ -21,17 +21,18 @@ export interface IDatasetControlLoadResult<TData = unknown> {
 export type DatasetControlViewsHook = (views: IDatasetControlView[]) => void;
 
 /** What the parts, the Grid and the skeleton need beside the consumer's API. */
+export interface IDatasetControlHooks {
+    /** The views, applied on every load after `onLoad`. */
+    readonly views: IHookPoint<DatasetControlViewsHook>;
+}
+
 export interface IDatasetControlInternal extends IDatasetControl {
     readonly services: IDatasetControlServiceLocator;
     /** The control's height, as the `height` prop gives it. */
     getHeight(): string | undefined;
     /** Where the parts keep their state for a view: the one shown, unless another is given. */
     getViewStateStore(viewId?: string): IStateStore;
-    /**
-     * Adds a hook over the views, applied on every load after `onLoad`.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addViewsHook(hook: DatasetControlViewsHook, priority?: number): () => void;
+    readonly hooks: IDatasetControlHooks;
 }
 
 export interface IDatasetControlRuntimeParameters {
@@ -55,7 +56,9 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
     private _state: DatasetControlState;
     private _provider?: IDataProvider;
     private _views: IDatasetControlView[] = [];
-    private _viewsHooks = new HookRegistry<DatasetControlViewsHook>();
+    public readonly hooks = {
+        views: new HookRegistry<DatasetControlViewsHook>(),
+    };
     private _viewId?: string;
     private _view?: IDatasetControlResolvedView;
 
@@ -105,10 +108,6 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
         return this._state.getViewStore(viewId);
     }
 
-    public addViewsHook(hook: DatasetControlViewsHook, priority?: number): () => void {
-        return this._viewsHooks.add(hook, priority);
-    }
-
     public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
         return this._services.get('labels').getLabels(set);
     }
@@ -120,7 +119,6 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
     public getHeight(): string | undefined {
         return this._getProps().height;
     }
-
 
     public async loadView(viewId: string): Promise<void> {
         await this._remountBehindBlocker(viewId);
@@ -160,7 +158,7 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
         try {
             //a copy: the hooks change it in place
             const listedViews = [...views];
-            this._viewsHooks.apply(listedViews);
+            this.hooks.views.apply(listedViews);
             this._views = listedViews;
             //a failed view stays on the state, so the remount that retries it opens it again
             const viewId = this._resolveViewId(this._state.getViewId());

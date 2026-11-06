@@ -32,8 +32,8 @@ export class TaskDrawing implements ITaskDrawing {
     constructor(gantt: IGantt, parameters: ITaskDrawingParameters) {
         this._gantt = gantt;
         this._parameters = parameters;
-        gantt.surfaces.addSurfacesHook(this._onSurfaces);
-        gantt.services.get('theme').addStylesHook(result => result.styles.push(getTaskDrawingStyles()));
+        gantt.surfaces.hooks.surfaces.add(this._onSurfaces);
+        gantt.services.get('theme').hooks.styles.add(result => result.styles.push(getTaskDrawingStyles()));
     }
 
     public isEnabled(): boolean {

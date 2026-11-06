@@ -1,5 +1,5 @@
 import type { GanttStatic } from "dhtmlx-gantt";
-import type { IEventSubscriber, IRuntimeModule, IServiceLocator, IServiceRegistry, IStateStore } from "@core";
+import type { IEventSubscriber, IRuntimeModule, IServiceLocator, IServiceRegistry, IStateStore, IHookPoint } from "@core";
 import type { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../services";
@@ -62,6 +62,11 @@ export interface IGanttEvents {
 /** Sets the chart's config, templates and plugins before it is drawn. */
 export type GanttChartConfigHook = (chart: GanttStatic) => void;
 
+export interface IGanttHooks {
+    /** Sets the chart's config, templates and plugins before it is drawn. */
+    readonly chartConfig: IHookPoint<GanttChartConfigHook>;
+}
+
 /** One mount of a `TaskGantt`: what its modules load on and its parts read. */
 export interface IGantt {
     readonly events: IEventSubscriber<IGanttEvents>;
@@ -77,11 +82,7 @@ export interface IGantt {
     getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** The build the chart is created from, there before any other module loads. */
     getLibrary(): ILibrary;
-    /**
-     * Adds a hook that sets the chart's config, templates and plugins before it is drawn.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addChartConfigHook(hook: GanttChartConfigHook, priority?: number): () => void;
+    readonly hooks: IGanttHooks;
     /** Redraws the chart, such as after a hook's answer changed. */
     render(): void;
 }

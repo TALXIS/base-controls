@@ -89,16 +89,16 @@ export class GridAggregation implements IGridAggregation {
     /** What this module has to say about what the grid draws, in the order the grid asks. */
     private _addHooks(): void {
         const columnHeaders = this._gridServices.get('columns').headers;
-        this._gridServices.get('grid').addAgGridOptionsHook(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('gridTheme').addThemeHook(this._onTheme, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('grid').hooks.agGridOptions.add(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('gridTheme').hooks.theme.add(this._onTheme, GRID_MODULE_PRIORITY.aggregation);
         //runs after grouping to have the last word on a group row's cell
-        this._gridServices.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('cells').addCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('cells').addCellLoadingHook(this._onCellLoading, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('rows').addRowHeightHook(this._onRowHeight, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('cells').hooks.theme.add(this._onCellTheme, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('cells').hooks.loading.add(this._onCellLoading, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('rows').hooks.height.add(this._onRowHeight, GRID_MODULE_PRIORITY.aggregation);
         //listed in the column menu after grouping
-        columnHeaders.addColumnMenuSectionsHook(this._onMenuSection, GRID_MODULE_PRIORITY.aggregation);
-        columnHeaders.addColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.aggregation);
+        columnHeaders.hooks.menuSections.add(this._onMenuSection, GRID_MODULE_PRIORITY.aggregation);
+        columnHeaders.hooks.adornments.add(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.aggregation);
     }
 
     /** The total row, created if the dataset now carries an aggregation. */

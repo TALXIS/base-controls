@@ -9,7 +9,7 @@ import { IRibbonComponents } from "./components";
 import { RibbonUiShimmer, RibbonUiCommandBar } from "./ui";
 
 export interface IRibbonProps {
-    /** Called on init and on every `reload()`, and may return the commands directly; the ones `addCommandsHook` adds follow. */
+    /** Called on init and on every `reload()`, and may return the commands directly; the ones `hooks.commands` adds follow. */
     onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to `'start'`. */
     align?: 'start' | 'end';

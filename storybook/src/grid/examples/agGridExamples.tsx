@@ -5,10 +5,10 @@ export const REARRANGE_COLUMNS_CODE = `const createColumnOrderLock = (isUnlocked
     name: 'columnOrderLock',
     onLoad: grid => {
         //screen readers read the rows in the order the page holds them
-        grid.addAgGridInitialOptionsHook(result => {
+        grid.hooks.agGridInitialOptions.add(result => {
             result.options.ensureDomOrder = true
         })
-        grid.addAgGridOptionsHook(result => {
+        grid.hooks.agGridOptions.add(result => {
             result.options.suppressMovableColumns = !isUnlocked()
         })
     },

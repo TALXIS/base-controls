@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { DataTypes, IRecord } from "@talxis/client-libraries";
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 import type { IGantt } from "../interfaces";
 import { addClockDuration, getClockDuration } from "./clockTime";
 import { MILLISECONDS_PER_MINUTE, MINUTES_PER_DAY, MINUTES_PER_HOUR } from "./timeUnits";
@@ -32,6 +32,13 @@ export interface IGanttSnapHookParameters {
 /** Changes a span after it is snapped to the scale, such as to keep it off certain days. */
 export type GanttSnapHook = (result: { span: IGanttSpan }, parameters: IGanttSnapHookParameters) => void;
 
+export interface IGanttScheduleHooks {
+    /** Each calculated duration. */
+    readonly duration: IHookPoint<GanttDurationHook>;
+    /** Each span a drag or a drawn task snaps to. */
+    readonly snap: IHookPoint<GanttSnapHook>;
+}
+
 /** The `schedule` service: how a task's record maps to the span its bar runs over, and back. */
 export interface IGanttSchedule {
     /** The display names of the start and end columns. */
@@ -47,16 +54,7 @@ export interface IGanttSchedule {
     /** The task's duration in minutes, mapped or else calculated. */
     getDuration(record: IRecord): number | undefined;
     calculateDuration(span: IGanttSpan, record?: IRecord): number;
-    /**
-     * Adds a hook over each calculated duration.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addDurationHook(hook: GanttDurationHook, priority?: number): () => void;
-    /**
-     * Adds a hook over each span a drag or a drawn task snaps to.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addSnapHook(hook: GanttSnapHook, priority?: number): () => void;
+    readonly hooks: IGanttScheduleHooks;
     /** The minutes a dragged edge snaps by at the current zoom. */
     getSnapMinutes(edge: GanttSpanEdge): number;
     /**
@@ -98,8 +96,10 @@ const TIME_STEPS: ISnapStep[] = [
 export class GanttSchedule implements IGanttSchedule {
     private _gantt: IGantt;
     private _columnNames: { start: string; end: string; duration?: string };
-    private _durationHooks = new HookRegistry<GanttDurationHook>();
-    private _snapHooks = new HookRegistry<GanttSnapHook>();
+    public readonly hooks = {
+        duration: new HookRegistry<GanttDurationHook>(),
+        snap: new HookRegistry<GanttSnapHook>(),
+    };
 
     constructor(gantt: IGantt) {
         const { startDate, endDate, duration } = gantt.getTaskRuntime().getFieldMapping();
@@ -152,16 +152,8 @@ export class GanttSchedule implements IGanttSchedule {
 
     public calculateDuration(span: IGanttSpan, record?: IRecord): number {
         const result = { duration: getClockDuration(span.start, span.end) / MILLISECONDS_PER_MINUTE };
-        this._durationHooks.apply(result, { span, record });
+        this.hooks.duration.apply(result, { span, record });
         return this._toWorkingMinutes(result.duration);
-    }
-
-    public addDurationHook(hook: GanttDurationHook, priority?: number): () => void {
-        return this._durationHooks.add(hook, priority);
-    }
-
-    public addSnapHook(hook: GanttSnapHook, priority?: number): () => void {
-        return this._snapHooks.add(hook, priority);
     }
 
     public getSnapMinutes(edge: GanttSpanEdge): number {
@@ -227,7 +219,7 @@ export class GanttSchedule implements IGanttSchedule {
 
     private _applySnapHooks(span: IGanttSpan, parameters: IGanttSnapHookParameters): IGanttSpan {
         const result = { span };
-        this._snapHooks.apply(result, parameters);
+        this.hooks.snap.apply(result, parameters);
         return result.span;
     }
 

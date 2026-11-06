@@ -43,7 +43,9 @@ export class GanttRuntime implements IGantt {
     private _datasetControl: IDatasetControl<ITaskViewData>;
     private _getProps: () => ITaskGanttProps;
     private _moduleLoader = new ModuleLoader<IGanttModuleMap, IGantt>();
-    private _chartConfigHooks = new HookRegistry<GanttChartConfigHook>();
+    public readonly hooks = {
+        chartConfig: new HookRegistry<GanttChartConfigHook>(),
+    };
     private _destroyables: { destroy(): void }[] = [];
     private _removeCellCommandsHook?: () => void;
     private _unsubscribes: (() => void)[] = [];
@@ -69,7 +71,7 @@ export class GanttRuntime implements IGantt {
         const overlay = new GanttOverlay(parameters.taskRuntime.getProvider());
         this.services.register('overlay', () => overlay);
         this._destroyables.push(overlay);
-        this._unsubscribes.push(this._datasetControl.parts.observe('ribbon', ribbon => ribbon.addCommandsHook(this._addCommands)));
+        this._unsubscribes.push(this._datasetControl.parts.observe('ribbon', ribbon => ribbon.hooks.commands.add(this._addCommands)));
     }
 
     public getProps(): ITaskGanttProps {
@@ -86,10 +88,6 @@ export class GanttRuntime implements IGantt {
 
     public getLibrary(): ILibrary {
         return this.modules.get('library');
-    }
-
-    public addChartConfigHook(hook: GanttChartConfigHook, priority?: number): () => void {
-        return this._chartConfigHooks.add(hook, priority);
     }
 
     public render(): void {
@@ -145,7 +143,7 @@ export class GanttRuntime implements IGantt {
         const zooming = new GanttZooming({ chart, taskRuntime: this._taskRuntime, schedule, timeline, state: this.services.get('state') });
         const tasks = new GanttTasks({ chart, gridApi, gantt: this, schedule, onParsed: this._onTasksParsed });
         this._destroyables.push(timeline, zooming, tasks);
-        this._chartConfigHooks.apply(chart);
+        this.hooks.chartConfig.apply(chart);
         chart.init(container);
 
         this.services.register('chart', () => chart);
@@ -158,7 +156,7 @@ export class GanttRuntime implements IGantt {
         tasks.parse();
         this.events.dispatchEvent('onChartReady', chart);
         this._datasetControl.parts.find('ribbon')?.reload();
-        this._removeCellCommandsHook = grid.services.get('cells').addCellCommandsHook(this._onCellCommands, TASK_GRID_PRIORITY.tree + 40);
+        this._removeCellCommandsHook = grid.services.get('cells').hooks.commands.add(this._onCellCommands, TASK_GRID_PRIORITY.tree + 40);
         gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
     }
 

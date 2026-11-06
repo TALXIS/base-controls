@@ -12,13 +12,13 @@ const copyLink = async (viewId: string) => {
 
 //menu items and commands go through the parts, not slots
 const addCommands = (control: IDatasetControl) => {
-    control.parts.observe('viewSwitcher', viewSwitcher => viewSwitcher.addItemsHook(items => {
+    control.parts.observe('viewSwitcher', viewSwitcher => viewSwitcher.hooks.items.add(items => {
         items.push(
             { key: 'copyLinkDivider', itemType: ContextualMenuItemType.Divider },
             { key: 'copyLink', text: 'Copy a link to this view', iconProps: { iconName: 'Link' }, onClick: () => { copyLink(control.getViewId()!) } },
         )
     }))
-    control.parts.observe('editColumns', editColumns => editColumns.addColumnCommandsHook((commands, column, session) => {
+    control.parts.observe('editColumns', editColumns => editColumns.hooks.columnCommands.add((commands, column, session) => {
         //the draggable column list runs commands on mouse up
         commands.push({ key: 'moveToTop', iconProps: { iconName: 'Up' }, title: 'Move to the top', onMouseUp: () => session.moveColumn(column.name, session.getColumns()[0].name) })
     }))

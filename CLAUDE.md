@@ -189,7 +189,7 @@ A private field that holds or implements a callback is `_on<What>`.
 
 | Verb | Means | Returns |
 |---|---|---|
-| `add<Thing>Hook(hook, priority?)` | Adds a priority-ordered hook typed `<Host><Thing>Hook` | its remover |
+| `x.hooks.<thing>.add(hook, priority?)` | Adds to a priority-ordered hook point typed `IHookPoint<<Host><Thing>Hook>` | its remover |
 | `add<Thing>(thing)` | Adds an unordered contributor: a blocker, matcher, handler | its remover |
 | `define<Thing>(…)` | Registers globally for good, like `defineLabels` | — |
 

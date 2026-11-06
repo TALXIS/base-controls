@@ -99,7 +99,7 @@ export class TaskChecklist implements ITaskChecklist {
     }
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
-        return provider.addAvailableColumnsHook(this._addColumn);
+        return provider.hooks.availableColumns.add(this._addColumn);
     };
 
     //a task the store leaves out has no items left
@@ -122,7 +122,7 @@ export class TaskChecklist implements ITaskChecklist {
     };
 
     private _onGridAvailable = (grid: IGrid): void => {
-        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

@@ -1,7 +1,7 @@
 import { EventEmitter, IDataProvider, IEventEmitter, IInternalDataProvider } from "@talxis/client-libraries";
 import type { IColumn } from "@talxis/client-libraries";
 import type { ICommandBarItemProps } from "@legacy";
-import { HookRegistry, IEventSubscriber } from "@core";
+import { HookRegistry, IEventSubscriber, IHookPoint } from "@core";
 import { IDatasetControlServiceLocator } from "../../interfaces";
 import { DatasetControlEditColumnsSession } from "./DatasetControlEditColumnsSession";
 
@@ -22,6 +22,13 @@ export type EditColumnsCommandsHook = (commands: ICommandBarItemProps[], session
 /** A hook over the commands of one chosen column, Remove first, which it adds to or changes in place. */
 export type EditColumnsColumnCommandsHook = (commands: ICommandBarItemProps[], column: IColumn, session: DatasetControlEditColumnsSession) => void;
 
+export interface IDatasetControlEditColumnsHooks {
+    /** The commands at the top of the editor. */
+    readonly commands: IHookPoint<EditColumnsCommandsHook>;
+    /** Each chosen column's commands. */
+    readonly columnCommands: IHookPoint<EditColumnsColumnCommandsHook>;
+}
+
 /** Opens and closes the column editor. */
 export interface IDatasetControlEditColumns {
     /** Subscribe to the editor's events. */
@@ -36,16 +43,7 @@ export interface IDatasetControlEditColumns {
     save(): Promise<void>;
     /** The edit in progress; there only while the editor is open. */
     getSession(): DatasetControlEditColumnsSession | undefined;
-    /**
-     * Adds a hook over the commands at the top of the editor.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addCommandsHook(hook: EditColumnsCommandsHook, priority?: number): () => void;
-    /**
-     * Adds a hook over each chosen column's commands.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addColumnCommandsHook(hook: EditColumnsColumnCommandsHook, priority?: number): () => void;
+    readonly hooks: IDatasetControlEditColumnsHooks;
 }
 
 /** Whether the column editor is open, and the edit it holds while it is. */
@@ -54,8 +52,10 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
     private _services: IDatasetControlServiceLocator;
     private _provider: IDataProvider;
     private _session?: DatasetControlEditColumnsSession;
-    private _commandsHooks = new HookRegistry<EditColumnsCommandsHook>();
-    private _columnCommandsHooks = new HookRegistry<EditColumnsColumnCommandsHook>();
+    public readonly hooks = {
+        commands: new HookRegistry<EditColumnsCommandsHook>(),
+        columnCommands: new HookRegistry<EditColumnsColumnCommandsHook>(),
+    };
 
     constructor(parameters: IDatasetControlEditColumnsParameters) {
         this._services = parameters.services;
@@ -98,25 +98,17 @@ export class DatasetControlEditColumns implements IDatasetControlEditColumns {
         return this._session;
     }
 
-    public addCommandsHook(hook: EditColumnsCommandsHook, priority?: number): () => void {
-        return this._commandsHooks.add(hook, priority);
-    }
-
-    public addColumnCommandsHook(hook: EditColumnsColumnCommandsHook, priority?: number): () => void {
-        return this._columnCommandsHooks.add(hook, priority);
-    }
-
     /** The commands at the top of the editor. */
     public getCommands(session: DatasetControlEditColumnsSession): ICommandBarItemProps[] {
         const commands: ICommandBarItemProps[] = [];
-        this._commandsHooks.apply(commands, session);
+        this.hooks.commands.apply(commands, session);
         return commands;
     }
 
     /** The commands of a chosen column, starting from Remove. */
     public getColumnCommands(column: IColumn, session: DatasetControlEditColumnsSession, removeCommand: ICommandBarItemProps): ICommandBarItemProps[] {
         const commands = [removeCommand];
-        this._columnCommandsHooks.apply(commands, column, session);
+        this.hooks.columnCommands.apply(commands, column, session);
         return commands;
     }
 }

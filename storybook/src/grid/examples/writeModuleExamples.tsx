@@ -42,7 +42,7 @@ const unsavedChangesModule: IGridModule = {
                 return () => listeners.delete(listener)
             },
         }
-        grid.services.get('surfaces').addSurfacesHook(surfaces => {
+        grid.services.get('surfaces').hooks.surfaces.add(surfaces => {
             surfaces.push({ key: 'unsavedChanges', onRender: () => <UnsavedChangesBar /> })
         })
 

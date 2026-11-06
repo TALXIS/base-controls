@@ -45,7 +45,7 @@ A value that fails validation shows an error icon in its cell, with the message 
 | Required | \`metadata.RequiredLevel\` \`1\` or \`2\` on the provider column | The value is not empty |
 | Built-in | The column's data type and metadata | Single-line text against \`MaxLength\`, numbers against \`MinValue\` and \`MaxValue\`, and number, email, URL and date formats |
 | One column | \`context.cell.validationHook(result, { record })\` in \`colDefs\` | Your rule for that column; it may read any column of the record |
-| Every column | \`addValidationHook(hook, priority?)\` on the \`validation\` service | Your rule for every column: see *Validation* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) |
+| Every column | \`hooks.validation.add(hook, priority?)\` on the \`validation\` service | Your rule for every column: see *Validation* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) |
 
 Your rules run first, then the required and built-in checks, so a rule can add an error but not clear a built-in one. The rules are set on the provider's records: they gate every save, a \`provider.save()\` from outside the grid included, and they replace a \`record.expressions.setValidationExpression\` of your own on the same column. Validation does not need the editing module, so a read-only grid shows invalid values too; only the editing module draws a required column's asterisk.
 
@@ -70,7 +70,7 @@ Locks decide what can be edited. The levels are checked in the order of the tabl
 | Record | \`rowSettings.lockHook\`, a lock hook asked about \`{ record }\`, or an inactive record | A dimmed row, and a lock in a column pinned at the start |
 | Cell | \`context.cell.lockHook\`, or a lock hook asked about \`{ record, columnName }\` | A lock in the cell |
 
-\`context.isLocked: true\` is final; to open a column its metadata locks, give it \`context: { isLocked: false }\`. \`rowSettings.lockHook(result, { record })\` starts with \`result.isLocked\` as \`!record.isActive()\` and runs after the record-level hooks, so it can also unlock. \`context.cell.lockHook\` runs after the cell-level hooks, only for a cell whose column and record are open. A module locks with \`editing.locks.addLockHook\`: see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
+\`context.isLocked: true\` is final; to open a column its metadata locks, give it \`context: { isLocked: false }\`. \`rowSettings.lockHook(result, { record })\` starts with \`result.isLocked\` as \`!record.isActive()\` and runs after the record-level hooks, so it can also unlock. \`context.cell.lockHook\` runs after the cell-level hooks, only for a cell whose column and record are open. A module locks with \`editing.locks.hooks.lock.add\`: see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
 Locks gate only the grid's own editing: \`record.setValue()\` from your code ignores them. A lock that reads something outside its record, such as a toggle or the user's role, redraws nothing by itself: see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). The lock column is \`RECORD_LOCK_COLUMN_KEY\`, hidden until a loaded row is locked, and a dimmed row carries the class \`LOCKED_RECORD_ROW_CLASS\`. To change the tooltips, as the example does, see [**Localization**](?path=/docs/concepts-localization--overview).
 
@@ -136,7 +136,7 @@ The module is \`grid.modules.find('editing')\`, or \`useGridModule('editing')\` 
 | \`start(cell)\`, \`finish(cell)\` | Steps into an in-place cell; ends the edit and brings the focus back to the cell. |
 | \`isAutoSaveEnabled()\` | Whether each commit saves its record. |
 | \`locks.get({ record?, columnName? })\` | \`{ isLocked, lockedBy? }\`, where \`lockedBy\` is \`'column'\`, \`'record'\` or \`'cell'\`. |
-| \`locks.addLockHook(hook, priority?)\` | Locks columns, records and cells. See *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). |
+| \`locks.hooks.lock.add(hook, priority?)\` | Locks columns, records and cells. See *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). |
 | \`events\` | \`onEditedCellChanged\`: see *Options*. |
 
 To change a value as a cell would, saving it with \`enableAutoSave\`, go through its field: \`grid.services.get('fields').get(record, columnName).setValue(value)\`. \`record.setValue()\` changes the record and saves nothing.

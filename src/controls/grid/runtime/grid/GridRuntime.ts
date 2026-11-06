@@ -70,8 +70,10 @@ export class GridRuntime implements IGrid {
     private _services = new ServiceLocator<IGridServiceMapInternal>();
     private _moduleLoader = new ModuleLoader<IGridModuleMap, IGrid>();
     private _getProps: () => IGridProps;
-    private _agGridInitialOptionsHooks = new HookRegistry<GridAgGridInitialOptionsHook>();
-    private _agGridOptionsHooks = new HookRegistry<GridAgGridOptionsHook>();
+    public readonly hooks = {
+        agGridInitialOptions: new HookRegistry<GridAgGridInitialOptionsHook>(),
+        agGridOptions: new HookRegistry<GridAgGridOptionsHook>(),
+    };
     private _agGridProps?: IGridAgGridInitialOptions['options'];
     /** What AG Grid was last handed. */
     private _appliedAgGridOptions: ManagedGridOptions<IRecord> = {};
@@ -127,14 +129,6 @@ export class GridRuntime implements IGrid {
 
     public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
         return this._services.get('labels').getLabels(set);
-    }
-
-    public addAgGridInitialOptionsHook(hook: GridAgGridInitialOptionsHook, priority?: number): () => void {
-        return this._agGridInitialOptionsHooks.add(hook, priority);
-    }
-
-    public addAgGridOptionsHook(hook: GridAgGridOptionsHook, priority?: number): () => void {
-        return this._agGridOptionsHooks.add(hook, priority);
     }
 
     public refreshAgGridOptions(): void {
@@ -210,7 +204,7 @@ export class GridRuntime implements IGrid {
                 noRowsOverlayComponent: EmptyStateOverlay,
             },
         };
-        this._agGridInitialOptionsHooks.apply(result);
+        this.hooks.agGridInitialOptions.apply(result);
         return result.options;
     }
 
@@ -226,7 +220,7 @@ export class GridRuntime implements IGrid {
                 columnDefs: this._columnDefs,
             },
         };
-        this._agGridOptionsHooks.apply(result);
+        this.hooks.agGridOptions.apply(result);
         return result.options;
     }
 

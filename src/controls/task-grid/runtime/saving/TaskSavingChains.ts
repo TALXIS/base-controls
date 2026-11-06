@@ -1,5 +1,5 @@
 import { EventEmitter, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { HookRegistry, IEventSubscriber } from "@core";
+import { HookRegistry, IEventSubscriber, IHookPoint } from "@core";
 import type { ITaskDataProvider } from "../provider";
 
 //a save quicker than this is not worth a flicker
@@ -17,16 +17,17 @@ export interface ITaskSavingChainLinksHookParameters {
 /** Adds the tasks a change to one task moves, such as its successors. */
 export type TaskSavingChainLinksHook = (result: { linkedTaskIds: string[] }, parameters: ITaskSavingChainLinksHookParameters) => void;
 
+export interface ITaskSavingChainsHooks {
+    /** The tasks a change to one task moves. */
+    readonly links: IHookPoint<TaskSavingChainLinksHook>;
+}
+
 /** The tasks a save can reach, held as saving until the save and the sync after it settle. */
 export interface ITaskSavingChains {
     readonly events: IEventSubscriber<ITaskSavingChainsEvents>;
     /** Whether the task is in a chain whose save has run long enough to show. */
     isTaskSaving(taskId: string): boolean;
-    /**
-     * Adds a hook over the tasks a change to one task moves.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addLinksHook(hook: TaskSavingChainLinksHook, priority?: number): () => void;
+    readonly hooks: ITaskSavingChainsHooks;
     /** Runs a write other than a record save, holding the chain of the tasks it touches. */
     track<T>(taskIds: string[], operation: () => Promise<T>): Promise<T>;
 }
@@ -40,7 +41,9 @@ interface ITaskSaves {
 export class TaskSavingChains implements ITaskSavingChains {
     public readonly events = new EventEmitter<ITaskSavingChainsEvents>();
     private _provider?: ITaskDataProvider;
-    private _linksHooks = new HookRegistry<TaskSavingChainLinksHook>();
+    public readonly hooks = {
+        links: new HookRegistry<TaskSavingChainLinksHook>(),
+    };
     //how many chains being shown each task is in
     private _counts = new Map<string, number>();
     //counted until each save and the sync after it settle
@@ -57,10 +60,6 @@ export class TaskSavingChains implements ITaskSavingChains {
 
     public isTaskSaving(taskId: string): boolean {
         return (this._counts.get(taskId) ?? 0) > 0;
-    }
-
-    public addLinksHook(hook: TaskSavingChainLinksHook, priority?: number): () => void {
-        return this._linksHooks.add(hook, priority);
     }
 
     public async track<T>(taskIds: string[], operation: () => Promise<T>): Promise<T> {
@@ -164,7 +163,7 @@ export class TaskSavingChains implements ITaskSavingChains {
 
     private _getLinkedTaskIds(taskId: string): string[] {
         const result = { linkedTaskIds: [] as string[] };
-        this._linksHooks.apply(result, { taskId });
+        this.hooks.links.apply(result, { taskId });
         return result.linkedTaskIds;
     }
 }

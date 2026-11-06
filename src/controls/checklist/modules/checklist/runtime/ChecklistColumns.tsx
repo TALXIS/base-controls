@@ -35,7 +35,7 @@ export class ChecklistColumns {
         this._services = parameters.services;
         this._checklist = parameters.checklist;
         this._deleteColumnDefinition = this._getDeleteColumnDefinition();
-        this._services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.clipboard + 1);
+        this._services.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.clipboard + 1);
     }
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

@@ -106,7 +106,7 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 
 ### Control parameters
 
-\`cell.controlParametersHook\`, and the \`addControlParametersHook\` hook, change what a cell's control receives. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\`, which reads these:
+\`cell.controlParametersHook\`, and the \`hooks.controlParameters\` hook, change what a cell's control receives. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\`, which reads these:
 
 | Parameter | Description |
 |---|---|

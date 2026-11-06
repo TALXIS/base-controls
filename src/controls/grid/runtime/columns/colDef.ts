@@ -11,27 +11,27 @@ import type { IColumnHeaderAdornment, IColumnMenuSection } from "../column-heade
 export interface IGridColumnCellContext {
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
     isRowResizable?: boolean;
-    /** Changes the commands a cell offers, after `addCellCommandsHook`. */
+    /** Changes the commands a cell offers, after `cells.hooks.commands`. */
     commandsHook?: (result: IGridCellCommands, parameters: { record: IRecord }) => void;
-    /** Changes a cell's theme, after `addCellThemeHook`. */
+    /** Changes a cell's theme, after `cells.hooks.theme`. */
     themeHook?: (builder: ThemeBuilder, parameters: { record: IRecord }) => void;
-    /** Decides whether a cell shows it is loading, after `addCellLoadingHook`. */
+    /** Decides whether a cell shows it is loading, after `cells.hooks.loading`. */
     loadingHook?: (result: IGridCellLoading, parameters: { record: IRecord }) => void;
-    /** Decides whether a record's value is valid, after `addValidationHook`. */
+    /** Decides whether a record's value is valid, after `validation.hooks.validation`. */
     validationHook?: (result: IFieldValidationResult, parameters: { record: IRecord }) => void;
-    /** Changes the parameters a cell's control is handed, after `addControlParametersHook`. */
+    /** Changes the parameters a cell's control is handed, after `cells.hooks.controlParameters`. */
     controlParametersHook?: (result: IParameters, parameters: { record: IRecord }) => void;
 }
 
 /** What a column decides for its header, after the header hooks. */
 export interface IGridColumnHeaderContext {
-    /** Changes the header's theme, after `addColumnHeaderThemeHook`. */
+    /** Changes the header's theme, after `headers.hooks.theme`. */
     themeHook?: (builder: ThemeBuilder) => void;
-    /** Adds what the header draws beside its name, after `addColumnHeaderAdornmentsHook`. */
+    /** Adds what the header draws beside its name, after `headers.hooks.adornments`. */
     adornmentsHook?: (adornments: IColumnHeaderAdornment[]) => void;
-    /** Adds sections to the column's menu, after `addColumnMenuSectionsHook`. */
+    /** Adds sections to the column's menu, after `headers.hooks.menuSections`. */
     menuSectionsHook?: (sections: IColumnMenuSection[]) => void;
-    /** Changes the items of the column's menu, after `addColumnMenuItemsHook`. */
+    /** Changes the items of the column's menu, after `headers.hooks.menuItems`. */
     menuItemsHook?: (items: IContextualMenuItem[]) => void;
 }
 

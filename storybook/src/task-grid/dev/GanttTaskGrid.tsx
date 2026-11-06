@@ -98,7 +98,7 @@ const weekOfYear = (date: Date) => {
 const fiscalScaleModule = {
     name: 'fiscalScale',
     onLoad: (gantt: any) => {
-        gantt.services.observe('zooming', (zooming: any) => zooming.addScaleLabelHook((result: { label: string }, cell: { date: Date, unit: string, row: number }) => {
+        gantt.services.observe('zooming', (zooming: any) => zooming.hooks.scaleLabel.add((result: { label: string }, cell: { date: Date, unit: string, row: number }) => {
             if (cell.unit === 'quarter') {
                 const fiscalYear = cell.date.getMonth() >= 6 ? cell.date.getFullYear() + 1 : cell.date.getFullYear()
                 result.label = 'FY' + String(fiscalYear).slice(2) + ' Q' + (Math.floor(((cell.date.getMonth() + 6) % 12) / 3) + 1)

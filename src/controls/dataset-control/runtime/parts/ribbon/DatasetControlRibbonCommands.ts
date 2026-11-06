@@ -31,7 +31,7 @@ export class DatasetControlRibbonCommands {
     public attach(ribbon: IRibbon): () => void {
         this._ribbon = ribbon;
         const unsubscribes = [
-            ribbon.addCommandsHook(this._addCommands),
+            ribbon.hooks.commands.add(this._addCommands),
             this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected),
             this._provider.addEventListener('onRecordColumnValueChanged', this._onDirtyStateChanged),
             this._provider.addEventListener('onAfterSaved', this._onDirtyStateChanged),

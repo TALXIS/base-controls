@@ -1,7 +1,7 @@
 import type { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IDataProvider, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IDatasetControlResolvedView } from "@controls/dataset-control";
 import type { IUserQuerySavedValueMap } from "@controls/dataset-control/modules/user-queries/interfaces";
-import type { IEventSubscriber } from "@core";
+import type { IEventSubscriber, IHookPoint } from "@core";
 import type { IRecordTree } from "./record-tree";
 
 /** Which columns of a task record hold what the task grid works with. */
@@ -211,6 +211,11 @@ export interface ITaskColumnMatcher {
 /** Holds the tasks back from the tree until it settles. */
 export type TaskLoadWaiter = (parameters: { taskIds: string[] }) => Promise<void> | void;
 
+export interface ITaskDataProviderHooks {
+    /** Adds to the available columns that complete the columns of every view. */
+    readonly availableColumns: IHookPoint<TaskAvailableColumnsHook>;
+}
+
 /** A provider of tasks, every task loaded at once and shown as a tree. */
 export interface ITaskDataProvider extends IDataProvider {
     readonly taskEvents: IEventSubscriber<ITaskDataProviderEvents>;
@@ -255,8 +260,7 @@ export interface ITaskDataProvider extends IDataProvider {
     updateTaskData(rawRecords: IRawRecord[]): void;
     /** Applies what the store reports the backend changed. */
     synchronize(): Promise<void>;
-    /** Adds to the available columns that complete the columns of every view. */
-    addAvailableColumnsHook(hook: TaskAvailableColumnsHook, priority?: number): () => void;
+    readonly hooks: ITaskDataProviderHooks;
     /** Loads and saves the columns the handler claims in place of the store. */
     addColumnHandler(handler: ITaskColumnHandler): () => void;
     /** Loads the column hidden, whatever the view shows. */

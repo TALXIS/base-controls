@@ -104,7 +104,7 @@ export class CustomColumns implements ICustomColumns {
                 isHandledColumn: columnName => this.isCustomColumn(columnName),
                 saveValue: (record, column, value) => this._store.saveValue(record, column, value),
             }),
-            provider.addAvailableColumnsHook(this._addAvailableColumns),
+            provider.hooks.availableColumns.add(this._addAvailableColumns),
         ];
         return () => removers.forEach(remove => remove());
     };
@@ -130,8 +130,8 @@ export class CustomColumns implements ICustomColumns {
     };
 
     private _onEditColumnsAvailable = (editColumns: IDatasetControlEditColumns): void => {
-        editColumns.addCommandsHook(this._addCommands);
-        editColumns.addColumnCommandsHook(this._addColumnCommands);
+        editColumns.hooks.commands.add(this._addCommands);
+        editColumns.hooks.columnCommands.add(this._addColumnCommands);
     };
 
     private _addCommands = (commands: ICommandBarItemProps[], session: DatasetControlEditColumnsSession): void => {

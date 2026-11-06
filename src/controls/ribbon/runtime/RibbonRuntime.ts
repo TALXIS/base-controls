@@ -1,5 +1,5 @@
 import { EventEmitter } from "@talxis/client-libraries";
-import { HookRegistry, IEventSubscriber, IRuntime, RuntimeLifecycle } from "@core";
+import { HookRegistry, IEventSubscriber, IRuntime, RuntimeLifecycle, IHookPoint } from "@core";
 import { IRibbonActionCommand, IRibbonCommand } from "../interfaces";
 
 /** What the ribbon raises; its init and teardown are on `lifecycle.events`. */
@@ -18,6 +18,11 @@ export interface IRibbonEvents {
 /** A hook over the commands the ribbon shows, which it adds to or changes in place. */
 export type RibbonCommandsHook = (commands: IRibbonCommand[]) => void;
 
+export interface IRibbonHooks {
+    /** The commands, run after `onLoad` on every load; call `reload` to apply it now. */
+    readonly commands: IHookPoint<RibbonCommandsHook>;
+}
+
 /** The ribbon's commands, and which of them are running. */
 export interface IRibbon extends IRuntime {
     readonly events: IEventSubscriber<IRibbonEvents>;
@@ -26,12 +31,7 @@ export interface IRibbon extends IRuntime {
     isRunning(commandId: string): boolean;
     /** Loads the commands again in place; the latest call wins. */
     reload(): Promise<void>;
-    /**
-     * Adds a hook over the commands, run after `onLoad` on every load; call `reload` to apply it now.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addCommandsHook(hook: RibbonCommandsHook, priority?: number): () => void;
+    readonly hooks: IRibbonHooks;
 }
 
 export interface IRibbonRuntimeParameters {
@@ -45,7 +45,9 @@ export class RibbonRuntime implements IRibbon {
     });
     public readonly events = new EventEmitter<IRibbonEvents>();
     private _onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
-    private _commandsHooks = new HookRegistry<RibbonCommandsHook>();
+    public readonly hooks = {
+        commands: new HookRegistry<RibbonCommandsHook>(),
+    };
     private _commands?: IRibbonCommand[];
     //a slower earlier reload must not overwrite a newer one
     private _latestReload?: Promise<IRibbonCommand[]>;
@@ -61,10 +63,6 @@ export class RibbonRuntime implements IRibbon {
 
     public isRunning(commandId: string): boolean {
         return this._runningCommandIds.has(commandId);
-    }
-
-    public addCommandsHook(hook: RibbonCommandsHook, priority?: number): () => void {
-        return this._commandsHooks.add(hook, priority);
     }
 
     public async reload(): Promise<void> {
@@ -113,7 +111,7 @@ export class RibbonRuntime implements IRibbon {
     private async _loadCommands(): Promise<IRibbonCommand[]> {
         //a copy: the hooks change it in place, and onLoad may return the same array every time
         const commands = [...await this._onLoad?.(this) ?? []];
-        this._commandsHooks.apply(commands);
+        this.hooks.commands.apply(commands);
         return commands;
     }
 }

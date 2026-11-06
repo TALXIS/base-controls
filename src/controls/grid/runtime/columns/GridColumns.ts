@@ -1,7 +1,7 @@
 import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressHeaderKeyboardEventParams, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "ag-grid-community";
 import { DataProvider, DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
-import { HookRegistry, IAlignment } from "@core";
+import { HookRegistry, IAlignment, IHookPoint } from "@core";
 import { CellFieldRenderer } from "../../adapters/cells/field-cell-renderer/CellFieldRenderer";
 import { IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../adapters/column-header/ColumnHeaderRenderer";
@@ -9,7 +9,6 @@ import { IGridColumnContext } from "./colDef";
 import { IGridServiceLocatorInternal } from "..";
 import { GridColumnHeaders, IGridColumnHeaders, IGridColumnHeadersInternal } from "../column-header";
 import { CellEmptyRenderer } from "../../adapters/cells/empty-cell-renderer/CellEmptyRenderer";
-
 
 /** What a column is worth when it does not say. */
 export const DEFAULT_COLUMN_WIDTH = 200;
@@ -33,16 +32,16 @@ export interface IGridColumnsEvents {
     onColumnsChanged: (columns: IColumn[]) => void;
 }
 
+export interface IGridColumnsHooks {
+    /** The column definitions. */
+    readonly columnDefinitions: IHookPoint<GridColumnDefinitionsHook>;
+}
+
 /** The columns the grid gives AG Grid. */
 export interface IGridColumns {
     /** What a column header offers, assembled from what the modules added. */
     readonly headers: IGridColumnHeaders;
-    /**
-     * Adds a hook over the column definitions.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void;
+    readonly hooks: IGridColumnsHooks;
 }
 
 /** What the grid's own parts read of it. */
@@ -55,7 +54,9 @@ export interface IGridColumnsInternal extends IGridColumns {
 
 export class GridColumns implements IGridColumnsInternal {
     private _services: IGridServiceLocatorInternal;
-    private _hooks = new HookRegistry<GridColumnDefinitionsHook>();
+    public readonly hooks = {
+        columnDefinitions: new HookRegistry<GridColumnDefinitionsHook>(),
+    };
     private _headers: IGridColumnHeadersInternal;
     public readonly events: IEventEmitter<IGridColumnsEvents> = new EventEmitter<IGridColumnsEvents>();
 
@@ -63,21 +64,17 @@ export class GridColumns implements IGridColumnsInternal {
         this._services = parameters.services;
         this._headers = new GridColumnHeaders({ services: parameters.services });
         //after every module's hook, so the caller sees the columns as the modules left them
-        this._hooks.add(this._applyColDefs, Number.MAX_SAFE_INTEGER);
+        this.hooks.columnDefinitions.add(this._applyColDefs, Number.MAX_SAFE_INTEGER);
     }
 
     public get headers(): IGridColumnHeadersInternal {
         return this._headers;
     }
 
-    public addColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void {
-        return this._hooks.add(hook, priority);
-    }
-
     public getColumnDefinitions(): ColDef<IRecord>[] {
         const columnDefs = this._provider.getColumns().filter(column => !column.isHidden).map(column => this._getColumnDefinition(column));
         const own = new Set(columnDefs);
-        this._hooks.apply(columnDefs);
+        this.hooks.columnDefinitions.apply(columnDefs);
         columnDefs.filter(columnDef => !own.has(columnDef)).forEach(columnDef => this._applyGridBehaviour(columnDef));
         return columnDefs;
     }
@@ -223,7 +220,6 @@ export class GridColumns implements IGridColumnsInternal {
     private _getField(record: IRecord, columnName: string): IGridField {
         return this._services.get('fields').get(record, columnName);
     }
-
 
     private get _settings() {
         return this._services.get('settings');

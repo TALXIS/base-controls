@@ -53,8 +53,8 @@ export class GridGanttSplitSync {
 
     private _onGridAvailable = (grid: IGrid): (() => void) => {
         this._grid = grid;
-        grid.addAgGridInitialOptionsHook(this._onAgGridInitialOptions);
-        grid.services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 1);
+        grid.hooks.agGridInitialOptions.add(this._onAgGridInitialOptions);
+        grid.services.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 1);
         return () => {
             this._destroySync();
             this._grid = undefined;

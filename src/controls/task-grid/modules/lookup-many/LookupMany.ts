@@ -197,7 +197,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
         const removers = [
-            provider.addAvailableColumnsHook(this._addColumns),
+            provider.hooks.availableColumns.add(this._addColumns),
             provider.addColumnHandler({ isHandledColumn: columnName => !!this.getColumn(columnName), saveValue: this._saveValue }),
             provider.addColumnMatcher(this._matcher),
         ];
@@ -249,7 +249,7 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     //after the editing module whose editor this replaces
     private _onGridAvailable = (grid: IGrid): void => {
-        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

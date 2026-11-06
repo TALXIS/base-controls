@@ -56,9 +56,9 @@ export class GridSorting implements IGridSorting {
 
     private _addHooks(): void {
         const gridServices = this._services.get('gridServices');
-        gridServices.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.sorting);
-        gridServices.get('columns').headers.addColumnMenuSectionsHook(this._onMenuSection, GRID_MODULE_PRIORITY.sorting);
-        gridServices.get('columns').headers.addColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.sorting);
+        gridServices.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.sorting);
+        gridServices.get('columns').headers.hooks.menuSections.add(this._onMenuSection, GRID_MODULE_PRIORITY.sorting);
+        gridServices.get('columns').headers.hooks.adornments.add(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.sorting);
     }
 
     public getSorting(): Sorting {

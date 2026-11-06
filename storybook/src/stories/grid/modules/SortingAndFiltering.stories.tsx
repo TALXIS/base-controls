@@ -56,7 +56,7 @@ Neither module raises an event when the sort or the filter changes: read \`provi
 
 An unfiltered column's callout opens on its data type's own operator: *Contains* for text, *On* for dates, *Contains data* for files and images, and *Equals* for the rest, so keep that operator in a narrowed list. On an option set or a yes/no column, *Equals* and *Does not equal* take several options and reach the provider as \`In\` and \`NotIn\`, so leave \`In\` and \`NotIn\` out of their lists. Dates are compared by day.
 
-\`filtering.addFilterControlParametersHook(hook, priority?)\` changes the parameters the callout passes its controls, such as a text box's \`Placeholder\`. The hook gets \`(result, { column, control, index })\`: \`control\` is \`'operator'\` or \`'value'\`, and \`index\` is \`1\` for the second value of *Between*. It runs after the grid's own parameters, so it can change those too: value controls get \`EnableOptionSetColors\` from the grid's \`enableOptionSetColors\`, and a lookup cannot create a record from the callout.
+\`filtering.hooks.filterControlParameters.add(hook, priority?)\` changes the parameters the callout passes its controls, such as a text box's \`Placeholder\`. The hook gets \`(result, { column, control, index })\`: \`control\` is \`'operator'\` or \`'value'\`, and \`index\` is \`1\` for the second value of *Between*. It runs after the grid's own parameters, so it can change those too: value controls get \`EnableOptionSetColors\` from the grid's \`enableOptionSetColors\`, and a lookup cannot create a record from the callout.
 
 {{story: Offer only the filters that make sense}}
 
@@ -78,7 +78,7 @@ Both modules take \`components\` (see *Options*). How slots work: [**Pieces and 
 | Filtering | \`filterIcon\` | \`onRenderIcon\` | \`GridFilteringIconComponents\` | The funnel of a filtered column |
 | | \`filterCallout\` | \`onRenderCallout\`, \`onRenderHeader\`, \`onRenderTitle\`, \`onRenderCloseButton\` | \`FilteringUiCalloutComponents\` | The frame of the callout a filter is set in |
 
-What the callout holds, the operator and value controls and the *Apply* and *Clear* buttons, has no slots; change the controls' parameters with \`addFilterControlParametersHook\`. To change the arrow or the funnel on one column only, replace or remove the header adornment keyed \`'sort'\` or \`'filter'\` in that column's \`context.header.adornmentsHook\`.
+What the callout holds, the operator and value controls and the *Apply* and *Clear* buttons, has no slots; change the controls' parameters with \`hooks.filterControlParameters\`. To change the arrow or the funnel on one column only, replace or remove the header adornment keyed \`'sort'\` or \`'filter'\` in that column's \`context.header.adornmentsHook\`.
 
 {{story: Draw your own sort arrows}}
 
@@ -110,7 +110,7 @@ The modules are \`grid.modules.find('sorting')\` and \`grid.modules.find('filter
 | \`getColumnFilter(columnName)\` | The column's \`ColumnFilter\`, applied or not. |
 | \`removeColumnFilter(columnName, saveToDataset?)\` | With \`saveToDataset: true\`, takes the column's condition out of the provider's filter and reloads, as *Clear* does. Without it, only a condition not yet applied is dropped. |
 | \`getFiltering()\` | The \`Filtering\` helper from \`@talxis/client-libraries\` that holds every column's filter. |
-| \`addFilterControlParametersHook(hook, priority?)\` | See *Narrow what a filter offers*. |
+| \`hooks.filterControlParameters.add(hook, priority?)\` | See *Narrow what a filter offers*. |
 | \`getFilterControlParameters(parameters, { column, control, index })\` | The parameters a callout control gets: yours, the grid's defaults, then the hooks. |
 | \`components\` | The \`components\` the module was given. |
 | \`events\` | \`onFilterOpened(columnName)\` and \`onFilterClosed()\`, which *Apply* fires too. No event says what was applied. |
@@ -175,7 +175,7 @@ export const OfferOnlyTheFiltersThatMakeSense: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`SupportedFilterConditionOperators\` narrows each column's operators, and \`addFilterControlParametersHook\` puts a hint in the text boxes. Try: filter *Subject*.`,
+                story: `\`SupportedFilterConditionOperators\` narrows each column's operators, and \`hooks.filterControlParameters\` puts a hint in the text boxes. Try: filter *Subject*.`,
             },
         },
     },

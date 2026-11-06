@@ -21,7 +21,7 @@ Outside the grid, such as in the ribbon above, keep the grid \`onSetup\` passes 
 | \`modules\` | The modules the grid was given, by name. See *Modules* below. |
 | \`events\` | \`onDataLoaded\`. See *Events* below. |
 | \`lifecycle\` | The mount's status and events, such as \`onReady\` and \`onDestroyed\`. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
-| \`addAgGridOptionsHook\`, \`addAgGridInitialOptionsHook\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
+| \`hooks.agGridOptions\`, \`hooks.agGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
 | \`openRecord(params)\` | Opens a record as a double-click does: through \`onOpenRecord\` when the grid has one. |
 | \`getLabels(set)\` | A set of labels as the grid resolves them. See [**Localization**](?path=/docs/concepts-localization--overview). |
 
@@ -103,10 +103,10 @@ The grid runs the hooks and the column callbacks when it draws, and nothing tell
 | \`fields\` | \`get(record, columnName)\` returns an \`IGridField\` with \`getValue()\`, \`getFormattedValue()\`, \`isValid()\` and \`setValue(value)\`, which saves as a cell would. |
 | \`cells\` | The cells on screen: \`render()\`, \`getCells()\`, \`getCell(record, columnName)\`, and the cell hooks. |
 | \`columns\` | The column definitions hook, and \`headers\`: \`render()\` and the header hooks. |
-| \`rows\` | \`addRowHeightHook\`, \`addRowClass(className, rule)\` and \`refreshRowClasses(records)\`. |
+| \`rows\` | \`hooks.height\`, \`addRowClass(className, rule)\` and \`refreshRowClasses(records)\`. |
 | \`validation\` | The validation hook. |
-| \`surfaces\` | \`addSurfacesHook\`, for what a module draws inside the grid. See [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). |
-| \`gridTheme\` | The AG Grid theme and the root element's styles: \`addThemeHook\`, \`addStylesHook\`. |
+| \`surfaces\` | \`hooks.surfaces\`, for what a module draws inside the grid. See [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). |
+| \`gridTheme\` | The AG Grid theme and the root element's styles: \`hooks.theme\`, \`hooks.styles\`. |
 | \`state\` | The grid's store under its \`stateKey\`: \`get\`, \`set\`, \`delete\`. See [**State**](?path=/docs/controls-grid-state--overview). |
 | \`settings\` | The props, with their defaults applied. |
 | \`labels\` | The labels the grid mounted with: \`getLabels(set)\`. |

@@ -21,7 +21,7 @@ export class ServerSideRowModel implements IGridRowModel {
     constructor(parameters: IServerSideRowModelParameters) {
         this._services = parameters.services;
         this._datasource = new ServerSideDatasource(this._services);
-        this._services.get('grid').addAgGridOptionsHook(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
+        this._services.get('grid').hooks.agGridOptions.add(this._onAgGridOptions, GRID_MODULE_PRIORITY.rowModel);
     }
 
     //AG Grid keeps what is open across the purge, by row id

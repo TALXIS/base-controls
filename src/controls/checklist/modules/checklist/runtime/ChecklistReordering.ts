@@ -21,9 +21,9 @@ export class ChecklistReordering {
     constructor(parameters: IChecklistReorderingParameters) {
         this._grid = parameters.grid;
         this._checklist = parameters.checklist;
-        this._grid.addAgGridInitialOptionsHook(this._onAgGridInitialOptions);
-        this._grid.addAgGridOptionsHook(this._onAgGridOptions);
-        this._grid.services.get('gridTheme').addStylesHook(this._onStyles);
+        this._grid.hooks.agGridInitialOptions.add(this._onAgGridInitialOptions);
+        this._grid.hooks.agGridOptions.add(this._onAgGridOptions);
+        this._grid.services.get('gridTheme').hooks.styles.add(this._onStyles);
         this._grid.modules.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
         this._grid.services.observe('gridApi', this._onGridApiAvailable);
     }

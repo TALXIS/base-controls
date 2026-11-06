@@ -21,7 +21,7 @@ export class GridClipboard {
 
     private _addHooks(): void {
         const grid = this._services.get('grid');
-        grid.addAgGridOptionsHook(this._onAgGridOptions, GRID_MODULE_PRIORITY.clipboard);
+        grid.hooks.agGridOptions.add(this._onAgGridOptions, GRID_MODULE_PRIORITY.clipboard);
     }
 
     private _onAgGridOptions = (result: IGridAgGridOptions): void => {

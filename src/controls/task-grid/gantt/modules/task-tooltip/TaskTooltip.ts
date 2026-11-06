@@ -23,7 +23,7 @@ export class TaskTooltip implements ITaskTooltip {
 
     constructor(gantt: IGantt, parameters: ITaskTooltipParameters) {
         this._parameters = parameters;
-        gantt.surfaces.addSurfacesHook(this._onSurfaces);
+        gantt.surfaces.hooks.surfaces.add(this._onSurfaces);
     }
 
     public getStatusColumnName(): string | undefined {

@@ -1,4 +1,4 @@
-import { IEventSubscriber, HookRegistry } from "@core";
+import { IEventSubscriber, HookRegistry, IHookPoint } from "@core";
 import { LabelsOf } from "@labels";
 import { createElement } from "react";
 import { IContextualMenuItem } from "@fluentui/react";
@@ -18,7 +18,6 @@ declare module "../../interfaces" {
         filtering: IGridFiltering;
     }
 }
-
 
 /** What changed about the filter a column header has open. */
 export interface IGridFilteringEvents {
@@ -46,6 +45,11 @@ export interface IGridFilteringParameters {
     services: IGridFilteringServiceLocator;
 }
 
+export interface IGridFilteringHooks {
+    /** The parameters the filter callout's controls are handed. */
+    readonly filterControlParameters: IHookPoint<GridFilterControlParametersHook>;
+}
+
 /** Filtering the grid by a column. */
 export interface IGridFiltering {
     /** Subscribe to the filter callout's events. */
@@ -64,12 +68,7 @@ export interface IGridFiltering {
     openFilter(columnName: string, target?: HTMLElement): void;
     /** Closes the filter callout. */
     closeFilter(): void;
-    /**
-     * Adds a hook over the parameters the filter callout's controls are handed.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void;
+    readonly hooks: IGridFilteringHooks;
     /** Which column's filter callout is open, if any. */
     getOpenColumnName(): string | undefined;
     /** What the open filter is drawn against: the header it was opened from. */
@@ -86,7 +85,9 @@ export class GridFiltering implements IGridFiltering {
     public readonly events: IEventEmitter<IGridFilteringEvents> = new EventEmitter<IGridFilteringEvents>();
     private _openColumnName?: string;
     private _openTarget?: HTMLElement;
-    private _filterControlParametersHooks = new HookRegistry<GridFilterControlParametersHook>();
+    public readonly hooks = {
+        filterControlParameters: new HookRegistry<GridFilterControlParametersHook>(),
+    };
 
     constructor(parameters: IGridFilteringParameters) {
         this._services = parameters.services;
@@ -94,16 +95,12 @@ export class GridFiltering implements IGridFiltering {
         this._addHooks();
     }
 
-    public addFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void {
-        return this._filterControlParametersHooks.add(hook, priority);
-    }
-
     public getFilterControlParameters(parameters: IParameters, params: Parameters<GridFilterControlParametersHook>[1]): IParameters {
         const result = { ...parameters };
         if (params.control === 'value') {
             Object.assign(result, this._getDefaultValueControlParameters(result, params.column));
         }
-        this._filterControlParametersHooks.apply(result, params);
+        this.hooks.filterControlParameters.apply(result, params);
         return result;
     }
 
@@ -123,15 +120,14 @@ export class GridFiltering implements IGridFiltering {
     private _addHooks(): void {
         const gridServices = this._services.get('gridServices');
         //the callout is a surface over the grid
-        gridServices.get('surfaces').addSurfacesHook(this._onSurfaces, GRID_MODULE_PRIORITY.filtering);
-        gridServices.get('columns').headers.addColumnMenuSectionsHook(this._onMenuSection, GRID_MODULE_PRIORITY.filtering);
-        gridServices.get('columns').headers.addColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('surfaces').hooks.surfaces.add(this._onSurfaces, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columns').headers.hooks.menuSections.add(this._onMenuSection, GRID_MODULE_PRIORITY.filtering);
+        gridServices.get('columns').headers.hooks.adornments.add(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.filtering);
     }
 
     private _onSurfaces = (surfaces: IGridSurface[]): void => {
         surfaces.push({ key: 'filterCallout', onRender: () => createElement(FilterCalloutHost) });
     };
-
 
     public getFiltering(): Filtering {
         return this._filtering;
@@ -220,7 +216,6 @@ export class GridFiltering implements IGridFiltering {
             onRender: () => ({ ...GridFilteringIconComponents, ...this.components.filterIcon }).onRenderIcon({ iconName: 'Filter' }),
         });
     };
-
 
     private _withUnsavedChangesBlocker(write: () => void): void {
         (this._provider as IInternalDataProvider).executeWithUnsavedChangesBlocker(write);

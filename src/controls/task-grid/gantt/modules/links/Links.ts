@@ -74,9 +74,9 @@ export class Links implements ILinks {
         if (!this._dependencies) {
             return;
         }
-        gantt.addChartConfigHook(this._configureChart);
-        gantt.services.get('theme').addStylesHook((result, theme) => result.styles.push(getLinksStyles(theme)));
-        gantt.surfaces.addSurfacesHook(this._onSurfaces);
+        gantt.hooks.chartConfig.add(this._configureChart);
+        gantt.services.get('theme').hooks.styles.add((result, theme) => result.styles.push(getLinksStyles(theme)));
+        gantt.surfaces.hooks.surfaces.add(this._onSurfaces);
         gantt.events.addEventListener('onTasksParsed', this._syncLinks);
         this._offDependenciesChanged = this._dependencies.events.addEventListener('onDependenciesChanged', this._syncLinks);
         gantt.services.observe('chart', this._onChartReady);

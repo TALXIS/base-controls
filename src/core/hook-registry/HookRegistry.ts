@@ -4,6 +4,17 @@ interface IHookEntry<THook> {
     priority: number;
 }
 
+/** One place to hook into; what `add` returns takes the hook back off. */
+export interface IHookPoint<THook extends (...args: any[]) => void> {
+    /** @param priority Ascending: a higher number runs later. */
+    add(hook: THook, priority?: number): () => void;
+}
+
+export interface IHookRegistryParameters {
+    /** Called after a hook is added or taken off. */
+    onChange?: () => void;
+}
+
 /**
  * The hooks something was given, in the order they run.
  *
@@ -14,8 +25,13 @@ interface IHookEntry<THook> {
  * A hook returns nothing: it mutates what it is handed rather than replacing it, so the owner keeps
  * whatever it was going to hand on. See `SavedQueryHook` or `GridColumnDefinitionsHook`.
  */
-export class HookRegistry<THook extends (...args: any[]) => void> {
+export class HookRegistry<THook extends (...args: any[]) => void> implements IHookPoint<THook> {
     private _hooks: IHookEntry<THook>[] = [];
+    private _onChange?: () => void;
+
+    constructor(parameters: IHookRegistryParameters = {}) {
+        this._onChange = parameters.onChange;
+    }
 
     /**
      * @param priority Ascending: a higher number runs later.
@@ -24,8 +40,10 @@ export class HookRegistry<THook extends (...args: any[]) => void> {
     public add(hook: THook, priority: number = 0): () => void {
         this._hooks.push({ hook, priority });
         this._hooks.sort((left, right) => left.priority - right.priority);
+        this._onChange?.();
         return () => {
             this._hooks = this._hooks.filter(entry => entry.hook !== hook);
+            this._onChange?.();
         };
     }
 

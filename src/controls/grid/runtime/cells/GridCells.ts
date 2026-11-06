@@ -2,7 +2,7 @@ import { ICommandBarItemProps } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
 import { CellFocusedEvent } from "ag-grid-community";
 import { EventEmitter, ICustomColumnControl, IEventEmitter, IRecord } from "@talxis/client-libraries";
-import { HookRegistry, IEventSubscriber } from "@core";
+import { HookRegistry, IEventSubscriber, IHookPoint } from "@core";
 import { IParameters } from "@pcf/interfaces";
 import { IGridServiceLocatorInternal } from "..";
 import { GridCell, IGridCell, IGridCellParameters } from "./GridCell";
@@ -58,6 +58,19 @@ export interface IGridCellsParameters {
     services: IGridServiceLocatorInternal;
 }
 
+export interface IGridCellsHooks {
+    /** What draws a cell. */
+    readonly control: IHookPoint<GridControlHook>;
+    /** The parameters the control drawing a cell is handed. */
+    readonly controlParameters: IHookPoint<GridControlParametersHook>;
+    /** The theme a cell is drawn in. */
+    readonly theme: IHookPoint<GridCellThemeHook>;
+    /** Whether a cell is waiting. */
+    readonly loading: IHookPoint<GridCellLoadingHook>;
+    /** The commands a cell offers. */
+    readonly commands: IHookPoint<GridCellCommandsHook>;
+}
+
 /** Every cell the grid has on screen. */
 export interface IGridCells {
     /** Draws every cell on screen again, for a change their records do not carry. */
@@ -66,36 +79,7 @@ export interface IGridCells {
     getCells(): IGridCell[];
     /** The cell drawing this field, where one is rendered. */
     getCell(record: IRecord, columnName: string): IGridCell | undefined;
-    /**
-     * Adds a hook over what draws a cell.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addControlHook(hook: GridControlHook, priority?: number): () => void;
-    /**
-     * Adds a hook over the parameters the control drawing a cell is handed.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addControlParametersHook(hook: GridControlParametersHook, priority?: number): () => void;
-    /**
-     * Adds a hook over the theme a cell is drawn in.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addCellThemeHook(hook: GridCellThemeHook, priority?: number): () => void;
-    /**
-     * Adds a hook over whether a cell is waiting.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addCellLoadingHook(hook: GridCellLoadingHook, priority?: number): () => void;
-    /**
-     * Adds a hook over the commands a cell offers.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addCellCommandsHook(hook: GridCellCommandsHook, priority?: number): () => void;
+    readonly hooks: IGridCellsHooks;
 }
 
 /** What the grid's own parts read of it. */
@@ -132,11 +116,13 @@ export interface IGridCellsInternal extends IGridCells {
 export class GridCells implements IGridCellsInternal {
     private _services: IGridServiceLocatorInternal;
     private _renderedCells = new Map<string, IGridCell>();
-    private _controlHooks = new HookRegistry<GridControlHook>();
-    private _controlParametersHooks = new HookRegistry<GridControlParametersHook>();
-    private _cellThemeHooks = new HookRegistry<GridCellThemeHook>();
-    private _cellLoadingHooks = new HookRegistry<GridCellLoadingHook>();
-    private _cellCommandsHooks = new HookRegistry<GridCellCommandsHook>();
+    public readonly hooks = {
+        control: new HookRegistry<GridControlHook>(),
+        controlParameters: new HookRegistry<GridControlParametersHook>(),
+        theme: new HookRegistry<GridCellThemeHook>(),
+        loading: new HookRegistry<GridCellLoadingHook>(),
+        commands: new HookRegistry<GridCellCommandsHook>(),
+    };
     public readonly events: IEventEmitter<IGridCellsEvents> = new EventEmitter<IGridCellsEvents>();
 
     constructor(parameters: IGridCellsParameters) {
@@ -175,44 +161,24 @@ export class GridCells implements IGridCellsInternal {
         return this.getCells().find(cell => cell.getRecord().getRecordId() === record.getRecordId() && cell.getColumnName() === columnName);
     }
 
-    public addControlHook(hook: GridControlHook, priority?: number): () => void {
-        return this._controlHooks.add(hook, priority);
-    }
-
-    public addControlParametersHook(hook: GridControlParametersHook, priority?: number): () => void {
-        return this._controlParametersHooks.add(hook, priority);
-    }
-
-    public addCellThemeHook(hook: GridCellThemeHook, priority?: number): () => void {
-        return this._cellThemeHooks.add(hook, priority);
-    }
-
-    public addCellLoadingHook(hook: GridCellLoadingHook, priority?: number): () => void {
-        return this._cellLoadingHooks.add(hook, priority);
-    }
-
-    public addCellCommandsHook(hook: GridCellCommandsHook, priority?: number): () => void {
-        return this._cellCommandsHooks.add(hook, priority);
-    }
-
     public applyControlHooks(result: { control: Required<ICustomColumnControl> }, parameters: IGridCellHookParameters): void {
-        this._controlHooks.apply(result, parameters);
+        this.hooks.control.apply(result, parameters);
     }
 
     public applyControlParametersHooks(result: IParameters, parameters: IGridCellHookParameters): void {
-        this._controlParametersHooks.apply(result, parameters);
+        this.hooks.controlParameters.apply(result, parameters);
     }
 
     public applyCellThemeHooks(builder: ThemeBuilder, parameters: { record: IRecord; columnName: string }): void {
-        this._cellThemeHooks.apply(builder, parameters);
+        this.hooks.theme.apply(builder, parameters);
     }
 
     public applyCellLoadingHooks(result: IGridCellLoading, parameters: { record: IRecord; columnName: string }): void {
-        this._cellLoadingHooks.apply(result, parameters);
+        this.hooks.loading.apply(result, parameters);
     }
 
     public applyCellCommandsHooks(result: IGridCellCommands, parameters: { record: IRecord; columnName: string }): void {
-        this._cellCommandsHooks.apply(result, parameters);
+        this.hooks.commands.apply(result, parameters);
     }
 
     private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {

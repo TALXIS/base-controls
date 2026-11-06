@@ -300,7 +300,7 @@ const GridExample = () => {
             runtimeRef.current = taskRuntime
         })
         //the part exists once TaskDatasetControl.Settings mounts
-        control.parts.observe('taskSettings', (settings: any) => settings.addSettingsHook((items: any[]) => items.push({
+        control.parts.observe('taskSettings', (settings: any) => settings.hooks.settings.add((items: any[]) => items.push({
             key: 'showButtons',
             label: 'Show the buttons',
             isChecked: showButtonsRef.current,

@@ -1,4 +1,4 @@
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 import type { GanttStatic, Task } from "dhtmlx-gantt";
 import type { GridApi, IRowNode } from "ag-grid-community";
 import type { IRecord } from "@talxis/client-libraries";
@@ -9,6 +9,15 @@ import { GANTT_TASK_DONE_CLASS, GANTT_TASK_INACTIVE_CLASS, GANTT_TASK_LOCKED_CLA
 import type { IGanttSchedule } from "../schedule";
 import { GanttTaskMotion } from "./GanttTaskMotion";
 
+export interface IGanttTasksHooks {
+    /** Each task as it is handed to the chart. */
+    readonly task: IHookPoint<GanttTaskHook>;
+    /** The class names of each bar. */
+    readonly taskClass: IHookPoint<GanttTaskClassHook>;
+    /** The class names of each task's row. */
+    readonly rowClass: IHookPoint<GanttRowClassHook>;
+}
+
 /** The chart's tasks: exactly the rows the grid displays, in its order and at its row heights. */
 export interface IGanttTasks {
     getRecord(taskId: string): IRecord | undefined;
@@ -18,21 +27,7 @@ export interface IGanttTasks {
     isSaving(taskId: string): boolean;
     /** The displayed tasks, top down. */
     getTaskIds(): string[];
-    /**
-     * Adds a hook over each task as it is handed to the chart.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addTaskHook(hook: GanttTaskHook, priority?: number): () => void;
-    /**
-     * Adds a hook over the class names of each bar.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addTaskClassHook(hook: GanttTaskClassHook, priority?: number): () => void;
-    /**
-     * Adds a hook over the class names of each task's row.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addRowClassHook(hook: GanttRowClassHook, priority?: number): () => void;
+    readonly hooks: IGanttTasksHooks;
     /** Rebuilds every task, such as after what a task hook reads has changed. */
     parse(): void;
 }
@@ -81,9 +76,11 @@ export class GanttTasks implements IGanttTasks {
     private _scheduledUpdateFrame?: number;
     private _removers: (() => void)[] = [];
     private _motion: GanttTaskMotion;
-    private _taskHooks = new HookRegistry<GanttTaskHook>();
-    private _taskClassHooks = new HookRegistry<GanttTaskClassHook>();
-    private _rowClassHooks = new HookRegistry<GanttRowClassHook>();
+    public readonly hooks = {
+        task: new HookRegistry<GanttTaskHook>(),
+        taskClass: new HookRegistry<GanttTaskClassHook>(),
+        rowClass: new HookRegistry<GanttRowClassHook>(),
+    };
 
     constructor(parameters: IGanttTasksParameters) {
         this._chart = parameters.chart;
@@ -123,18 +120,6 @@ export class GanttTasks implements IGanttTasks {
 
     public getTaskIds(): string[] {
         return this._taskIds;
-    }
-
-    public addTaskHook(hook: GanttTaskHook, priority?: number): () => void {
-        return this._taskHooks.add(hook, priority);
-    }
-
-    public addTaskClassHook(hook: GanttTaskClassHook, priority?: number): () => void {
-        return this._taskClassHooks.add(hook, priority);
-    }
-
-    public addRowClassHook(hook: GanttRowClassHook, priority?: number): () => void {
-        return this._rowClassHooks.add(hook, priority);
     }
 
     public parse(): void {
@@ -199,7 +184,7 @@ export class GanttTasks implements IGanttTasks {
         if (this.isSaving(record.getRecordId())) {
             classNames.push(GANTT_TASK_SAVING_CLASS);
         }
-        this._taskClassHooks.apply(classNames, { record, task });
+        this.hooks.taskClass.apply(classNames, { record, task });
         return classNames.join(' ');
     }
 
@@ -209,7 +194,7 @@ export class GanttTasks implements IGanttTasks {
             return '';
         }
         const classNames: string[] = [];
-        this._rowClassHooks.apply(classNames, { record, task });
+        this.hooks.rowClass.apply(classNames, { record, task });
         return classNames.join(' ');
     }
 
@@ -279,7 +264,7 @@ export class GanttTasks implements IGanttTasks {
             bar_height: this._isSummary(taskId) ? SUMMARY_BAR_HEIGHT : TASK_BAR_HEIGHT,
             type: span && +span.end === +span.start ? 'milestone' : 'task',
         } as Task;
-        this._taskHooks.apply(task, { record });
+        this.hooks.task.apply(task, { record });
         return task;
     }
 

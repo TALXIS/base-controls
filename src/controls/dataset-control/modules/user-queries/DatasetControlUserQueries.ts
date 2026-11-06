@@ -52,8 +52,8 @@ export class DatasetControlUserQueries {
         this._datasetControl = datasetControl;
         this._store = store;
         this._commands = commands;
-        datasetControl.addViewsHook(this._addViews);
-        datasetControl.parts.observe('viewSwitcher', viewSwitcher => viewSwitcher.addItemsHook(this._addCommands));
+        datasetControl.hooks.views.add(this._addViews);
+        datasetControl.parts.observe('viewSwitcher', viewSwitcher => viewSwitcher.hooks.items.add(this._addCommands));
     }
 
     public get events(): IEventSubscriber<IDatasetControlUserQueriesEvents> {

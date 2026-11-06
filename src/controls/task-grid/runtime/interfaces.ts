@@ -2,7 +2,7 @@ import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react"
 import type { ITaskSavingChains } from "./saving";
 import type { IDatasetControl, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
 import type { IPcfContext } from "@pcf/interfaces";
-import type { IEventSubscriber, IRuntime, IServiceRegistry } from "@core";
+import type { IEventSubscriber, IRuntime, IServiceRegistry, IHookPoint } from "@core";
 import type { ILabels, ILabelSet, Labels } from "@labels";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "./provider";
 import type { ITaskActions } from "./tasks";
@@ -54,6 +54,11 @@ export interface ITaskExecuteParameters {
     error?: ITaskExecuteError;
 }
 
+export interface ITaskRuntimeHooks {
+    /** Every item `TaskDatasetControl.Ribbon` draws, menus included. */
+    readonly ribbonCommandUi: IHookPoint<TaskRibbonCommandUiHook>;
+}
+
 /** One mount of a `TaskDatasetControl`. */
 export interface ITaskRuntime extends IRuntime {
     readonly services: IServiceRegistry<ITaskRuntimeServiceMap>;
@@ -78,11 +83,7 @@ export interface ITaskRuntime extends IRuntime {
     /** Runs the operation under the loading overlay and shows its failure in a dialog. */
     execute<T>(operation: () => Promise<T>, options: ITaskExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
     execute<T>(operation: () => Promise<T>, parameters?: ITaskExecuteParameters): Promise<T>;
-    /**
-     * Adds a hook over every item `TaskDatasetControl.Ribbon` draws, menus included.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addRibbonCommandUiHook(hook: TaskRibbonCommandUiHook, priority?: number): () => void;
+    readonly hooks: ITaskRuntimeHooks;
     /** Copies of the items with every ribbon command UI hook applied, sub-menus included. */
     getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[];
 }

@@ -15,7 +15,7 @@ The parts are drawn in Fluent UI, and you can change what they draw at two level
 
 ## Pieces and slots
 
-The control and every part take a \`components\` map of pieces and slots: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). Every one of them is listed under *Reference*. Menu items and commands are added through the part, with \`addItemsHook\`, \`addCommandsHook\` or \`addColumnCommandsHook\`: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
+The control and every part take a \`components\` map of pieces and slots: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). Every one of them is listed under *Reference*. Menu items and commands are added through the part, with \`hooks.items\`, \`hooks.commands\` or \`hooks.columnCommands\`: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 
 ## Wrap the control
 

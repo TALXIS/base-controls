@@ -26,7 +26,9 @@ export interface ITaskRuntimeParameters {
 export class TaskRuntime implements ITaskRuntime {
     public readonly services = new ServiceLocator<ITaskRuntimeServiceMap>();
     private _getProps: () => ITaskDatasetControlProps;
-    private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
+    public readonly hooks = {
+        ribbonCommandUi: new HookRegistry<TaskRibbonCommandUiHook>(),
+    };
     public readonly tasks: ITaskActions = new TaskActions(this);
     private _executor = new TaskExecutor(this);
     private _savingChains = new TaskSavingChains();
@@ -38,7 +40,7 @@ export class TaskRuntime implements ITaskRuntime {
         this.services.register('pcfContext', () => parameters.pcfContext);
         this.services.register('savingChains', () => this._savingChains);
         this.services.observe('provider', provider => this._savingChains.attach(provider));
-        datasetControl.parts.observe('ribbon', ribbon => { ribbon.addCommandsHook(this._addCommands); });
+        datasetControl.parts.observe('ribbon', ribbon => { ribbon.hooks.commands.add(this._addCommands); });
         datasetControl.modules.observe('userQueries', userQueries => {
             userQueries.saveWithView('sorting', () => this.getProvider().getSorting(), sorting => this.getProvider().setSorting(sorting));
             userQueries.saveWithView('filtering', () => this.getProvider().getFiltering(), filtering => this.getProvider().setFiltering(filtering));
@@ -50,7 +52,7 @@ export class TaskRuntime implements ITaskRuntime {
     public async load(): Promise<IDatasetControlLoadResult<ITaskViewData>> {
         const { provider, fieldMapping, rootTaskId, views } = await this._getProps().onLoad(this.services.get('datasetControl'));
         provider.configure({ fieldMapping, rootTaskId, defaultCreatePosition: this._getProps().defaultCreatePosition, hoursPerDay: this._getProps().hoursPerDay });
-        provider.addAvailableColumnsHook(this._addPathColumn);
+        provider.hooks.availableColumns.add(this._addPathColumn);
         //modules waiting for it add columns a user view may keep
         this.services.register('provider', () => provider);
         provider.taskEvents.addEventListener('onTasksCreated', (records, parentId) => this._getProps().onTasksCreated?.(records, parentId));
@@ -104,10 +106,6 @@ export class TaskRuntime implements ITaskRuntime {
         return this._getProps().hoursPerDay ?? 24;
     }
 
-    public addRibbonCommandUiHook(hook: TaskRibbonCommandUiHook, priority?: number): () => void {
-        return this._ribbonCommandUiHooks.add(hook, priority);
-    }
-
     public getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[] {
         return items.map(this._applyRibbonCommandUi);
     }
@@ -120,7 +118,7 @@ export class TaskRuntime implements ITaskRuntime {
 
     private _applyRibbonCommandUi = (item: IContextualMenuItem): IContextualMenuItem => {
         const result = { ...item };
-        this._ribbonCommandUiHooks.apply(result);
+        this.hooks.ribbonCommandUi.apply(result);
         const subItems = result.subMenuProps?.items;
         return subItems ? { ...result, subMenuProps: { ...result.subMenuProps!, items: subItems.map(this._applyRibbonCommandUi) } } : result;
     };

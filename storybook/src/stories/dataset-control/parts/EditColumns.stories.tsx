@@ -48,8 +48,8 @@ The provider supplies what the pickers list, fetched anew each time the editor o
 | \`isOpen()\` | Whether the editor is open. |
 | \`events\` | \`onOpenChanged\`, whenever the editor opens or closes. |
 | \`getSession()\` | The edit in progress, while the editor is open. |
-| \`addCommandsHook(hook, priority?)\` | Adds commands above the pickers. |
-| \`addColumnCommandsHook(hook, priority?)\` | Adds commands to each chosen column. |
+| \`hooks.commands.add(hook, priority?)\` | Adds commands above the pickers. |
+| \`hooks.columnCommands.add(hook, priority?)\` | Adds commands to each chosen column. |
 
 The session holds the edit until it is saved:
 

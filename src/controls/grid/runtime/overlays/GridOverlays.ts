@@ -30,8 +30,8 @@ export class GridOverlays {
     constructor(parameters: IGridOverlaysParameters) {
         this._services = parameters.services;
         //AG Grid's own overlays would answer to its state, not the provider's
-        this._services.get('grid').addAgGridInitialOptionsHook(result => result.options.suppressOverlays = ['loading', 'noRows', 'noMatchingRows']);
-        this._services.get('grid').addAgGridOptionsHook(this._onAgGridOptions);
+        this._services.get('grid').hooks.agGridInitialOptions.add(result => result.options.suppressOverlays = ['loading', 'noRows', 'noMatchingRows']);
+        this._services.get('grid').hooks.agGridOptions.add(this._onAgGridOptions);
         this._services.observe('gridApi', gridApi => this._onGridApiAvailable(gridApi));
     }
 

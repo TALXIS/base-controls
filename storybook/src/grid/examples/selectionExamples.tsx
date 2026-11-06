@@ -9,7 +9,7 @@ const REJECTED = 4
 const keepApprovedUnselected: IGridModule = {
     name: 'keepApprovedUnselected',
     onLoad: grid => {
-        grid.modules.observe('rowSelection', selection => selection.addSelectRecordsHook((selection, { provider }) => {
+        grid.modules.observe('rowSelection', selection => selection.hooks.selectRecords.add((selection, { provider }) => {
             const records = provider.getRecordsMap()
             selection.recordIds = selection.recordIds.filter(id => Number(records[id]?.getValue('status')) !== APPROVED)
         }))

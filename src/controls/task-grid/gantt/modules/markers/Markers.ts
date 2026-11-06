@@ -87,8 +87,8 @@ export class Markers implements IMarkers {
         this._gantt = gantt;
         this._parameters = parameters;
         this._store = parameters.createStore?.(gantt.getTaskRuntime());
-        gantt.surfaces.addSurfacesHook(this._onSurfaces);
-        gantt.services.get('theme').addStylesHook(result => result.styles.push(getMarkersStyles()));
+        gantt.surfaces.hooks.surfaces.add(this._onSurfaces);
+        gantt.services.get('theme').hooks.styles.add(result => result.styles.push(getMarkersStyles()));
         //not awaited so the chart draws before the store's markers load
         this.reload();
     }

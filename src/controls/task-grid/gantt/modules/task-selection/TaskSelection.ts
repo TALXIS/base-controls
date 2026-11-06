@@ -38,9 +38,9 @@ export class TaskSelection implements ITaskSelection {
         this._offSelectionChanged = this._provider.addEventListener('onRecordsSelected', this._onSelectionChanged);
         gantt.services.observe('chart', this._onChartReady);
         gantt.services.observe('tasks', this._onTasksReady);
-        gantt.services.get('theme').addStylesHook(this._onStyles);
+        gantt.services.get('theme').hooks.styles.add(this._onStyles);
         if (parameters.enableSelectionBox ?? true) {
-            gantt.surfaces.addSurfacesHook(this._onSurfaces);
+            gantt.surfaces.hooks.surfaces.add(this._onSurfaces);
         }
     }
 
@@ -64,8 +64,8 @@ export class TaskSelection implements ITaskSelection {
     };
 
     private _onTasksReady = (tasks: IGanttTasks): void => {
-        tasks.addRowClassHook((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), ROW_SELECTED_CLASS));
-        tasks.addTaskClassHook((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), BAR_SELECTED_CLASS));
+        tasks.hooks.rowClass.add((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), ROW_SELECTED_CLASS));
+        tasks.hooks.taskClass.add((classNames, { record }) => this._addClassIfSelected(classNames, record.getRecordId(), BAR_SELECTED_CLASS));
     };
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {

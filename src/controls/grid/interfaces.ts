@@ -59,9 +59,9 @@ export interface IGridProps extends Partial<IGridEventProps> {
     enableNavigation?: boolean;
     /** Whether option sets show their colours; read at mount, then control parameter hooks. */
     enableOptionSetColors?: boolean;
-    /** Whether every other row is shaded; read at mount, then through `addCellThemeHook`. */
+    /** Whether every other row is shaded; read at mount, then through `cells.hooks.theme`. */
     enableZebra?: boolean;
-    /** How tall a row is, in pixels; read at mount, then through `addRowHeightHook`. */
+    /** How tall a row is, in pixels; read at mount, then through `rows.hooks.height`. */
     rowHeight?: number;
     /** How many rows the grid grows to fit before it starts scrolling instead. */
     maxVisibleRows?: number;

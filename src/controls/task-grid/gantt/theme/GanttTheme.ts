@@ -1,6 +1,6 @@
 import type { IStyle, ITheme } from "@fluentui/react";
 import { EventEmitter } from "@talxis/client-libraries";
-import { HookRegistry, IEventSubscriber } from "@core";
+import { HookRegistry, IEventSubscriber, IHookPoint } from "@core";
 
 /** What the chart is styled with, on top of the Gantt's own styles. */
 export interface IGanttStyles {
@@ -10,13 +10,14 @@ export interface IGanttStyles {
 /** A hook over the styles of the chart, handed the Fluent theme the Gantt mounted with. */
 export type GanttStylesHook = (result: IGanttStyles, fluentTheme: ITheme) => void;
 
+export interface IGanttThemeHooks {
+    /** The styles of the chart, read once its modules are loaded. */
+    readonly styles: IHookPoint<GanttStylesHook>;
+}
+
 /** The styles the Gantt's chart is drawn with. */
 export interface IGanttTheme {
-    /**
-     * Adds a hook over the styles of the chart, read once its modules are loaded.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addStylesHook(hook: GanttStylesHook, priority?: number): () => void;
+    readonly hooks: IGanttThemeHooks;
 }
 
 export interface IGanttThemeEvents {
@@ -34,17 +35,10 @@ export interface IGanttThemeInternal extends IGanttTheme {
 
 export class GanttTheme implements IGanttThemeInternal {
     public readonly events = new EventEmitter<IGanttThemeEvents>();
-    private _stylesHooks = new HookRegistry<GanttStylesHook>();
+    public readonly hooks = {
+        styles: new HookRegistry<GanttStylesHook>({ onChange: () => this._onStylesChanged() }),
+    };
     private _version = 0;
-
-    public addStylesHook(hook: GanttStylesHook, priority?: number): () => void {
-        const unregister = this._stylesHooks.add(hook, priority);
-        this._onStylesChanged();
-        return () => {
-            unregister();
-            this._onStylesChanged();
-        };
-    }
 
     public getVersion(): number {
         return this._version;
@@ -52,7 +46,7 @@ export class GanttTheme implements IGanttThemeInternal {
 
     public getStyles(fluentTheme: ITheme): IStyle[] {
         const result: IGanttStyles = { styles: [] };
-        this._stylesHooks.apply(result, fluentTheme);
+        this.hooks.styles.apply(result, fluentTheme);
         return result.styles;
     }
 

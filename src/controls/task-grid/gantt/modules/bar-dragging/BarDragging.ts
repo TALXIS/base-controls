@@ -26,8 +26,8 @@ export class BarDragging implements IBarDragging {
         this._gantt = gantt;
         this._isMoveEnabled = parameters.enableMove ?? true;
         this._isResizeEnabled = parameters.enableResize ?? true;
-        gantt.addChartConfigHook(this._configureChart);
-        gantt.services.get('theme').addStylesHook((result, theme) => result.styles.push(getBarDraggingStyles(theme)));
+        gantt.hooks.chartConfig.add(this._configureChart);
+        gantt.services.get('theme').hooks.styles.add((result, theme) => result.styles.push(getBarDraggingStyles(theme)));
         gantt.services.observe('chart', this._onChartReady);
     }
 

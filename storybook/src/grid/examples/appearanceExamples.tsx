@@ -51,7 +51,7 @@ export const ESCALATED_TICKETS_CODE = `const ESCALATED = '#d13438'
 const escalatedTicketsModule: IGridModule = {
     name: 'escalatedTickets',
     onLoad: grid => {
-        grid.services.get('cells').addCellThemeHook((builder, { record }) => {
+        grid.services.get('cells').hooks.theme.add((builder, { record }) => {
             //a two-options value reads as '1' or '0'
             if (record.getValue('escalated') === '1') {
                 builder.tint(ESCALATED)
@@ -136,7 +136,7 @@ export const COLUMN_LINES_CODE = `//lines between the columns and a frame round 
 const columnLinesModule: IGridModule = {
     name: 'columnLines',
     onLoad: grid => {
-        grid.services.get('gridTheme').addThemeHook((result, fluentTheme) => {
+        grid.services.get('gridTheme').hooks.theme.add((result, fluentTheme) => {
             const line = { color: fluentTheme.semanticColors.bodyDivider }
             result.theme = result.theme.withParams({
                 columnBorder: line,
@@ -187,7 +187,7 @@ const reviewModule: IGridModule = {
     name: 'review',
     onLoad: grid => {
         const headers = grid.services.get('columns').headers
-        headers.addColumnHeaderThemeHook((builder, header) => {
+        headers.hooks.theme.add((builder, header) => {
             const column = header.getColumn()
             const hue = column && getHeaderColour(column.name)
             if (hue) {

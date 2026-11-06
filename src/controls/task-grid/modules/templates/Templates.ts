@@ -76,8 +76,8 @@ export class Templates implements ITemplates {
         this._taskRuntime = taskRuntime;
         this.components = parameters.components ?? {};
         this._store = parameters.createStore(taskRuntime);
-        taskRuntime.services.get('datasetControl').parts.observe('ribbon', ribbon => { ribbon.addCommandsHook(this._addCommands, RIBBON_PRIORITY); });
-        taskRuntime.addRibbonCommandUiHook(this._onRibbonCommandUi);
+        taskRuntime.services.get('datasetControl').parts.observe('ribbon', ribbon => { ribbon.hooks.commands.add(this._addCommands, RIBBON_PRIORITY); });
+        taskRuntime.hooks.ribbonCommandUi.add(this._onRibbonCommandUi);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
     }
 
@@ -115,7 +115,7 @@ export class Templates implements ITemplates {
 
     //after the tree's own add command
     private _onGridAvailable = (grid: IGrid): void => {
-        (grid as IGrid<ITaskGridServiceMap>).services.get('cells').addCellCommandsHook(this._onCellCommands, TASK_GRID_PRIORITY.tree + 30);
+        (grid as IGrid<ITaskGridServiceMap>).services.get('cells').hooks.commands.add(this._onCellCommands, TASK_GRID_PRIORITY.tree + 30);
     };
 
     private _addCommands = (commands: IRibbonCommand[]): void => {

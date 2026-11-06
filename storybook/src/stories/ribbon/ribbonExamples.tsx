@@ -104,11 +104,11 @@ const GridExample = () => {
     //code that does not own onLoad adds to the commands of every load
     const onSetup = (ribbon: IRibbon) => {
         ribbonRef.current = ribbon
-        ribbon.addCommandsHook(commands => {
+        ribbon.hooks.commands.add(commands => {
             commands.push({ id: 'history', label: 'History', iconName: 'History', onExecute: () => setNote('History opened') })
         })
         //a higher priority runs later, so this hook sees History too
-        ribbon.addCommandsHook(commands => {
+        ribbon.hooks.commands.add(commands => {
             for (const command of commands) {
                 command.disabled = isClosed.current
             }

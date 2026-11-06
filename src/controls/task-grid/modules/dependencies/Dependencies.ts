@@ -129,7 +129,7 @@ export class Dependencies implements IDependencies {
         });
         taskRuntime.services.observe('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
-        taskRuntime.services.get('savingChains').addLinksHook(this._addDependencyLinks);
+        taskRuntime.services.get('savingChains').hooks.links.add(this._addDependencyLinks);
     }
 
     private get _labels(): LabelsOf<typeof DEPENDENCIES_LABELS> {
@@ -229,7 +229,7 @@ export class Dependencies implements IDependencies {
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
         const offTasksDeleted = provider.taskEvents.addEventListener('onTasksDeleted', this._onTasksDeleted);
-        const removeColumnsHook = provider.addAvailableColumnsHook(this._addColumns);
+        const removeColumnsHook = provider.hooks.availableColumns.add(this._addColumns);
         return () => { offTasksDeleted(); removeColumnsHook(); };
     };
 
@@ -311,7 +311,7 @@ export class Dependencies implements IDependencies {
     };
 
     private _onGridAvailable = (grid: IGrid): void => {
-        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {

@@ -141,15 +141,15 @@ export class GridEditing implements IGridEditing {
 
     private _addHooks(): void {
         const columns = this._services.get('columns');
-        columns.addColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.editing);
+        columns.hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.editing);
         //after row selection has added its checkbox column
-        columns.addColumnDefinitionsHook(this._onSelectionColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection + 1);
-        columns.headers.addColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.editing);
-        this._services.get('grid').addAgGridOptionsHook(result => {
+        columns.hooks.columnDefinitions.add(this._onSelectionColumnDefinitions, GRID_MODULE_PRIORITY.rowSelection + 1);
+        columns.headers.hooks.adornments.add(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.editing);
+        this._services.get('grid').hooks.agGridOptions.add(result => {
             //AG Grid hands its own writes, such as a paste, over as `cellEditRequest`
             result.options.readOnlyEdit = true;
         }, GRID_MODULE_PRIORITY.editing);
-        this._services.get('gridTheme').addStylesHook(this._onStyles, GRID_MODULE_PRIORITY.editing);
+        this._services.get('gridTheme').hooks.styles.add(this._onStyles, GRID_MODULE_PRIORITY.editing);
         this._services.get('rows').addRowClass(LOCKED_RECORD_ROW_CLASS, ({ record }) => this._isRecordLocked(record));
     }
 

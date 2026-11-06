@@ -1,7 +1,7 @@
 import { FontWeights, IStyle } from "@fluentui/react";
 import { createPart, Theme, themeQuartz } from "ag-grid-community";
 import type { ITheme } from "@theme";
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 
 const FLUENT_PART = createPart({
     css: [
@@ -34,20 +34,16 @@ export interface IGridThemeParameters {
     rowHeight: number;
 }
 
+export interface IGridThemeHooks {
+    /** The AG Grid theme, read once when the grid is created. */
+    readonly theme: IHookPoint<GridThemeHook>;
+    /** The styles of the grid's root element. */
+    readonly styles: IHookPoint<GridStylesHook>;
+}
+
 /** The AG Grid theme the grid is drawn in, made from its Fluent theme. */
 export interface IGridTheme {
-    /**
-     * Adds a hook over the AG Grid theme, read once when the grid is created.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addThemeHook(hook: GridThemeHook, priority?: number): () => void;
-    /**
-     * Adds a hook over the styles of the grid's root element.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addStylesHook(hook: GridStylesHook, priority?: number): () => void;
+    readonly hooks: IGridThemeHooks;
 }
 
 /** What the grid's own parts read of it. */
@@ -60,16 +56,14 @@ export interface IGridThemeInternal extends IGridTheme {
 
 export class GridTheme implements IGridThemeInternal {
     private _parameters: IGridThemeParameters;
-    private _hooks = new HookRegistry<GridThemeHook>();
-    private _stylesHooks = new HookRegistry<GridStylesHook>();
+    public readonly hooks = {
+        theme: new HookRegistry<GridThemeHook>(),
+        styles: new HookRegistry<GridStylesHook>(),
+    };
     private _agTheme?: Theme;
 
     constructor(parameters: IGridThemeParameters) {
         this._parameters = parameters;
-    }
-
-    public addThemeHook(hook: GridThemeHook, priority?: number): () => void {
-        return this._hooks.add(hook, priority);
     }
 
     public getAgTheme(): Theme {
@@ -77,20 +71,16 @@ export class GridTheme implements IGridThemeInternal {
         return this._agTheme;
     }
 
-    public addStylesHook(hook: GridStylesHook, priority?: number): () => void {
-        return this._stylesHooks.add(hook, priority);
-    }
-
     public getStyles(): IStyle[] {
         const result: IGridStyles = { styles: [] };
-        this._stylesHooks.apply(result, this._parameters.theme);
+        this.hooks.styles.apply(result, this._parameters.theme);
         return result.styles;
     }
 
     private _buildAgTheme(): Theme {
         const { theme } = this._parameters;
         const result: IGridAgTheme = { theme: themeQuartz.withParams(this._getFluentParams()).withPart(FLUENT_PART) };
-        this._hooks.apply(result, theme);
+        this.hooks.theme.apply(result, theme);
         return result.theme;
     }
 

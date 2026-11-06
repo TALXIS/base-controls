@@ -25,7 +25,7 @@ export class ClientSideRowModelGrouping implements IGridRowModelGrouping {
         this.isGroupOpenByDefault = parameters.isGroupOpenByDefault;
         this._isTree = this._getIsTree();
         //`getDataPath` is `@initial`
-        this._services.get('grid').addAgGridInitialOptionsHook(result => result.options.getDataPath = getRecordPath);
+        this._services.get('grid').hooks.agGridInitialOptions.add(result => result.options.getDataPath = getRecordPath);
         //ahead of the grid's refresh on the same event
         const unsubscribe = this._provider.addEventListener('onNewDataLoaded', this._onNewDataLoaded);
         //the provider outlives the grid

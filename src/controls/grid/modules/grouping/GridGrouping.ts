@@ -152,20 +152,20 @@ export class GridGrouping implements IGridGrouping {
     private _addHooks(): void {
         const cells = this._gridServices.get('cells');
         const columnHeaders = this._gridServices.get('columns').headers;
-        this._gridServices.get('grid').addAgGridOptionsHook(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
-        cells.addCellThemeHook(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('grid').hooks.agGridOptions.add(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
+        cells.hooks.theme.add(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
         //locks come with the editing module, which may register after this one
         this._gridServices.get('grid').modules.observe('editing', editing => {
-            editing.locks.addLockHook(this._onLock, GRID_MODULE_PRIORITY.grouping);
+            editing.locks.hooks.lock.add(this._onLock, GRID_MODULE_PRIORITY.grouping);
         });
         //listed in the column menu after sorting and filtering
-        columnHeaders.addColumnMenuSectionsHook(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
-        columnHeaders.addColumnHeaderAdornmentsHook(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
-        this._gridServices.get('surfaces').addSurfacesHook(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
+        columnHeaders.hooks.menuSections.add(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
+        columnHeaders.hooks.adornments.add(this._onColumnHeaderAdornments, GRID_MODULE_PRIORITY.grouping);
+        this._gridServices.get('surfaces').hooks.surfaces.add(this._onSurfaces, GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('grid').modules.observe('rowSelection', selection => {
-            selection.addSelectRecordsHook(this._onSelectRecords, GRID_MODULE_PRIORITY.grouping);
-            selection.addSelectionStateHook(this._onSelectionState, GRID_MODULE_PRIORITY.grouping);
+            selection.hooks.selectRecords.add(this._onSelectRecords, GRID_MODULE_PRIORITY.grouping);
+            selection.hooks.selectionState.add(this._onSelectionState, GRID_MODULE_PRIORITY.grouping);
         });
     }
 

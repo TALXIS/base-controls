@@ -1,6 +1,6 @@
 import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 import { IGridServiceLocator } from "../../runtime";
 import { getColumnContext } from "../../runtime/columns/colDef";
 
@@ -12,14 +12,14 @@ declare module "../../runtime/columns/colDef" {
     interface IGridColumnCellContext {
         /** Whether the control takes input where the cell stands, with no editor to open. */
         enableOneClickEdit?: boolean;
-        /** Decides whether a cell is locked, after the cell-level `addLockHook` hooks. */
+        /** Decides whether a cell is locked, after the cell-level `locks.hooks.lock` hooks. */
         lockHook?: (result: IGridLock, parameters: { record: IRecord }) => void;
     }
 }
 
 declare module "../../runtime/rows/GridRows" {
     interface IGridRowSettings {
-        /** Locks a record as a whole, after the record-level `addLockHook` hooks. */
+        /** Locks a record as a whole, after the record-level `locks.hooks.lock` hooks. */
         lockHook?: (result: IGridLock, parameters: { record: IRecord }) => void;
     }
 }
@@ -50,21 +50,23 @@ export interface IGridLocksParameters {
     services: IGridServiceLocator;
 }
 
+export interface IGridLocksHooks {
+    /** Any level; it is handed the context it is asked about. */
+    readonly lock: IHookPoint<GridLockHook>;
+}
+
 /** Whether a column, a record's row or a cell is locked. */
 export interface IGridLocks {
     /** Whether what the context names is locked, and at which level. */
     get(parameters?: IGridLockHookParameters): IGridLockResult;
-    /**
-     * Adds a hook over any level; it is handed the context it is asked about.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addLockHook(hook: GridLockHook, priority?: number): () => void;
+    readonly hooks: IGridLocksHooks;
 }
 
 export class GridLocks implements IGridLocks {
     private _services: IGridServiceLocator;
-    private _hooks = new HookRegistry<GridLockHook>();
+    public readonly hooks = {
+        lock: new HookRegistry<GridLockHook>(),
+    };
 
     constructor(parameters: IGridLocksParameters) {
         this._services = parameters.services;
@@ -85,10 +87,6 @@ export class GridLocks implements IGridLocks {
         return { isLocked: false };
     }
 
-    public addLockHook(hook: GridLockHook, priority?: number): () => void {
-        return this._hooks.add(hook, priority);
-    }
-
     //a column set as locked is final, no hook can open it
     private _isColumnLocked(columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
         return getColumnContext(colDef).isLocked === true || this._applyHooks(false, { columnName });
@@ -96,21 +94,21 @@ export class GridLocks implements IGridLocks {
 
     private _isRecordLocked(record: IRecord): boolean {
         const result: IGridLock = { isLocked: !record.isActive() };
-        this._hooks.apply(result, { record });
+        this.hooks.lock.apply(result, { record });
         this._services.get('settings').getRowSettings().lockHook?.(result, { record });
         return result.isLocked;
     }
 
     private _isCellLocked(record: IRecord, columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
         const result: IGridLock = { isLocked: false };
-        this._hooks.apply(result, { record, columnName });
+        this.hooks.lock.apply(result, { record, columnName });
         getColumnContext(colDef).cell?.lockHook?.(result, { record });
         return result.isLocked;
     }
 
     private _applyHooks(isLocked: boolean, parameters: IGridLockHookParameters): boolean {
         const result: IGridLock = { isLocked };
-        this._hooks.apply(result, parameters);
+        this.hooks.lock.apply(result, parameters);
         return result.isLocked;
     }
 

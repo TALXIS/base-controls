@@ -1,4 +1,4 @@
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 
 /** Something a module draws over the Gantt. */
 export interface IGanttSurface {
@@ -10,13 +10,14 @@ export interface IGanttSurface {
 /** A hook over what the modules draw over the Gantt. */
 export type GanttSurfacesHook = (surfaces: IGanttSurface[]) => void;
 
+export interface IGanttSurfacesHooks {
+    /** What the modules draw over the Gantt, once its chart is drawn. */
+    readonly surfaces: IHookPoint<GanttSurfacesHook>;
+}
+
 /** What the modules draw over the Gantt, assembled from what they added. */
 export interface IGanttSurfaces {
-    /**
-     * Adds a hook over what the modules draw over the Gantt, once its chart is drawn.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addSurfacesHook(hook: GanttSurfacesHook, priority?: number): () => void;
+    readonly hooks: IGanttSurfacesHooks;
 }
 
 /** What the Gantt's own parts read of it. */
@@ -26,15 +27,13 @@ export interface IGanttSurfacesInternal extends IGanttSurfaces {
 }
 
 export class GanttSurfaces implements IGanttSurfacesInternal {
-    private _surfaceHooks = new HookRegistry<GanttSurfacesHook>();
-
-    public addSurfacesHook(hook: GanttSurfacesHook, priority?: number): () => void {
-        return this._surfaceHooks.add(hook, priority);
-    }
+    public readonly hooks = {
+        surfaces: new HookRegistry<GanttSurfacesHook>(),
+    };
 
     public getSurfaces(): IGanttSurface[] {
         const surfaces: IGanttSurface[] = [];
-        this._surfaceHooks.apply(surfaces);
+        this.hooks.surfaces.apply(surfaces);
         return surfaces;
     }
 }

@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { EventEmitter, IFormatting, IRecord } from "@talxis/client-libraries";
 import type { GanttStatic, ZoomLevel } from "dhtmlx-gantt";
-import { HookRegistry, IStateStore, IEventSubscriber } from "@core";
+import { HookRegistry, IStateStore, IEventSubscriber, IHookPoint } from "@core";
 import type { ITaskRuntime } from "../../runtime";
 import { DAYS_PER_UNIT, HOURS_PER_DAY, IGanttSchedule, IGanttSpan, MILLISECONDS_PER_DAY } from "../schedule";
 import type { IGanttTimeline } from "../timeline";
@@ -36,6 +36,11 @@ export interface IGanttZoomingEvents {
     onZoomChanged: () => void;
 }
 
+export interface IGanttZoomingHooks {
+    /** The label of each scale cell. */
+    readonly scaleLabel: IHookPoint<GanttScaleLabelHook>;
+}
+
 /** The chart's zoom, as a continuous number of pixels per day. */
 export interface IGanttZooming {
     readonly events: IEventSubscriber<IGanttZoomingEvents>;
@@ -53,11 +58,7 @@ export interface IGanttZooming {
     getPixelsPerDay(): number;
     /** Puts back the session's or the saved view's zoom, or fits the tasks. */
     restore(): void;
-    /**
-     * Adds a hook over the label of each scale cell.
-     * @param priority Ascending: a higher number runs later.
-     */
-    addScaleLabelHook(hook: GanttScaleLabelHook, priority?: number): () => void;
+    readonly hooks: IGanttZoomingHooks;
 }
 
 export interface IGanttScaleLabelHookParameters {
@@ -113,7 +114,9 @@ export class GanttZooming implements IGanttZooming {
     private _pending?: IPendingZoom;
     private _frame?: number;
     private _unwatchUserQueries: () => void;
-    private _scaleLabelHooks = new HookRegistry<GanttScaleLabelHook>();
+    public readonly hooks = {
+        scaleLabel: new HookRegistry<GanttScaleLabelHook>(),
+    };
 
     constructor(parameters: IGanttZoomingParameters) {
         this._chart = parameters.chart;
@@ -165,10 +168,6 @@ export class GanttZooming implements IGanttZooming {
         }
         const finest = scales[scales.length - 1];
         return finest?.unit === 'hour' && HOURS_PER_DAY % (finest.step ?? 1) === 0;
-    }
-
-    public addScaleLabelHook(hook: GanttScaleLabelHook, priority?: number): () => void {
-        return this._scaleLabelHooks.add(hook, priority);
     }
 
     public restore(): void {
@@ -384,7 +383,7 @@ export class GanttZooming implements IGanttZooming {
             ...scale,
             format: (date: Date) => {
                 const result = { label: builtIn(date) };
-                this._scaleLabelHooks.apply(result, { date, unit, step, row });
+                this.hooks.scaleLabel.apply(result, { date, unit, step, row });
                 return result.label;
             },
         };

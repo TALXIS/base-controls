@@ -11,7 +11,7 @@ const isClosed = (record: IRecord) => [WON, LOST].includes(Number(record.getValu
 const closedDealsModule: IGridModule = {
     name: 'closedDeals',
     onLoad: grid => {
-        grid.modules.observe('editing', editing => editing.locks.addLockHook((result, { record, columnName }) => {
+        grid.modules.observe('editing', editing => editing.locks.hooks.lock.add((result, { record, columnName }) => {
             if (record && columnName && LOCKED_WHEN_CLOSED.includes(columnName) && isClosed(record)) {
                 result.isLocked = true
             }
@@ -47,7 +47,7 @@ const dayLimitModule: IGridModule = {
     onLoad: grid => {
         const timesheets = grid.services.get('provider')
         const cells = grid.services.get('cells')
-        grid.services.get('validation').addValidationHook((result, { record, columnName }) => {
+        grid.services.get('validation').hooks.validation.add((result, { record, columnName }) => {
             if (columnName === 'hours' && getHoursThatDay(record) > MAX_HOURS_A_DAY) {
                 result.error = true
                 result.errorMessage = \`\${record.getValue('employee')} logged more than \${MAX_HOURS_A_DAY} hours on this day.\`
@@ -88,7 +88,7 @@ const createPriceRefresh = () => {
         name: 'priceRefresh',
         onLoad: grid => {
             cells = grid.services.get('cells')
-            cells.addCellLoadingHook((result, { record, columnName }) => {
+            cells.hooks.loading.add((result, { record, columnName }) => {
                 if (columnName === 'price' && refreshing.has(record.getRecordId())) {
                     result.isLoading = true
                 }
@@ -137,7 +137,7 @@ const urgentRowsModule: IGridModule = {
     name: 'urgentRows',
     onLoad: grid => {
         const tickets = grid.services.get('provider')
-        grid.services.get('rows').addRowHeightHook((result, { record }) => {
+        grid.services.get('rows').hooks.height.add((result, { record }) => {
             if (Number(record.getValue('priority')) === HIGH) {
                 result.height = 64
             }
@@ -167,7 +167,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 export const COPY_COLUMN_CODE = `const createCopyColumnModule = (onCopied: (message: string) => void): IGridModule => ({
     name: 'copyColumn',
     onLoad: grid => {
-        grid.services.get('columns').headers.addColumnMenuSectionsHook((sections, header) => {
+        grid.services.get('columns').headers.hooks.menuSections.add((sections, header) => {
             const column = header.getColumn()
             if (!column) {
                 return
@@ -210,7 +210,7 @@ const GridExample = () => {
 export const CURRENCY_IN_HEADER_CODE = `const currencyModule: IGridModule = {
     name: 'currency',
     onLoad: grid => {
-        grid.services.get('columns').headers.addColumnHeaderAdornmentsHook((adornments, header) => {
+        grid.services.get('columns').headers.hooks.adornments.add((adornments, header) => {
             if (header.getColumn()?.dataType !== DataTypes.Currency) {
                 return
             }
@@ -239,7 +239,7 @@ const IN_PROGRESS = 2
 const assignToMeModule: IGridModule = {
     name: 'assignToMe',
     onLoad: grid => {
-        grid.services.get('cells').addCellCommandsHook((result, { record, columnName }) => {
+        grid.services.get('cells').hooks.commands.add((result, { record, columnName }) => {
             if (columnName !== 'assignee' || record.getValue('assignee')) {
                 return
             }
@@ -272,7 +272,7 @@ export const COLUMNS_BY_ROLE_CODE = `type Role = 'consultant' | 'manager'
 const createColumnsByRoleModule = (getRole: () => Role): IGridModule => ({
     name: 'columnsByRole',
     onLoad: grid => {
-        grid.services.get('columns').addColumnDefinitionsHook(columnDefs => {
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
             const rate = columnDefs.find(colDef => colDef.colId === 'rate')
             if (rate) {
                 rate.hide = getRole() !== 'manager'
@@ -321,7 +321,7 @@ export const PLACEHOLDERS_CODE = `const PLACEHOLDERS: { [columnName: string]: st
 const placeholdersModule: IGridModule = {
     name: 'placeholders',
     onLoad: grid => {
-        grid.services.get('cells').addControlParametersHook((parameters, { columnName }) => {
+        grid.services.get('cells').hooks.controlParameters.add((parameters, { columnName }) => {
             if (PLACEHOLDERS[columnName]) {
                 parameters.Placeholder = { raw: PLACEHOLDERS[columnName] }
             }

@@ -40,7 +40,7 @@ Notifications show only while their row is hovered, holds the focused cell or is
 
 The module registers its hooks at \`GRID_MODULE_PRIORITY.legacyClientApiCompatibility\`, which is \`0\`: ahead of every other built-in module, and level with any hook you register without a priority. Hooks at a higher priority can change its locks, loading and colours (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
 
-The grid's validation replaces a script's \`setValidationExpression\` on a column with \`context.cell.validationHook\`, and on every column once a \`addValidationHook\` hook exists. Move such a check into the grid's validation (see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)).
+The grid's validation replaces a script's \`setValidationExpression\` on a column with \`context.cell.validationHook\`, and on every column once a \`hooks.validation\` hook exists. Move such a check into the grid's validation (see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)).
 
 | When | What happens |
 |---|---|

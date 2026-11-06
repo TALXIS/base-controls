@@ -60,15 +60,15 @@ export class TaskTree implements ITaskGridTree {
         parameters.runtime.services.register('taskTree', () => this);
         services.register('taskExpansion', () => this._expansion);
 
-        this._grid.addAgGridInitialOptionsHook(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
-        this._grid.addAgGridOptionsHook(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
-        services.get('columns').addColumnDefinitionsHook(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree);
-        services.get('cells').addCellThemeHook(this._onCellTheme, TASK_GRID_PRIORITY.tree);
-        services.get('cells').addCellLoadingHook(this._onCellLoading, TASK_GRID_PRIORITY.tree);
-        services.get('cells').addCellCommandsHook(this._onCellCommands, TASK_GRID_PRIORITY.tree);
+        this._grid.hooks.agGridInitialOptions.add(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
+        this._grid.hooks.agGridOptions.add(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
+        services.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree);
+        services.get('cells').hooks.theme.add(this._onCellTheme, TASK_GRID_PRIORITY.tree);
+        services.get('cells').hooks.loading.add(this._onCellLoading, TASK_GRID_PRIORITY.tree);
+        services.get('cells').hooks.commands.add(this._onCellCommands, TASK_GRID_PRIORITY.tree);
 
-        this._grid.modules.observe('rowSelection', selection => { selection.addSelectionStateHook(this._onSelectionState, TASK_GRID_PRIORITY.tree); });
-        this._grid.modules.observe('editing', editing => { editing.locks.addLockHook(this._onLock, TASK_GRID_PRIORITY.tree); });
+        this._grid.modules.observe('rowSelection', selection => { selection.hooks.selectionState.add(this._onSelectionState, TASK_GRID_PRIORITY.tree); });
+        this._grid.modules.observe('editing', editing => { editing.locks.hooks.lock.add(this._onLock, TASK_GRID_PRIORITY.tree); });
         services.observe('gridApi', this._onGridApi);
         this._unsubscribes = [
             parameters.runtime.services.get('datasetControl').modules.observe('userQueries', userQueries => userQueries.saveWithView('isFlatList', () => this._isFlatList)),

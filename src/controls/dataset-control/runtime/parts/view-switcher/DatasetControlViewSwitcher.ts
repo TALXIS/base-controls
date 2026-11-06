@@ -1,13 +1,17 @@
 import type { IContextualMenuItem } from "@fluentui/react";
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 import { IDatasetControlServiceLocator, IDatasetControlView } from "../../interfaces";
 
 /** A hook over the switcher's menu, which it adds to or changes in place; it runs after the views are listed. */
 export type ViewSwitcherItemsHook = (items: IContextualMenuItem[]) => void;
 
-
 export interface IDatasetControlViewSwitcherParameters {
     services: IDatasetControlServiceLocator;
+}
+
+export interface IDatasetControlViewSwitcherHooks {
+    /** The switcher's menu. */
+    readonly items: IHookPoint<ViewSwitcherItemsHook>;
 }
 
 /** The control's views, and switching between them. */
@@ -18,17 +22,14 @@ export interface IDatasetControlViewSwitcher {
     getView(): IDatasetControlView | undefined;
     /** Loads the control for the view. */
     select(viewId: string): void;
-    /**
-     * Adds a hook over the switcher's menu.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addItemsHook(hook: ViewSwitcherItemsHook, priority?: number): () => void;
+    readonly hooks: IDatasetControlViewSwitcherHooks;
 }
 
 export class DatasetControlViewSwitcher implements IDatasetControlViewSwitcher {
     private _services: IDatasetControlServiceLocator;
-    private _itemsHooks = new HookRegistry<ViewSwitcherItemsHook>();
+    public readonly hooks = {
+        items: new HookRegistry<ViewSwitcherItemsHook>(),
+    };
 
     constructor(parameters: IDatasetControlViewSwitcherParameters) {
         this._services = parameters.services;
@@ -50,14 +51,10 @@ export class DatasetControlViewSwitcher implements IDatasetControlViewSwitcher {
         }
     }
 
-    public addItemsHook(hook: ViewSwitcherItemsHook, priority?: number): () => void {
-        return this._itemsHooks.add(hook, priority);
-    }
-
     /** The menu with what the hooks added to it. */
     public getItems(items: IContextualMenuItem[]): IContextualMenuItem[] {
         const result = [...items];
-        this._itemsHooks.apply(result);
+        this.hooks.items.apply(result);
         return result;
     }
 }

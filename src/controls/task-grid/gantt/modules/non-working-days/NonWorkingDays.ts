@@ -104,17 +104,17 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
         this._components = parameters.components ?? {};
         this._store = parameters.createStore?.(gantt.getTaskRuntime());
         this._calendar = new NonWorkingDayCalendar(this._getWeekends());
-        gantt.services.get('theme').addStylesHook((result, theme) => result.styles.push(getNonWorkingDaysStyles(theme)));
-        gantt.surfaces.addSurfacesHook(this._onSurfaces);
-        gantt.services.get('schedule').addDurationHook(this._countWorkingTime);
+        gantt.services.get('theme').hooks.styles.add((result, theme) => result.styles.push(getNonWorkingDaysStyles(theme)));
+        gantt.surfaces.hooks.surfaces.add(this._onSurfaces);
+        gantt.services.get('schedule').hooks.duration.add(this._countWorkingTime);
         if (!parameters.enableDropOnNonWorkingDays) {
-            gantt.services.get('schedule').addSnapHook(this._keepOffNonWorkingDays);
+            gantt.services.get('schedule').hooks.snap.add(this._keepOffNonWorkingDays);
         }
         gantt.services.observe('chart', this._onChartReady);
         gantt.services.observe('timeline', this._onTimelineReady);
         const datasetControl = gantt.getTaskRuntime().services.get('datasetControl');
         this._unwatchUserQueries = datasetControl.modules.observe('userQueries', userQueries => userQueries.saveWithView('showNonWorkingDays', () => this.isVisible()));
-        this._unwatchTaskSettings = datasetControl.parts.observe('taskSettings', settings => settings.addSettingsHook(this._addSettings));
+        this._unwatchTaskSettings = datasetControl.parts.observe('taskSettings', settings => settings.hooks.settings.add(this._addSettings));
         //not awaited so the chart draws before the store's days load
         this.reload();
     }
@@ -231,8 +231,8 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
                 classNames.push(NON_WORKING_DAY_CLASS);
             }
         };
-        timeline.addCellClassHook(addNonWorkingDayClass);
-        timeline.addScaleCellClassHook(addNonWorkingDayClass);
+        timeline.hooks.cellClass.add(addNonWorkingDayClass);
+        timeline.hooks.scaleCellClass.add(addNonWorkingDayClass);
     };
 
     //read while drawing: the zoom is registered after the chart

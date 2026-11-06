@@ -52,7 +52,7 @@ When the first load throws, the error shows in place of the commands, with **Det
 | \`getCommands()\` | The commands of the last load; \`undefined\` until the first one finishes. |
 | \`isRunning(commandId)\` | Whether the command's \`onExecute\` is running. |
 | \`reload()\` | Loads the commands again; the latest call's commands win. Does nothing until the first load succeeds. |
-| \`addCommandsHook(hook, priority?)\` | Adds to the commands on every load: see *Add your own commands*. |
+| \`hooks.commands.add(hook, priority?)\` | Adds to the commands on every load: see *Add your own commands*. |
 | \`events\` | The ribbon's own events, below. |
 
 | Event | Fires |
@@ -65,7 +65,7 @@ When the first load throws, the error shows in place of the commands, with **Det
 
 ## Add your own commands
 
-\`addCommandsHook(hook, priority?)\` lets code that does not own \`onLoad\`, such as a shared module, add to the commands. The hook gets the commands after every \`onLoad\` and changes them in place; a higher \`priority\` runs later, and the call returns a function that removes the hook. Hooks run on a load, so call \`reload()\` to apply one now.
+\`hooks.commands.add(hook, priority?)\` lets code that does not own \`onLoad\`, such as a shared module, add to the commands. The hook gets the commands after every \`onLoad\` and changes them in place; a higher \`priority\` runs later, and the call returns a function that removes the hook. Hooks run on a load, so call \`reload()\` to apply one now.
 
 {{story: Commands from your own code}}
 

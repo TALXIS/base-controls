@@ -1,6 +1,10 @@
 /** Ambient types for the Monaco editor behind the live Grid examples. */
 export const gridSandboxDeclarations = `
 declare const React: typeof import('react');
+/** One place to hook into; what add returns takes the hook back off. */
+interface IHookPoint<THook extends (...args: any[]) => void> {
+    add(hook: THook, priority?: number): () => void;
+}
 declare const dayjs: typeof import('dayjs');
 declare const confetti: typeof import('canvas-confetti');
 /** Sanitizes HTML before it is drawn, from dompurify. */
@@ -1520,29 +1524,29 @@ interface IGridColumnCellContext {
     enableOneClickEdit?: boolean;
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
     isRowResizable?: boolean;
-    /** Runs after addCellCommandsHook. */
+    /** Runs after hooks.commands. */
     commandsHook?: (result: IGridCellCommands, params: { record: IRecord }) => void;
-    /** Runs after every addCellThemeHook. */
+    /** Runs after every hooks.theme. */
     themeHook?: (builder: ThemeBuilder, params: { record: IRecord }) => void;
-    /** Runs after the cell-level addLockHook hooks. */
+    /** Runs after the cell-level hooks.lock hooks. */
     lockHook?: (result: IGridLock, params: { record: IRecord }) => void;
-    /** Runs after addCellLoadingHook. */
+    /** Runs after hooks.loading. */
     loadingHook?: (result: IGridCellLoading, params: { record: IRecord }) => void;
-    /** Runs after addValidationHook. */
+    /** Runs after hooks.validation. */
     validationHook?: (result: IFieldValidationResult, params: { record: IRecord }) => void;
-    /** Runs after addControlParametersHook. */
+    /** Runs after hooks.controlParameters. */
     controlParametersHook?: (parameters: IParameters, params: { record: IRecord }) => void;
 }
 
 /** What a column decides for its header, after the header hooks. */
 interface IGridColumnHeaderContext {
-    /** Runs after addColumnHeaderThemeHook. */
+    /** Runs after hooks.theme. */
     themeHook?: (builder: ThemeBuilder) => void;
-    /** Runs after addColumnHeaderAdornmentsHook. */
+    /** Runs after hooks.adornments. */
     adornmentsHook?: (adornments: IColumnHeaderAdornment[]) => void;
-    /** Runs after addColumnMenuSectionsHook. */
+    /** Runs after hooks.menuSections. */
     menuSectionsHook?: (sections: IColumnMenuSection[]) => void;
-    /** Runs after addColumnMenuItemsHook. */
+    /** Runs after hooks.menuItems. */
     menuItemsHook?: (items: IContextualMenuItem[]) => void;
 }
 
@@ -1625,12 +1629,14 @@ interface IGridColumnHeadersEvents {
 interface IGridColumnHeaders {
     /** Redraws every header, for state their columns do not hold. */
     render(): void;
-    /** The built-in modules add their sections at GRID_MODULE_PRIORITY. */
-    addColumnMenuSectionsHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void;
-    /** Runs on the menu the sections became. */
-    addColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void;
-    addColumnHeaderAdornmentsHook(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void;
-    addColumnHeaderThemeHook(hook: GridColumnHeaderThemeHook, priority?: number): () => void;
+    readonly hooks: {
+        /** The built-in modules add their sections at GRID_MODULE_PRIORITY. */
+        readonly menuSections: IHookPoint<GridColumnMenuSectionsHook>;
+        /** Runs on the menu the sections became. */
+        readonly menuItems: IHookPoint<GridColumnMenuItemsHook>;
+        readonly adornments: IHookPoint<GridColumnHeaderAdornmentsHook>;
+        readonly theme: IHookPoint<GridColumnHeaderThemeHook>;
+    };
 }
 
 type GridColumnDefinitionsHook = (columnDefs: IGridColDef[]) => void;
@@ -1644,8 +1650,10 @@ interface IGridColumnsEvents {
 
 interface IGridColumns {
     readonly headers: IGridColumnHeaders;
-    /** Runs on every column build, before the colDefs prop. */
-    addColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void;
+    readonly hooks: {
+        /** Runs on every column build, before the colDefs prop. */
+        readonly columnDefinitions: IHookPoint<GridColumnDefinitionsHook>;
+    };
 }
 
 /** Which cell a hook is running for. */
@@ -1770,15 +1778,17 @@ interface IGridCells {
     getCells(): IGridCell[];
     /** The cell drawing this field, where one is on screen. */
     getCell(record: IRecord, columnName: string): IGridCell | undefined;
-    /** Which control draws a cell. */
-    addControlHook(hook: GridControlHook, priority?: number): () => void;
-    /** The parameters the control drawing a cell is handed. */
-    addControlParametersHook(hook: GridControlParametersHook, priority?: number): () => void;
-    /** Below GRID_MODULE_PRIORITY.grouping, a background is lost while grouped. */
-    addCellThemeHook(hook: GridCellThemeHook, priority?: number): () => void;
-    addCellLoadingHook(hook: GridCellLoadingHook, priority?: number): () => void;
-    /** Commands show while the row is hovered, focused or selected. */
-    addCellCommandsHook(hook: GridCellCommandsHook, priority?: number): () => void;
+    readonly hooks: {
+        /** Which control draws a cell. */
+        readonly control: IHookPoint<GridControlHook>;
+        /** The parameters the control drawing a cell is handed. */
+        readonly controlParameters: IHookPoint<GridControlParametersHook>;
+        /** Below GRID_MODULE_PRIORITY.grouping, a background is lost while grouped. */
+        readonly theme: IHookPoint<GridCellThemeHook>;
+        readonly loading: IHookPoint<GridCellLoadingHook>;
+        /** Commands show while the row is hovered, focused or selected. */
+        readonly commands: IHookPoint<GridCellCommandsHook>;
+    };
 }
 
 interface IGridCellParameters {
@@ -1816,7 +1826,9 @@ interface IGridRowSettings {
 }
 
 interface IGridRows {
-    addRowHeightHook(hook: GridRowHeightHook, priority?: number): () => void;
+    readonly hooks: {
+        readonly height: IHookPoint<GridRowHeightHook>;
+    };
     /** Puts the class on every row with a record the rule holds for; pinned rows never take it. */
     addRowClass(className: string, rule: (params: { record: IRecord; node: IRowNode<IRecord> }) => boolean): () => void;
     /** Runs the class rules over the records' rows again. */
@@ -1827,15 +1839,19 @@ type GridLockHook = (result: IGridLock, context: IGridLockHookParameters) => voi
 
 interface IGridLocks {
     get(context?: IGridLockHookParameters): IGridLockResult;
-    /** A context with a record and no columnName asks about the whole row. */
-    addLockHook(hook: GridLockHook, priority?: number): () => void;
+    readonly hooks: {
+        /** A context with a record and no columnName asks about the whole row. */
+        readonly lock: IHookPoint<GridLockHook>;
+    };
 }
 
 type GridValidationHook = (result: IFieldValidationResult, params: { record: IRecord; columnName: string }) => void;
 
 interface IGridValidation {
-    /** An error blocks the record's save. */
-    addValidationHook(hook: GridValidationHook, priority?: number): () => void;
+    readonly hooks: {
+        /** An error blocks the record's save. */
+        readonly validation: IHookPoint<GridValidationHook>;
+    };
 }
 
 interface IGridSettings {
@@ -1865,7 +1881,9 @@ interface IGridSurface {
 type GridSurfacesHook = (surfaces: IGridSurface[]) => void;
 
 interface IGridSurfaces {
-    addSurfacesHook(hook: GridSurfacesHook, priority?: number): () => void;
+    readonly hooks: {
+        readonly surfaces: IHookPoint<GridSurfacesHook>;
+    };
 }
 
 type IGridRowModelType = 'clientSide' | 'serverSide';
@@ -1925,10 +1943,12 @@ type GridThemeHook = (result: IGridAgTheme, fluentTheme: ITheme) => void;
 
 /** The AG Grid theme the grid is drawn in, and the styles of its root element. */
 interface IGridTheme {
-    /** A hook over the AG Grid theme, read at mount. */
-    addThemeHook(hook: GridThemeHook, priority?: number): () => void;
-    /** A later style wins where the selectors are equally specific. */
-    addStylesHook(hook: GridStylesHook, priority?: number): () => void;
+    readonly hooks: {
+        /** A hook over the AG Grid theme, read at mount. */
+        readonly theme: IHookPoint<GridThemeHook>;
+        /** A later style wins where the selectors are equally specific. */
+        readonly styles: IHookPoint<GridStylesHook>;
+    };
 }
 type GridAgGridInitialOptionsHook = (result: IGridAgGridInitialOptions) => void;
 
@@ -1944,10 +1964,12 @@ interface IGrid extends IRuntime {
     readonly services: IGridServiceLocator;
     /** The modules the grid was given, by name. */
     readonly modules: { get(name: string): any; find(name: string): any; observe(name: string, callback: (instance: any) => void | (() => void)): () => void };
-    /** A hook over the options AG Grid reads once, when it is created. */
-    addAgGridInitialOptionsHook(hook: GridAgGridInitialOptionsHook, priority?: number): () => void;
-    /** AG Grid is handed an option again whenever its reference changes. */
-    addAgGridOptionsHook(hook: GridAgGridOptionsHook, priority?: number): () => void;
+    readonly hooks: {
+        /** A hook over the options AG Grid reads once, when it is created. */
+        readonly agGridInitialOptions: IHookPoint<GridAgGridInitialOptionsHook>;
+        /** AG Grid is handed an option again whenever its reference changes. */
+        readonly agGridOptions: IHookPoint<GridAgGridOptionsHook>;
+    };
     /** Runs the option hooks again. */
     refreshAgGridOptions(): void;
     /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
@@ -1985,9 +2007,11 @@ interface IGridRowSelectionEvents {
 interface IGridRowSelection {
     readonly events: IEventEmitter<IGridRowSelectionEvents>;
     getMode(): 'single' | 'multiple';
-    addSelectRecordsHook(hook: GridSelectRecordsHook, priority?: number): () => void;
-    addSelectionStateHook(hook: GridSelectionStateHook, priority?: number): () => void;
-    /** Selects the records through the addSelectRecordsHook hooks. */
+    readonly hooks: {
+        readonly selectRecords: IHookPoint<GridSelectRecordsHook>;
+        readonly selectionState: IHookPoint<GridSelectionStateHook>;
+    };
+    /** Selects the records through the hooks.selectRecords hooks. */
     selectRecords(provider: IDataProvider, recordIds: string[]): Promise<void>;
     toggleRecord(record: IRecord): Promise<void>;
     isSelectionColumn(columnName: string | undefined): boolean;
@@ -2030,8 +2054,10 @@ interface IGridFiltering {
     getOpenTarget(): HTMLElement | undefined;
     openFilter(columnName: string, target?: HTMLElement): void;
     closeFilter(): void;
-    /** A hook over the parameters the filter callout's operator and value controls are handed. */
-    addFilterControlParametersHook(hook: GridFilterControlParametersHook, priority?: number): () => void;
+    readonly hooks: {
+        /** A hook over the parameters the filter callout's operator and value controls are handed. */
+        readonly filterControlParameters: IHookPoint<GridFilterControlParametersHook>;
+    };
     getFilterControlParameters(parameters: IParameters, params: { column: IColumn; control: GridFilterControl; index: number }): IParameters;
     readonly components: IGridFilteringComponents;
 }
@@ -3556,8 +3582,10 @@ interface IDatasetControlViewSwitcher {
     getCurrentView(): IDatasetControlView | undefined;
     /** Loads the control for the view. */
     select(viewId: string): void;
-    /** Registers a hook over the items of the switcher's menu, which it adds to or changes in place. */
-    addItemsHook(hook: (items: IContextualMenuItem[]) => void, priority?: number): () => void;
+    readonly hooks: {
+        /** Registers a hook over the items of the switcher's menu, which it adds to or changes in place. */
+        readonly items: IHookPoint<(items: IContextualMenuItem[]) => void>;
+    };
 }
 
 interface IViewSwitcherProps {
@@ -3747,12 +3775,14 @@ interface IRibbon extends IRuntime {
     isRunning(commandId: string): boolean;
     /** Loads the commands again in place; the latest call wins. */
     reload(): Promise<void>;
-    /** Registers a hook over the commands, run after onLoad on every load; call reload to apply it now. A higher priority gets the later word. Returns what takes it back off. */
-    addCommandsHook(hook: (commands: IRibbonCommand[]) => void, priority?: number): () => void;
+    readonly hooks: {
+        /** Registers a hook over the commands, run after onLoad on every load; call reload to apply it now. A higher priority gets the later word. Returns what takes it back off. */
+        readonly commands: IHookPoint<(commands: IRibbonCommand[]) => void>;
+    };
 }
 
 interface IRibbonProps {
-    /** Called on init and on every reload(); the commands registered through addCommandsHook follow. */
+    /** Called on init and on every reload(); the commands registered through hooks.commands follow. */
     onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to 'start'. */
     align?: 'start' | 'end';
@@ -3826,10 +3856,12 @@ interface IDatasetControlEditColumns {
     save(): Promise<void>;
     /** The edit in progress; there only while the editor is open. */
     getSession(): DatasetControlEditColumnsSession | undefined;
-    /** Registers a hook over the commands at the top of the editor. */
-    addCommandsHook(hook: (commands: ICommandBarItemProps[], session: DatasetControlEditColumnsSession) => void, priority?: number): () => void;
-    /** Registers a hook over each chosen column's commands, Remove first. */
-    addColumnCommandsHook(hook: (commands: ICommandBarItemProps[], column: IColumn, session: DatasetControlEditColumnsSession) => void, priority?: number): () => void;
+    readonly hooks: {
+        /** Registers a hook over the commands at the top of the editor. */
+        readonly commands: IHookPoint<(commands: ICommandBarItemProps[], session: DatasetControlEditColumnsSession) => void>;
+        /** Registers a hook over each chosen column's commands, Remove first. */
+        readonly columnCommands: IHookPoint<(commands: ICommandBarItemProps[], column: IColumn, session: DatasetControlEditColumnsSession) => void>;
+    };
 }
 
 /** The edit the column editor holds while it is open. */
@@ -3938,7 +3970,9 @@ interface IDatasetControlSurface {
 type DatasetControlSurfacesHook = (surfaces: IDatasetControlSurface[]) => void;
 
 interface IDatasetControlSurfaces {
-    addSurfacesHook(hook: DatasetControlSurfacesHook, priority?: number): () => void;
+    readonly hooks: {
+        readonly surfaces: IHookPoint<DatasetControlSurfacesHook>;
+    };
 }
 
 /** The DatasetControl as its consumer drives it; a new one for every mount. */
@@ -4131,8 +4165,10 @@ interface ITaskDataProvider extends IDataProvider {
     getFieldMapping(): IFieldMapping;
     /** The columns quick find searches, by name. */
     setQuickFindColumns(columnNames: string[]): void;
-    /** Changes the available columns, also read as definitions for saved views that list them. */
-    addAvailableColumnsHook(hook: (columns: IColumn[]) => void, priority?: number): () => void;
+    readonly hooks: {
+        /** Changes the available columns, also read as definitions for saved views that list them. */
+        readonly availableColumns: IHookPoint<(columns: IColumn[]) => void>;
+    };
     /** Reads the tasks with this column whatever the view shows; returns its unregistration. */
     addRequiredColumn(column: IColumn): () => void;
     /** Answers filters and quick find for the columns the matcher claims. */
@@ -4192,8 +4228,10 @@ interface ITaskRuntime extends IRuntime {
     /** Runs the operation with the grid loading, and shows its failure once in a dialog. */
     execute<T>(operation: () => Promise<T>, options: ITaskExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
     execute<T>(operation: () => Promise<T>, options?: ITaskExecuteParameters): Promise<T>;
-    /** Registers a hook over every item TaskDatasetControl.Ribbon draws, the ones in its menus included. */
-    addRibbonCommandUiHook(hook: (item: IContextualMenuItem) => void, priority?: number): () => void;
+    readonly hooks: {
+        /** Registers a hook over every item TaskDatasetControl.Ribbon draws, the ones in its menus included. */
+        readonly ribbonCommandUi: IHookPoint<(item: IContextualMenuItem) => void>;
+    };
 }
 
 interface IDatasetControlModuleMap {
@@ -4610,7 +4648,7 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
     }) => JSX.Element;
     /** DatasetControl.PageSizeSwitcher showing the task count, always disabled. */
     PageSizeSwitcher: (props: {}) => JSX.Element;
-    /** DatasetControl.Ribbon, its items passed through addRibbonCommandUiHook. */
+    /** DatasetControl.Ribbon, its items passed through hooks.ribbonCommandUi. */
     Ribbon: (props: { className?: string; disabled?: boolean; components?: { onRenderCommandBar?: (props: { items: ICommandBarItemProps[] }) => JSX.Element | null } }) => JSX.Element;
 };
 

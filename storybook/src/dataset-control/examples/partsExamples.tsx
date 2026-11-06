@@ -15,7 +15,7 @@ const selectStage = (control: IDatasetControl, stage: number) => {
 
 //adds a menu to whatever ribbon the control draws
 const addSelectMenu = (control: IDatasetControl) => {
-    control.parts.observe('ribbon', ribbon => ribbon.addCommandsHook(commands => {
+    control.parts.observe('ribbon', ribbon => ribbon.hooks.commands.add(commands => {
         commands.push({ id: 'select', label: 'Select', iconName: 'MultiSelect', commands: [
             { id: 'selectNegotiating', label: 'Deals in negotiation', onExecute: () => selectStage(control, NEGOTIATE_STAGE) },
             { id: 'selectWon', label: 'Won deals', onExecute: () => selectStage(control, WON_STAGE) },
@@ -70,7 +70,7 @@ const EDIT_COLUMNS_CODE = `import { loadDeals } from './views'
 
 //adds a command above the column pickers
 const addCommands = (control: IDatasetControl) => {
-    control.parts.observe('editColumns', editColumns => editColumns.addCommandsHook((commands, session) => {
+    control.parts.observe('editColumns', editColumns => editColumns.hooks.commands.add((commands, session) => {
         const keepOnlyTheDeal = () => session.getColumns().filter(column => column.name !== 'name').forEach(column => session.removeColumn(column.name))
         commands.push({ key: 'keepOnlyTheDeal', text: 'Keep only the deal', iconProps: { iconName: 'ClearFilter' }, onClick: keepOnlyTheDeal })
     }))

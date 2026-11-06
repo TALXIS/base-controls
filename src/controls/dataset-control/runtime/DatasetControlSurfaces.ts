@@ -1,4 +1,4 @@
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 
 /** Something a module draws in the DatasetControl. */
 export interface IDatasetControlSurface {
@@ -10,14 +10,14 @@ export interface IDatasetControlSurface {
 /** A hook over what the modules draw in the DatasetControl. */
 export type DatasetControlSurfacesHook = (surfaces: IDatasetControlSurface[]) => void;
 
+export interface IDatasetControlSurfacesHooks {
+    /** What the modules draw in the DatasetControl. */
+    readonly surfaces: IHookPoint<DatasetControlSurfacesHook>;
+}
+
 /** What the modules draw in the DatasetControl, assembled from what they added. */
 export interface IDatasetControlSurfaces {
-    /**
-     * Adds a hook over what the modules draw in the DatasetControl.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addSurfacesHook(hook: DatasetControlSurfacesHook, priority?: number): () => void;
+    readonly hooks: IDatasetControlSurfacesHooks;
 }
 
 /** What the control's own parts read of it. */
@@ -27,15 +27,13 @@ export interface IDatasetControlSurfacesInternal extends IDatasetControlSurfaces
 }
 
 export class DatasetControlSurfaces implements IDatasetControlSurfacesInternal {
-    private _surfaceHooks = new HookRegistry<DatasetControlSurfacesHook>();
-
-    public addSurfacesHook(hook: DatasetControlSurfacesHook, priority?: number): () => void {
-        return this._surfaceHooks.add(hook, priority);
-    }
+    public readonly hooks = {
+        surfaces: new HookRegistry<DatasetControlSurfacesHook>(),
+    };
 
     public getSurfaces(): IDatasetControlSurface[] {
         const surfaces: IDatasetControlSurface[] = [];
-        this._surfaceHooks.apply(surfaces);
+        this.hooks.surfaces.apply(surfaces);
         return surfaces;
     }
 }

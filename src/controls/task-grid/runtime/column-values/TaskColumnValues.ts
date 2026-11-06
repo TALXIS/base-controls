@@ -123,7 +123,7 @@ export class TaskColumnValues {
 
     private _onGridAvailable = (grid: IGrid): (() => void) => {
         this._grid = grid as IGrid<ITaskGridServiceMap>;
-        grid.services.get('cells').addCellLoadingHook(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
+        grid.services.get('cells').hooks.loading.add(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
         return () => this._grid = undefined;
     };
 

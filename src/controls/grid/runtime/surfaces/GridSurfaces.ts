@@ -1,4 +1,4 @@
-import { HookRegistry } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 
 /** Something a module draws over the grid. */
 export interface IGridSurface {
@@ -10,14 +10,14 @@ export interface IGridSurface {
 /** A hook over what the modules draw over the grid. */
 export type GridSurfacesHook = (surfaces: IGridSurface[]) => void;
 
+export interface IGridSurfacesHooks {
+    /** What the modules draw over the grid. */
+    readonly surfaces: IHookPoint<GridSurfacesHook>;
+}
+
 /** What the modules draw over the grid, assembled from what they added. */
 export interface IGridSurfaces {
-    /**
-     * Adds a hook over what the modules draw over the grid.
-     *
-     * @param priority Ascending: a higher number runs later.
-     */
-    addSurfacesHook(hook: GridSurfacesHook, priority?: number): () => void;
+    readonly hooks: IGridSurfacesHooks;
 }
 
 /** What the grid's own parts read of it. */
@@ -27,17 +27,14 @@ export interface IGridSurfacesInternal extends IGridSurfaces {
 }
 
 export class GridSurfaces implements IGridSurfacesInternal {
-    private _surfaceHooks = new HookRegistry<GridSurfacesHook>();
-
-    public addSurfacesHook(hook: GridSurfacesHook, priority?: number): () => void {
-        return this._surfaceHooks.add(hook, priority);
-    }
+    public readonly hooks = {
+        surfaces: new HookRegistry<GridSurfacesHook>(),
+    };
 
     public getSurfaces(): IGridSurface[] {
         const surfaces: IGridSurface[] = [];
-        this._surfaceHooks.apply(surfaces);
+        this.hooks.surfaces.apply(surfaces);
         return surfaces;
     }
 }
-
 

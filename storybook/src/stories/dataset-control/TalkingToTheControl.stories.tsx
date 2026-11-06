@@ -54,7 +54,7 @@ A module adds a feature to the control, such as the user's own views. Pass modul
 | \`onLoad(control, { signal })\` | Can be async. \`signal\` is aborted when the mount goes. A throw fails the load, and the modules already loaded are destroyed. |
 | \`onDestroy(instance)\` | Optional. Called as the mount goes, the last loaded first, before the provider is released. |
 
-Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed, as the example's \`types.ts\` does. The control a module's \`onLoad\` gets can also add views, with \`addViewsHook\`, as the example does, and a module draws its own dialogs or panels with \`surfaces.addSurfacesHook\`.
+Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed, as the example's \`types.ts\` does. The control a module's \`onLoad\` gets can also add views, with \`hooks.views\`, as the example does, and a module draws its own dialogs or panels with \`surfaces.hooks.surfaces.add\`.
 
 ## Reference
 
@@ -68,7 +68,7 @@ Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed,
 | \`getViewId()\`, \`getView()\` | The view shown, and the same view as it was resolved, with its columns and \`data\`. |
 | \`getProvider()\` | The provider shown; \`undefined\` until the load succeeds. Inside the control, \`useDataProvider()\` returns it too. |
 | \`parts\`, \`modules\` | The parts and the modules, under *Reach the parts* and *Add a module*. |
-| \`surfaces.addSurfacesHook(hook, priority?)\` | Draws a dialog or panel of your own in the control: \`hook(items)\` pushes \`{ key, onRender }\`, and \`onRender\` returns \`null\` while there is nothing to show. |
+| \`surfaces.hooks.surfaces.add(hook, priority?)\` | Draws a dialog or panel of your own in the control: \`hook(items)\` pushes \`{ key, onRender }\`, and \`onRender\` returns \`null\` while there is nothing to show. |
 | \`lifecycle\` | The status, the error and the lifecycle events, and \`remount()\` for the view that failed to load. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it: see [**Localization**](?path=/docs/concepts-localization--overview). |
 | \`getTheme()\` | The Fluent theme the control is drawn in: see [**Theming**](?path=/docs/concepts-theming--overview). |
@@ -90,7 +90,7 @@ Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed,
 
 | Member | Description |
 |---|---|
-| \`addViewsHook(hook, priority?)\` | Adds to or changes the views \`onLoad\` returned: \`hook(views)\` changes them in place. |
+| \`hooks.views.add(hook, priority?)\` | Adds to or changes the views \`onLoad\` returned: \`hook(views)\` changes them in place. |
 | \`getViewStateStore()\` | The open view's entry in the state store. |
 
 Each \`register…\` returns its unregistration, and a higher \`priority\` runs later.
@@ -145,7 +145,7 @@ export const AddAViewFromAModule: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A module of your own adds *Closing soon* to the views \`onLoad\` returns, through \`addViewsHook\`. Try: pick *Closing soon* under *Reports* in the view switcher.`,
+                story: `A module of your own adds *Closing soon* to the views \`onLoad\` returns, through \`hooks.views\`. Try: pick *Closing soon* under *Reports* in the view switcher.`,
             },
         },
     },

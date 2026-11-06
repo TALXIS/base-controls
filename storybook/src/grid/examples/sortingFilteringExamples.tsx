@@ -80,7 +80,7 @@ const filterPlaceholdersModule: IGridModule = {
     //after the filtering module, which it reads as it loads
     priority: 1,
     onLoad: grid => {
-        grid.modules.get('filtering').addFilterControlParametersHook((result, { column, control }) => {
+        grid.modules.get('filtering').hooks.filterControlParameters.add((result, { column, control }) => {
             const placeholder = FILTER_PLACEHOLDERS.get(column.name)
             if (control === 'value' && placeholder) {
                 result.Placeholder = { raw: placeholder }

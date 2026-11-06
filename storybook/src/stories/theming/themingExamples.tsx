@@ -107,7 +107,7 @@ const ESCALATED = '#a4262c'
 const escalatedTicketsModule: IGridModule = {
     name: 'escalatedTickets',
     onLoad: grid => {
-        grid.services.get('cells').addCellThemeHook((builder, { record }) => {
+        grid.services.get('cells').hooks.theme.add((builder, { record }) => {
             //a two-options value reads as '1' or '0'
             if (record.getValue('escalated') === '1') {
                 builder.tint(ESCALATED, 'strong')

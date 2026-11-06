@@ -38,7 +38,7 @@ Each is off until its prop is set, and they come before the commands from \`onLo
 
 \`control.parts.get('ribbon')\` returns the ribbon once it is drawn: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). Its members are under *From your code* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview). When a command changes what applies without changing the selection, call \`reload()\`, as **Mark as won** does in the example's \`DealsRibbon.tsx\`.
 
-To add commands from outside \`onLoad\`, such as from a module, observe the ribbon and call \`addCommandsHook\`, as \`addSelectMenu\` adds the example's **Select** menu: see *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
+To add commands from outside \`onLoad\`, such as from a module, observe the ribbon and call \`hooks.commands\`, as \`addSelectMenu\` adds the example's **Select** menu: see *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
 
 ## Where next
 

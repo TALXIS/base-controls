@@ -68,9 +68,9 @@ export class TaskDragging implements ITaskDragging {
         const grid = taskGrid as IGrid<ITaskGridServiceMap>;
         this._grid = grid;
         const services = grid.services;
-        grid.addAgGridInitialOptionsHook(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
-        grid.addAgGridOptionsHook(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
-        services.get('gridTheme').addStylesHook(this._onStyles, TASK_GRID_PRIORITY.tree);
+        grid.hooks.agGridInitialOptions.add(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
+        grid.hooks.agGridOptions.add(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
+        services.get('gridTheme').hooks.styles.add(this._onStyles, TASK_GRID_PRIORITY.tree);
         services.get('rows').addRowClass(TASK_ROW_CLASS_NAMES.dropTarget, ({ record }) => this._dropInto?.data === record);
         grid.modules.observe('editing', editing => { editing.events.addEventListener('onEditedCellChanged', this._onEditedCellChanged); });
         services.observe('gridApi', this._onGridApiAvailable);
