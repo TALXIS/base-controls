@@ -36,7 +36,6 @@ const GridExample = () => {
         //loaded by loadUser before onLoad on every mount
         const user = controlRef.current!.getDependencies<{ name: string }>()
         const provider = createDealsProvider()
-        await view!.resolve(provider)
         if (view!.id === 'mine') {
             provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'owner', conditionOperator: Operators.Equal.Value, value: user.name }] })
         }

@@ -13,7 +13,7 @@ When the built-in modules do not cover what you need, such as drawing critical t
 
 ## A module
 
-A Gantt module is an object with a \`name\`, an \`onLoad\` that may be async, and an optional \`onDestroy(instance)\`. What \`onLoad\` returns is the module's instance, which the rest of your code reaches by the module's name. To type a module as an \`IGanttModule\`, add its name to \`IGanttModuleMap\` through module augmentation.
+A Gantt module is an object with a \`name\`, an \`onLoad\` that may be async, and an optional \`onDestroy(instance)\`. What \`onLoad\` returns is the module's instance, which the rest of your code reaches by the module's name. To type a module as an \`IGanttModule\`, as the example does, add its name and instance to \`IGanttModuleMap\` by augmenting \`@talxis/base-controls/gantt\`.
 
 ## Lifecycle
 
@@ -54,7 +54,7 @@ Every \`register…\` returns the function that unregisters it, and takes an opt
 
 ## Inside what the Gantt draws
 
-A surface, a marker slot or a tooltip part reads the Gantt with \`useGantt()\`, a service with \`useGanttService(key)\`, and a module with \`useGanttModule(name)\`. A service that comes with the chart is \`undefined\` until it does, and the component renders again when it arrives.
+Content you draw over the chart, a marker slot or a tooltip part reads the Gantt with \`useGantt()\`, a service with \`useGanttService(key)\`, and a module with \`useGanttModule(name)\`. A service that comes with the chart is \`undefined\` until it does, and the component renders again when it arrives.
 
 ## From outside
 
@@ -70,7 +70,7 @@ const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The chart is set up', hook: 'registerChartConfig', text: 'Once the task grid\'s AG Grid is ready, the chart config hooks run on DHTMLX\'s chart before it is drawn.' },
     { title: 'The chart services arrive', hook: 'services.observe', text: '`chart`, `timeline`, `dragging`, `zooming`, `grid` and `tasks` register, so their observers run.' },
     { title: 'The tasks are drawn', hook: 'onTasksParsed', text: 'The chart draws the grid\'s rows as bars and fires `onTasksParsed(true)`, and `false` each time it redraws them.' },
-    { title: 'The chart is ready', hook: 'onChartReady', text: '`onChartReady` fires with the chart, and the surfaces are drawn over it.' },
+    { title: 'The chart is ready', hook: 'onChartReady', text: '`onChartReady` fires with the chart, and what the modules registered with `registerSurface` is drawn over it.' },
     { title: 'The Gantt unmounts', hook: 'onDestroy', text: '`events` fires `onDestroyed`, then each module\'s `onDestroy` gets what its `onLoad` returned, and the chart is destroyed.' },
 ]
 

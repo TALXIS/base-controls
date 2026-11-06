@@ -14,12 +14,7 @@ TaskGrid shows tasks as a tree, each under its parent and in its place among its
 
 {{story: The smallest task grid}}
 
-- \`TaskDatasetControl\` is the DatasetControl for tasks: it takes the DatasetControl's parts and most of its props.
-- Its \`onLoad\` returns the tasks and the columns that make the tree: see [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
-- \`TaskGrid\` goes in its body and takes the Grid's props.
-- Creating, editing and deleting are off until you turn them on: see [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview).
-
-Place it under the root providers: see [**Quick start**](?path=/docs/concepts-quick-start--overview).
+Where the tasks come from, and which columns make the tree, is on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview). What the user may change is on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). Place the control under the root providers: see [**Quick start**](?path=/docs/concepts-quick-start--overview).
 
 ## Changing how it looks
 
@@ -52,7 +47,7 @@ Every DatasetControl part works inside a \`TaskDatasetControl\`. Three are its o
 
 | Part | Description |
 |---|---|
-| \`TaskDatasetControl.Ribbon\` | The DatasetControl ribbon, with *New*, *Edit* and *Delete* ahead of your own commands, and what the modules add. |
+| \`TaskDatasetControl.Ribbon\` | The DatasetControl ribbon, with *New*, and *Edit* and *Delete* while tasks are selected, ahead of your own commands and what the modules add. |
 | \`TaskDatasetControl.Settings\` | A menu of toggles: *Show hierarchy*, *Hide inactive tasks* and what the modules add. \`enableShowHierarchy={false}\` and \`enableHideInactiveTasks={false}\` leave one out. |
 | \`TaskDatasetControl.PageSizeSwitcher\` | The count of tasks shown. Task grids load every task at once, so it has no page sizes. |
 
@@ -62,11 +57,11 @@ Every DatasetControl part works inside a \`TaskDatasetControl\`. Three are its o
 
 | Prop | Default | Description |
 |---|---|---|
-| \`modules\` | None | Grid modules, with \`createTaskEditingModule()\` for editing. Grouping, totals and the plain editing module are left out. At mount. |
+| \`modules\` | None | Grid modules. At mount. See *Where modules go* on [**Modules**](?path=/docs/controls-taskgrid-modules--overview). |
 | \`components\` | Defaults | The Grid's pieces, plus the task grid's own cells. See *Changing how it looks* above. |
-| \`enableZebra\` | \`false\` | |
-| \`enableOptionSetColors\` | \`true\` | |
-| \`onOpenRecord\` | Opens the task, or the record a lookup points to | Through the store. |
+| \`enableZebra\` | \`false\` | Shades every other row. At mount. |
+| \`enableOptionSetColors\` | \`true\` | Draws options that have a colour as tags. At mount. |
+| \`onOpenRecord\` | Opens the task, or the record a lookup points to, through the store | Replaces opening a record. Live. |
 
 ## Where next
 
@@ -106,7 +101,7 @@ export const TheSmallestTaskGrid: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The sample tasks in memory, with a ribbon and the settings. Try: add a subtask from a row's **+**.`,
+                story: `The sample tasks in memory, with a ribbon and the settings menu. Try: add a subtask from a row's **+**.`,
             },
         },
     },

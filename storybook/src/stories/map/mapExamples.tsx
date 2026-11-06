@@ -3,8 +3,9 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { createLeafletMapProvider } from './LeafletMapProvider'
 
-const MAP_CODE = `import { Map } from '@talxis/base-controls'
-import { Dataset } from '@talxis/client-libraries'
+const MAP_CODE = `import { IMapProvider, Map, usePcfContext } from '@talxis/base-controls'
+import { Dataset, DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
+import { mergeStyleSets } from '@fluentui/react'
 import { CITIES } from './data'
 
 //the columns a pin's position is read from

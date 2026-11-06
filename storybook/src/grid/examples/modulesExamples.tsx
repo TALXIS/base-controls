@@ -1,32 +1,79 @@
 import React from 'react'
-import { ChoiceGroup, IChoiceGroupOption, Icon, mergeStyleSets, Stack, Text } from '@fluentui/react'
-import { IGridRowModelType } from '@talxis/base-controls'
-import { MemoryDataProvider } from '@talxis/client-libraries'
 import { GridExampleRunner } from '../GridExampleRunner'
-import { createTicketsProvider } from '../data'
+import type { IGridExampleFile } from '../GridLivePreview'
 
-export const OPEN_TICKET_GROUPS_CODE = `//your AG Grid Enterprise key, as your host supplies it
+export const OPEN_TICKET_GROUPS_CODE = `import { createRemoteTickets } from './remoteTickets'
+
+//your AG Grid Enterprise key, as your host supplies it
 const AG_GRID_LICENSE_KEY = ''
 
-interface IGridExampleProps {
-    rowModel: IGridRowModelType
-}
+const ROW_MODELS = [
+    { key: 'clientSide', text: 'Client side' },
+    { key: 'serverSide', text: 'Server side (Enterprise)' },
+]
 
-//remounted per row model: modules are read at mount
-const GridExample = (props: IGridExampleProps) => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            key={props.rowModel}
-            modules={[
-                //the module requires a key
-                ...(AG_GRID_LICENSE_KEY ? [createLicenseModule({ key: AG_GRID_LICENSE_KEY })] : []),
-                props.rowModel === 'serverSide' ? createServerSideRowModelModule() : createClientSideRowModelModule(),
-                createGroupingModule(),
-            ]}
-            height='440px' />
-    </DatasetControl.Body>
-</DatasetControl>
+const GridExample = () => {
+    const [rowModel, setRowModel] = React.useState<IGridRowModelType>('clientSide')
+    const [groupFetches, setGroupFetches] = React.useState(0)
+    const tickets = React.useMemo(() => createRemoteTickets(() => setGroupFetches(count => count + 1)), [])
+
+    const switchRowModel = (next: IGridRowModelType) => {
+        //the next row model starts with no group fetched
+        setGroupFetches(0)
+        tickets.refresh()
+        setRowModel(next)
+    }
+
+    return <DatasetControl onLoad={async () => ({ provider: tickets })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <ChoiceGroup label='Row model' selectedKey={rowModel} options={ROW_MODELS} onChange={(_, option) => option && switchRowModel(option.key as IGridRowModelType)} styles={{ flexContainer: { display: 'flex', columnGap: 24 } }} />
+            </DatasetControl.Header.Start>
+            <DatasetControl.Header.End>
+                <Text>{groupFetches === 1 ? '1 customer fetched' : groupFetches + ' customers fetched'}</Text>
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                //modules are read at mount
+                key={rowModel}
+                modules={[
+                    //the module requires a key
+                    ...(AG_GRID_LICENSE_KEY ? [createLicenseModule({ key: AG_GRID_LICENSE_KEY })] : []),
+                    rowModel === 'serverSide' ? createServerSideRowModelModule() : createClientSideRowModelModule(),
+                    createGroupingModule(),
+                ]}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+}
 `
+
+const REMOTE_TICKETS_FILE: IGridExampleFile = {
+    name: 'remoteTickets.ts',
+    code: `const FETCH_DELAY = 800
+
+/** The support queue grouped by customer, behind a slow service that reports each customer it fetches. */
+export const createRemoteTickets = (onGroupFetch: () => void) => {
+    class RemoteTickets extends MemoryDataProvider {
+        public async getDataAsync(...parameters: Parameters<MemoryDataProvider['getDataAsync']>) {
+            //a group's records are fetched by a provider of the group's own
+            if (this.getParentDataProvider()) {
+                //deferred: the grid fetches groups while it renders
+                window.setTimeout(onGroupFetch)
+            }
+            await new Promise(resolve => window.setTimeout(resolve, FETCH_DELAY))
+            return super.getDataAsync(...parameters)
+        }
+    }
+    const tickets = createTicketsProvider()
+    const remoteTickets = new RemoteTickets({ dataSource: tickets.getDataSource(), metadata: tickets.getMetadata() })
+    remoteTickets.setColumns(tickets.getColumns())
+    remoteTickets.grouping.addGroupBy({ columnName: 'customer', alias: 'customer_group' })
+    return remoteTickets
+}
+`,
+}
 
 export const PICK_MODULES_CODE = `interface IModuleSwitches {
     selection: boolean
@@ -80,92 +127,6 @@ const GridExample = () => {
 }
 `
 
-const FETCH_DELAY = 800
-
-//stands in for a remote service whose every fetch takes a moment
-class RemoteTicketsProvider extends MemoryDataProvider {
-    public groupFetches = 0
-    public onGroupFetch?: () => void
-
-    public async getDataAsync(...parameters: Parameters<MemoryDataProvider['getDataAsync']>) {
-        const topLevelProvider = this.getTopLevelDataProvider() as RemoteTicketsProvider
-        if (topLevelProvider !== this) {
-            topLevelProvider.groupFetches++
-            //deferred: a grid fetches its groups while it renders
-            window.setTimeout(() => topLevelProvider.onGroupFetch?.())
-        }
-        await new Promise(resolve => window.setTimeout(resolve, FETCH_DELAY))
-        return super.getDataAsync(...parameters)
-    }
-}
-
-const createRemoteTicketsProvider = (onGroupFetch: () => void) => {
-    const tickets = createTicketsProvider()
-    const provider = new RemoteTicketsProvider({ dataSource: tickets.getDataSource(), metadata: tickets.getMetadata() })
-    provider.setColumns(tickets.getColumns())
-    provider.grouping.addGroupBy({ columnName: 'customer', alias: 'customer_group' })
-    provider.onGroupFetch = onGroupFetch
-    provider.refresh()
-    return provider
-}
-
-const ROW_MODEL_OPTIONS: IChoiceGroupOption[] = [
-    { key: 'clientSide', text: 'Client side' },
-    { key: 'serverSide', text: 'Server side (Enterprise)' },
-]
-
-const styles = mergeStyleSets({
-    bar: {
-        marginBottom: 12,
-    },
-    options: {
-        display: 'flex',
-        columnGap: 24,
-    },
-})
-
-interface IRowModelBarProps {
-    rowModel: IGridRowModelType
-    groupFetches: number
-    onChange: (rowModel: IGridRowModelType) => void
-}
-
-const RowModelBar = (props: IRowModelBarProps) => <Stack horizontal wrap verticalAlign='end' horizontalAlign='space-between' tokens={{ childrenGap: 16 }} className={styles.bar}>
-    <ChoiceGroup
-        label='Row model'
-        selectedKey={props.rowModel}
-        options={ROW_MODEL_OPTIONS}
-        onChange={(_event, option) => option && props.onChange(option.key as IGridRowModelType)}
-        styles={{ flexContainer: styles.options }} />
-    <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 8 }}>
-        <Icon iconName='CloudDownload' />
-        <Text>{props.groupFetches === 1 ? '1 customer fetched' : props.groupFetches + ' customers fetched'}</Text>
-    </Stack>
-</Stack>
-
 export const PickModulesExample = () => <GridExampleRunner seedCode={PICK_MODULES_CODE} dataset='tickets' />
 
-export const OpenTicketGroupsExample = () => {
-    const [rowModel, setRowModel] = React.useState<IGridRowModelType>('clientSide')
-    const [, onGroupFetch] = React.useReducer((fetches: number) => fetches + 1, 0)
-    const providerRef = React.useRef<RemoteTicketsProvider>()
-
-    const createProvider = () => {
-        providerRef.current = createRemoteTicketsProvider(onGroupFetch)
-        return providerRef.current
-    }
-
-    const onRowModelChange = (next: IGridRowModelType) => {
-        const provider = providerRef.current!
-        //the next row model starts with no group fetched
-        provider.groupFetches = 0
-        provider.refresh()
-        setRowModel(next)
-    }
-
-    return <GridExampleRunner
-        seedCode={OPEN_TICKET_GROUPS_CODE}
-        onCreateProvider={createProvider}
-        previewProps={{ rowModel }}
-        renderAbovePreview={() => <RowModelBar rowModel={rowModel} groupFetches={providerRef.current?.groupFetches ?? 0} onChange={onRowModelChange} />} />
-}
+export const OpenTicketGroupsExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OPEN_TICKET_GROUPS_CODE }, REMOTE_TICKETS_FILE]} tabs={['preview', 'code']} />

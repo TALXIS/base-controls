@@ -12,19 +12,18 @@ The grid can remember where the user was, the row at the top, the focused cell a
 
 ## Where the state is kept
 
-- The grid reads its state as it mounts and writes it as the user scrolls, focuses cells and opens groups.
-- Inside a DatasetControl it is kept per view, in the control's own state: see the DatasetControl's [**State**](?path=/docs/controls-datasetcontrol-state--overview).
-- Where the state lives between sessions is up to [**State persistence**](?path=/docs/concepts-state-persistence--overview).
-- The column layout, sorting, filtering and grouping belong to the provider: see *Remember the layout* on [**Columns**](?path=/docs/controls-grid-columns--overview).
+The grid reads its state as it mounts, and writes it as the user scrolls, focuses cells and opens groups. Inside a DatasetControl it is kept per view, in the control's own state (see the DatasetControl's [**State**](?path=/docs/controls-datasetcontrol-state--overview)); outside one, in the \`StateProvider\` around the grid. Where it lives between sessions is up to [**State persistence**](?path=/docs/concepts-state-persistence--overview).
+
+The column layout, sorting, filtering and grouping belong to the provider, not to this state: see *Remember the layout* on [**Columns**](?path=/docs/controls-grid-columns--overview).
 
 ## What the grid keeps
 
 | Key | Shape | Description |
 |---|---|---|
-| \`viewport\` | \`{ scroll?: { rowId? }, focusedCell?: { rowId, columnId } }\` | The row at the top of the viewport and the focused cell, by AG Grid's row and column ids. The horizontal scroll is not kept. |
-| \`grouping\` | \`{ expandedLevel, toggledGroups }\` | How many levels are open, and the groups the user opened or closed against that level, by row id. With the grouping module only. |
+| \`viewport\` | \`{ scroll?: { rowId? }, focusedCell?: { rowId, columnId } }\` | The row at the top of the viewport and the focused cell. The horizontal scroll is not kept. |
+| \`grouping\` | \`{ expandedLevel, toggledGroups }\` | How many levels are open, and the groups the user opened or closed against that level. With the grouping module only. |
 
-On mount, the grid waits for the top row to appear, which inside a group means once that group has loaded, then scrolls it to the top and focuses the cell. If the user scrolls or clicks a cell first, or the row never comes, the grid stays where it is. After a later load, such as a sort, a filter or a new page, the grid scrolls back to the top.
+On mount, once the kept row has loaded, the grid scrolls it back to the top and focuses the kept cell; if the user scrolls or clicks a cell first, the grid stays where it is. A later load, such as a sort, a filter or a new page, scrolls back to the top.
 
 ## Keep your own module's state
 

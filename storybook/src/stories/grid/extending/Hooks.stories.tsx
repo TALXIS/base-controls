@@ -95,10 +95,12 @@ It runs when the grid is ready and on every load of the provider, so a change to
 
 Every header hook receives an \`IGridColumnHeader\`:
 
-- \`getColumn()\` is the provider's column, \`undefined\` for a column you added, and \`getColDef()\` its column definition.
-- \`getName()\`, \`getTitle()\`, \`getContext()\` and \`getAlignment()\` read what the header shows.
-- \`isRequired()\`, \`getAdornments()\` and \`getMenuItems()\` read what it draws.
-- \`getElement()\`, \`openMenu()\` and \`closeMenu()\` reach its element and menu.
+| Members | Read |
+|---|---|
+| \`getColumn()\`, \`getColDef()\` | The provider's column, \`undefined\` for a column you added, and its column definition |
+| \`getName()\`, \`getTitle()\`, \`getContext()\`, \`getAlignment()\` | What the header shows |
+| \`isRequired()\`, \`getAdornments()\`, \`getMenuItems()\` | What it draws |
+| \`getElement()\`, \`openMenu()\`, \`closeMenu()\` | Its element and its menu |
 
 \`registerColumnHeaderAdornments\` draws \`{ key, placement, title?, onRender? }\` beside the column's name. After the name, the modules add the lock of a locked column (\`'lock'\`, editing), the sort arrow, the filter funnel and the total's title; before it, the group icon. At the default priority, yours come first on the same side.
 

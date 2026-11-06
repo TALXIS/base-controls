@@ -24,8 +24,10 @@ Do not \`set\` or \`delete\` an id you use as a scope: the scope keeps writing t
 
 \`StateProvider\` hands a store to the components below it: the one you pass, or a new in-memory one. Without a provider, the whole page shares one in-memory store. A component reads it with one of two hooks:
 
-- \`useStateStore()\` returns the nearest store; scope it yourself with \`scope(id)\`.
-- \`useControlStateStore(stateKey)\` returns \`useStateStore().scope(stateKey)\`, kept per view inside a DatasetControl. Without a \`stateKey\`, it returns a throwaway store, so nothing survives a remount.
+| Hook | Returns |
+|---|---|
+| \`useStateStore()\` | The nearest store; scope it yourself with \`scope(id)\`. |
+| \`useControlStateStore(stateKey)\` | \`useStateStore().scope(stateKey)\`, kept per view inside a DatasetControl. Without a \`stateKey\`, a throwaway store, so nothing survives a remount. |
 
 A \`stateKey\` is the id of a component's scope, read once at mount. Every control in the library that takes a \`stateKey\` keeps its state this way.
 
@@ -43,10 +45,7 @@ Inside a DatasetControl, \`useControlStateStore\` scopes under the view the part
 
 ## Save state for later
 
-A store lives as long as its \`StateProvider\`, or the page without one. To keep state longer, save the dictionary:
-
-- **For the session**, hand it to \`context.mode.setControlState\` in a PCF (see [**PCF context**](?path=/docs/concepts-pcf-context--overview)).
-- **Across sessions**, save it as JSON, such as in \`localStorage\` or a table: entries are plain data.
+A store lives as long as its \`StateProvider\`, or the page without one. To keep state longer, save the dictionary it writes into: for the session, hand it to \`context.mode.setControlState\` in a PCF (see [**PCF context**](?path=/docs/concepts-pcf-context--overview)); across sessions, save it as JSON, such as in \`localStorage\` or a table, as its entries are plain data.
 
 In a PCF, build the store over the dictionary the host hands \`init\`, and save it once React has unmounted, as \`index.tsx\` in the example at the top does.
 
@@ -58,6 +57,7 @@ In a PCF, build the store over the dictionary the host hands \`init\`, and save 
 const EXPLORE: IExploreCard[] = [
     { title: 'State', iconName: 'History', href: '?path=/docs/controls-datasetcontrol-state--overview', text: 'What a DatasetControl keeps for each view, and how it reopens on the view the user was on.' },
     { title: 'PCF context', iconName: 'PlugConnected', href: '?path=/docs/concepts-pcf-context--overview', text: 'The host\'s context, whose mode keeps state for the session.' },
+    { title: 'RuntimeHost', iconName: 'Processing', href: '?path=/docs/controls-runtimehost-get-started--overview', text: 'Keep what the user picked when a control of your own remounts.' },
 ]
 
 const meta = {

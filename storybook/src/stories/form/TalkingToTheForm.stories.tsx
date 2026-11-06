@@ -6,21 +6,23 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { FromInsideExample, FromOutsideExample } from '../../form/react-form/talkingExamples'
 
 const DESCRIPTION = `
-Your code reaches the form from outside through \`onFormReady\` and the events of \`Form.Root\`, and from inside through \`useForm\` and \`useField\`. Through them it reads and sets values, saves, loads again and follows every change. Try it below: press **Set the phone**, then **Save**, and read the log under the form.
+Your own code often has to follow what the user does in a form, or fill in, read and save values itself. From outside, the form hands your code an api and raises events; from a component of yours placed inside it, hooks reach the form directly. Try it below: press **Set the phone**, then **Save**, and read the log under the form.
 
 {{canvas: Follow the form}}
 
 ## From outside the form
 
-\`onFormReady\` hands over an \`IFormApi\` once the record has loaded. Every load, \`refresh()\` included, draws the form anew and hands over a new one.
+\`onFormReady\` hands over an \`IFormApi\` once the record has loaded, and a new one after every load: see *Lifecycle* on [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview).
 
 | Member | Description |
 |---|---|
 | \`getData()\` | The values by column name, unsaved changes included. |
 | \`getField(name)\` | The field, with \`getValue()\` and \`setValue(value)\`. |
-| \`refresh()\` | Runs \`onLoad\` again: see [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview). |
+| \`refresh()\` | Runs \`onLoad\` again and draws the form anew. |
 
 ## Events
+
+\`Form.Root\` raises these events, and every one is live:
 
 | Event | Arguments | Fires when |
 |---|---|---|
@@ -31,21 +33,19 @@ Your code reaches the form from outside through \`onFormReady\` and the events o
 | \`onValidationSummaryChanged\` | \`summary\` | A save made a new validation summary: see [**Fields and validation**](?path=/docs/controls-form-fields-and-validation--overview). |
 | \`onError\` | \`error\`, \`message\` | \`onLoad\` or a save blocker threw. |
 
-Every event is live.
-
 ## From inside the form
 
-Any component of yours inside \`Form.Root\` reaches the form through these hooks:
+A component of yours inside \`Form.Root\` reaches the form through hooks:
 
 | Hook | Returns |
 |---|---|
 | \`useForm()\` | The form. Throws outside \`Form.Root\`. |
-| \`useField(name?)\` | The field named, or the field of the \`Form.Field\` around the component; \`null\` with neither. Draws again when its value changes and after each save. |
+| \`useField(name?)\` | The field named, or the field of the \`Form.Field\` around the component, or \`null\` with neither. Draws again when its value changes and after each save. |
 | \`useValidationSummary()\` | The validation summary as \`{ fieldName?, error, errorMessage }\` items, drawing again when it changes. |
 
 {{story: A part inside the form}}
 
-What \`useForm()\` returns:
+\`useForm()\` does not draw the component again when the form changes, so follow its \`events\`, as \`SaveBar\` does with \`onDirtyStateChanged\`. What it returns:
 
 | Member | Description |
 |---|---|
@@ -56,9 +56,7 @@ What \`useForm()\` returns:
 | \`getValidationSummary()\` | The validation summary of the last save. |
 | \`refresh()\` | Runs \`onLoad\` again. |
 | \`events\` | The events of \`Form.Root\`; \`addEventListener\` returns what removes the listener again. |
-| \`registerSaveBlocker(blocker)\` | Runs \`blocker(request)\` before every save from now on; \`request.isBlocked = true\` stops the save. Returns what removes it. |
-
-\`useForm()\` does not draw the component again: follow \`events\`, as \`SaveBar\` does with \`onDirtyStateChanged\`.
+| \`registerSaveBlocker(blocker)\` | Runs \`blocker(request)\` before every save from now on, once the fields pass; \`request.isBlocked = true\` stops the save. Returns what removes it. |
 
 ## Where next
 

@@ -16,18 +16,18 @@ These are the only pieces \`<Grid>\` itself takes \`components\` for. How slots 
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`overlays.emptyState\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyStateUiComponents\` | The overlay of a grid with no rows; its text is \`grid.noRecordsFound\` |
+| \`overlays.emptyState\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyStateUiComponents\` | The overlay of a grid with no rows |
 | \`overlays.loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | | The overlay while the provider loads; the text is the provider's loading message, drawn only while there is one |
 | \`rows.loading\` | \`onRenderShimmer\` | | A group's records while they load on the server-side row model |
 | \`rows.error\` | \`onRenderMessageBar\` | | Records or totals that failed to load, with the provider's error message |
 
 ## No records
 
-\`overlays.emptyState\` draws the grid's empty state, as the example above does. To change its text, see [**Localization**](?path=/docs/concepts-localization--overview). To show the same empty state outside a grid, use \`DatasetControl.EmptyState\`: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview).
+\`overlays.emptyState\` draws the grid's empty state, as the example above does. Its text is a label, which the example changes too: see [**Localization**](?path=/docs/concepts-localization--overview). To show the same empty state outside a grid, use \`DatasetControl.EmptyState\`: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview).
 
 ## Loading
 
-\`overlays.loading\` draws over the rows while the provider loads. Its text is the message the provider loads with, \`provider.setLoading(true, message)\`.
+\`overlays.loading\` draws over the rows while the provider loads. Its text is the message the provider loads with, \`provider.setLoading(true, message)\`, as the example's \`warehouse.ts\` sets it.
 
 {{story: Wait for the warehouse}}
 
@@ -79,7 +79,7 @@ export const WaitingForTheWarehouse: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`overlays.loading\` draws a slow warehouse lookup as a card with a progress bar and the provider's message. Try: press *Check stock again*.`,
+                story: `\`overlays.loading\` draws a slow warehouse lookup as a card with a progress bar and the provider's message. Try: press *Refresh*.`,
             },
         },
     },

@@ -6,29 +6,35 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { OwnControlExample, RibbonCommandExample } from '../../form/xrm-form/examples/yourOwnUiExamples'
 
 const DESCRIPTION = `
-\`XrmForm\` draws the ribbon, the notifications, the tabs and every control with the parts of \`Form\`. Its \`components\` prop hands any of them a slot of your own, while the FormXml still places the fields and \`formContext\` still drives them. Try it below: pick another industry.
+\`XrmForm\` draws the ribbon, the notifications, the tabs and every control with the same parts as \`Form\`, and each of them can be drawn your own way. The FormXml still places the fields and \`formContext\` still drives them, so your scripts keep working on what you draw. Try it below: pick another industry.
 
 {{canvas: Your own control}}
 
-## The pieces
-
-Each key of \`components\` is a piece, holding the slot of one part of \`Form\`. How pieces and slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview), and what each of these slots gets is on the form's [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview).
-
-| Piece | Part | Slot |
-|---|---|---|
-| \`control\` | \`Form.Control\` | \`onRenderControl\` |
-| \`tabs\` | \`Form.Tabs\` | \`onRenderTabs\` |
-| \`ribbon\` | \`Form.Ribbon\` | \`onRenderCommandBar\` |
-| \`notifications\` | \`Form.Notifications\` | \`onRenderNotifications\` |
-
 ## What XrmForm hands the slots
 
-- \`control\`: the slot is called for every control, with its \`id\` in the FormXml as \`props.id\`, and \`props.disabled\` following the FormXml and \`setDisabled()\`. Draw the controls you pick by \`id\`, and hand the rest to \`ControlComponents.onRenderControl(props)\`.
-- \`tabs\`: \`children\` holds the FormXml's visible tabs, each with its \`id\`, or its \`name\` when it has none, and its \`label\`. A tab's \`setFocus()\` and \`setVisible()\` keep working.
-- \`ribbon\`: **Save** calls \`formContext.data.save()\`. A command of your own reaches the form through \`formContext\`.
-- \`notifications\`: \`messages\` holds what \`setFormNotification()\` raised, then the validation errors.
+Each slot gets what the same slot of \`Form\` gets, as [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview) describes, filled in from the FormXml and \`formContext\`:
+
+| Key | What the slot gets |
+|---|---|
+| \`control\` | Every control, with its \`id\` in the FormXml as \`props.id\`, and \`props.disabled\` following the FormXml and \`setDisabled()\`. Draw the controls you pick by \`id\`, and hand the rest to \`ControlComponents.onRenderControl(props)\`. |
+| \`tabs\` | The FormXml's visible tabs as \`children\`, each with its \`id\`, or its \`name\` when it has none, and its \`label\`. A tab's \`setFocus()\` and \`setVisible()\` keep working. |
+| \`ribbon\` | **Save**, which calls \`formContext.data.save()\`. A command of your own reaches the form through \`formContext\`. |
+| \`notifications\` | What \`setFormNotification()\` raised, then the validation errors. |
 
 {{story: A command of your own}}
+
+## Changing how it looks
+
+\`XrmForm\` takes \`components\`, and the change is live. Each key holds the slot of one part of \`Form\`. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`control\` | \`onRenderControl\` | \`ControlComponents\` | Each control |
+| \`tabs\` | \`onRenderTabs\` | \`TabComponents\` | The tab headers and the open tab |
+| \`ribbon\` | \`onRenderCommandBar\` | | **Save** and *Unsaved changes* |
+| \`notifications\` | \`onRenderNotifications\` | | The notifications and the validation errors |
+
+A blank default is not exported.
 
 ## Where next
 

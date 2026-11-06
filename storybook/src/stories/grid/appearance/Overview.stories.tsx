@@ -12,20 +12,20 @@ The grid draws in the app theme (see [**Theming**](?path=/docs/concepts-theming-
 
 ## What you can change
 
-- **The grid:** its height and density, zebra rows and option set colours, and the AG Grid theme under the cells, all on this page. When each prop is read is on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
-- **Colours:** a cell's or a header's, by their data, on this page.
-- **A column:** what its header shows beside the name, its menu and its cells' commands on [**Columns**](?path=/docs/controls-grid-columns--overview); its cells and editor on [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview); its header on [**Custom headers**](?path=/docs/controls-grid-appearance-custom-headers--overview).
-- **Rows:** one row's height or a class on rows on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview); the overlays and the loading and error rows on [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview).
-- **What modules draw:** sort arrows, filter funnels, group cells and totals on [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview) and [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview); the save status, the lock column and the checkboxes on [**Editing**](?path=/docs/controls-grid-modules-editing--overview) and [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview).
-- **Text:** every label, through \`LabelsProvider\`, on [**Localization**](?path=/docs/concepts-localization--overview).
+Size, density and colours are on this page. Whatever else the grid draws takes a \`components\` map of pieces and slots, on \`<Grid>\`, on a module, or in a column's \`cellRendererParams\` and \`headerComponentParams\`; each page below lists its own under *Changing how it looks*, and how pieces and slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
-## Changing how it looks
-
-What the grid draws takes a \`components\` map: on \`<Grid>\`, on a module, or in a column's \`cellRendererParams\` and \`headerComponentParams\`. How its pieces and slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
-
-- Each Grid page that takes \`components\` has a *Changing how it looks* table: a piece's key, its slots, the default set and what it draws.
-- A slot can call the default set's function of the same name to draw the grid's own element.
-- A piece with no default set leaves its slots to draw their own element.
+| To change | See |
+|---|---|
+| The grid's height, row density, zebra rows, option set colours and the AG Grid theme | This page |
+| A cell's or a header's colours, by their data | This page |
+| What a column's header shows beside the name, its menu and its cells' commands | [**Columns**](?path=/docs/controls-grid-columns--overview) |
+| A column's cells and editor | [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview) |
+| A column's header | [**Custom headers**](?path=/docs/controls-grid-appearance-custom-headers--overview) |
+| The overlays, and the loading and error rows | [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview) |
+| One row's height, or a class on rows | [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) |
+| Sort arrows, filter funnels, group cells and totals | [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview), [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) |
+| The save status, the lock column and the checkboxes | [**Editing**](?path=/docs/controls-grid-modules-editing--overview), [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) |
+| Every label | [**Localization**](?path=/docs/concepts-localization--overview) |
 
 ## Size the grid
 
@@ -45,13 +45,11 @@ With a \`height\`, the grid is exactly that tall and its rows scroll inside it, 
 
 ## Colour cells by their data
 
-A column colours its cells with \`context.cell.onGetTheme(builder, { record })\`. To colour across columns, such as a whole row, register \`grid.services.get('cells').registerCellTheme(hook, priority?)\` in a module; the column's own \`onGetTheme\` runs after the hooks.
+A column colours its cells with \`context.cell.onGetTheme(builder, { record })\`, as the example at the top does. To colour across columns, such as a whole row, register \`grid.services.get('cells').registerCellTheme(hook, priority?)\` in a module; the column's own \`onGetTheme\` runs after the hooks.
 
-- \`builder.tint(hue, strength?)\` tints a cell by a hue: \`'subtle'\` by default, \`'strong'\`, or \`'solid'\`, which fills it.
-- For full control, set \`builder.colors\` (\`primary\`, \`background\`, \`text\`); the cell's value, links, tags and editor all follow.
-- Colour formats and helpers such as \`getTextColorForBackground\` are under *Your own components* on [**Theming**](?path=/docs/concepts-theming--overview).
-- The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
-- Zebra rows, grouping and totals colour rows too. A row hook at the default priority loses to grouping while the rows are grouped, so register it at \`GRID_MODULE_PRIORITY.grouping + 1\` (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
+\`builder.tint(hue, strength?)\` tints a cell by a hue: \`'subtle'\` by default, \`'strong'\`, or \`'solid'\`, which fills it. For full control, set \`builder.colors\` (\`primary\`, \`background\`, \`text\`), and the cell's value, links, tags and editor all follow. Colour formats and helpers such as \`getTextColorForBackground\` are on [**Theming**](?path=/docs/concepts-theming--overview).
+
+The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). Zebra rows and grouping colour rows too, and while the rows are grouped, grouping wins over a hook at the default priority, so register a row's colours at \`GRID_MODULE_PRIORITY.grouping + 1\` (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
 
 {{story: Tint escalated tickets}}
 
@@ -61,11 +59,7 @@ A column colours its cells with \`context.cell.onGetTheme(builder, { record })\`
 
 ## Colour column headers
 
-A column colours its header with \`context.header.onGetTheme(builder)\`. To colour any header, register \`grid.services.get('columns').headers.registerColumnHeaderTheme(hook, priority?)\` in a module; \`onGetTheme\` runs after it.
-
-- Everything in the header takes the colours: the name, the required marker and the module icons.
-- Its menu draws in the app theme: see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview).
-- Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`.
+A column colours its header with \`context.header.onGetTheme(builder)\`. To colour any header, register \`grid.services.get('columns').headers.registerColumnHeaderTheme(hook, priority?)\` in a module; \`onGetTheme\` runs after it. Everything in the header takes the colours, the name, the required marker and the module icons, while its menu draws in the app theme (see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview)). Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`, as the example does.
 
 {{story: Show which columns need a review}}
 

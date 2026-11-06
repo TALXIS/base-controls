@@ -39,14 +39,14 @@ The date rows show the dates as the timeline draws them, so they follow a bar wh
 
 \`createTaskTooltipModule\` takes \`components\` for the default tooltip, read at mount, and \`TaskTooltip.Renderer\` takes the same keys. In a tooltip of your own, each part takes its own slots as \`components\`. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
-| Key | Part | Slots | Default | Draws |
+| Part | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`callout\` | \`TaskTooltip.Callout\` | \`onRenderCallout\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the bar |
-| \`header\` | \`TaskTooltip.Header\` | \`onRenderContainer\`, \`onRenderTitle\`; \`status\` | \`TooltipUiHeaderComponents\` | The name and the status pill |
-| \`progress\` | \`TaskTooltip.ProgressRow\` | \`onRenderContainer\`, \`onRenderTrack\`, \`onRenderFill\`, \`onRenderText\` | \`TooltipUiProgressComponents\` | The progress bar |
-| \`dateRange\` | \`TaskTooltip.DateRangeRow\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`TooltipUiDateRangeComponents\` | The dates and the duration |
-| | \`TaskTooltip.FieldRows\` | \`onRenderContainer\` | \`TooltipUiFieldRowsComponents\` | The box the field rows sit in |
-| | \`TaskTooltip.FieldRow\`, \`StartDateRow\`, \`EndDateRow\`, \`DurationRow\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`TooltipUiFieldRowComponents\` | One row of the tooltip |
+| \`TaskTooltip.Callout\` | \`callout\` | \`onRenderCallout\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the bar |
+| \`TaskTooltip.Header\` | \`header\` | \`onRenderContainer\`, \`onRenderTitle\`; \`status\` | \`TooltipUiHeaderComponents\` | The name and the status pill |
+| \`TaskTooltip.ProgressRow\` | \`progress\` | \`onRenderContainer\`, \`onRenderTrack\`, \`onRenderFill\`, \`onRenderText\` | \`TooltipUiProgressComponents\` | The progress bar |
+| \`TaskTooltip.DateRangeRow\` | \`dateRange\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`TooltipUiDateRangeComponents\` | The dates and the duration |
+| \`TaskTooltip.FieldRows\` | | \`onRenderContainer\` | \`TooltipUiFieldRowsComponents\` | The box the field rows sit in |
+| \`TaskTooltip.FieldRow\`, \`StartDateRow\`, \`EndDateRow\`, \`DurationRow\` | | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`TooltipUiFieldRowComponents\` | One row of the tooltip |
 
 ## Where next
 

@@ -1,7 +1,5 @@
 import React from 'react'
-import { Operators, Type } from '@talxis/client-libraries'
 import { GridExampleRunner } from '../GridExampleRunner'
-import { createProductsProvider } from '../data'
 
 export const STARRED_PRODUCTS_CODE = `const styles = mergeStyleSets({
     star: { fontSize: 16, color: '#8a8886', cursor: 'pointer' },
@@ -43,13 +41,24 @@ const COMPONENTS: IGridSortingComponents = {
     sortIcon: { onRenderIcon: ({ descending, ...props }) => <Icon {...props} iconName={descending ? 'SortDown' : 'SortUp'} className={styles.arrow} /> },
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createSortingModule({ components: COMPONENTS })]}
-            height='440px' />
-    </DatasetControl.Body>
-</DatasetControl>
+//opens sorted by price
+const createPriceList = () => {
+    const products = createProductsProvider()
+    products.setSorting([{ name: 'price', sortDirection: 1 }])
+    return products
+}
+
+const GridExample = () => {
+    const products = React.useMemo(createPriceList, [])
+
+    return <DatasetControl onLoad={async () => ({ provider: products })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={[createClientSideRowModelModule(), createSortingModule({ components: COMPONENTS })]}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+}
 `
 
 export const FILTER_ICON_CODE = `const styles = mergeStyleSets({
@@ -67,13 +76,24 @@ const COMPONENTS: IGridFilteringComponents = {
     },
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createFilteringModule({ components: COMPONENTS })]}
-            height='440px' />
-    </DatasetControl.Body>
-</DatasetControl>
+//opens filtered to low stock
+const createLowStockList = () => {
+    const products = createProductsProvider()
+    products.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'instock', conditionOperator: Operators.LessThan.Value, value: '10' }] })
+    return products
+}
+
+const GridExample = () => {
+    const products = React.useMemo(createLowStockList, [])
+
+    return <DatasetControl onLoad={async () => ({ provider: products })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={[createClientSideRowModelModule(), createFilteringModule({ components: COMPONENTS })]}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+}
 `
 
 export const GROUP_BADGES_CODE = `const styles = mergeStyleSets({
@@ -93,13 +113,23 @@ const COMPONENTS: IGridGroupingComponents = {
     groupCell: { count: { onRenderCount: props => <ProductCount className={props.className} /> } },
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS })]}
-            height='460px' />
-    </DatasetControl.Body>
-</DatasetControl>
+const createProductsByCategory = () => {
+    const products = createProductsProvider()
+    products.grouping.addGroupBy({ columnName: 'category', alias: 'category_group' })
+    return products
+}
+
+const GridExample = () => {
+    const products = React.useMemo(createProductsByCategory, [])
+
+    return <DatasetControl onLoad={async () => ({ provider: products })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={[createClientSideRowModelModule(), createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS })]}
+                height='460px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+}
 `
 
 export const STOCK_TOTALS_CODE = `const getStyles = (theme: ITheme) => mergeStyleSets({
@@ -133,54 +163,36 @@ const STOCK_TOTAL: ITotalCellComponents = {
 
 const StockTotalCell = (props: IGridCellParams) => <TotalCell {...props} components={STOCK_TOTAL} />
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createAggregationModule({ components: COMPONENTS })]}
-            colDefs={{
-                //undefined leaves the other rows to the column's cellRenderer
-                instock: { cellRendererSelector: params => params.node.rowPinned ? { component: StockTotalCell } : undefined },
-            }}
-            height='460px' />
-    </DatasetControl.Body>
-</DatasetControl>
-`
-
-const createSortedProducts = () => {
-    const provider = createProductsProvider()
-    provider.setSorting([{ name: 'price', sortDirection: 1 }])
-    provider.refresh()
-    return provider
-}
-
-const createLowStockProducts = () => {
-    const provider = createProductsProvider()
-    provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'instock', conditionOperator: Operators.LessThan.Value, value: '10' }] })
-    provider.refresh()
-    return provider
-}
-
-const createProductsByCategory = () => {
-    const provider = createProductsProvider()
-    provider.grouping.addGroupBy({ columnName: 'category', alias: 'category_group' })
-    provider.refresh()
-    return provider
-}
-
 const createStockTotals = () => {
-    const provider = createProductsProvider()
-    provider.aggregation.addAggregation({ columnName: 'instock', alias: 'instock_sum', aggregationFunction: 'sum' })
-    provider.aggregation.addAggregation({ columnName: 'price', alias: 'price_avg', aggregationFunction: 'avg' })
-    provider.refresh()
-    return provider
+    const products = createProductsProvider()
+    products.aggregation.addAggregation({ columnName: 'instock', alias: 'instock_sum', aggregationFunction: 'sum' })
+    products.aggregation.addAggregation({ columnName: 'price', alias: 'price_avg', aggregationFunction: 'avg' })
+    return products
 }
+
+const GridExample = () => {
+    const products = React.useMemo(createStockTotals, [])
+
+    return <DatasetControl onLoad={async () => ({ provider: products })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={[createClientSideRowModelModule(), createAggregationModule({ components: COMPONENTS })]}
+                colDefs={{
+                    //only the pinned totals row draws StockTotalCell
+                    instock: { cellRendererSelector: params => params.node.rowPinned ? { component: StockTotalCell } : undefined },
+                }}
+                height='460px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+}
+`
 
 export const StarredProductsExample = () => <GridExampleRunner seedCode={STARRED_PRODUCTS_CODE} dataset='products' />
 
-export const SortArrowsExample = () => <GridExampleRunner seedCode={SORT_ARROWS_CODE} onCreateProvider={createSortedProducts} />
+export const SortArrowsExample = () => <GridExampleRunner seedCode={SORT_ARROWS_CODE} tabs={['preview', 'code']} />
 
-export const FilterIconExample = () => <GridExampleRunner seedCode={FILTER_ICON_CODE} onCreateProvider={createLowStockProducts} />
+export const FilterIconExample = () => <GridExampleRunner seedCode={FILTER_ICON_CODE} tabs={['preview', 'code']} />
 
-export const GroupBadgesExample = () => <GridExampleRunner seedCode={GROUP_BADGES_CODE} onCreateProvider={createProductsByCategory} />
+export const GroupBadgesExample = () => <GridExampleRunner seedCode={GROUP_BADGES_CODE} tabs={['preview', 'code']} />
 
-export const StockTotalsExample = () => <GridExampleRunner seedCode={STOCK_TOTALS_CODE} onCreateProvider={createStockTotals} />
+export const StockTotalsExample = () => <GridExampleRunner seedCode={STOCK_TOTALS_CODE} tabs={['preview', 'code']} />

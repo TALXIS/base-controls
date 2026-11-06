@@ -20,9 +20,10 @@ const account = createMemoryRecord({
 })
 
 const GridExample = () => {
-    //the open tab is yours to keep
+    //your state holds the open tab
     const [tab, setTab] = React.useState('general')
 
+    //onLoad hands the form the record it edits
     return <Form.Root onLoad={async () => ({ record: account })}>
         {/* Save, and Unsaved changes while there are any */}
         <Form.Ribbon />

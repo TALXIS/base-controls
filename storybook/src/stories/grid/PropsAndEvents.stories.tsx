@@ -12,24 +12,23 @@ A grid is set up through props: the modules it has, how it looks and what openin
 
 ## Change a prop that is read at mount
 
-Each prop is read either *Live*, each time the grid needs it, or *At mount*, once.
+Each prop is read either *Live*, each time the grid needs it, or *At mount*, once; \`modules\` and every module's options are read at mount too. To change one of those, render the grid again with a new \`key\`, such as \`key={String(isEditable)}\`, as the example does when you switch *Auto-save*.
 
-- A prop marked *At mount* keeps the value the grid mounted with, and so do \`modules\` and every module's options.
-- To change one, render the grid again with a new \`key\`, such as \`key={String(isEditable)}\`.
-- The grid then starts over: the save status of its rows is gone, and so are its scroll position, open groups and focus, unless it has a \`stateKey\`.
+The grid then starts over. Its rows lose their save status, and it loses its scroll position, open groups and focus unless it has a \`stateKey\` (see [**State**](?path=/docs/controls-grid-state--overview)).
 
 ## Follow saves
 
-- \`onBeforeRecordSaved(record)\` fires when a record starts to save, before its values are checked.
-- \`onAfterRecordSaved(result)\` fires once for every record that saves: on auto-save, on \`record.save()\`, and for each record of \`provider.save()\`. A save refused for an invalid value fires it too, with \`success: false\` and the \`errors\`.
-- \`onAfterSaved(results)\` fires only after \`provider.save()\`, once every record in it has finished; auto-save never fires it.
-- A successful save changes no value, so \`onRecordValueChanged\` misses it: a save bar follows \`onAfterSaved\` as well.
+| Event | Fires |
+|---|---|
+| \`onBeforeRecordSaved(record)\` | When a record starts to save, before its values are checked |
+| \`onAfterRecordSaved(result)\` | Once for every record that saves: on auto-save, on \`record.save()\`, and for each record of \`provider.save()\`. A save refused for an invalid value fires it too, with \`success: false\` and the \`errors\` |
+| \`onAfterSaved(results)\` | Only after \`provider.save()\`, once every record in it has finished; auto-save never fires it |
 
-How saving works is on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
+A save changes no value, so \`onRecordValueChanged\` does not fire for it: a save bar that counts the changes listens to \`onAfterSaved\` too. How saving works is on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
 
 ## Drive the page around the grid
 
-Every event of the grid itself is a prop, and a module's events come in through its options, such as \`createEditingModule({ onEditedCellChanged })\`. The grid calls the callback you passed last, so a callback can read your component's state without a remount.
+The grid's own events are props, read live, so a callback can read your component's state without a remount. A module's events come in through its options, such as \`createEditingModule({ onEditedCellChanged })\`, which are read at mount: pass a state setter, or read what changes through a ref.
 
 {{story: Ticket queue with a preview pane}}
 

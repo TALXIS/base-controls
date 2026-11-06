@@ -536,10 +536,10 @@ export type IFeature = (context: IFeatureContext) => IFeatureProps
 
 const FEATURES: { [feature: string]: IFeature } = { ...AT_A_GLANCE, ...READ_ONLY_LIST, ...SPREADSHEET, ...PIPELINE_REVIEW, ...CLOSING_DEALS }
 
-//the deal's name stays in view while nothing is grouped
 const getBaseProps = (deals: IDataProvider): IFeatureProps => ({
     //the grid shades every other row unless told not to
     enableZebra: false,
+    //the deal's name stays in view while nothing is grouped
     colDefs: { name: () => deals.grouping.getGroupBys().length > 0 ? {} : { pinned: 'left' } },
 })
 

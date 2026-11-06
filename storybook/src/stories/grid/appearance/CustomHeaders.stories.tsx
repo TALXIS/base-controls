@@ -25,22 +25,23 @@ Every column draws its header with \`Grid.ColumnHeader.Renderer\`. To change a c
 | \`requiredMarker\` | \`onRenderText\` | | The \`*\` of a required column |
 | \`menu\` | \`onRenderContextualMenu\` | | The column's menu |
 
-- The icons in \`prefix\` and \`suffix\` are adornments that modules and \`context.header.onGetAdornments\` add, and the menu's items come from \`context.header.onGetMenuSections\`: see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview).
-- The checkbox column and the grouping expansion column draw headers of their own: see [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) and [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+The icons in \`prefix\` and \`suffix\` are adornments that modules and \`context.header.onGetAdornments\` add, and the menu's items come from \`context.header.onGetMenuSections\`: see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview). The checkbox column and the grouping expansion column draw headers of their own: see [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) and [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 ## Compose it from the parts
 
 To lay out the header yourself, set \`headerComponent\` to a component that gets AG Grid's header params, \`IColumnHeaderRendererProps\`, and compose it from \`Grid.ColumnHeader\`'s parts. Each brings one behaviour of a header, so your header keeps only what you include:
 
-- \`Root\` makes it a column's header. Required, and outermost.
-- \`Theme\` gives the header its colours, from \`context.header.onGetTheme\` and theme hooks.
-- \`Container\` is the button the header is: hover, focus, alignment, and a click that opens the menu.
-- \`Prefix\` draws the icons before the name.
-- \`Content\` holds the name and the required marker.
-- \`Label\` draws the column's name.
-- \`RequiredMarker\` draws the \`*\` of a required column.
-- \`Suffix\` draws the icons after the name, such as the sort arrow, the filter and the lock.
-- \`Menu\` is the column's menu. It goes beside \`Container\`, not inside it.
+| Part | Brings |
+|---|---|
+| \`Root\` | Makes it a column's header. Required, and outermost |
+| \`Theme\` | The header's colours, from \`context.header.onGetTheme\` and theme hooks |
+| \`Container\` | The button the header is: hover, focus, alignment, and a click that opens the menu |
+| \`Prefix\` | The icons before the name |
+| \`Content\` | What holds the name and the required marker |
+| \`Label\` | The column's name |
+| \`RequiredMarker\` | The \`*\` of a required column |
+| \`Suffix\` | The icons after the name, such as the sort arrow, the filter and the lock |
+| \`Menu\` | The column's menu; beside \`Container\`, not inside it |
 
 Put your own content inside \`Content\`, beside or in place of \`Label\`, so the icons keep their places around it. Read the header with \`useGridColumnHeader()\` in a component inside \`Root\`: it returns the header's name and title, column, context, alignment, \`isRequired()\`, \`getAdornments()\`, \`openMenu()\` and \`closeMenu()\`.
 

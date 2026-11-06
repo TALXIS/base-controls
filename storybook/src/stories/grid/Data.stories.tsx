@@ -12,24 +12,21 @@ The grid draws whatever its data provider holds: the provider's columns become t
 
 ## Describe a column
 
-- Each of the provider's columns is an \`IColumn\`; every key the grid reads is under *Reference* below.
-- \`name\` is the column's id, its key in \`colDefs\`, and the record property that holds its value.
-- Creating and loading the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview); changing a column on top of it is on [**Columns**](?path=/docs/controls-grid-columns--overview).
+Each of the provider's columns is an \`IColumn\`. Its \`name\` is the column's id: the record property that holds its value, and its key in \`colDefs\`. Its \`dataType\` decides how the value is drawn and edited, and \`displayName\` is the header's text. Every key the grid reads is under *Reference* below.
+
+Creating and loading the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview); changing a column on top of it, without touching the provider, is on [**Columns**](?path=/docs/controls-grid-columns--overview).
 
 ## Say what a column allows
 
-A column's \`metadata\` says what can be done with it, and the provider fills in the keys you leave out:
+A column's \`metadata\` says what can be done with it, and the provider fills in the keys you leave out. Without the [**Editing**](?path=/docs/controls-grid-modules-editing--overview) module every cell is read-only; with it, \`IsValidForUpdate: false\` locks the column. \`RequiredLevel\`, \`MaxLength\`, \`MinValue\` and \`MaxValue\` make a value invalid in any grid (see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)).
 
-- Without the [**Editing**](?path=/docs/controls-grid-modules-editing--overview) module every cell is read-only; with it, \`IsValidForUpdate: false\` locks the column.
-- \`RequiredLevel\`, \`MaxLength\`, \`MinValue\` and \`MaxValue\` make a value invalid in any grid: see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
-- \`OptionSet\` holds the options of an option set or two options column, and \`Precision\` the decimal places of a number.
-- Sorting, filtering, grouping and totals read keys of their own, listed under *Metadata* below.
+\`OptionSet\` holds the options of an option set or two options column, and \`Precision\` the decimal places of a number. Sorting, filtering, grouping and totals read keys of their own, listed under *Metadata* below.
 
 {{story: Mark columns required or read-only}}
 
 ## Data types
 
-Each data type has its own way of drawing a value, and its own editor while the editing module is on; every type is under *Reference* below. Emails, phones, URLs, lookups and the primary column draw as links while \`enableNavigation\` is on.
+Each data type has its own way of drawing a value, and its own editor while the editing module is on; every type is under *Reference* below. Emails, phones, URLs, lookups and the primary column draw as links unless \`enableNavigation\` is \`false\`.
 
 {{story: See every data type}}
 
@@ -44,10 +41,7 @@ How \`record.getValue()\` shapes option sets, two options, dates and lookups is 
 
 ## Paging
 
-- The grid shows the records of the provider's current page, so the page size decides how many rows it has.
-- In a DatasetControl, its paging parts move between pages: see [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview).
-- From your code, \`provider.getPaging()\` does: see *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
-- Grouping changes what a page holds: see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+The grid shows the records of the provider's current page, so the page size decides how many rows it has. Inside a DatasetControl, its paging parts move between pages (see [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview)); from your code, \`provider.getPaging()\` does (see *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview)).
 
 ## Reference
 

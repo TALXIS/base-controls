@@ -1,6 +1,5 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
-import { createTicketsProvider } from '../data'
 
 export const REARRANGE_COLUMNS_CODE = `const createColumnOrderLock = (isUnlocked: () => boolean): IGridModule => ({
     name: 'columnOrderLock',
@@ -58,14 +57,22 @@ const isNewer = (ticket: IRecord, other: IRecord) => dayjs(ticket.getValue('crea
 
 const getNewestTicket = (tickets: IRecord[]) => tickets.reduce<IRecord | undefined>((newest, ticket) => !newest || isNewer(ticket, newest) ? ticket : newest, undefined)
 
+//opens sorted by deadline
+const createQueueByDeadline = () => {
+    const tickets = createTicketsProvider()
+    tickets.setSorting([{ name: 'duedate', sortDirection: 0 }])
+    return tickets
+}
+
 const GridExample = () => {
+    const tickets = React.useMemo(createQueueByDeadline, [])
     const gridRef = React.useRef<IGrid>()
 
     const fitColumns = () => gridRef.current?.services.find('gridApi')?.autoSizeAllColumns()
 
     const jumpToNewestTicket = () => {
         const gridApi = gridRef.current?.services.find('gridApi')
-        const newest = getNewestTicket(provider.getRecords())
+        const newest = getNewestTicket(tickets.getRecords())
         const node = newest && gridApi?.getRowNode(newest.getRecordId())
         if (!gridApi || !node) {
             return
@@ -80,7 +87,7 @@ const GridExample = () => {
         { id: 'newest', label: 'Jump to the newest ticket', iconName: 'Ringer', onExecute: jumpToNewestTicket },
     ]
 
-    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+    return <DatasetControl onLoad={async () => ({ provider: tickets })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.Ribbon onLoad={loadCommands} />
@@ -97,13 +104,6 @@ const GridExample = () => {
 }
 `
 
-const createQueueByDeadline = () => {
-    const tickets = createTicketsProvider()
-    tickets.setSorting([{ name: 'duedate', sortDirection: 0 }])
-    tickets.refresh()
-    return tickets
-}
-
 export const RearrangeColumnsExample = () => <GridExampleRunner seedCode={REARRANGE_COLUMNS_CODE} dataset='products' />
 
-export const JumpToNewestTicketExample = () => <GridExampleRunner seedCode={JUMP_TO_NEWEST_TICKET_CODE} onCreateProvider={createQueueByDeadline} />
+export const JumpToNewestTicketExample = () => <GridExampleRunner seedCode={JUMP_TO_NEWEST_TICKET_CODE} tabs={['preview', 'code']} />

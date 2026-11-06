@@ -75,16 +75,14 @@ export const DealsRibbon = () => {
             { id: 'failNextLoad', label: 'Fail the next load', iconName: 'Warning', onExecute: async () => { failNextLoad.current = true; await control.reload() } },
         ]
         if (selectedIds.length > 0) {
-            commands.push({ id: 'markWon', label: \`Mark \${selectedIds.length} as won\`, iconName: 'Trophy2', onExecute: async () => {
-                await new Promise(resolve => setTimeout(resolve, 1000))
-                selectedIds.forEach(id => provider.getRecordsMap()[id].setValue('stage', WON_STAGE))
-            } })
+            //an unsaved change, which brings up Save and Discard changes
+            commands.push({ id: 'markWon', label: \`Mark \${selectedIds.length} as won\`, iconName: 'Trophy2', onExecute: () => selectedIds.forEach(id => provider.getRecordsMap()[id].setValue('stage', WON_STAGE)) })
             commands.push({ id: 'clearSelection', label: 'Clear selection', iconName: 'Clear', onExecute: () => provider.clearSelectedRecordIds() })
         }
         return commands
     }
 
-    return <DatasetControl.Ribbon enableRefresh onLoad={onLoad} components={V9.ribbon} />
+    return <DatasetControl.Ribbon enableSave enableDiscard enableRefresh onLoad={onLoad} components={V9.ribbon} />
 }
 `,
 }

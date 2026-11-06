@@ -12,24 +12,21 @@ Every string the controls draw is a *label*: a key such as \`'quickFind.searchPl
 
 ## How labels behave
 
-- **A key you leave out** falls back to the provider above, then to English, so a page sets its language once and one control can still reword a label.
-- **\`{{ placeholders }}\`** are Liquid templates: keep the placeholders and any filters in a translation.
-- **Labels changed after mount** redraw components at once, but what a control has built, such as grid cells or headers, keeps its text: remount the control with a new \`key\`, or redraw the grid as on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
-- **View, column and option names** are data, not labels: translate them where you define them, as the example does with its columns.
-- **Dates and numbers** follow the user's culture from the [**PCF context**](?path=/docs/concepts-pcf-context--overview).
+| When | What happens |
+|---|---|
+| A provider leaves a key out | The key falls back to the provider above, then to English, so a page sets its language once and one control can still reword a label. |
+| A label holds \`{{ placeholders }}\` | It is a Liquid template: keep the placeholders and any filters in a translation. |
+| Labels change after mount | Components draw again with them, but what a control has built, such as grid cells or headers, keeps its text: remount the control with a new \`key\`, as the example does, or redraw the grid as on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). |
+| A name comes from your data | View, column and option names are data, not labels: translate them where you define them, as the example does with its columns. |
+| A date or number is drawn | It follows the user's culture from the [**PCF context**](?path=/docs/concepts-pcf-context--overview), not the labels. |
 
 ## Add a language
 
-To translate inside your app alone, build one map of every key you translate and pass it to \`LabelsProvider\`. Build it from \`translateLabels\` for each set, spread into one map, so every key is checked against its set as you type; \`labels/cs.ts\` in the next example translates a set this way.
-
-To add a supported language to the library itself, where each part keeps its English strings in \`labels/en.ts\`:
-
-1. Beside every \`labels/en.ts\`, add a \`labels/<language>.ts\` that translates its set with \`translateLabels\`, and export it from \`labels/index.ts\`.
-2. Spread every translated set into \`src/labels/sets/<language>.ts\`, and export it from \`src/labels/sets/index.ts\`.
+Every part exports its English set, such as \`GRID_LABELS\` or \`ERROR_MESSAGE_BAR_LABELS\`. Translate each set you use with \`translateLabels(set, strings)\`, which checks every key against the set as you type, and spread the results into one map for \`LabelsProvider\`. \`CZECH_LABELS\` is such a map for Czech, and \`labels/cs.ts\` in the next example translates a set this way.
 
 ## Labels in your own components
 
-Give a component of yours labels the way the library's own do, rather than hard-coded strings or text props. Prefix every key with the component's name: \`defineLabels\` throws on a key another set already defines with a different string.
+Give a component of yours labels the way the library's own do, rather than hard-coded strings or text props: define the English set with \`defineLabels\` and read it with \`useLabels\`. Prefix every key with the component's name, as \`defineLabels\` throws on a key another set already defines with a different string.
 
 {{story: Your own labels}}
 

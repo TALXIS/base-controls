@@ -3,7 +3,9 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from '../../dataset-control/examples/shared'
 
-const COME_BACK_CODE = `import { loadDeals, loadDealViews } from './views'
+const COME_BACK_CODE = `import { createClientSideRowModelModule, createSortingModule, DatasetControl, Grid, StateProvider, StateStore } from '@talxis/base-controls'
+import { DefaultButton, mergeStyleSets, Stack, Text } from '@fluentui/react'
+import { loadDeals, loadDealViews } from './views'
 
 const styles = mergeStyleSets({
     layout: { display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 16 },
@@ -27,6 +29,7 @@ export const Deals = () => <DatasetControl stateKey='deals' onLoadViews={loadDea
 </DatasetControl>
 
 const GridExample = () => {
+    //the dictionary the store writes into, shown beside the deals
     const state = React.useMemo(() => ({}), [])
     const store = React.useMemo(() => new StateStore({ state }), [state])
     const [isShown, setIsShown] = React.useState(true)
@@ -47,7 +50,10 @@ const GridExample = () => {
 }
 `
 
-const OWN_COMPONENT_CODE = `const styles = mergeStyleSets({
+const OWN_COMPONENT_CODE = `import { StateProvider, StateStore, useControlStateStore } from '@talxis/base-controls'
+import { mergeStyleSets, Stack, TextField, Toggle } from '@fluentui/react'
+
+const styles = mergeStyleSets({
     store: { margin: 0, padding: 12, fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4 },
 })
 
@@ -91,7 +97,10 @@ const GridExample = () => {
 }
 `
 
-const SCOPES_CODE = `const styles = mergeStyleSets({
+const SCOPES_CODE = `import { StateStore } from '@talxis/base-controls'
+import { DefaultButton, mergeStyleSets, Stack } from '@fluentui/react'
+
+const styles = mergeStyleSets({
     store: { margin: 0, padding: 12, fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4 },
 })
 
@@ -122,23 +131,23 @@ const PCF_CONTROL_FILE: IGridExampleFile = {
     name: 'index.tsx',
     code: `//a PCF control keeps the state for the session with the host
 import ReactDOM from 'react-dom'
-import { AppThemeProvider, PcfContextProvider, StateProvider, StateStore } from '@talxis/base-controls'
+import { AppThemeProvider, IStateDictionary, PcfContextProvider, StateProvider, StateStore } from '@talxis/base-controls'
 import { Deals } from './GridExample'
 
 export class DealsControl implements ComponentFramework.StandardControl<{}, {}> {
     private _container!: HTMLDivElement
-    private _context!: ComponentFramework.Context
+    private _context!: ComponentFramework.Context<{}>
     private _state!: IStateDictionary
     private _store!: StateStore
 
     //the host hands init the state setControlState kept
-    public init(context: ComponentFramework.Context, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement) {
+    public init(context: ComponentFramework.Context<{}>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement) {
         this._container = container
         this._state = state ?? {}
         this._store = new StateStore({ state: this._state })
     }
 
-    public updateView(context: ComponentFramework.Context) {
+    public updateView(context: ComponentFramework.Context<{}>) {
         this._context = context
         ReactDOM.render(<PcfContextProvider context={context}>
             <StateProvider store={this._store}>

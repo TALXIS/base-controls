@@ -16,8 +16,8 @@ const Shortcuts = () => {
     }
 
     return <Stack horizontal wrap tokens={{ childrenGap: 8 }}>
-        <DefaultButton text='Won deals' onClick={() => control.loadView('won')} />
-        <DefaultButton text='Reload' onClick={() => control.reload()} />
+        <DefaultButton text='Won deals' onClick={() => { control.loadView('won') }} />
+        <DefaultButton text='Reload' onClick={() => { control.reload() }} />
         <DefaultButton text='Search Contoso' onClick={() => searchFor('Contoso')} />
         <DefaultButton text='Edit columns' onClick={() => control.parts.get('editColumns').open()} />
     </Stack>
@@ -56,24 +56,26 @@ const GridExample = () => {
     const theme = useTheme()
     const styles = React.useMemo(() => getLogStyles(theme), [theme])
     const [log, setLog] = React.useState<string[]>([])
-    const [mountKey, setMountKey] = React.useState(0)
+    //the control of the latest mount, for the buttons outside it
     const controlRef = React.useRef<IDatasetControl>()
     const write = (line: string) => setLog(log => [line, ...log].slice(0, 8))
 
+    //every mount hands over a new control, so subscribe to each one here
     const onMounted = (control: IDatasetControl) => {
         controlRef.current = control
         write('onMounted')
         control.lifecycle.events.addEventListener('onReady', () => write(\`onReady, view \${control.getViewId()}\`))
         control.lifecycle.events.addEventListener('onInitFailed', () => write('onInitFailed'))
+        control.lifecycle.events.addEventListener('onRemountRequested', () => write('onRemountRequested'))
         control.lifecycle.events.addEventListener('onDestroyed', () => write('onDestroyed'))
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Stack horizontal tokens={{ childrenGap: 8 }}>
-            <DefaultButton text='Show won deals' onClick={() => controlRef.current?.loadView('won')} />
-            <DefaultButton text='Remount' onClick={() => setMountKey(key => key + 1)} />
+            <DefaultButton text='Show won deals' onClick={() => { controlRef.current?.loadView('won') }} />
+            <DefaultButton text='Reload' onClick={() => { controlRef.current?.reload() }} />
         </Stack>
-        <DatasetControl onLoadViews={loadDealViews} stateKey='talkingWatch' key={mountKey} onLoad={loadDeals} onMounted={onMounted} height='380px'>
+        <DatasetControl onLoadViews={loadDealViews} stateKey='talkingWatch' onLoad={loadDeals} onMounted={onMounted} height='380px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />

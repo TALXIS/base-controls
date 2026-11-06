@@ -13,7 +13,7 @@ Every mounted grid hands your code one object, an \`IGrid\`, through which it re
 
 ## Get the grid
 
-Outside the grid, such as in the ribbon above, keep the grid \`onReady\` passes you. Inside the grid, a module's \`onLoad\` receives it, as on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). When each runs is under *Lifecycle* below.
+Outside the grid, such as in the ribbon above, keep the grid \`onReady\` passes you; inside a DatasetControl, the control's \`parts.find('grid')\` returns it too (see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Inside the grid, a module's \`onLoad\` receives it, as on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). When each runs is under *From mount to unmount* below.
 
 | Member | Description |
 |---|---|
@@ -24,7 +24,7 @@ Outside the grid, such as in the ribbon above, keep the grid \`onReady\` passes 
 | \`openRecord(params)\` | Opens a record as a double-click does: through \`onOpenRecord\` when the grid has one. |
 | \`getLabels(set)\` | A set of labels as the grid resolves them. See [**Localization**](?path=/docs/concepts-localization--overview). |
 
-## Lifecycle
+## From mount to unmount
 
 {{block: lifecycle}}
 
@@ -42,9 +42,7 @@ The grid is made of services, and \`grid.services\` finds them by key; every key
 | \`register(key, resolve)\` | Adds a service of your own, or replaces one. A module shares what it builds by returning it instead: see *Share what your module builds* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). |
 | \`unregister(key)\` | Removes the service, until something registers it again. |
 
-- A function the \`observe\` callback returns is its cleanup. It runs before the callback runs again, when the service is unregistered (\`gridApi\` as AG Grid is destroyed), when you stop observing and when the grid unmounts.
-- Whatever the callback returns counts, so write it with braces unless you mean to return a cleanup.
-- Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and \`register\` and \`observe\` do nothing.
+A function the \`observe\` callback returns is its cleanup. It runs before the callback runs again, when the service is unregistered (\`gridApi\` as AG Grid is destroyed), when you stop observing and when the grid unmounts. Whatever the callback returns counts, so write it with braces unless you mean to return a cleanup. Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, and \`register\` and \`observe\` do nothing.
 
 ## Modules
 
@@ -52,7 +50,7 @@ The grid is made of services, and \`grid.services\` finds them by key; every key
 
 ## Inside what the grid draws
 
-A custom cell, a header part, an overlay or a surface reads the grid through two hooks. Both work only inside the grid's own React tree, not in the component that renders \`<Grid />\`.
+A custom cell, a header part, an overlay or what a module draws inside the grid reads the grid through two hooks. Both work only inside the grid's own React tree, not in the component that renders \`<Grid />\`.
 
 | Hook | Returns |
 |---|---|
@@ -74,9 +72,7 @@ They return the service, not its state. To redraw when it changes, subscribe to 
 | \`filtering.events\` | \`onFilterOpened\` | \`columnName\` | A column's filter callout opens. |
 | \`filtering.events\` | \`onFilterClosed\` | None | The filter callout closes. |
 
-- The grid's events also reach \`<Grid />\` as props, and a module's through its options: see [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
-- No event fires when sorting, filters, grouping or totals change; they reload the provider, so follow \`onDataLoaded\` and read the provider.
-- The provider has events of its own, such as \`onRecordColumnValueChanged\`: see *React to changes* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+The grid's events also reach \`<Grid />\` as props, and a module's through its options: see [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). No event fires when sorting, filters, grouping or totals change; they reload the provider, so follow \`onDataLoaded\` and read the provider, as the summary above the example's grid does. The provider has events of its own, such as \`onRecordColumnValueChanged\`: see *React to changes* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 ## Redrawing
 
@@ -108,7 +104,7 @@ The grid runs the hooks and the column callbacks when it draws, and nothing tell
 | \`columns\` | The column definitions hook, and \`headers\`: \`render()\` and the header hooks. |
 | \`rows\` | \`registerRowHeight\`, \`registerRowClass(className, rule)\` and \`refreshRowClasses(records)\`. |
 | \`validation\` | The validation hook. |
-| \`surfaces\` | The surface hook, for drawing inside the grid. |
+| \`surfaces\` | \`registerSurface\`, for what a module draws inside the grid. See [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). |
 | \`gridTheme\` | The AG Grid theme and the root element's styles: \`registerTheme\`, \`registerStyles\`. |
 | \`state\` | The grid's store under its \`stateKey\`: \`get\`, \`set\`, \`delete\`. See [**State**](?path=/docs/controls-grid-state--overview). |
 | \`settings\` | The props, with their defaults applied. |

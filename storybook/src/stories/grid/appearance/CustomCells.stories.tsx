@@ -27,9 +27,9 @@ Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound 
 | \`resizeGrip\` | \`onRenderContainer\`, \`onRenderGrip\` | | The grip a row is dragged taller by |
 | \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | | The lock of a locked cell, with the editing module |
 
-- To restyle only the value, render \`<GridValueRenderer {...props} components={…} />\` in \`columnControl.onRenderControl\`. Its slots are \`onRenderContainer\`, \`onRenderText\`, \`onRenderPlaceholder\`, \`onRenderLink\`, \`onRenderLookup\`, \`onRenderOptions\`, \`onRenderFile\`, \`onRenderPrefixIcon\` and \`onRenderSuffixIcon\`, with defaults in \`ValueRendererUiComponents\`.
-- The editor takes \`container\`, \`loading\`, \`control\`, \`columnControl\` and \`resizeGrip\`; in an editor, \`columnControl\` draws the input.
-- Group rows and totals draw their own cells, restyled through their modules: see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+To restyle only the value, render \`<GridValueRenderer {...props} components={…} />\` in \`columnControl.onRenderControl\`. Its slots are \`onRenderContainer\`, \`onRenderText\`, \`onRenderPlaceholder\`, \`onRenderLink\`, \`onRenderLookup\`, \`onRenderOptions\`, \`onRenderFile\`, \`onRenderPrefixIcon\` and \`onRenderSuffixIcon\`, with defaults in \`ValueRendererUiComponents\`.
+
+The editor takes \`container\`, \`loading\`, \`control\`, \`columnControl\` and \`resizeGrip\`, and in an editor \`columnControl\` draws the input, as the example's rich text editor does. Group rows and totals draw their own cells, restyled through their modules: see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 ## Write a cell of your own
 
@@ -39,19 +39,21 @@ A column you add in \`colDefs\` holds no value of the provider's: draw it with \
 
 ## Compose it from the parts
 
-To lay out the cell yourself, compose it from \`Grid.Cell\`'s parts. Each brings one behaviour of a cell, so your cell keeps only what you include. Nest them in this order:
+To lay out the cell yourself, compose it from \`Grid.Cell\`'s parts. Each brings one behaviour of a cell, so your cell keeps only what you include. Nest them in the order of the table, as the example below does:
 
-- \`Field\` binds the cell to a record's column, for \`useGridField()\`. Leave it out for a column you add.
-- \`Root\` makes it a cell and redraws it when the record changes. Required; in an editor, pass \`takesInput\`.
-- \`Theme\` gives the cell its colours: zebra rows and colour rules.
-- \`ResizeGrip\` draws the grip a row is dragged taller by.
-- \`Container\` fills the cell in the theme's font and text colour.
-- \`Loading\` draws the shimmer while the cell waits, in place of what it wraps.
-- \`LockIcon\` draws the lock of a locked cell, with the editing module. It goes inside \`Loading\`, before \`Control\`.
-- \`Control\` is the room the value is drawn in; the commands, error icon and lock keep to its edge.
-- \`ColumnControl\` draws the value: \`GridValueRenderer\`, a PCF control the column names, or your \`onRenderControl\`. It goes inside \`Control\`.
-- \`Commands\` draws the column's commands while the row is hovered.
-- \`FieldError\` draws the validation outline and its message.
+| Part | Brings |
+|---|---|
+| \`Field\` | Binds the cell to a record's column, for \`useGridField()\`. Leave it out for a column you add |
+| \`Root\` | Makes it a cell, redrawn when the record changes. Required; in an editor, pass \`takesInput\` |
+| \`Theme\` | The cell's colours: zebra rows and colour rules |
+| \`ResizeGrip\` | The grip a row is dragged taller by |
+| \`Container\` | The theme's font and text colour across the cell |
+| \`Loading\` | The shimmer while the cell waits, in place of what it wraps |
+| \`LockIcon\` | The lock of a locked cell, with the editing module; inside \`Loading\`, before \`Control\` |
+| \`Control\` | The room the value is drawn in; the commands, error icon and lock keep to its edge |
+| \`ColumnControl\` | The value: \`GridValueRenderer\`, a PCF control the column names, or your \`onRenderControl\`; inside \`Control\` |
+| \`Commands\` | The column's commands, while the row is hovered |
+| \`FieldError\` | The validation outline and its message |
 
 To draw a value of your own, put it inside \`Control\` in place of \`ColumnControl\`, and every other part keeps its place.
 

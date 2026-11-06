@@ -24,30 +24,19 @@ The module adds a checkbox column, \`SELECTION_COLUMN_KEY\`, pinned first.
 | A row's checkbox | Adds the row, or takes it out, and leaves the others as they are |
 | The header checkbox | Selects every row on the current page, or every group while the rows are grouped; unticking it clears the selection |
 
-- In \`'single'\` mode every click and every checkbox replaces the selection, and there is no header checkbox.
-- A click on a cell's commands does not select the row, and in the checkbox column only the checkbox does.
-- In a grouped grid, a plain click on a group row does not select it; Ctrl+click or the group's checkbox selects every record in the group. In \`'single'\` mode a group's checkbox is disabled.
-- How many groups one selection may load is on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+In \`'single'\` mode every click and every checkbox replaces the selection, and there is no header checkbox. A click on a cell's commands does not select the row. In a grouped grid, a plain click on a group row does not select it, while Ctrl+click or the group's checkbox selects every record in the group (see *Grouping and selection* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview)).
 
 {{story: Pick one product}}
 
 ## Read and change the selection
 
-The selection belongs to the provider, not to the grid: read and change it with the provider's selection methods, and the grid follows (see *Selection* on [**Data providers**](?path=/docs/concepts-data-providers--overview)).
+The selection belongs to the provider, not to the grid: read and change it with the provider's selection methods, and the grid follows (see *Selection* on [**Data providers**](?path=/docs/concepts-data-providers--overview)). \`provider.getSelectedRecordIds()\` leaves group rows out unless you pass \`{ includeGroupRecordIds: true }\`, and \`provider.getRecordsMap()[id]\` returns the record, the records of loaded groups included.
 
-- \`provider.getSelectedRecordIds()\` leaves group rows out unless you pass \`{ includeGroupRecordIds: true }\`, and \`provider.getRecordsMap()[id]\` returns the record, the records of loaded groups included.
-- The selection outlives the grid: a grid that mounts over a provider that already has a selection shows those rows selected and scrolls to them.
-- \`onSelectionChanged\` is called for every change, your own provider calls and a reload included, with the ids of records only: a selected group's records are in, the group row is not.
-- With the editing module, a row's save status is drawn in its checkbox cell: see *The save status* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
+\`onSelectionChanged\` is called for every change, your own provider calls and a reload included, with the ids of records only. A grid that mounts over a provider that already has a selection shows those rows selected and scrolls to them. With the editing module, a row's save status is drawn in its checkbox cell.
 
 ## Refuse or change a selection
 
-\`registerSelectRecords(hook, priority?)\` runs before the grid writes a selection to the provider: a click, a checkbox, the header checkbox or \`selectRecords\`. The hook gets \`(selection, { provider })\`:
-
-- Change \`selection.recordIds\` to select something else, or set \`selection.isCancelled\` to refuse it, and the rows go back to what the provider holds.
-- Hooks run in priority order and may be \`async\`; each is awaited before the next.
-- The grouping module registers one at \`GRID_MODULE_PRIORITY.grouping\` that loads the groups a selection adds.
-- Unticking the header checkbox and your own provider calls do not go through the hooks.
+\`registerSelectRecords(hook, priority?)\` runs before the grid writes a selection to the provider: from a click, a checkbox, the header checkbox or \`selectRecords\`. The hook gets \`(selection, { provider })\`: change \`selection.recordIds\` to select something else, or set \`selection.isCancelled\` to refuse it, and the rows go back to what the provider holds. Hooks may be \`async\`, and each is awaited before the next. Unticking the header checkbox and your own provider calls do not go through them.
 
 \`registerSelectionState(hook, priority?)\` changes how a row's checkbox reads: the hook gets \`(result, { node, record })\` with \`result.state\` as \`'checked'\`, \`'unchecked'\` or \`'indeterminate'\`. The grouping module uses it to show a partly selected group.
 
@@ -55,19 +44,18 @@ The selection belongs to the provider, not to the grid: read and change it with 
 
 The cell selection module lets users highlight blocks of cells as in a spreadsheet, and the clipboard module copies them out.
 
-- Drag across cells to highlight them, or extend a block from the focused cell with Shift+click and Shift+arrow keys; Ctrl+drag adds another block.
-- Ctrl+C (Cmd+C on a Mac) copies the highlighted blocks when there are any, otherwise the focused cell.
-- Every value is copied as the grid shows it, such as a price with its currency symbol, with a tab between cells and a line per row, so it pastes into a spreadsheet as cells. The checkbox column copies as an empty cell.
+| User action | What it does |
+|---|---|
+| Drag across cells | Highlights a block |
+| Shift+click, Shift+arrow keys | Extends the block from the focused cell |
+| Ctrl+drag | Adds another block |
+| Ctrl+C (Cmd+C on a Mac) | Copies the highlighted blocks, or the focused cell when there are none |
+
+Every value is copied as the grid shows it, such as a price with its currency symbol, with a tab between cells and a line per row, so it pastes into a spreadsheet as cells.
 
 {{story: Copy a price list into a spreadsheet}}
 
-In an editable grid, Ctrl+V pastes into the focused cell or the highlighted block, Ctrl+X copies and clears, and Delete or Backspace clears the highlighted cells. Each value reaches the record as if it was typed:
-
-- Locked cells and in-place columns are skipped.
-- Text is read in the user's format: option sets by their labels, several separated by \`;\`.
-- Text a column cannot take leaves the cell as it was.
-- A lookup takes the record of that name when exactly one record of that name is already among the column's loaded values.
-- With \`autoSave\`, each changed record saves once after the paste.
+In an editable grid, Ctrl+V pastes into the focused cell or the highlighted block, Ctrl+X copies and clears, and Delete or Backspace clears the highlighted cells. Each value reaches the record as if it was typed, in the user's format: option sets by their labels, several separated by \`;\`. Locked cells and in-place columns are skipped, text a column cannot take leaves the cell as it was, and with \`autoSave\` each changed record saves once after the paste.
 
 ## Options
 

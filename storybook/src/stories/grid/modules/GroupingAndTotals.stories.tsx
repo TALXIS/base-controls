@@ -13,13 +13,9 @@ Grouping gathers the rows under a group row for each value of a column, level by
 
 ## What grouping does to the grid
 
-- A column offers *Group* and *Ungroup* in its menu when its metadata sets \`CanBeGrouped\` and it is not a multi-select option set.
-- A grouped column shows a group icon before its name, moves to the front, is pinned to the left and cannot be edited.
-- Dragging one grouped column ahead of another changes the order of the levels.
-- A narrow column at the far left, \`GROUP_EXPANSION_COLUMN_KEY\`, has a + and a − in its header that open or close one level of groups at a time.
-- A group row shows its value, a chevron and its record count in the column of its level, and its totals in the columns that have one. Every cell of a group row is locked.
-- Record rows take the grid's plain background, so zebra stripes disappear, and so does a background a cell theme hook below \`GRID_MODULE_PRIORITY.grouping\` sets (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
-- A \`colDefs\` entry can undo what grouping and totals set on a column: see *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview).
+A column offers *Group* and *Ungroup* in its menu when its metadata sets \`CanBeGrouped\` and it is not a multi-select option set. A grouped column shows a group icon before its name, moves to the front, is pinned to the left and cannot be edited; dragging one grouped column ahead of another changes the order of the levels. A narrow column at the far left, \`GROUP_EXPANSION_COLUMN_KEY\`, has a + and a − in its header that open or close one level of groups at a time.
+
+A group row shows its value, a chevron and its record count in the column of its level, and its totals in the columns that have one; every cell of a group row is locked. Record rows take the grid's plain background, so zebra stripes go, and so does a background a cell theme hook below \`GRID_MODULE_PRIORITY.grouping\` sets (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
 
 ## Nested or flat
 
@@ -27,15 +23,11 @@ Grouping gathers the rows under a group row for each value of a column, level by
 
 {{story: Group hours by employee and day}}
 
-The grid passes \`type\` to the provider when it mounts, and the provider regroups on its next load. To switch, remount the grid with a new \`key\` and refresh the provider.
+The grid passes \`type\` to the provider when it mounts, and the provider regroups on its next load. To switch, remount the grid with a new \`key\` and refresh the provider, as the example does.
 
 ## Opening groups
 
-\`defaultExpandedLevel\` sets how deep the groups open.
-
-- Levels count from \`0\`, the top one; the default \`-1\` keeps every group closed, and a number past the deepest level opens everything.
-- A group the user opens or closes keeps that state, until \`setExpandedLevel\` or the expansion column's buttons apply a level again.
-- The level and the toggled groups are kept in the grid's state: see [**State**](?path=/docs/controls-grid-state--overview).
+\`defaultExpandedLevel\` sets how deep the groups open. Levels count from \`0\`, the top one; the default \`-1\` keeps every group closed, and a number past the deepest level opens everything. A group the user opens or closes keeps that state until \`setExpandedLevel\` or the expansion column's buttons apply a level again, and the grid's [**State**](?path=/docs/controls-grid-state--overview) keeps both.
 
 {{story: Expand and collapse from the ribbon}}
 
@@ -43,10 +35,7 @@ Whether the groups' records load with the list or as each group opens depends on
 
 ## Grouping and selection
 
-With row selection on, selecting a group row selects every record in it, so the grid first loads the records of each newly selected group, a level at a time. On the client-side row model they are loaded already.
-
-- A selection that would load more than \`maxGroupLoadsPerSelection\` groups is refused with an alert worded by \`gridGrouping.groupSelectionLimitMessage\`.
-- A group that holds more than 5,000 records loads the first 5,000 and says so once per load, worded by \`gridGrouping.maximumGroupChildrenLimitReached\`.
+With row selection on, selecting a group row selects every record in it, so the grid first loads the records of each newly selected group, a level at a time; on the client-side row model they are loaded already. A selection that would load more than \`maxGroupLoadsPerSelection\` groups is refused with an alert, and a group that holds more than 5,000 records loads the first 5,000 and says so. To change their texts, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## The totals row
 
@@ -54,16 +43,13 @@ The totals row appears while any column has a total and the list has a record, p
 
 {{story: Total the filtered list}}
 
-- The totals cover the whole list as filtered and searched, not just the page on screen.
-- They show saved data: they update on each load and after each save or delete, but not while a value is being edited.
-- The row shimmers while the totals load, and shows the error across its width if that fails.
-- Changing a total while the rows are grouped reloads the rows, which clears the selection.
+The totals cover the whole list as filtered and searched, not just the page on screen. They show saved data: they update on each load and after each save or delete, but not while a value is being edited. The row shimmers while the totals load, and shows the error across its width if that fails. Changing a total while the rows are grouped reloads the rows, which clears the selection.
 
 ## Summary rows
 
 Group rows and the totals row are summary rows: records (\`IRecord\`) like any other, and the grid runs everything for them it runs for a record, from the \`rowSettings\` callbacks and every \`context.cell\` callback to the lock, validation and command hooks, legacy client API expressions and events such as \`onRowClicked\`. Tell them apart by \`record.getDataProvider().getSummarizationType()\`:
 
-| Summarization type | Row |
+| \`getSummarizationType()\` | Row |
 |---|---|
 | \`'none'\` | A record |
 | \`'grouping'\` | A group row |
@@ -71,20 +57,13 @@ Group rows and the totals row are summary rows: records (\`IRecord\`) like any o
 
 {{story: Lock submitted entries only}}
 
-Summary rows hold their values under aliases (see *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview)), so \`record.getValue('status')\` reads \`null\` on them. A rule that acts on an empty value acts on them too, as the lock above does without its guard. \`grouping.getGroupedValueColumnName\` and \`aggregation.getAggregateValueColumnName\` return the alias to read.
+Summary rows hold their values under aliases, so \`record.getValue('status')\` reads \`null\` on them, and a rule that acts on an empty value acts on them too, as the lock above does without its guard. \`grouping.getGroupedValueColumnName\` and \`aggregation.getAggregateValueColumnName\` return the alias to read.
 
 ## Preset grouping and totals
 
-Grouping and totals live on the provider, like the sort and the filter: set them before \`refresh()\` and the grid opens grouped and totalled. The calls are under *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview), and the pipeline at the top of this page opens that way.
+Grouping and totals live on the provider, like the sort and the filter: add them before the provider loads and the grid opens grouped and totalled, as the pipeline at the top of this page does. The calls, and the aliases the values are held under, are under *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
-What matters for the grid:
-
-- Call \`setColumns\` first: \`addGroupBy\` and \`addAggregation\` write onto the current columns.
-- Keep the default aliases rather than setting \`alias\`, as the column menu does.
-- Levels are ranked by the columns' \`order\`, which \`addGroupBy\`'s second argument sets.
-- \`grouping.clear()\` leaves the columns it ungroups read-only, so remove each level with \`removeGroupBy\` instead.
-- A grouped column's \`count\` is the number on its group rows and in the totals row; its *Totals* section has no *None*.
-- \`aggregation.getAggregations()\` stays empty while nothing is grouped, so read an ungrouped list's totals from \`provider.getColumns().filter(column => column.aggregation?.aggregationFunction)\`.
+Call \`setColumns\` first, since grouping and totals are written onto the current columns, and name the aliases as the column menu does: \`<column>_group\` and \`<column>_<function>\`. To ungroup from code, remove each level with \`removeGroupBy\`: \`grouping.clear()\` leaves the columns it ungroups read-only.
 
 ## Options
 
@@ -122,8 +101,7 @@ Both modules take \`components\` (see *Options*). How slots work: [**Pieces and 
 
 {{story: Show group sizes as badges}}
 
-- The cells are \`GroupCell\`, \`TotalCell\` and \`AggregateCell\`; a key in their own \`components\` prop replaces the module's for that key.
-- To draw one column's group rows or totals your own way, set its \`cellRendererSelector\` in \`colDefs\`. It replaces the module's for that column, so return \`undefined\` for the rows it should leave to \`cellRenderer\`, and draw a grouped column's records empty.
+The cells are \`GroupCell\`, \`TotalCell\` and \`AggregateCell\`, and a key in their own \`components\` prop replaces the module's for that key. To draw one column's group rows or totals your own way, set its \`cellRendererSelector\` in \`colDefs\`, as the totals example below does. It replaces the module's for that column, so return \`undefined\` for the rows it should leave to \`cellRenderer\`, and draw a grouped column's records empty.
 
 The expansion column's header is \`GroupExpansionHeader\`: pass \`headerComponentParams: { components: { expandCollapse } }\` on \`GROUP_EXPANSION_COLUMN_KEY\`, with the slots \`onRenderContainer\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\` (default \`GroupingUiExpandCollapseComponents\`). To change one column's grouping icon, replace the header adornment keyed \`'grouping'\` in its \`context.header.onGetAdornments\`. The alert for a refused selection is the host's own dialog and has no slots.
 
@@ -260,7 +238,7 @@ export const LockSubmittedEntriesOnly: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`rowSettings.onGetLock\` locks every entry past *Draft* or *Rejected*, and skips summary rows by their summarization type. Try: turn off *Skip summary rows*.`,
+                story: `\`rowSettings.onGetLock\` locks every entry past *Draft* or *Rejected*, and skips summary rows by \`getSummarizationType()\`. Try: turn off *Skip summary rows*.`,
             },
         },
     },

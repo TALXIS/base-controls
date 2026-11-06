@@ -4,7 +4,7 @@ import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { FilterIconExample, SortArrowsExample } from '../../../grid/examples/moduleComponentsExamples'
-import { OpenOnWhatMattersExample, SavedViewsExample, TailoredFiltersExample, TriageQueueExample } from '../../../grid/examples/sortingFilteringExamples'
+import { OpenOnWhatMattersExample, TailoredFiltersExample, TriageQueueExample } from '../../../grid/examples/sortingFilteringExamples'
 
 const DESCRIPTION = `
 Sorting and filtering let users order a long list and narrow it down from each column's menu. Neither needs AG Grid Enterprise, and both keep their state on the provider, so what you set there is what the grid opens with. Try it below: filter *Status* to New.
@@ -33,7 +33,7 @@ The provider's defaults are on [**Data**](?path=/docs/controls-grid-data--overvi
 
 ## Open the grid sorted and filtered
 
-Call \`provider.setSorting()\` and \`provider.setFiltering()\` before \`refresh()\`, and the grid opens sorted and filtered, with the menus, arrows and funnels to match. Their shapes are under *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+Call \`provider.setSorting()\` and \`provider.setFiltering()\` before the provider loads, and the grid opens sorted and filtered, with the menus, arrows and funnels to match. Their shapes are under *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 {{story: Open on the tickets that matter}}
 
@@ -46,23 +46,15 @@ Write condition values the way the filter callout does, or it opens with nothing
 | *Contains* text | \`Like\` with \`'%invoice%'\` |
 | An operator with no value, such as \`Today\` | \`''\` |
 
-Once someone applies or clears a column filter, the provider's filter becomes the column conditions, all required:
+Once someone applies or clears a column filter, the provider's filter is rebuilt from the column conditions, all required: an OR becomes an AND, and nested filters and conditions on anything that is not a column are dropped. Keep a fixed scope, such as *only my team's tickets*, in the data source or the query instead.
 
-- An OR becomes an AND.
-- Nested filters, and conditions on anything that is not a column, are dropped.
-- So keep a fixed scope, such as *only my team's tickets*, in the data source or the query rather than in \`setFiltering\`.
-
-Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with its own sort and filter, belong to the DatasetControl: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
-
-{{story: Switch between saved views}}
+Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with a sort and a filter of its own, belong to the DatasetControl: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
 ## Narrow what a filter offers
 
 \`SupportedFilterConditionOperators\` lists the operators a column's callout offers, in your order, as the \`Value\` of each \`Operators\` entry. Left out, a column offers every operator of its data type, as \`Operators.GetOperatorsForDataType(dataType)\` returns; they are under *Reference* below.
 
-- An unfiltered column's callout opens on its data type's own operator: *Contains* for text, *On* for dates, *Contains data* for files and images, and *Equals* for the rest. Keep that operator in a narrowed list, or the callout opens with nothing picked.
-- On an option set or a yes/no column, *Equals* and *Does not equal* take several options and reach the provider as \`In\` and \`NotIn\`, so leave \`In\` and \`NotIn\` out of their lists.
-- Dates are compared by day.
+An unfiltered column's callout opens on its data type's own operator: *Contains* for text, *On* for dates, *Contains data* for files and images, and *Equals* for the rest, so keep that operator in a narrowed list. On an option set or a yes/no column, *Equals* and *Does not equal* take several options and reach the provider as \`In\` and \`NotIn\`, so leave \`In\` and \`NotIn\` out of their lists. Dates are compared by day.
 
 \`filtering.registerFilterControlParameters(hook, priority?)\` changes the parameters the callout passes its controls, such as a text box's \`Placeholder\`. The hook gets \`(result, { column, control, index })\`: \`control\` is \`'operator'\` or \`'value'\`, and \`index\` is \`1\` for the second value of *Between*. It runs after the grid's own parameters, so it can change those too: value controls get \`EnableOptionSetColors\` from the grid's \`enableOptionSetColors\`, and a lookup cannot create a record from the callout.
 
@@ -171,19 +163,7 @@ export const OpenOnWhatMatters: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`provider.setSorting\` and \`provider.setFiltering\` before \`refresh()\` open the queue on the tickets still to resolve, unassigned first. Try: open the *Status* menu.`,
-            },
-        },
-    },
-}
-
-export const SwitchBetweenSavedViews: Story = {
-    name: 'Switch between saved views',
-    render: () => renderStory(<SavedViewsExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `Each view loads a provider of its own, sorted and filtered in \`onLoad\`, and the control's \`stateKey\` keeps what the user changes. Try: filter *Priority* to High, then switch views and back.`,
+                story: `\`provider.setSorting\` and \`provider.setFiltering\`, called before the first load, open the queue on the tickets still to resolve, unassigned first. Try: open the *Status* menu.`,
             },
         },
     },

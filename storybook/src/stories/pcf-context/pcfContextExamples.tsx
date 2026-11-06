@@ -2,7 +2,11 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 
-const FORMAT_CODE = `const CULTURES = [
+const FORMAT_CODE = `import { PcfContextProvider, usePcfContext } from '@talxis/base-controls'
+import { Dropdown, Stack, Text } from '@fluentui/react'
+
+//the culture formats dates, numbers and money
+const CULTURES = [
     { key: 'en-US', text: 'English (United States)', lcid: 1033 },
     { key: 'cs-CZ', text: 'Čeština', lcid: 1029 },
     { key: 'de-DE', text: 'Deutsch', lcid: 1031 },
@@ -27,6 +31,7 @@ const GridExample = () => {
     const culture = CULTURES.find(candidate => candidate.key === cultureKey)!
     return <Stack tokens={{ childrenGap: 12 }}>
         <Dropdown label='Culture' options={CULTURES} selectedKey={cultureKey} onChange={(_, option) => setCultureKey(String(option?.key))} styles={{ root: { maxWidth: 280 } }} />
+        {/* outside a PCF, the provider builds the context from these settings */}
         <PcfContextProvider userSettings={{ lcid: culture.lcid, formatInfoCultureName: culture.key }}>
             <Invoice />
         </PcfContextProvider>
@@ -34,7 +39,11 @@ const GridExample = () => {
 }
 `
 
-const DIALOGS_CODE = `const ArchiveButton = () => {
+const DIALOGS_CODE = `import { PcfContextProvider, usePcfContext } from '@talxis/base-controls'
+import { PrimaryButton, Stack, Text } from '@fluentui/react'
+
+const ArchiveButton = () => {
+    //the host's dialogs, or the browser's own outside a host
     const { navigation } = usePcfContext()
     const [result, setResult] = React.useState('')
 
@@ -69,11 +78,11 @@ import { Invoice } from './GridExample'
 export class InvoiceControl implements ComponentFramework.StandardControl<{}, {}> {
     private _container!: HTMLDivElement
 
-    public init(context: ComponentFramework.Context, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement) {
+    public init(context: ComponentFramework.Context<{}>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement) {
         this._container = container
     }
 
-    public updateView(context: ComponentFramework.Context) {
+    public updateView(context: ComponentFramework.Context<{}>) {
         ReactDOM.render(<PcfContextProvider context={context}>
             <Invoice />
         </PcfContextProvider>, this._container)

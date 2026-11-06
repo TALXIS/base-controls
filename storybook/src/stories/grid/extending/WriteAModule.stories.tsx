@@ -19,12 +19,9 @@ A module packages a feature of your own: it registers hooks, follows events, sha
 | \`onDestroy(instance)\` | Called as the grid unmounts, with what \`onLoad\` returned. |
 | \`agGridModules\` | AG Grid modules the feature needs. See *AG Grid modules* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
 
-- Build a module once, as a constant or in \`useMemo\`: \`modules\` is read at mount, see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
-- A module that needs options is a function that builds one, such as \`createCopyColumnModule(onCopied)\`, and reads state that changes through a getter or a ref. The examples on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) do both.
-- Modules load in the order of the array: in your \`onLoad\` the ones before yours are there for \`grid.modules.find\`; reach later ones with \`grid.modules.observe\`.
-- AG Grid's api arrives later too: reach it with \`grid.services.observe('gridApi', ...)\`. When each step runs is under *Lifecycle* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
-- \`onLoad\` runs while \`<Grid />\` first renders, so it must not set React state.
-- Take what the module works on from \`grid.services\`, such as \`grid.services.get('provider')\`, and it works in any grid.
+Build a module once, as a constant or in \`useMemo\`, since \`modules\` is read at mount. A module that needs options is a function that builds one, such as \`createCopyColumnModule(onCopied)\` on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview), and reads state that changes through a getter or a ref. Take what the module works on from \`grid.services\`, such as \`grid.services.get('provider')\`, and it works in any grid.
+
+Modules load in the order of the array: in your \`onLoad\`, the ones before yours are there for \`grid.modules.find\`, and later ones are reached with \`grid.modules.observe\`. AG Grid's api arrives later too, through \`grid.services.observe('gridApi', ...)\`; when each step runs is under *From mount to unmount* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). \`onLoad\` runs while \`<Grid />\` first renders, so it must not set React state.
 
 ## Clean up
 
@@ -42,23 +39,15 @@ What you register on the grid goes with it. Anything that outlives the grid keep
 
 What \`onLoad\` returns is registered under the module's \`name\`. Other modules reach it with \`grid.modules.find(name)\`, and anything the grid draws with \`useGridModule(name)\`. An instance does not redraw anything by itself: when its state changes, tell whoever draws it, as the bar's \`subscribe\` does.
 
-Add the name to \`IGridModuleMap\` once in your project, next to the module, and the instance is typed wherever you reach it, as *types.ts* in the example does.
-
-- The file has to import or export something, as *types.ts* exports \`IUnsavedChanges\`; otherwise \`declare module\` replaces the package's types instead of adding to them.
-- A module whose \`onLoad\` returns nothing still needs an entry, typed \`void\`.
-- A grid may not have your module, so \`find\` returns \`IUnsavedChanges | undefined\`, and \`get\` and \`useGridModule\` throw without it.
+Add the name to \`IGridModuleMap\` once in your project, next to the module, and the instance is typed wherever you reach it, as *types.ts* in the example does. The file has to import or export something, as *types.ts* exports \`IUnsavedChanges\`, or \`declare module\` replaces the package's types instead of adding to them. A module whose \`onLoad\` returns nothing still needs an entry, typed \`void\`. A grid may not have your module, so \`find\` can return \`undefined\`, and \`get\` and \`useGridModule\` throw without it.
 
 ## Draw inside the grid
 
-The grid's \`surfaces\` service holds what the grid draws inside its own element, after the rows. \`grid.services.get('surfaces').registerSurface(hook, priority?)\` adds to it:
+The grid's \`surfaces\` service holds what the grid draws inside its own element, after the rows. \`grid.services.get('surfaces').registerSurface(hook, priority?)\` adds to it: the hook pushes \`{ key, onRender }\`, and \`onRender\` returns what to draw, or \`null\` while there is nothing to show. What it draws is inside the grid's React tree, so it can call \`useGridService\` and \`useGridModule\`, and it follows its own state, as the bar subscribes to its module.
 
-- The hook pushes \`{ key, onRender }\`, and \`onRender\` returns what to draw, or \`null\` while there is nothing to show.
-- A surface is inside the grid's React tree, so it can call \`useGridService\` and \`useGridModule\`.
-- The list is read each time \`<Grid />\` renders, so a surface follows its own state, as the bar subscribes to its module.
-- A surface that draws a block, such as the bar, makes a grid without \`height\` taller; callouts, panels and dialogs take no room.
-- For a callout, panel or dialog, use Base Controls' \`Callout\`, \`Panel\` or \`Dialog\` so it draws in the app theme: see [**Fluent UI**](?path=/docs/concepts-fluent-ui--overview).
+A block, such as the bar, makes a grid without \`height\` taller, while callouts, panels and dialogs take no room. For those, use Base Controls' \`Callout\`, \`Panel\` or \`Dialog\` so they draw in the app theme: see [**Fluent UI**](?path=/docs/concepts-fluent-ui--overview).
 
-Surfaces are drawn in ascending priority, beside the built-in ones:
+Entries are drawn in ascending priority, beside those of the built-in modules:
 
 | Key | Drawn by |
 |---|---|

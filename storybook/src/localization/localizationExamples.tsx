@@ -3,6 +3,7 @@ import { GridExampleRunner } from '../grid/GridExampleRunner'
 
 const SWITCH_LANGUAGE_CODE = `import { createClientSideRowModelModule, createSortingModule, CZECH_LABELS, DatasetControl, Grid, LabelsProvider, PcfContextProvider } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
+import { ChoiceGroup, Stack } from '@fluentui/react'
 
 //the culture formats dates and numbers, the labels translate the strings
 const LANGUAGES = [
@@ -64,12 +65,15 @@ const GridExample = () => {
 }
 `
 
-const OWN_LABELS_CODE = `import { INVOICE_LABELS } from './labels/en'
+const OWN_LABELS_CODE = `import { LabelsProvider, useLabels } from '@talxis/base-controls'
+import { Stack, Text, Toggle } from '@fluentui/react'
+import { INVOICE_LABELS } from './labels/en'
 import { INVOICE_LABELS_CS } from './labels/cs'
 
 const LINES = ['Standing desk', 'Ergonomic chair', 'Desk lamp']
 
 const Invoice = (props: { lines: string[] }) => {
+    //the nearest LabelsProvider's strings, or the English defaults
     const labels = useLabels(INVOICE_LABELS)
     return <Stack tokens={{ childrenGap: 4 }}>
         <Text variant='large'>{labels.get('invoice.title')}</Text>
@@ -90,7 +94,9 @@ const GridExample = () => {
 
 const LABELS_FILE = {
     name: 'labels/en.ts',
-    code: `//every key prefixed with the component's name
+    code: `import { defineLabels } from '@talxis/base-controls'
+
+//every key prefixed with the component's name
 export const INVOICE_LABELS = defineLabels({
     'invoice.title': 'Invoice',
     'invoice.lineCount': 'Lines: {{ count }}',
@@ -100,7 +106,8 @@ export const INVOICE_LABELS = defineLabels({
 
 const CZECH_FILE = {
     name: 'labels/cs.ts',
-    code: `import { INVOICE_LABELS } from './en'
+    code: `import { translateLabels } from '@talxis/base-controls'
+import { INVOICE_LABELS } from './en'
 
 //keys checked against the set
 export const INVOICE_LABELS_CS = translateLabels(INVOICE_LABELS, {
@@ -110,6 +117,6 @@ export const INVOICE_LABELS_CS = translateLabels(INVOICE_LABELS, {
 `,
 }
 
-export const SwitchLanguageExample = () => <GridExampleRunner seedCode={SWITCH_LANGUAGE_CODE} />
+export const SwitchLanguageExample = () => <GridExampleRunner seedCode={SWITCH_LANGUAGE_CODE} tabs={['preview', 'code']} />
 
 export const OwnLabelsExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_LABELS_CODE }, LABELS_FILE, CZECH_FILE]} tabs={['preview', 'code']} />

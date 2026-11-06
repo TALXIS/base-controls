@@ -10,48 +10,52 @@ const styles = mergeStyleSets({
     log: { margin: 0, padding: 12, fontSize: 12, minHeight: 160, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4 },
 })
 
+//stands in for a server call
+const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+
 class DealSummaryRuntime implements IRuntime {
-    //runs _init once the host asks, and keeps the status, the error and the events
+    //runs onInit when the host starts the mount, and keeps the status, the error and the events
     public readonly lifecycle = new RuntimeLifecycle({ onInit: () => this._init() })
     private _total = 0
-    private _shouldFail: () => boolean
+    private _isServiceDown: () => boolean
 
-    constructor(shouldFail: () => boolean) {
-        this._shouldFail = shouldFail
+    constructor(isServiceDown: () => boolean) {
+        this._isServiceDown = isServiceDown
     }
 
     public getTotal(): number {
         return this._total
     }
 
-    //stands in for a server call; a throw shows the error with Try again
+    //a throw here shows the error with Try again
     private async _init(): Promise<void> {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        if (this._shouldFail()) {
+        await callServer(1000)
+        if (this._isServiceDown()) {
             throw new Error('The deals service is not reachable.')
         }
         this._total = OPEN_DEALS.reduce((sum, value) => sum + value, 0)
     }
 }
 
-//drawn by the host on every mount; useRuntime re-renders it when the status changes
-const DealSummaryMount = () => {
+//drawn inside the host; useRuntime draws it again when the status changes
+const DealSummary = () => {
     const runtime = useRuntime<DealSummaryRuntime>()
     if (runtime.lifecycle.getStatus() === 'initializing') {
         return <Spinner label='Loading the open deals...' />
     }
     return <Stack horizontal tokens={{ childrenGap: 12 }} verticalAlign='center'>
         <Text variant='large'>Open deals: {runtime.getTotal().toLocaleString()} USD</Text>
+        {/* a new runtime, which loads again */}
         <DefaultButton text='Reload' onClick={() => runtime.lifecycle.remount()} />
     </Stack>
 }
 
 const GridExample = () => {
-    const shouldFail = React.useRef(false)
+    const isServiceDown = React.useRef(false)
     const [entries, setEntries] = React.useState<string[]>([])
     const log = (entry: string) => setEntries(current => [...current, entry])
 
-    //a new runtime for every mount, so subscribe here
+    //called with every new runtime, so subscribe here
     const onMounted = (runtime: DealSummaryRuntime) => {
         log('onMounted')
         runtime.lifecycle.events.addEventListener('onReady', () => log('onReady'))
@@ -60,9 +64,9 @@ const GridExample = () => {
     }
 
     return <Stack tokens={{ childrenGap: 16 }}>
-        <Toggle label='Fail the next load' inlineLabel onChange={(_, checked) => shouldFail.current = !!checked} />
-        <RuntimeHost onCreate={() => new DealSummaryRuntime(() => shouldFail.current)} onMounted={onMounted}>
-            <DealSummaryMount />
+        <Toggle label='Service unavailable' inlineLabel onChange={(_, checked) => { isServiceDown.current = !!checked }} />
+        <RuntimeHost onCreate={() => new DealSummaryRuntime(() => isServiceDown.current)} onMounted={onMounted}>
+            <DealSummary />
         </RuntimeHost>
         <pre className={styles.log}>{entries.join('\\n')}</pre>
     </Stack>
@@ -93,7 +97,7 @@ class DealSummaryRuntime implements IRuntime {
         return this._store.get<string>('owner') ?? 'Everyone'
     }
 
-    //kept in the store, then a new mount loads that owner's deals
+    //kept in the store, then a new runtime loads that owner's deals
     public setOwner(owner: string): void {
         this._store.set('owner', owner)
         this.lifecycle.remount()
@@ -110,7 +114,8 @@ class DealSummaryRuntime implements IRuntime {
     }
 }
 
-const DealSummaryMount = () => {
+//drawn inside the host; useRuntime draws it again when the status changes
+const DealSummary = () => {
     const runtime = useRuntime<DealSummaryRuntime>()
     if (runtime.lifecycle.getStatus() === 'initializing') {
         return <Spinner label={\`Loading the deals of \${runtime.getOwner()}...\`} />
@@ -125,7 +130,7 @@ const GridExample = () => {
     //outlives every runtime, so the next mount opens on the owner this one stored
     const store = useControlStateStore('dealSummary')
     return <RuntimeHost onCreate={() => new DealSummaryRuntime(store)}>
-        <DealSummaryMount />
+        <DealSummary />
     </RuntimeHost>
 }
 `

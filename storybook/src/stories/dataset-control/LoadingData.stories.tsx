@@ -13,27 +13,26 @@ A DatasetControl does not hold records itself: it loads them on its first mount 
 
 ## When the control loads
 
-Every load mounts the control anew, with a new \`IDatasetControl\`, new modules, new parts and a new provider from \`onLoad\`. A load starts on:
+Every load mounts the control anew, with a new \`IDatasetControl\`, new modules, new parts and a new provider from \`onLoad\`. The parts show once the first page is in, so put what must show at once outside the control.
 
-- the first mount;
-- picking a view, or \`loadView()\`;
-- saving *Edit columns*, saving a new user view, closing *Manage views*, or \`reload()\`;
-- **Try again**, or \`retry()\`.
+| A load starts on | From your code |
+|---|---|
+| The first mount | – |
+| Picking a view in the view switcher | \`control.loadView(viewId)\` |
+| Saving *Edit columns*, saving a new user view or closing *Manage views* | \`control.reload()\` |
+| **Try again** after a failed load | \`control.lifecycle.remount()\` |
 
-A placeholder stands in for the parts until the first page is in, so put what must show at once, such as a page title, outside the control. Creating the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview); what a view carries is on [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+Creating the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview); what a view carries is on [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
 ## Unsaved changes
 
-Before anything reloads records that have unsaved changes, the control asks the user whether to discard them:
+Before anything throws away records that have unsaved changes, the control asks the user whether to discard them. Discarding clears the changes and goes ahead; keeping them cancels the action. The ribbon's **Save** and **Discard changes** let the user settle them first: see [**Ribbon**](?path=/docs/controls-datasetcontrol-parts-ribbon--overview).
 
-- It asks before every load except the first mount and **Try again** or \`retry()\`, which have no changes to lose.
-- It asks before a part reloads the provider: searching, paging, changing the page size, and sorting, filtering or grouping in a grid.
-- Discarding clears the changes and goes ahead; keeping them cancels the action.
-- The question is the \`dataset.unsavedChangesConfirmation\` label: see [**Localization**](?path=/docs/concepts-localization--overview).
+It asks before every load in the table above except the first mount and **Try again**, which have no changes to lose. It also asks before a part loads the records again: searching, paging, changing the page size, the ribbon's **Refresh**, and sorting, filtering, grouping or totals in a grid. Your own calls to the provider, such as \`refresh()\`, do not ask. The question is the \`dataset.unsavedChangesConfirmation\` label: see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Lifecycle
 
-Each mount runs these steps; what the user changed is on [**State**](?path=/docs/controls-datasetcontrol-state--overview), and failures on [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
+Each mount runs these steps. The lifecycle events every runtime raises are on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview), what the user changed is on [**State**](?path=/docs/controls-datasetcontrol-state--overview), and failures on [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
 
 {{block: lifecycle}}
 
@@ -64,8 +63,8 @@ const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The view is picked', hook: 'onLoadViews', text: '`onLoadViews` lists the views, the modules add theirs, and the control picks the one asked for or the one the user was on while it is listed, else the first.' },
     { title: 'The provider is created', hook: 'onLoad', text: '`onLoad` gets that view and returns `{ provider }`, and `view.resolve(provider)` gives the view\'s `data`, resolved once either way.' },
     { title: 'The view is applied', text: 'The control sets the view\'s linking and columns on the provider and puts back what the user changed in the view.' },
-    { title: 'The first page loads', hook: 'onReady', text: 'Unless `onLoad` already requested it, the provider loads its first page, then the parts show and `control.events` raises `onReady`.' },
-    { title: 'The control unmounts', hook: 'onDestroyed', text: 'On the next load or when the page removes the control, `control.events` raises `onDestroyed` before its modules and provider are destroyed.' },
+    { title: 'The first page loads', hook: 'onReady', text: 'Unless `onLoad` already requested it, the provider loads its first page, then the parts show and `control.lifecycle.events` raises `onReady`.' },
+    { title: 'The control unmounts', hook: 'onDestroyed', text: 'On the next load or when the page removes the control, `control.lifecycle.events` raises `onDestroyed` before its modules and provider are destroyed.' },
 ]
 
 const meta = {

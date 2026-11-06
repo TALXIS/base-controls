@@ -49,13 +49,9 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, registered once AG Gr
 | Code outside the grid, such as a ribbon command | Keep the grid \`onReady\` passes you, and call \`grid.services.find('gridApi')\` |
 | A component the grid draws | \`useGridService('gridApi')\`, which can be \`undefined\` on the first render |
 
-Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`. What you change through the api stays in AG Grid:
+Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`. What you change through the api stays in AG Grid. Widths you autosize are not written to the provider and fire no \`onColumnsChanged\`, and a value written with \`node.setDataValue\` never reaches the record, so use \`record.setValue\`. An option a hook also sets is replaced by the hook's value, so set it through a hook rather than \`gridApi.setGridOption\`.
 
-- Widths you autosize are not written to the provider and fire no \`onColumnsChanged\`.
-- A value written with \`node.setDataValue\` never reaches the record, so use \`record.setValue\`.
-- An option a hook also sets is replaced by the hook's value, so set it through a hook rather than \`gridApi.setGridOption\`.
-
-To read AG Grid as it goes, return a cleanup from the observer: it runs while AG Grid still works, as *Lifecycle* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) shows.
+To read AG Grid as it goes, return a cleanup from the observer: it runs while AG Grid still works (see *From mount to unmount* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview)).
 
 {{story: Jump to the newest ticket}}
 
@@ -86,7 +82,7 @@ An example is under *Change the AG Grid theme* on [**Appearance**](?path=/docs/c
 
 Every grid registers the AG Grid modules it needs itself, and those its modules list. \`agGridModules\` lists the ones a module of yours needs, as the example under *AG Grid's api* lists \`HighlightChangesModule\`.
 
-Import them from the same \`ag-grid-community\` and \`ag-grid-enterprise\` the grid uses, so the versions match. AG Grid registers modules for the whole page, so once one grid has registered a module every grid has it; an api call whose module no grid registered only logs an AG Grid error. Enterprise modules need a licence: see *AG Grid Enterprise and the licence* on [**Modules**](?path=/docs/controls-grid-modules--overview).
+Import them from the same \`ag-grid-community\` and \`ag-grid-enterprise\` the grid uses, so the versions match. AG Grid registers modules for the whole page, so once one grid has registered a module every grid has it; an api call whose module no grid registered only logs an AG Grid error. Enterprise modules need a licence: see *Enterprise features and the licence* on [**Modules**](?path=/docs/controls-grid-modules--overview).
 
 ## Where next
 
@@ -126,7 +122,7 @@ export const JumpToTheNewestTicket: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A ribbon command calls \`gridApi\` to fit the columns, scroll to the newest ticket and flash it. Try: press *Jump to the newest ticket*.`,
+                story: `Ribbon commands call \`gridApi\` to fit the columns, and to scroll to the newest ticket and flash it. Try: press *Jump to the newest ticket*.`,
             },
         },
     },

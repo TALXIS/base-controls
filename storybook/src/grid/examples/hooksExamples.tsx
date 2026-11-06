@@ -182,6 +182,7 @@ export const COPY_COLUMN_CODE = `const createCopyColumnModule = (onCopied: (mess
                 title: 'Column',
                 items: [{ key: 'copyValues', text: 'Copy column values', iconProps: { iconName: 'Copy' }, onClick: () => { copyValues() } }],
             })
+        //below the modules' own sections
         }, GRID_MODULE_PRIORITY.aggregation + 1)
     },
 })

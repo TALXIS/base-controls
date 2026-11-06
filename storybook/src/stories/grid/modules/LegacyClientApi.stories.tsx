@@ -12,12 +12,9 @@ The dataset client API is what Power Apps client scripts use to change how a vie
 
 ## Register expressions
 
-A record drops its expressions every time it loads again, so:
+A record drops its expressions every time it loads again, so register them on \`provider.getRecords()\` for the records already loaded, and in the provider's \`onRecordLoaded\` for every record loaded or saved after that. Run the script from a module of your own, as every example on this page does, and stop listening when the grid goes (see *Clean up* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview)).
 
-- Register them on \`provider.getRecords()\` for the records already loaded, and in the provider's \`onRecordLoaded\` for every record loaded or saved after that.
-- Run the script from a module of your own, as every example on this page does, and stop listening when the grid goes (see *Clean up* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview)).
-- An expression for a column the provider does not have is ignored with a console warning.
-- An expression that reads anything besides its own record's values, such as the time or another record, needs \`provider.requestRender()\` when that changes, as the stock sync below does.
+An expression that reads anything besides its own record's values, such as the time or another record, needs \`provider.requestRender()\` when that changes, as the stock sync below does. An expression for a column the provider does not have is ignored with a console warning.
 
 {{story: Colour, lock and load cells from a script}}
 
@@ -37,11 +34,7 @@ Each notification \`ui.setNotificationsExpression\` returns is an \`IAddControlN
 | Several actions, or none, and a \`text\` or a message | Opens a callout with the title, the first message and the actions. An action closes the callout, then runs its callbacks. |
 | No actions and no content | Runs only \`buttonProps.onClick\` |
 
-- The grid shows one callout at a time, and it cannot be restyled.
-- Notifications show only while their row is hovered, holds the focused cell or is selected, and not while the cell is being edited or loading.
-- Buttons that do not fit move into the **…** menu.
-- The expression runs each time a highlighted cell draws, so keep it cheap.
-- A \`cellRenderer\` of your own shows them only if it draws \`Grid.Cell.Commands\` (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)).
+Notifications show only while their row is hovered, holds the focused cell or is selected, and not while the cell is being edited or loading; buttons that do not fit move into the **…** menu. The expression runs each time such a cell draws, so keep it cheap. The grid shows one callout at a time, and it cannot be restyled. A \`cellRenderer\` of your own shows notifications only if it draws \`Grid.Cell.Commands\` (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)).
 
 ## With the rest of the grid
 

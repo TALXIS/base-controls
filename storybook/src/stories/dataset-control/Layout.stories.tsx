@@ -20,11 +20,7 @@ The control lays its parts out in regions: a header above the records, a body th
 | \`Footer\` | The row below the records, with a line above it. |
 | \`Footer.Start\`, \`Footer.End\` | The footer's left and right side. |
 
-- Any part works in any region, and the parts keep the order you write them in.
-- A side only decides where a part sits: every part sizes itself.
-- A part that lines up its buttons, such as the ribbon or the paging, starts them on the left in \`Start\` and on the right in \`End\`.
-- A part of your own reads which side it is on with \`useDatasetControlRegion()\`.
-- Anything else inside the control, such as \`DatasetControl.Notifications\`, sits between the regions in the order you write it.
+Any part works in any region, and the parts keep the order you write them in. A side only decides where a part sits: a part that lines up its buttons, such as the ribbon or the paging, lines them up on the left in \`Start\` and on the right in \`End\`, and a part of your own reads its side with \`useDatasetControlRegion()\`. A region takes your own content too, such as the export button in the example. Anything outside the regions, such as \`DatasetControl.Notifications\`, sits between them in the order you write it.
 
 ## Size the control
 
@@ -57,7 +53,6 @@ The header is a \`WrapCompactProvider\`, so a part of your own shrinks with it b
 
 - Each region takes \`className\`, and \`components\` for its box: see [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 - A custom \`Header\` container must still render a \`WrapCompactProvider\`, or the header stops turning compact.
-- A region takes your own content too, such as the page title in the full-page example.
 
 ## Where next
 
@@ -97,7 +92,7 @@ export const FillTheWholePage: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The control as a whole page with \`height='100%'\`, its title in the header. Try: scroll the grid while the header and the footer stay put.`,
+                story: `The control filling a box of a fixed height with \`height='100%'\`, as it would a whole page. Try: scroll the grid while the header and the footer stay put.`,
             },
         },
     },

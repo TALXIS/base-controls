@@ -135,12 +135,13 @@ export const DealsRibbon = (props: { enableSave?: boolean; enableDiscard?: boole
     const provider = useDataProvider()
     const control = useDatasetControl()
 
+    //saved at once, so it leaves no unsaved changes behind
     const setStage = async (recordIds: string[], stage: number) => {
-        //stands in for a server call, during which the button is disabled
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        recordIds.forEach(id => provider.getRecordsMap()[id].setValue('stage', stage))
-        //the selection is the same, but which buttons apply to it is not
-        control.parts.get('ribbon').reload()
+        const records = recordIds.map(id => provider.getRecordsMap()[id])
+        records.forEach(record => record.setValue('stage', stage))
+        await provider.save(records)
+        //the selection is the same, but which commands apply to it is not
+        await control.parts.get('ribbon').reload()
     }
 
     const onLoad = async (): Promise<IRibbonCommand[]> => {
@@ -149,7 +150,7 @@ export const DealsRibbon = (props: { enableSave?: boolean; enableDiscard?: boole
         if (selectedIds.length === 0) {
             return commands
         }
-        const openIds = selectedIds.filter(id => provider.getRecordsMap()[id].getValue('stage') !== WON_STAGE)
+        const openIds = selectedIds.filter(id => Number(provider.getRecordsMap()[id].getValue('stage')) !== WON_STAGE)
         if (openIds.length > 0) {
             commands.push({ id: 'markWon', label: \`Mark \${openIds.length} as won\`, iconName: 'Trophy2', onExecute: () => setStage(openIds, WON_STAGE) })
         }

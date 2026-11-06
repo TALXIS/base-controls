@@ -14,18 +14,18 @@ A view is a named way of looking at the same records, such as *All deals* or *Wo
 
 The switcher needs only a view's name; what the view shows is resolved when it opens, so it can be fetched then.
 
-- \`id\` identifies the view.
-- \`name\` is shown in the switcher.
-- \`group\`, as \`{ id, name }\`, is the header it is listed under; views without one go under *System views*.
-- \`resolve(provider)\` is required: it returns what the view shows, given the provider it opens on, and can be async.
+| Key | Description |
+|---|---|
+| \`id\` | Identifies the view. |
+| \`name\` | Shown in the switcher. |
+| \`group\` | \`{ id, name }\`: the header the view is listed under. Views without one go under *System views*. |
+| \`resolve(provider)\` | Required. Returns what the view shows, given the provider it opens on; can be async. |
 
 | \`resolve\` returns | Default | Description |
 |---|---|---|
-| \`columns\` | Required | The columns in order: \`name\`, plus any \`IColumn\` fields to override. The rest comes from the provider's available columns. |
+| \`columns\` | Required | The columns in order: \`name\`, plus any \`IColumn\` fields to override. The rest comes from the provider's available columns; a column the provider does not offer is used as given. |
 | \`linking\` | The provider's own | The related entities its columns come from, as \`alias.column\`. |
 | \`data\` | None | Anything else the view sets up, such as its filter. Its type is the control's \`TData\`. |
-
-A column the provider does not offer is used as given.
 
 ## Load the view
 

@@ -23,8 +23,10 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <Grid
+                //a new key mounts the grid again
                 key={mountCount}
                 modules={[createClientSideRowModelModule(), createGroupingModule({ defaultExpandedLevel: 0 })]}
+                //the scroll position, focused cell and open groups are kept under this key
                 stateKey='ticket-queue'
                 height='360px' />
         </DatasetControl.Body>

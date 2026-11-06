@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { RibbonExample, SlowLoadExample } from './ribbonExamples'
+import { OwnCommandsExample, RibbonExample, SlowLoadExample } from './ribbonExamples'
 
 const DESCRIPTION = `
 The ribbon is a bar of commands, such as **Send** or **Download**, that act on what your page shows. You return the commands from its \`onLoad\`, and it draws them as buttons and menus, disables a button while its command runs and moves what does not fit into an overflow menu. Try it below: send the invoice, then send a reminder.
@@ -26,38 +26,48 @@ A command either runs or opens a menu of further commands, as **Download** does 
 
 ## How it behaves
 
-The commands show in the order they are returned. A shimmer stands in for them until a load finishes, and a reload keeps the previous commands until the new ones arrive, as changing the invoice's status does above. A button is disabled while its \`onExecute\` runs.
+The commands show in the order they are returned. A shimmer stands in for them until the first load finishes, and a reload keeps the previous commands until the new ones arrive, as changing the invoice's status does above. A button is disabled while its \`onExecute\` runs.
 
-When \`onLoad\` throws, the error shows in place of the commands, with **Try again** and **Details**. When \`onExecute\` throws, the error dialog opens: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
+When the first load throws, the error shows in place of the commands, with **Details** and **Try again**, which mounts the ribbon anew. When a reload or an \`onExecute\` throws, the commands stay and the error dialog opens: it is the PCF context's \`navigation.openErrorDialog\`, see [**PCF context**](?path=/docs/concepts-pcf-context--overview).
 
 {{story: A slow load}}
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| \`onLoad\` | \`() => Promise<IRibbonCommand[]>\` | None | Returns the commands. Called at mount and on \`reload()\`. |
-| \`align\` | \`'start' \\| 'end'\` | \`'start'\` | The side the commands line up against. |
-| \`disabled\` | \`boolean\` | \`false\` | Disables every command, menus included. |
-| \`className\` | \`string\` | None | Added to the ribbon's box and to its shimmer. |
-| \`onMounted\` | \`(ribbon: IRibbonRuntime) => void\` | None | Hands over the ribbon before its first load. At mount. |
-| \`components\` | \`IRibbonComponents\` | Defaults | See *Changing how it looks*. |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`onLoad\` | \`() => Promise<IRibbonCommand[]>\` | None | Live | Returns the commands. Called at mount and on \`reload()\`. |
+| \`align\` | \`'start' \\| 'end'\` | \`'start'\` | Live | The side the commands line up against. |
+| \`disabled\` | \`boolean\` | \`false\` | Live | Disables every command, menus included. |
+| \`className\` | \`string\` | None | Live | Added to the ribbon's box and to its shimmer. |
+| \`onMounted\` | \`(ribbon: IRibbonRuntime) => void\` | None | At mount | Hands over the ribbon of each mount, before it loads. |
+| \`components\` | \`IRibbonComponents\` | Defaults | Live | See *Changing how it looks*. |
 
 ## From your code
 
-\`onMounted\` hands over the ribbon of each mount, with the status and lifecycle events every runtime has: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). The ribbon does not know when what your commands depend on changes, so call \`reload()\` then, as the example does when the status changes.
+\`onMounted\` hands over the ribbon of each mount. Its \`lifecycle\` holds the status and the lifecycle events every runtime has: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). The ribbon does not know when what your commands depend on changes, so call \`reload()\` then, as the example does when the status changes.
 
 | Member | Does |
 |---|---|
 | \`getCommands()\` | The commands of the last load; \`undefined\` until the first one finishes. |
 | \`isRunning(commandId)\` | Whether the command's \`onExecute\` is running. |
-| \`reload()\` | Loads the commands again; the latest call's commands win. |
-| \`registerCommands(hook, priority?)\` | Adds to the commands on every load. |
-| \`events\` | Its own events; the lifecycle's are on \`lifecycle.events\`: \`onCommandsChanged\`, \`onReloadFailed(error)\`, \`onBeforeExecute(command)\`, \`onExecuteFailed(command, error)\` and \`onAfterExecute(command)\`. |
+| \`reload()\` | Loads the commands again; the latest call's commands win. Does nothing until the first load succeeds. |
+| \`registerCommands(hook, priority?)\` | Adds to the commands on every load: see *Add your own commands*. |
+| \`events\` | The ribbon's own events, below. |
+
+| Event | Fires |
+|---|---|
+| \`onCommandsChanged\` | After a reload brings new commands |
+| \`onReloadFailed(error)\` | When a reload throws; the previous commands stay |
+| \`onBeforeExecute(command)\` | Before a command's \`onExecute\` runs |
+| \`onExecuteFailed(command, error)\` | When \`onExecute\` throws, before \`onAfterExecute\` |
+| \`onAfterExecute(command)\` | Once \`onExecute\` settles, whether it resolved or threw |
 
 ## Add your own commands
 
-\`registerCommands(hook, priority?)\` lets code that does not own \`onLoad\` add to the commands. \`hook(commands)\` changes them in place after every \`onLoad\`, a higher \`priority\` runs later, and the call returns its unregistration. Call \`reload()\` to apply it now.
+\`registerCommands(hook, priority?)\` lets code that does not own \`onLoad\`, such as a shared module, add to the commands. The hook gets the commands after every \`onLoad\` and changes them in place; a higher \`priority\` runs later, and the call returns a function that removes the hook. Hooks run on a load, so call \`reload()\` to apply one now.
+
+{{story: Commands from your own code}}
 
 ## Changing how it looks
 
@@ -67,9 +77,9 @@ When \`onLoad\` throws, the error shows in place of the commands, with **Try aga
 |---|---|---|---|
 | Top level | \`onRenderCommandBar\`, with the commands as \`items\` | \`RibbonUiComponents\` | The command bar |
 | \`loadingBoundary\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The shimmer before the first load |
-| \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load |
+| \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed first load |
 
-**Strings:** the commands carry your own labels; a failed load's **Try again** and **Details** come from \`ERROR_MESSAGE_BAR_LABELS\`, keys \`errorMessageBar.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+The commands carry your own labels. To change the wording of **Try again** and **Details**, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 
@@ -78,8 +88,8 @@ When \`onLoad\` throws, the error shows in place of the commands, with **Try aga
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-parts-ribbon--overview', text: 'The ribbon in DatasetControl: commands for the selected records.' },
+    { title: 'RuntimeHost', iconName: 'Processing', href: '?path=/docs/controls-runtimehost-get-started--overview', text: 'The status and lifecycle events of the ribbon\'s runtime.' },
     { title: 'Pieces and slots', iconName: 'Edit', href: '?path=/docs/concepts-pieces-and-slots--overview', text: 'Replace what the ribbon draws, piece by piece.' },
-    { title: 'Localization', iconName: 'LocaleLanguage', href: '?path=/docs/concepts-localization--overview', text: 'Translate the strings the ribbon draws itself.' },
 ]
 
 const meta = {
@@ -109,7 +119,19 @@ export const ASlowLoad: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An \`onLoad\` that takes two seconds and fails the first time. Try: press **Try again**, then **Mount again**.`,
+                story: `An \`onLoad\` that takes two seconds and fails on each mount's first try. Try: press **Try again**.`,
+            },
+        },
+    },
+}
+
+export const CommandsFromYourOwnCode: Story = {
+    name: 'Commands from your own code',
+    render: () => renderStory(<OwnCommandsExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `One hook adds **History**, and a later one disables every command while the order is closed. Try: turn on **Order closed**.`,
             },
         },
     },

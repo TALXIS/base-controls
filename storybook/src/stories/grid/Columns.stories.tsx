@@ -12,15 +12,17 @@ The grid builds a column for each of the provider's columns, with its header tex
 
 ## Change a column
 
-\`colDefs\` is keyed by column id, the provider column's \`name\`. What the grid reads from the provider's columns themselves is on [**Data**](?path=/docs/controls-grid-data--overview).
+\`colDefs\` is keyed by column id. An entry takes any AG Grid column definition key, plus \`context\` for what the grid itself reads (see *The column context* below), and is merged over the column as built, \`context.cell\` and \`context.header\` included, so you change only what you set. A function entry receives the column as built, \`null\` for one you add, and returns what to change. \`colDefs\` applies after every module, so it overrides what they set.
 
-- An entry takes any AG Grid column definition key, plus \`context\`: what the grid itself reads, under *The column context* below.
-- An entry for an existing column is merged over it, \`context\`, \`context.cell\` and \`context.header\` included, so you change only what you set.
-- Any other key adds a column at the end.
-- A function entry receives the column as built, \`null\` for an added one, and returns what to change.
-- \`colDefs\` runs after every module, so it overrides what they set.
-- The modules' own columns have keys too: \`RECORD_SAVE_COLUMN_KEY\` and \`RECORD_LOCK_COLUMN_KEY\` (editing), \`SELECTION_COLUMN_KEY\` (row selection) and \`GROUP_EXPANSION_COLUMN_KEY\` (grouping).
-- Keys of your own in \`context\` sit beside the grid's, and \`getColumnContext(colDef)\` reads them back, such as in a cell of your own.
+| Key | Column |
+|---|---|
+| A provider column's \`name\` | That column. What the grid reads from the provider's columns is on [**Data**](?path=/docs/controls-grid-data--overview) |
+| \`RECORD_SAVE_COLUMN_KEY\`, \`RECORD_LOCK_COLUMN_KEY\` | The editing module's save status and lock columns |
+| \`SELECTION_COLUMN_KEY\` | The row selection module's checkbox column |
+| \`GROUP_EXPANSION_COLUMN_KEY\` | The grouping module's expansion column |
+| Any other key | A column of your own, added at the end: see *Add a calculated column* |
+
+Keys of your own in \`context\` sit beside the grid's, and \`getColumnContext(colDef)\` reads them back, such as in a cell of your own.
 
 ## Pin and size columns
 
@@ -34,11 +36,9 @@ The grid builds a column for each of the provider's columns, with its header tex
 
 ## Add a calculated column
 
-- Give \`colDefs\` a key that is not a provider column.
-- \`valueGetter\` returns the value; copying uses it too.
-- \`cellRenderer\` draws the cell, with the grid's cell or your own (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)). Read the record with \`useGridCell()\` inside it, so the value follows the record; without a \`cellRenderer\` the cell is empty.
-- The column takes the grid's header, is placed last and keeps its \`initialWidth\`. It has no editor, the modules add nothing to its menu, and the column layout does not keep it.
-- Group rows and the totals row draw it too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+Give \`colDefs\` a key that is not a provider column. \`valueGetter\` returns the value, which copying uses too, and \`cellRenderer\` draws the cell (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)); without a \`cellRenderer\` the cell is empty. Read the record with \`useGridCell()\` inside the cell, so the value follows the record.
+
+The column takes the grid's header and keeps its \`initialWidth\`. It has no editor, the modules add nothing to its menu, and the column layout does not keep it. Group rows and the totals row draw it too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 {{story: Calculate the stock value}}
 
@@ -79,8 +79,7 @@ The widths, order and visibility of the columns live on the provider's columns. 
 
 {{story: Remember the layout}}
 
-- Columns added through \`colDefs\` are not kept.
-- A grid outside a DatasetControl keeps nothing: save each column's \`name\`, \`visualSizeFactor\` and \`order\` in \`onColumnsChanged(columns)\`, and apply them with \`setColumns()\` before the provider loads.
+Columns added through \`colDefs\` are not kept. A grid outside a DatasetControl keeps nothing: save each column's \`name\`, \`visualSizeFactor\` and \`order\` in \`onColumnsChanged(columns)\`, and apply them with \`setColumns()\` before the provider loads.
 
 ## Reference
 
@@ -119,8 +118,7 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 | \`IsMultiline\` | \`true\` wraps the text onto the lines its row has room for, up to six. |
 | \`ColumnAlignment\` | \`'left'\`, \`'center'\` or \`'right'\`. |
 
-- An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field also reads \`Placeholder\`.
-- \`GridValueRenderer\` reads the value from the record, so changing \`value\` here shows nothing.
+An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field reads \`Placeholder\` too. \`GridValueRenderer\` reads the value from the record, so changing \`value\` here shows nothing.
 
 ## Where next
 

@@ -17,11 +17,11 @@ const loadDealsOnRetry = async (params: IDatasetControlLoadParameters<IDealViewD
 }
 
 const GridExample = () => {
-    const [logged, setLogged] = React.useState<string[]>([])
+    const [failures, setFailures] = React.useState(0)
 
-    //logs each failed load beside what the control shows
+    //counts each failed load beside what the control shows
     const onMounted = (control: IDatasetControl<IDealViewData>) => {
-        control.lifecycle.events.addEventListener('onInitFailed', error => setLogged(logged => [...logged, (error as Error).message]))
+        control.lifecycle.events.addEventListener('onInitFailed', () => setFailures(count => count + 1))
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
@@ -35,7 +35,7 @@ const GridExample = () => {
                 <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
             </DatasetControl.Body>
         </DatasetControl>
-        <Text>Failed loads logged: {logged.length}</Text>
+        <Text>Failed loads: {failures}</Text>
     </Stack>
 }
 `

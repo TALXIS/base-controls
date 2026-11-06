@@ -2,6 +2,8 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
 const APPLICATION_CODE = `import { AppThemeProvider, createClientSideRowModelModule, DatasetControl, Form, Grid, Panel, PcfContextProvider, StateProvider, useThemeBuilder } from '@talxis/base-controls'
+import { IRecord } from '@talxis/client-libraries'
+import { Dropdown } from '@fluentui/react'
 
 const BRANDS = [
     { key: 'light', text: 'Light', colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } },
@@ -64,46 +66,8 @@ const GridExample = () => {
 }
 `
 
-const CUSTOM_FIELD_CODE = `import { createMemoryRecord, Form, useField } from '@talxis/base-controls'
-
-const record = createMemoryRecord({
-    columns: createDealsProvider().getColumns(),
-    data: { docs_dealid: 'fabrikam', name: 'Fabrikam: Support renewal', owner: 'Ben Carter', value: 21500, probability: 55 },
-    metadata: { PrimaryIdAttribute: 'docs_dealid', PrimaryNameAttribute: 'name' },
-})
-
-//a control of your own: reads and writes the field it sits in
-const WinChanceSlider = () => {
-    const field = useField()!
-    return <Slider min={0} max={100} step={5} value={Number(field.getValue() ?? 0)} valueFormat={value => \`\${value}%\`} onChange={value => field.setValue(value)} />
-}
-
-//the form's own parts, with one field drawn by your control
-const GridExample = () => <Form.Root onLoad={async () => ({ record })}>
-    {/* saves the form, and says when it has unsaved changes */}
-    <Form.Ribbon />
-    <Form.Notifications />
-    <Form.Section label='Deal' layout={{ lg: 1 }} cellLabelPosition='Top'>
-        <Form.Field name='name'>
-            <Form.Cell>
-                <Form.Control />
-            </Form.Cell>
-        </Form.Field>
-        <Form.Field name='value'>
-            <Form.Cell>
-                <Form.Control />
-            </Form.Cell>
-        </Form.Field>
-        <Form.Field name='probability'>
-            <Form.Cell label='Win chance'>
-                <Form.Control components={{ onRenderControl: () => <WinChanceSlider /> }} />
-            </Form.Cell>
-        </Form.Field>
-    </Form.Section>
-</Form.Root>
-`
-
 const PURE_UI_CODE = `import { BaseControls, DatasetControl, FormUi, NestedControlRenderer, usePcfContext } from '@talxis/base-controls'
+import { IColumn } from '@talxis/client-libraries'
 
 //the deals' columns: the stage is an option set, the value a currency
 const DEAL_FIELDS = createDealsProvider().getColumns()
@@ -207,5 +171,4 @@ const GridExample = () => {
 `
 
 export const ApplicationExample = () => <GridExampleRunner seedCode={APPLICATION_CODE} />
-export const CustomFieldExample = () => <GridExampleRunner seedCode={CUSTOM_FIELD_CODE} tabs={['preview', 'code']} />
 export const PureUiExample = () => <GridExampleRunner seedCode={PURE_UI_CODE} tabs={['preview', 'code']} />

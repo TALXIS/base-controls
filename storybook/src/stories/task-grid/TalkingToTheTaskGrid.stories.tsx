@@ -6,13 +6,21 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { TalkingToTheTaskGridExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-Your code can create, open, move and delete tasks as the user's commands do, from a button outside the grid, a part of your own or a module. It does so through the \`ITaskRuntime\` every mounted \`TaskDatasetControl\` creates, which also runs your own work behind the loading overlay and reaches the provider and the control. Try it below: click *Add a task*.
+Your code can create, open, move and delete tasks as the user's commands do, from a button outside the grid, a part of your own or a module. It does so through the control's task runtime, which also runs your own work behind the loading overlay and reaches the tasks and the control around them. Try it below: click *Add a task*.
 
 {{canvas: Drive the task grid from your code}}
 
 ## Get the task runtime
 
-Outside the control, keep the one \`onReady\` passes you; \`onMounted\` and \`onDestroyed\` pass it too, at the steps under *Lifecycle* on the DatasetControl's [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview). Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
+Every load mounts the control anew, with a new task runtime (see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview)), so keep the latest one. Outside the control, three props of \`TaskDatasetControl\` pass it to you:
+
+| Prop | Called |
+|---|---|
+| \`onMounted\` | As a mount starts, before its tasks load. |
+| \`onReady\` | Once the tasks have loaded. |
+| \`onDestroyed\` | As the mount goes, while the provider still holds the tasks. |
+
+Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
 
 ## Tasks
 

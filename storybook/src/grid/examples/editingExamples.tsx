@@ -1,6 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
-import { createDocsDataset, createTimesheetsProvider } from '../data'
+import { createTimesheetsProvider } from '../data'
 
 export const LOG_HOURS_CODE = `const getWorkDone = (recordId: string) => provider.getRecordsMap()[recordId]?.getValue('description')
 
@@ -204,7 +204,23 @@ const GridExample = () => {
 }
 `
 
-export const SAVE_STATUS_CODE = `const SaveErrorTitle = (props: ITextProps) => {
+export const SAVE_STATUS_CODE = `const PRICE_APPROVAL_LIMIT = 1000
+
+//stands in for a pricing service that sends big prices to a manager first
+const createPriceList = () => {
+    const products = createProductsProvider()
+    products.setInterceptor('onRecordSave', async (product, defaultAction) => {
+        await new Promise(resolve => setTimeout(resolve, 600))
+        if (product.isDirty('price') && Number(product.getValue('price') ?? 0) > PRICE_APPROVAL_LIMIT) {
+            return { recordId: product.getRecordId(), success: false, fields: [], errors: [{ fieldName: 'price', message: "A price over $1,000 needs the category manager's approval." }] }
+        }
+        return defaultAction(product)
+    })
+    return products
+}
+
+//the callout is drawn inside the product's cell
+const SaveErrorTitle = (props: ITextProps) => {
     const product = useGridCell().getRecord()
     return <Text {...props}>{product.getFormattedValue('name')}: {props.children}</Text>
 }
@@ -218,33 +234,22 @@ const SAVE_STATUS: IRecordSaveUiComponents = {
     },
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
-            colDefs={{
-                [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRendererParams: { components: SAVE_STATUS } },
-            }}
-            height='440px' />
-    </DatasetControl.Body>
-</DatasetControl>
-`
+const GridExample = () => {
+    const products = React.useMemo(createPriceList, [])
 
-const PRICE_APPROVAL_LIMIT = 1000
-const PRICING_DELAY = 600
-
-//stands in for a pricing service that sends big prices to a manager first
-const createPricingProvider = () => {
-    const provider = createDocsDataset('products')
-    provider.setInterceptor('onRecordSave', async (record, defaultAction) => {
-        await new Promise(resolve => window.setTimeout(resolve, PRICING_DELAY))
-        if (!record.isDirty('price') || Number(record.getValue('price') ?? 0) <= PRICE_APPROVAL_LIMIT) {
-            return defaultAction(record)
-        }
-        return { recordId: record.getRecordId(), success: false, fields: [], errors: [{ fieldName: 'price', message: "A price over $1,000 needs the category manager's approval." }] }
-    })
-    return provider
+    return <DatasetControl onLoad={async () => ({ provider: products })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={[createClientSideRowModelModule(), createEditingModule({ autoSave: true })]}
+                colDefs={{
+                    //wide enough for the button's text
+                    [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRendererParams: { components: SAVE_STATUS } },
+                }}
+                height='440px' />
+        </DatasetControl.Body>
+    </DatasetControl>
 }
+`
 
 //a server takes a moment to answer
 const createSlowTimesheetsProvider = () => {
@@ -269,4 +274,4 @@ export const ServerRefusesExample = () => <GridExampleRunner seedCode={SERVER_RE
 
 export const TickBillableExample = () => <GridExampleRunner seedCode={TICK_BILLABLE_CODE} dataset='timesheets' />
 
-export const SaveStatusExample = () => <GridExampleRunner seedCode={SAVE_STATUS_CODE} onCreateProvider={createPricingProvider} />
+export const SaveStatusExample = () => <GridExampleRunner seedCode={SAVE_STATUS_CODE} tabs={['preview', 'code']} />

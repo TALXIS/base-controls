@@ -12,16 +12,15 @@ User views let each user keep a view the way they sorted, filtered and arranged 
 
 ## What a view keeps
 
-- **Columns:** every column, hidden ones too, with its order, width, visibility, grouping and aggregation, and the links its related columns come through. On opening, they are completed from the provider's available columns, as for any view.
-- **Data:** what each \`saveWithView\` getter returns, under its key. It comes back as \`data\` from \`view.resolve(provider)\`, so \`onLoad\` needs nothing new: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+A user view keeps every column, hidden ones too, with its order, width, visibility, grouping and aggregation, and the links its related columns come through. On opening, the columns are completed from the provider's available columns, as for any view.
+
+It also keeps what each \`saveWithView\` getter returns, under its key. That comes back as \`data\` from \`view.resolve(provider)\`, so \`onLoad\` needs nothing new: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
 ## Save more with a view
 
 \`control.modules.get('userQueries').saveWithView(key, getter)\` saves what \`getter\` returns with every user view. Register it in \`onMounted\`, since each mount loads the module anew, as \`saveDealViewData\` in the example's \`views.ts\` does.
 
-- \`sorting\`, \`filtering\` and \`searchQuery\` are declared keys; declare a key of your own on \`IUserQuerySavedValueMap\`, as the example's \`types.ts\` does.
-- \`saveWithView\` returns its unregistration, and registering the same key twice throws.
-- A getter that returns \`undefined\` saves nothing; one that throws stops the save.
+\`sorting\`, \`filtering\` and \`searchQuery\` are declared keys; declare a key of your own on \`IUserQuerySavedValueMap\` in \`declare module '@talxis/base-controls'\`. A getter that returns \`undefined\` saves nothing, and one that throws stops the save. \`saveWithView\` returns its unregistration, and registering the same key twice throws.
 
 ## Where views are kept
 
@@ -36,10 +35,7 @@ Every factory also takes \`enableSaveAsNewView\`, \`enableSaveChanges\` and \`en
 
 ## Keep views in Dataverse
 
-The example's \`dataverse.ts\` creates both Dataverse modules.
-
-- Both need a page that can reach Dataverse, such as a model-driven app: the views are read and written through \`Xrm.WebApi\`, and *Manage views* lists them with a \`FetchXmlDataProvider\`.
-- The switcher fetches only the views' names; a view's layout is fetched when it opens.
+The example's \`dataverse.ts\` creates both Dataverse modules. Both need a page that can reach Dataverse, such as a model-driven app: the views are read and written through \`Xrm.WebApi\`, and *Manage views* lists them with a \`FetchXmlDataProvider\`. The switcher fetches only the views' names; a view's layout is fetched when it opens.
 
 ## Keep views in your own store
 
@@ -55,14 +51,9 @@ The example's \`dataverse.ts\` creates both Dataverse modules.
 | \`updateView(viewId, view)\` | Saves the view again. |
 | \`createManageProvider()\` | The provider *Manage views* edits the views in. |
 
-What \`createManageProvider()\` returns:
+\`createManageProvider()\` returns one record per view, with the view's id as its primary id and a \`name\` column, as \`ManageViewsProvider\` in the example does on a \`MemoryDataProvider\`. *Manage views* shows its columns in an editable grid, with **Save** and **Delete** in its ribbon: a rename reaches the provider's \`onRecordSave\` and a delete its \`onRecordsDelete\`, so pass both on to your store.
 
-- One record per view, its id the view's id as the primary id.
-- A \`name\` column, and optionally a description; *Manage views* shows its columns in an editable grid.
-- Renames reach the provider's \`onRecordSave\` and deletions its \`onRecordsDelete\`, so pass both on to your store.
-- A \`MemoryDataProvider\` is the usual base, as \`LocalStorageUserQueriesProvider\` is.
-
-\`LocalStorageUserQueriesStore\` and \`DataverseUserQueriesStore\` are exported, to extend.
+\`LocalStorageUserQueriesStore\` and \`DataverseUserQueriesStore\` are exported, to extend, as the example on [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview) extends the first.
 
 ## Good to know
 

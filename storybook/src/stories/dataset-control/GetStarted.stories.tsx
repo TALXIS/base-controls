@@ -20,13 +20,16 @@ Like every control, it needs the root providers from [**Quick start**](?path=/do
 
 ## Add parts
 
-Each part has a page of its own:
+Each part goes in the header, the body or the footer, as [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview) shows, and has a page of its own:
 
-- [**Ribbon**](?path=/docs/controls-datasetcontrol-parts-ribbon--overview): commands for the selected records.
-- [**Quick find**](?path=/docs/controls-datasetcontrol-parts-quick-find--overview): a search field.
-- [**Edit columns**](?path=/docs/controls-datasetcontrol-parts-edit-columns--overview): the user picks the columns of a view.
-- [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview): the page size and the pages.
-- [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview): messages above the records, and what shows when there are none.
+| Part | Adds |
+|---|---|
+| [**Views**](?path=/docs/controls-datasetcontrol-views--overview) | \`DatasetControl.ViewSwitcher\`: the views to switch between. |
+| [**Ribbon**](?path=/docs/controls-datasetcontrol-parts-ribbon--overview) | \`DatasetControl.Ribbon\`: commands for the selected records, and **Save**, **Discard changes** and **Refresh**. |
+| [**Quick find**](?path=/docs/controls-datasetcontrol-parts-quick-find--overview) | \`DatasetControl.QuickFind\`: a search field. |
+| [**Edit columns**](?path=/docs/controls-datasetcontrol-parts-edit-columns--overview) | \`DatasetControl.EditColumns\`: the user picks the columns of a view. |
+| [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview) | \`DatasetControl.PageSizeSwitcher\` and \`DatasetControl.Pagination\`: the page size and the pages. |
+| [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview) | \`DatasetControl.Notifications\` and \`DatasetControl.EmptyState\`: messages above the records, and what shows when there are none. |
 
 ## Where next
 

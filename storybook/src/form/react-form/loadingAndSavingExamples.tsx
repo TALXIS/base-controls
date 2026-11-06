@@ -12,6 +12,7 @@ const account = createMemoryRecord({
     onSave: async record => {
         //stands in for a call to your API
         await new Promise(resolve => setTimeout(resolve, 800))
+        //the columns this save writes
         const fields = record.getFields().filter(field => field.isDirty()).map(field => field.getColumn().name)
         if (record.getValue('creditlimit') > 50000) {
             //Form.Notifications shows these errors
@@ -74,6 +75,7 @@ const records = accounts.refreshSync()
 
 const GridExample = () => {
     const [recordId, setRecordId] = React.useState(records[0].getRecordId())
+    //the provider's own record, which keeps its unsaved changes between switches
     const record = accounts.getRecordsMap()[recordId]
 
     return <Stack tokens={{ childrenGap: 12 }}>

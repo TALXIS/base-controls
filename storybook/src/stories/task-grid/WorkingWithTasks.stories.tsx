@@ -30,16 +30,13 @@ Deleting takes every subtask along. Tasks that could not be deleted are listed i
 
 ## Inactive tasks
 
-A task whose \`stateCode\` column is not \`0\` is inactive. It stays read-only, gets no **+**, and *Hide inactive tasks* in \`TaskDatasetControl.Settings\` hides it.
+A task whose \`stateCode\` column is not \`0\` is inactive. It stays read-only, cannot be dragged, gets no **+**, and *Hide inactive tasks* in \`TaskDatasetControl.Settings\` hides it.
 
 ## Dragging
 
-- A row dropped between two rows lands at the level its distance from the left suggests.
-- Held over a task for a moment, it becomes a subtask; held over a closed parent a little longer, the parent opens.
-- Dragging works while the tree is shown, the tasks are sorted by nothing but their stack rank, and no cell is being edited.
-- The new parent and rank are saved through the store.
+A row dropped between two rows lands at the level its distance from the left suggests. Held over a task for a moment, it becomes a subtask, and held over a closed parent a little longer, the parent opens. The new parent and rank are saved through the store.
 
-\`createTaskDraggingModule\` takes \`onTaskMoved({ movingRecord, targetRecord, position, parentRecord, stackRank })\`, called after a task is moved, with \`position\` \`'above'\`, \`'below'\` or \`'child'\`.
+Rows can be dragged while the tree is shown, the tasks are sorted by nothing but their stack rank, and no cell is being edited. \`createTaskDraggingModule\` takes \`onTaskMoved({ movingRecord, targetRecord, position, parentRecord, stackRank })\`, called after a task is moved, with \`position\` \`'above'\`, \`'below'\` or \`'child'\`.
 
 ## Events
 

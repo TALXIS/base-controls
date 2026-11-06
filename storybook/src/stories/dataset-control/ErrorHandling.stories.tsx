@@ -12,41 +12,36 @@ Loading records, running a command or saving a view can fail, and the user needs
 
 ## What the user sees
 
-- **A load fails**, in \`onLoadDependencies\`, a module's \`onLoad\`, \`onLoadViews\`, a view's \`resolve\`, \`onLoad\` or the provider's first page: the error replaces the parts, with **Details** and **Try again**.
-- **A part throws while it renders**: the same error; **Try again** draws the parts again, without loading.
-- **The provider fails a later load**, such as a search or another page: the error shows in \`DatasetControl.Notifications\`, see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview).
-- **The ribbon's \`onLoad\` throws**: the error replaces the commands, with **Details** and **Try again**.
-- **Loading the columns *Edit columns* offers throws**: the error replaces the pickers, with **Details** and **Try again**.
-- **A ribbon command's \`onExecute\` throws, or saving or deleting a user view fails**: the error dialog opens.
+| What fails | What the user sees |
+|---|---|
+| A load: \`onLoadDependencies\`, a module's \`onLoad\`, \`onLoadViews\`, a view's \`resolve\`, \`onLoad\` or the provider's first page | The error in place of the parts, with **Details** and **Try again** |
+| A part, while it renders | The same error; **Try again** draws the parts again, without loading |
+| A later load of the provider, such as a search or another page | The error in \`DatasetControl.Notifications\`: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview) |
+| The ribbon's first \`onLoad\` | The error in place of the commands, with **Details** and **Try again** |
+| A later \`onLoad\` of the ribbon, such as on a new selection | The error dialog; the commands before it stay |
+| Loading the columns *Edit columns* offers | The error in place of the pickers, with **Details** and **Try again** |
+| A ribbon command's \`onExecute\`, or saving or deleting a user view | The error dialog |
 
 ## Failed loads
 
-The error's \`message\` is the title, and **Details** opens the error dialog with its \`cause\`, or its stack when it has none, as \`loadDealsOnRetry\` in the example throws.
-
-- A failed load leaves no provider behind: the parts are not drawn until a load succeeds.
-- **Try again** calls \`control.lifecycle.remount()\`: the control mounts anew and loads the view that failed, from the first step.
+The error's \`message\` is the title, and **Details** opens the error dialog with its \`cause\`, or its stack when it has none, as \`loadDealsOnRetry\` in the example throws. A failed load leaves no provider behind, so the parts are not drawn until a load succeeds. **Try again** calls \`control.lifecycle.remount()\`: the control mounts anew and loads the view that failed, from the first step.
 
 ## Failed actions
 
 The error dialog shows the error's \`message\` and its stack as the details. It is the PCF context's \`navigation.openErrorDialog\`, so in a PCF control it is the host's own dialog: see [**PCF context**](?path=/docs/concepts-pcf-context--overview).
 
-A user view fails when:
-
-- the store throws;
-- a \`saveWithView\` getter throws;
-- a save or delete in *Manage views* returns \`success: false\`.
-
-Without a message of its own, the dialog shows the \`userQueries.saveFailed\` or \`userQueries.deleteFailed\` label.
+A user view fails when the store throws, when a \`saveWithView\` getter throws, or when a delete in *Manage views* returns \`success: false\`. A failed delete without a message of its own shows the \`userQueries.deleteFailed\` label.
 
 {{story: Take the server down}}
 
 ## React to a failure yourself
 
-The control shows the failure either way. To also log it, or show it elsewhere, listen in \`onMounted\`, which runs for every mount; both examples log below the control.
+The control shows the failure either way. To also log it, or show it elsewhere, listen in \`onMounted\`, which runs for every mount, as both examples do below the control.
 
 | Event | On | Arguments |
 |---|---|---|
 | \`onInitFailed\` | \`control.lifecycle.events\` | \`error\` |
+| \`onReloadFailed\` | The ribbon's \`events\` | \`error\` |
 | \`onExecuteFailed\` | The ribbon's \`events\` | \`command\`, \`error\` |
 | \`onOperationFailed\` | The \`userQueries\` module's \`events\` | \`error\` |
 

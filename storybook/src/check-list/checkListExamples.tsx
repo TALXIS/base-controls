@@ -10,6 +10,7 @@ const FIELD_MAPPING = `const FIELD_MAPPING: ICheckListFieldMapping = {
 
 export const LAUNCH_PLAN_CODE = `${FIELD_MAPPING}
 
+//provider holds the launch plan, as the Data tab shows
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
     <DatasetControl.Body>
         <CheckList fieldMapping={FIELD_MAPPING} />
@@ -21,6 +22,7 @@ export const BASIC_USAGE_CODE = `//names the columns for the item's name, its po
 ${FIELD_MAPPING}
 
 const createLaunchPlan = () => new MemoryDataProvider({
+    //stackrank holds ranks as StackRank.between makes them
     dataSource: [
         { itemid: '1', name: 'Sketch the layout', completed: true, stackrank: '0|100000:' },
         { itemid: '2', name: 'Ship the first version', completed: false, stackrank: '0|200000:' },
@@ -53,6 +55,8 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortC
 export const RELEASE_BOARD_CODE = `${FIELD_MAPPING}
 
 const OVERDUE = '#d13438'
+//the signed-in user
+const CURRENT_USER = 'Anna Novak'
 
 const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
@@ -61,6 +65,7 @@ const GridExample = () => {
     const isDone = (record: IRecord) => !!checkList()?.isCompleted(record)
     const isOverdue = (record: IRecord) => !isDone(record) && !!record.getValue('duedate') && dayjs(record.getValue('duedate')).isBefore(dayjs(), 'day')
 
+    //a finished item's name and due date cannot be edited
     const lockWhenDone = (result: IGridLock, { record }: { record: IRecord }) => {
         if (isDone(record)) {
             result.isLocked = true
@@ -68,13 +73,15 @@ const GridExample = () => {
     }
 
     const assignToMe = (record: IRecord) => {
-        gridRef.current?.services.get('fields').get(record, 'owner').setValue('John Doe')
+        //a grid field saves at once, as the editing module auto-saves
+        gridRef.current?.services.get('fields').get(record, 'owner').setValue(CURRENT_USER)
     }
 
     return <DatasetControl onLoad={async () => ({ provider: sortCheckListProvider(provider, FIELD_MAPPING) })}>
         <DatasetControl.Body>
             <CheckList
                 fieldMapping={FIELD_MAPPING}
+                //the default editing, plus totals for the estimates
                 modules={[createEditingModule({ autoSave: true }), createAggregationModule()]}
                 colDefs={{
                     name: { context: { cell: { onGetLock: lockWhenDone } } },
@@ -147,6 +154,7 @@ const GridExample = () => {
         }
         const onDeleted = (results: IRecordDeleteOperationResult[]) => results.forEach(result => write(\`Deleted \${names.current[result.recordId]}\`))
         remember()
+        //the provider reports every save and delete the checklist asks of it
         provider.addEventListener('onNewDataLoaded', remember)
         provider.addEventListener('onAfterRecordSaved', onSaved)
         provider.addEventListener('onAfterRecordsDeleted', onDeleted)
@@ -181,8 +189,9 @@ const SECTIONS = [
     { label: 'Planning', columnNames: ['owner', 'duedate', 'estimate'] },
 ]
 
+//edits the checklist's own record and saves each change through its provider
 const ItemForm = (props: { item: IRecord }) => {
-    return <Form.Root key={props.item.getRecordId()} onLoad={async () => ({ record: props.item })}>
+    return <Form.Root onLoad={async () => ({ record: props.item })} autoSave>
         {SECTIONS.map(section => <Form.Section key={section.label} label={section.label} cellLabelPosition='Top'>
             {section.columnNames.map(columnName => <Form.Field key={columnName} name={columnName}>
                 <Form.Cell>
@@ -202,11 +211,13 @@ const GridExample = () => {
             <DatasetControl.Body>
                 <CheckList
                     fieldMapping={FIELD_MAPPING}
+                    //draws the names as links
                     colDefs={{ name: { context: { isPrimary: true } } }}
                     onOpenRecord={({ record }) => setOpenedItem(record)} />
             </DatasetControl.Body>
         </DatasetControl>
         <Panel isOpen={!!openedItem} headerText={openedItem?.getValue('name')} type={PanelType.medium} isLightDismiss onDismiss={close} onRenderFooterContent={() => <DefaultButton text='Close' onClick={close} />}>
+            {/* a new key mounts a new form for another item */}
             {openedItem && <ItemForm key={openedItem.getRecordId()} item={openedItem} />}
         </Panel>
     </>

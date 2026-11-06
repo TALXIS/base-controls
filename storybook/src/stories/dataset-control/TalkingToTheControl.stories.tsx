@@ -12,8 +12,7 @@ Your code can do what the user does through the parts: switch the view, reload, 
 
 ## Get the control
 
-- Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar above does.
-- Outside it, \`onMounted\` hands it to you as each mount starts. Add your listeners there: every load is a new mount with a new \`IDatasetControl\`, as [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) explains.
+Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar above does. Outside it, \`onMounted\` hands it to you as each mount starts, so add your listeners there: every load is a new mount with a new \`IDatasetControl\`, as [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) explains.
 
 {{story: Watch the control load}}
 
@@ -23,21 +22,24 @@ Your code can do what the user does through the parts: switch the view, reload, 
 
 ## Follow the load
 
-\`control.lifecycle.events\` raises the steps every runtime has, described on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). For the control:
+\`control.lifecycle.events\` raises the events every runtime has, described on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). For the control:
 
-- \`onReady\`: the load succeeded, and the parts are drawn on \`getProvider()\`.
-- \`onInitFailed(error)\`: the load failed. See [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
-- \`onRemountRequested\`: the control is about to mount anew, by \`loadView\`, \`reload\` or \`remount\`.
+| Event | Raised when |
+|---|---|
+| \`onReady\` | The load succeeded, and the parts are drawn on \`getProvider()\`. |
+| \`onInitFailed(error)\` | The load failed: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview). |
+| \`onRemountRequested\` | The control is about to mount anew, by \`loadView\`, \`reload\` or \`lifecycle.remount\`. |
+| \`onDestroyed\` | The mount goes, before its modules and provider are destroyed. |
 
 ## Reach the parts
 
-Every part on the page registers itself on the control under its own key, for as long as it is rendered. \`control.parts\` finds it:
+Every part on the page registers itself on the control under its own key, for as long as it is rendered, and \`control.parts\` finds it. The parts are drawn once the load succeeds, so outside a part's own render use \`observe\` or \`find\`. Each part's own page lists its members.
 
-- \`get(key)\` returns the part, and throws when it is not rendered.
-- \`find(key)\` returns the part, or \`undefined\` when it is not rendered.
-- \`observe(key, callback)\` calls back with the part each time it is rendered, and returns the function that stops observing. What the callback returns runs before the next call.
-
-The parts are drawn once the load succeeds, so outside a part's own render use \`observe\` or \`find\`. Each part's own page lists its members.
+| Member | Does |
+|---|---|
+| \`get(key)\` | Returns the part; throws when it is not rendered. |
+| \`find(key)\` | Returns the part, or \`undefined\` when it is not rendered. |
+| \`observe(key, callback)\` | Calls back with the part each time it is rendered, and returns the function that stops observing. What the callback returns runs before the next call. |
 
 ## Add a module
 
@@ -51,7 +53,7 @@ A module adds a feature to the control, such as the user's own views. Pass modul
 | \`onLoad(control)\` | Can be async. A throw fails the load. |
 | \`onDestroy(instance)\` | Optional. Called as the mount goes, before the provider is released. |
 
-Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed, as the example's \`types.ts\` does. The control a module's \`onLoad\` gets can also add views, with \`registerViews\`, and draw the module's own dialogs or panels, with \`surfaces.registerSurface\`.
+Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed, as the example's \`types.ts\` does. The control a module's \`onLoad\` gets can also add views, with \`registerViews\`, as the example does, and a module draws its own dialogs or panels with \`surfaces.registerSurface\`.
 
 ## Reference
 
@@ -65,6 +67,8 @@ Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed,
 | \`getViewId()\`, \`getView()\` | The view shown, and the same view as it was resolved, with its columns and \`data\`. |
 | \`getProvider()\` | The provider shown; \`undefined\` until the load succeeds. Inside the control, \`useDataProvider()\` returns it too. |
 | \`getDependencies<T>()\` | What \`onLoadDependencies\` loaded for this mount. |
+| \`parts\`, \`modules\` | The parts and the modules, under *Reach the parts* and *Add a module*. |
+| \`surfaces.registerSurface(hook, priority?)\` | Draws a dialog or panel of your own in the control: \`hook(items)\` pushes \`{ key, onRender }\`, and \`onRender\` returns \`null\` while there is nothing to show. |
 | \`lifecycle\` | The status, the error and the lifecycle events, and \`remount()\` for the view that failed to load. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it: see [**Localization**](?path=/docs/concepts-localization--overview). |
 | \`getTheme()\` | The Fluent theme the control is drawn in: see [**Theming**](?path=/docs/concepts-theming--overview). |
@@ -88,9 +92,8 @@ Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed,
 |---|---|
 | \`registerViews(hook, priority?)\` | Adds to or changes the views \`onLoadViews\` returned: \`hook(views)\` changes them in place. |
 | \`getViewStateStore()\` | The open view's entry in the state store. |
-| \`surfaces.registerSurface(hook, priority?)\` | Draws a dialog or panel of the module's own in the control: \`hook(items)\` pushes \`{ key, onRender }\`, and \`onRender\` returns \`null\` while there is nothing to show. |
 
-Each \`register…\` returns its unregistration.
+Each \`register…\` returns its unregistration, and a higher \`priority\` runs later.
 
 ## Where next
 
@@ -98,7 +101,7 @@ Each \`register…\` returns its unregistration.
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'The steps each mount runs, and when onMounted, onReady and onDestroyed are called.' },
+    { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'The steps each mount runs, and when its lifecycle events are raised.' },
     { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-parts-ribbon--overview', text: 'The first of the parts, and what your code can do with it.' },
     { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Parts of your own, registered on the control like the built-in ones.' },
 ]
@@ -130,7 +133,7 @@ export const WatchTheControl: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The control's events and its \`onMounted\`, \`onReady\` and \`onDestroyed\`, newest first. Try: switch the view and watch the old mount go and a new one start.`,
+                story: `\`onMounted\` and the lifecycle events of every mount, newest first. Try: press **Reload** and watch the old mount go and a new one start.`,
             },
         },
     },

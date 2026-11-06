@@ -12,10 +12,12 @@ A task grid has the tree and its commands built in; everything beyond them, such
 
 ## Where modules go
 
-A task grid takes modules in two places:
+A task grid takes modules in two places, both read at mount:
 
-- \`TaskDatasetControl\`'s \`modules\` takes the task modules below, and DatasetControl modules such as user views. At mount.
-- \`TaskGrid\`'s \`modules\` takes Grid modules (see the Grid's [**Modules**](?path=/docs/controls-grid-modules--overview)), with \`createTaskEditingModule()\` in place of the Grid's editing module. At mount.
+| Prop | Takes |
+|---|---|
+| \`TaskDatasetControl\`'s \`modules\` | The task modules below, and DatasetControl modules such as user views. |
+| \`TaskGrid\`'s \`modules\` | Grid modules (see the Grid's [**Modules**](?path=/docs/controls-grid-modules--overview)), with \`createTaskEditingModule()\` in place of the Grid's editing module. Grouping and totals are left out. |
 
 The Gantt has modules of its own: see the Gantt's [**Modules**](?path=/docs/controls-taskgrid-gantt-modules--overview).
 
@@ -70,11 +72,6 @@ const meta = {
 } satisfies Meta
 
 export default meta
-
-export const Overview: StoryObj<typeof meta> = {
-    name: 'Overview',
-    render: () => <></>,
-}
 
 export const ModulesInBothPlaces: StoryObj<typeof meta> = {
     name: 'Modules in both places',

@@ -30,9 +30,7 @@ The Gantt itself lines the tasks up on a timeline; dragging bars, drawing links,
 
 \`createLibraryModule()\` brings the free build of DHTMLX Gantt, with its stylesheet. Everything on these pages works with it.
 
-To use your own DHTMLX Gantt PRO licence, pass its \`Gantt\` export to \`createProLibraryModule\` instead, and import its stylesheet yourself, as the example's *pro.ts* does.
-
-A module of yours reaches the build as on [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview).
+To use your own DHTMLX Gantt PRO licence, pass its \`Gantt\` export to \`createProLibraryModule\` instead, and import its stylesheet yourself, as the example's *pro.ts* does. A module of your own reads which build is loaded with \`getLibrary()\`: see [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview).
 
 ## Where next
 
@@ -59,11 +57,6 @@ const meta = {
 } satisfies Meta
 
 export default meta
-
-export const Overview: StoryObj<typeof meta> = {
-    name: 'Overview',
-    render: () => <></>,
-}
 
 export const PickTheFeatures: StoryObj<typeof meta> = {
     name: 'Pick the features',

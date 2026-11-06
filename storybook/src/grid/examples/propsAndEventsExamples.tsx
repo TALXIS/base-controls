@@ -122,6 +122,7 @@ const GridExample = () => {
                 <DatasetControl.Body>
                     <Grid
                         modules={[createClientSideRowModelModule(), createSortingModule()]}
+                        //a double-click opens the ticket's panel
                         enableNavigation={false}
                         height='480px'
                         onRowClicked={setTicket}

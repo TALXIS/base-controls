@@ -3,71 +3,45 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { ApplicationExample, CustomFieldExample, PureUiExample } from './buildingBlocksExamples'
+import { ApplicationExample, PureUiExample } from './buildingBlocksExamples'
 
 const DESCRIPTION = `
-An application built with Base Controls has providers at the root that connect it to its host and set its look, data providers that hold its records, and controls that show and edit them. Each control is made of parts, and you can configure them, replace them or add parts of your own. Try it below: switch the theme, then click a deal's name to open it in a form.
+An application built with Base Controls has providers at the root that connect it to its host and set its look, data providers that hold its records, and controls that show and edit them. Each control is made of parts, and you can configure them, replace what they draw or add parts of your own. Try it below: switch the theme, then click a deal's name to open it in a form.
 
 {{canvas: An application from parts}}
 
-## The PCF context
+## The root
 
-The controls started as parts of PCF controls in Power Apps, so every part reads the **PCF context**: the user, formatting, navigation, dialogs and data access.
-
-- **In a PCF**, pass the host's context to \`PcfContextProvider\`, and every part uses the host's dialogs, navigation and Web API.
-- **Standalone**, \`PcfContextProvider\` without a context builds one, so the same parts run in any React application.
-
-Which providers go at the root: [**Quick start**](?path=/docs/concepts-quick-start--overview). What the context holds: [**PCF context**](?path=/docs/concepts-pcf-context--overview).
+The root sets up what every control reads: the *PCF context*, which connects the controls to their host with the user, formatting, dialogs and data access, and the app theme. In Power Apps the context is the host's own; anywhere else, \`PcfContextProvider\` builds one, so the same controls run in any React application. Which providers go at the root: [**Quick start**](?path=/docs/concepts-quick-start--overview). What the context holds: [**PCF context**](?path=/docs/concepts-pcf-context--overview).
 
 ## Lists and records
 
-- **A list of records** is a data provider. \`DatasetControl\` loads it, and a [**Grid**](?path=/docs/controls-grid-get-started--overview), [**TaskGrid**](?path=/docs/controls-taskgrid-get-started--overview) or [**Checklist**](?path=/docs/controls-checklist-get-started--overview) draws it.
-- **A single record** is a [**Form**](?path=/docs/controls-form-get-started--overview).
-- Views, quick find, paging, selection and saving work the same in every list, whether the records come from memory, Dataverse or your own API: [**Data providers**](?path=/docs/concepts-data-providers--overview).
+| To show | Use |
+|---|---|
+| A list of records | A data provider, loaded by a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) and drawn by a [**Grid**](?path=/docs/controls-grid-get-started--overview), [**TaskGrid**](?path=/docs/controls-taskgrid-get-started--overview) or [**Checklist**](?path=/docs/controls-checklist-get-started--overview) |
+| A single record | A [**Form**](?path=/docs/controls-form-get-started--overview) |
+| Records with a position | A [**Map**](?path=/docs/controls-map-get-started--overview) |
+
+Sorting, filtering, paging, selection and saving work the same in every list, whether the records come from memory, Dataverse or your own API: see [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 ## The runtime
 
-Each control that loads something keeps its state and its work in a **runtime**, one for every mount, which \`onMounted\` hands to you and the adapters read. How a mount loads, fails and is replaced: [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
+A control that loads something keeps its state and its work in a *runtime*, a new one for every mount, which \`onMounted\` hands to you. How a mount loads, fails and is replaced: [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
 ## Customise a control
 
-- **Set its options.** Every control has its own extension points, such as the grid's modules, column definitions and hooks: see [**Modules**](?path=/docs/controls-grid-modules--overview) and [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
-- **Replace a piece of its UI.** Swap what a part draws, or draw the part yourself.
-- **Write a part of your own.** Place it among the built-in parts.
+| To | Use |
+|---|---|
+| Change what a control does | Its props, and for the grid its modules, column definitions and hooks: see [**Modules**](?path=/docs/controls-grid-modules--overview) |
+| Change how a part looks | Its \`components\`, which replace what the part draws: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview) |
+| Add a part of your own | A component placed among the built-in parts: see DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview) |
+| Draw a field yourself | A control of your own inside \`Form.Field\`: see the form's [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview) |
 
-Every part is split in two:
+## Parts without a control
 
-- **The UI** takes plain props and owns the look: its styles, its default texts and its replaceable pieces (\`components\`). It never reads a runtime, the PCF context or a store.
-- **The adapter** reads the runtime and draws the UI. It translates from the runtime to props, and from the UI's events back.
+Every part is split in two. The *UI* takes plain props and owns the look: its styles, its default texts and its \`components\`. The *adapter* reads the control's runtime and draws the UI with props. As the UI never reads a runtime, it also draws from your own state, with no control behind it.
 
-How the pieces of each part are named and replaced: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
-
-## A field of your own
-
-A form is built from \`Form.Field\`, \`Form.Cell\` and \`Form.Control\`, and a control of your own can draw any field: it reads and writes the field through \`useField()\`, and the form tracks the change like any other. Try it below: drag the win chance, and the ribbon reports unsaved changes.
-
-{{canvas: A field of your own}}
-
-## Plain UI with your own data
-
-A UI part takes only props, so it draws anywhere, with no control behind it. Try it below: set a deal's stage to **Won**, then switch to **Won deals**.
-
-{{canvas: Plain UI}}
-
-## How the package is layered
-
-Each layer uses only the ones before it:
-
-1. **core**: plumbing with no look (hooks, state, events, services).
-2. **labels**: the texts and their translations.
-3. **pcf**: the PCF context, its contract and the Xrm shims.
-4. **theme**: themes and colours.
-5. **ui**: UI shared by more than one control, driven only by props.
-6. **fields**: the field controls.
-7. **data**: the data provider a control reads.
-8. **controls**: everything from the ribbon to the map.
-
-On top sit the PCF entry points and every part's labels gathered per language. The earlier controls are still exported, mostly with names starting with \`Legacy\`.
+{{story: Plain UI}}
 
 ## Where next
 
@@ -101,12 +75,14 @@ export const Application: Story = {
     render: () => renderStory(<ApplicationExample />),
 }
 
-export const CustomField: Story = {
-    name: 'A field of your own',
-    render: () => renderStory(<CustomFieldExample />),
-}
-
 export const PureUi: Story = {
     name: 'Plain UI',
     render: () => renderStory(<PureUiExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The DatasetControl's frame, view switcher, quick find and paging, with the form's sections as cards, all drawn from React state. Try: set a deal's stage to **Won**, then switch to **Won deals**.`,
+            },
+        },
+    },
 }

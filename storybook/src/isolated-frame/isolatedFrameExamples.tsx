@@ -5,7 +5,9 @@ import type { IGridExampleFile } from '../grid/GridLivePreview'
 const ISOLATION_FILES: IGridExampleFile[] = [
     {
         name: 'GridExample.tsx',
-        code: `import { DealsGrid } from './deals'
+        code: `import { createIsolatedHost, ITheme, useTheme } from '@talxis/base-controls'
+import { Stack } from '@fluentui/react'
+import { DealsGrid } from './deals'
 
 //another app's global CSS on the same page: it restyles every AG Grid it reaches
 const OTHER_APP_STYLES = \`
@@ -46,7 +48,9 @@ const GridExample = () => {
     },
     {
         name: 'FramedDeals.tsx',
-        code: `import { DealsGrid } from './deals'
+        code: `import { AppThemeProvider, ITheme, PcfContextProvider, registerIsolatedContent, StateProvider } from '@talxis/base-controls'
+import { initializeIcons } from '@fluentui/react'
+import { DealsGrid } from './deals'
 
 //the frame's entry: only the frame runs this file
 
@@ -71,7 +75,11 @@ registerIsolatedContent('deals', FramedDeals)
     },
     {
         name: 'deals.tsx',
-        code: `//used by both sides: the page and the frame each run their own copy
+        code: `import { createClientSideRowModelModule, createSortingModule, DatasetControl, Grid } from '@talxis/base-controls'
+import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
+import { Stack, Text } from '@fluentui/react'
+
+//used by both sides: the page and the frame each run their own copy
 const createDeals = () => new MemoryDataProvider({
     dataSource: [
         { dealid: 'contoso', name: 'Contoso: CRM rollout', owner: 'Anna Novak', value: 4000 },
@@ -105,4 +113,4 @@ export const DealsGrid = (props: { heading: string }) => <Stack tokens={{ childr
     },
 ]
 
-export const IsolationExample = () => <GridExampleRunner seedCode={ISOLATION_FILES} />
+export const IsolationExample = () => <GridExampleRunner seedCode={ISOLATION_FILES} tabs={['preview', 'code']} />

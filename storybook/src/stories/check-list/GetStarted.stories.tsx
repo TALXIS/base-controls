@@ -12,7 +12,7 @@ A checklist is a to-do list built on a [**Grid**](?path=/docs/controls-grid-get-
 
 ## Build a checklist
 
-Give the checklist a provider and tell it, through \`fieldMapping\`, which of the provider's columns hold an item's name, its position and whether it is finished. Sort the provider by position with \`sortCheckListProvider\` before it loads: the checklist draws items in the order they were loaded, and warns when they are not sorted.
+\`CheckList\` takes no provider prop: like any grid, it shows the provider around it, such as a DatasetControl's, as *Hand it to controls* on [**Data providers**](?path=/docs/concepts-data-providers--overview) describes. \`fieldMapping\` tells it which of the provider's columns hold an item's name, its position and whether it is finished. The checklist draws items in the order the provider loads them, so sort the provider by position with \`sortCheckListProvider\` before it loads; the checklist warns in the console when it is not sorted.
 
 {{story: Two items}}
 
@@ -24,7 +24,7 @@ Give the checklist a provider and tell it, through \`fieldMapping\`, which of th
 | \`stackRank\` | Text | The item's position. The column is hidden, and a drag writes a new rank between the item's neighbours. |
 | \`completed\` | \`TwoOptions\` | Whether the item is finished, drawn as the checkbox column. |
 
-A rank is a string that sorts between any two others, so moving an item rewrites only that item. To give existing records a rank, call \`StackRank.between(previous, next)\` for each in turn. The provider's other columns are drawn and edited as in any grid.
+Each of the three must be a column of the provider, or the checklist throws. A rank is a string that sorts between any two others, so moving an item rewrites only that item; to give existing records a rank, call \`StackRank.between(previous, next)\` for each in turn. The provider's other columns are drawn and edited as in any grid.
 
 ## Props
 
@@ -32,8 +32,8 @@ A rank is a string that sorts between any two others, so moving an item rewrites
 
 | Prop | Default | Description |
 |---|---|---|
-| \`fieldMapping\` | Required | The three columns above. Read at mount. |
-| \`modules\` | Auto-saving editing | \`[]\` makes the list read-only. Which grid modules work is on [**Customisation**](?path=/docs/controls-checklist-customisation--overview). Read at mount. |
+| \`fieldMapping\` | Required | The three columns above. At mount. |
+| \`modules\` | Auto-saving editing | Grid modules in place of the default; \`[]\` makes the list read-only. The row model and the checklist's own module are always added. Which grid modules work is on [**Customisation**](?path=/docs/controls-checklist-customisation--overview). At mount. |
 | \`enableZebra\` | \`false\` | Unlike \`Grid\`, rows are not striped. |
 | \`enableOptionSetColors\` | \`true\` | Unlike \`Grid\`, options with a colour are drawn as tags. |
 

@@ -25,7 +25,7 @@ Two parts page through the records: \`DatasetControl.PageSizeSwitcher\` shows wh
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100, 250 | The sizes the menu offers. Read at mount. |
+| \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100, 250 | The sizes the menu offers. At mount. |
 | \`components\` | \`Partial<IPageSizeSwitcherUiComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ### Pagination

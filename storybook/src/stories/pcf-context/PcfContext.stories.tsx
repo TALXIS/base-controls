@@ -14,26 +14,23 @@ Controls need things only their host knows: who the user is, how to format their
 
 Put the provider at the root of the application, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and read the context anywhere below it with \`usePcfContext()\`. Every control below it shares:
 
-- the user and their language, in \`userSettings\`
-- the formatting of dates, numbers and money, in \`formatting\`
-- the host's dialogs, records and data, in \`navigation\`, \`webAPI\` and \`utils\`
+| Member | Holds |
+|---|---|
+| \`userSettings\` | The user and their language |
+| \`formatting\` | The formatting of dates, numbers and money |
+| \`navigation\` | The host's dialogs, and opening records and pages |
+| \`webAPI\`, \`utils\` | The host's data and metadata |
+| \`mode\` | Whether the control is enabled and visible, and \`setControlState\` |
 
-To show an error, \`useOpenErrorDialog()\` returns a function that opens the PCF error dialog with its \`title\` and \`details\`.
+To show an error, \`useOpenErrorDialog()\` returns a function that opens the error dialog with a \`title\` and \`details\`.
 
 ## In a PCF control
 
-Pass the context the host hands \`updateView\` to the provider, as \`index.tsx\` in the example at the top does.
-
-- Its \`userSettings\`, \`navigation\`, \`webAPI\`, \`utils\`, \`mode\` and the rest are used as they are.
-- \`formatting\` is always the library's own, built from \`userSettings.languageId\` and \`formatInfoCultureName\`, so the controls format the same way in every host. The user settings' \`numberFormattingInfo\` and \`dateFormattingInfo\` are set to match it.
+Pass the context the host hands \`updateView\` to the provider, as \`index.tsx\` in the example at the top does. Everything in it is used as it is, except \`formatting\`: that is always the library's own, built from \`userSettings.languageId\` and \`formatInfoCultureName\`, so the controls format the same way in every host. The user settings' \`numberFormattingInfo\` and \`dateFormattingInfo\` are set to match it.
 
 ## Outside a PCF control
 
-Without a \`context\`, the provider builds one:
-
-- On a page that has \`window.Xrm\`, such as a model-driven app, \`navigation\`, \`webAPI\` and \`utils\` come from it.
-- On a page without it, the first provider sets \`window.Xrm\` from its \`userSettings\`.
-- Everything else is filled in as below.
+Without a \`context\`, the provider builds one. On a page that has \`window.Xrm\`, such as a model-driven app, \`navigation\`, \`webAPI\` and \`utils\` come from it; on a page without it, the first provider sets \`window.Xrm\` from its \`userSettings\`. Everything else is filled in as below.
 
 | Part | Filled in as |
 |---|---|
@@ -56,6 +53,7 @@ The provider builds the context again on every render, so \`usePcfContext()\` se
 const EXPLORE: IExploreCard[] = [
     { title: 'Quick start', iconName: 'Rocket', href: '?path=/docs/concepts-quick-start--overview', text: 'The providers at the root of an application, the PCF context among them.' },
     { title: 'Localization', iconName: 'LocaleLanguage', href: '?path=/docs/concepts-localization--overview', text: 'Translate the strings the controls draw, beside the culture that formats values.' },
+    { title: 'State persistence', iconName: 'History', href: '?path=/docs/concepts-state-persistence--overview', text: 'Keep what the user left for the session, through the host\'s mode.' },
 ]
 
 const meta = {

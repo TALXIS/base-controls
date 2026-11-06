@@ -12,23 +12,24 @@ Grid shows the records of a data provider as rows and columns, on top of <a href
 
 ## Set it up
 
-- Like every control, the grid needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview).
-- The grid takes no provider prop: how it gets one is on [**Data providers**](?path=/docs/concepts-data-providers--overview).
-- \`modules\` switches features on, and a row model is the one every grid needs.
-- Every prop and event is on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
+Like every control, the grid needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview). It takes no provider prop: it shows the provider of the DatasetControl around it, as the example does; to show one without a DatasetControl, see *Hand it to controls* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+
+\`modules\` lists the features the grid has, and a row model is the one every grid needs. Every prop and event, and when each is read, is on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
 
 ## Switch on modules
 
-- [**Editing**](?path=/docs/controls-grid-modules-editing--overview): change values in place, check them and save them.
-- [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview): select rows, highlight blocks of cells and copy them into a spreadsheet.
-- [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview): sort and filter from each column's menu.
-- [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview): group the rows by a column and total its values.
+| Page | What the modules add |
+|---|---|
+| [**Editing**](?path=/docs/controls-grid-modules-editing--overview) | Changing values in place, checking them and saving them |
+| [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) | Selecting rows, highlighting blocks of cells and copying them into a spreadsheet |
+| [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview) | Sorting and filtering from each column's menu |
+| [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) | Grouping the rows by a column, and totals |
 
-Some modules need AG Grid Enterprise: see *AG Grid Enterprise and the licence* on [**Modules**](?path=/docs/controls-grid-modules--overview).
+Some modules need AG Grid Enterprise: see *Enterprise features and the licence* on [**Modules**](?path=/docs/controls-grid-modules--overview).
 
 ## What it can do
 
-A sales pipeline built from the modules and a few modules of its own, with a preset for each use case. **Features & Modules** switches them one by one.
+A sales pipeline built from the modules and a few modules of its own, with a preset for each use case; **Features & Modules** switches them one by one.
 
 {{story: Explore a sales pipeline}}
 

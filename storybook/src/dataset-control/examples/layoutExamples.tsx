@@ -90,8 +90,6 @@ const FULL_PAGE_CODE = `import { loadDeals, loadDealViews } from './views'
 const getPageStyles = (theme: ITheme) => mergeStyleSets({
     //stands in for the window the page fills
     window: { height: 480, border: \`1px solid \${theme.semanticColors.bodyDivider}\` },
-    //a line of its own, above the header's start and end
-    title: { flexBasis: '100%' },
 })
 
 const GridExample = () => {
@@ -102,7 +100,6 @@ const GridExample = () => {
     return <div className={styles.window}>
         <DatasetControl onLoadViews={loadDealViews} stateKey='layoutFullPage' onLoad={loadDeals} height='100%'>
             <DatasetControl.Header>
-                <Text variant='xLarge' className={styles.title}>Sales pipeline</Text>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />
                 </DatasetControl.Header.Start>

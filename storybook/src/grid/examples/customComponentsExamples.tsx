@@ -1,7 +1,8 @@
 import React from 'react'
-import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
+import { DataTypes } from '@talxis/client-libraries'
 import { GridExampleRunner } from '../GridExampleRunner'
-import { createProductsProvider, PRODUCT_COLUMNS, PRODUCT_ROWS } from '../data'
+import type { IGridExampleFile } from '../GridLivePreview'
+import { PRODUCT_COLUMNS, PRODUCT_ROWS } from '../data'
 import { createMemoryProvider, metadataFor } from '../data/metadata'
 
 export const WIN_CHANCE_CODE = `const STAGE_COLORS: { [stage: number]: string } = { 1: '#8a8886', 2: '#0078d4', 3: '#c19c00', 4: '#107c10', 5: '#a4262c' }
@@ -234,21 +235,35 @@ export const EMPTY_CATALOGUE_CODE = `const COMPONENTS: IGridComponents = {
     },
 }
 
+//the overlay's text is a label
 const LABELS = { 'grid.noRecordsFound': 'Your catalogue has no products yet.' }
 
-const GridExample = () => <LabelsProvider labels={LABELS}>
-    <DatasetControl onLoad={async () => ({ provider: provider })}>
-        <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule()]}
-                components={COMPONENTS}
-                height='360px' />
-        </DatasetControl.Body>
-    </DatasetControl>
-</LabelsProvider>
+//a catalogue with no products yet
+const createEmptyCatalogue = () => {
+    const products = createProductsProvider()
+    products.setDataSource([])
+    return products
+}
+
+const GridExample = () => {
+    const products = React.useMemo(createEmptyCatalogue, [])
+
+    return <LabelsProvider labels={LABELS}>
+        <DatasetControl onLoad={async () => ({ provider: products })}>
+            <DatasetControl.Body>
+                <Grid
+                    modules={[createClientSideRowModelModule()]}
+                    components={COMPONENTS}
+                    height='360px' />
+            </DatasetControl.Body>
+        </DatasetControl>
+    </LabelsProvider>
+}
 `
 
-export const WAREHOUSE_LOADING_CODE = `const styles = mergeStyleSets({
+export const WAREHOUSE_LOADING_CODE = `import { createWarehouseProducts } from './warehouse'
+
+const styles = mergeStyleSets({
     card: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, width: 300, padding: 24, borderRadius: 8, background: '#ffffff', boxShadow: '0 6px 20px rgba(0, 0, 0, 0.14)' },
     truck: { fontSize: 36, color: '#0078d4' },
     progress: { width: '100%' },
@@ -266,22 +281,28 @@ const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Header>
-        <DatasetControl.Header.Start>
-            <DatasetControl.Ribbon enableRefresh />
-        </DatasetControl.Header.Start>
-    </DatasetControl.Header>
-    <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule()]}
-            components={COMPONENTS}
-            height='400px' />
-    </DatasetControl.Body>
-</DatasetControl>
+const GridExample = () => {
+    const products = React.useMemo(createWarehouseProducts, [])
+
+    return <DatasetControl onLoad={async () => ({ provider: products })}>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.Ribbon enableRefresh />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <Grid
+                modules={[createClientSideRowModelModule()]}
+                components={COMPONENTS}
+                height='400px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+}
 `
 
-export const LOADING_ROWS_CODE = `const styles = mergeStyleSets({
+export const LOADING_ROWS_CODE = `import { createWarehouseProducts } from './warehouse'
+
+const styles = mergeStyleSets({
     loadingRow: { display: 'flex', alignItems: 'center', gap: 8, height: '100%', padding: '0 16px' },
 })
 
@@ -296,26 +317,33 @@ const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[
-                createServerSideRowModelModule(),
-                createGroupingModule(),
-            ]}
-            components={COMPONENTS}
-            height='420px' />
-    </DatasetControl.Body>
-</DatasetControl>
+const GridExample = () => {
+    const products = React.useMemo(createWarehouseProducts, [])
+
+    return <DatasetControl onLoad={async () => ({ provider: products })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={[
+                    createServerSideRowModelModule(),
+                    createGroupingModule(),
+                ]}
+                components={COMPONENTS}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+}
 `
 
-export const ERROR_ROWS_CODE = `const RetryMessageBar = (props: IMessageBarProps) => {
+export const ERROR_ROWS_CODE = `import { createWarehouseProducts } from './warehouse'
+
+const RetryMessageBar = (props: IMessageBarProps) => {
     const gridApi = useGridService('gridApi')
 
     return <MessageBar
         {...props}
         messageBarType={MessageBarType.warning}
         isMultiline={false}
+        //AG Grid loads the failed rows again
         actions={<MessageBarButton text='Try again' onClick={() => gridApi?.retryServerSideLoads()} />}>
         The warehouse did not answer for this category.
     </MessageBar>
@@ -329,66 +357,94 @@ const COMPONENTS: IGridComponents = {
     },
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <Grid
-            modules={[
-                createServerSideRowModelModule(),
-                createGroupingModule(),
-            ]}
-            components={COMPONENTS}
-            height='420px' />
-    </DatasetControl.Body>
-</DatasetControl>
+const GridExample = () => {
+    const products = React.useMemo(createWarehouseProducts, [])
+
+    return <DatasetControl onLoad={async () => ({ provider: products })}>
+        <DatasetControl.Body>
+            <Grid
+                modules={[
+                    createServerSideRowModelModule(),
+                    createGroupingModule(),
+                ]}
+                components={COMPONENTS}
+                height='420px' />
+        </DatasetControl.Body>
+    </DatasetControl>
+}
 `
 
-const WAREHOUSE_DELAY = 2500
-const GROUP_DELAY = 2000
-
-//stands in for a warehouse system that takes its time to answer
-class WarehouseProductsProvider extends MemoryDataProvider {
+const SLOW_WAREHOUSE_FILE: IGridExampleFile = {
+    name: 'warehouse.ts',
+    code: `//stands in for a warehouse system that takes its time to answer
+class WarehouseProducts extends MemoryDataProvider {
     public async getDataAsync(...parameters: Parameters<MemoryDataProvider['getDataAsync']>) {
-        const isGroupLoad = !!this.getParentDataProvider()
-        if (!isGroupLoad) {
-            this.setLoading(true, "Asking the warehouse for today's stock levels…")
-        }
-        await new Promise(resolve => window.setTimeout(resolve, isGroupLoad ? GROUP_DELAY : WAREHOUSE_DELAY))
+        //the text the loading overlay shows
+        this.setLoading(true, "Asking the warehouse for today's stock levels…")
+        await new Promise(resolve => window.setTimeout(resolve, 2500))
         return super.getDataAsync(...parameters)
     }
 }
 
-//stands in for a warehouse that drops the first category it is asked for
-class FlakyWarehouseProvider extends WarehouseProductsProvider {
-    public hasFailed = false
-
-    public async getDataAsync(...parameters: Parameters<MemoryDataProvider['getDataAsync']>) {
-        const warehouse = this.getTopLevelDataProvider() as FlakyWarehouseProvider
-        if (this.getParentDataProvider() && !warehouse.hasFailed) {
-            warehouse.hasFailed = true
-            await new Promise(resolve => window.setTimeout(resolve, GROUP_DELAY))
-            throw new Error('The warehouse did not answer.')
-        }
-        return super.getDataAsync(...parameters)
-    }
-}
-
-const createWarehouseProvider = (groupByCategory: boolean, isFlaky = false) => {
+export const createWarehouseProducts = () => {
     const products = createProductsProvider()
-    const provider = new (isFlaky ? FlakyWarehouseProvider : WarehouseProductsProvider)({ dataSource: products.getDataSource(), metadata: products.getMetadata() })
-    provider.setColumns(products.getColumns())
-    provider.getPaging().setPageSize(products.getDataSource().length)
-    if (groupByCategory) {
-        provider.grouping.addGroupBy({ columnName: 'category', alias: 'category_group' })
-    }
-    provider.refresh()
-    return provider
+    const warehouse = new WarehouseProducts({ dataSource: products.getDataSource(), metadata: products.getMetadata() })
+    warehouse.setColumns(products.getColumns())
+    //every product on one page
+    warehouse.getPaging().setPageSize(products.getDataSource().length)
+    return warehouse
+}
+`,
 }
 
-const createEmptyCatalogue = () => {
-    const provider = createProductsProvider()
-    provider.setDataSource([])
-    provider.refresh()
-    return provider
+const SLOW_CATEGORIES_FILE: IGridExampleFile = {
+    name: 'warehouse.ts',
+    code: `//stands in for a warehouse that takes its time over each category
+class WarehouseProducts extends MemoryDataProvider {
+    public async getDataAsync(...parameters: Parameters<MemoryDataProvider['getDataAsync']>) {
+        //a category's products are fetched by a provider of the category's own
+        if (this.getParentDataProvider()) {
+            await new Promise(resolve => window.setTimeout(resolve, 2000))
+        }
+        return super.getDataAsync(...parameters)
+    }
+}
+
+export const createWarehouseProducts = () => {
+    const products = createProductsProvider()
+    const warehouse = new WarehouseProducts({ dataSource: products.getDataSource(), metadata: products.getMetadata() })
+    warehouse.setColumns(products.getColumns())
+    warehouse.grouping.addGroupBy({ columnName: 'category', alias: 'category_group' })
+    return warehouse
+}
+`,
+}
+
+const FLAKY_WAREHOUSE_FILE: IGridExampleFile = {
+    name: 'warehouse.ts',
+    code: `//stands in for a warehouse that drops the first category it is asked for
+export const createWarehouseProducts = () => {
+    let hasFailed = false
+    class WarehouseProducts extends MemoryDataProvider {
+        public async getDataAsync(...parameters: Parameters<MemoryDataProvider['getDataAsync']>) {
+            //a category's products are fetched by a provider of the category's own
+            if (this.getParentDataProvider()) {
+                await new Promise(resolve => window.setTimeout(resolve, 2000))
+                if (!hasFailed) {
+                    hasFailed = true
+                    throw new Error('The warehouse did not answer.')
+                }
+            }
+            return super.getDataAsync(...parameters)
+        }
+    }
+    const products = createProductsProvider()
+    const warehouse = new WarehouseProducts({ dataSource: products.getDataSource(), metadata: products.getMetadata() })
+    warehouse.setColumns(products.getColumns())
+    warehouse.grouping.addGroupBy({ columnName: 'category', alias: 'category_group' })
+    return warehouse
+}
+`,
 }
 
 export const RICH_TEXT_CODE = `const styles = mergeStyleSets({
@@ -492,12 +548,10 @@ export const HeaderCaptionExample = () => <GridExampleRunner seedCode={HEADER_CA
 
 export const PipelineHeaderExample = () => <GridExampleRunner seedCode={PIPELINE_HEADER_CODE} dataset='deals' />
 
-export const EmptyCatalogueExample = () => <GridExampleRunner seedCode={EMPTY_CATALOGUE_CODE} onCreateProvider={createEmptyCatalogue} />
+export const EmptyCatalogueExample = () => <GridExampleRunner seedCode={EMPTY_CATALOGUE_CODE} tabs={['preview', 'code']} />
 
-export const WarehouseLoadingExample = () => <GridExampleRunner seedCode={WAREHOUSE_LOADING_CODE} onCreateProvider={() => createWarehouseProvider(false)} />
+export const WarehouseLoadingExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: WAREHOUSE_LOADING_CODE }, SLOW_WAREHOUSE_FILE]} tabs={['preview', 'code']} />
 
-export const LoadingRowsExample = () => <GridExampleRunner seedCode={LOADING_ROWS_CODE} onCreateProvider={() => createWarehouseProvider(true)} />
+export const LoadingRowsExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: LOADING_ROWS_CODE }, SLOW_CATEGORIES_FILE]} tabs={['preview', 'code']} />
 
-export const ErrorRowsExample = () => <GridExampleRunner seedCode={ERROR_ROWS_CODE} onCreateProvider={() => createWarehouseProvider(true, true)} />
-
-
+export const ErrorRowsExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: ERROR_ROWS_CODE }, FLAKY_WAREHOUSE_FILE]} tabs={['preview', 'code']} />

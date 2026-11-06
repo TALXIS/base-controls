@@ -1,7 +1,10 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const BRAND_CODE = `const BRANDS = [
+const BRAND_CODE = `import { AppThemeProvider, createClientSideRowModelModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, isLightColor, useTheme, useThemeBuilder } from '@talxis/base-controls'
+import { Dropdown, Label, Stack } from '@fluentui/react'
+
+const BRANDS = [
     { key: 'light', text: 'Light', colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } },
     { key: 'dark', text: 'Dark', colors: { primary: '#7f85f5', background: '#292929', text: '#ffffff' } },
     { key: 'ocean', text: 'Ocean', colors: { primary: '#0f7b8a', background: '#f4fafb', text: '#12313a' } },
@@ -25,6 +28,7 @@ const modules = [createClientSideRowModelModule(), createSortingModule()]
 const GridExample = () => {
     const isLightPage = isLightColor(useTheme().semanticColors.bodyBackground)
     const [colors, setColors] = React.useState(BRANDS[isLightPage ? 0 : 1].colors)
+    //a new theme whenever a colour changes
     const theme = useThemeBuilder({ colors })
 
     const setColor = (name: keyof typeof colors, value: string) => setColors({ ...colors, [name]: value })
@@ -54,7 +58,10 @@ const GridExample = () => {
 }
 `
 
-const READABLE_TAGS_CODE = `const STAGES = [
+const READABLE_TAGS_CODE = `import { getTintColors, ITintStrength, ThemeProvider, useTheme, useThemeBuilder } from '@talxis/base-controls'
+import { Stack, Text } from '@fluentui/react'
+
+const STAGES = [
     { name: 'Lead', hue: '#c19c00' },
     { name: 'Proposal', hue: '#0078d4' },
     { name: 'Won', hue: '#107c10', strength: 'strong' as const },
@@ -62,18 +69,19 @@ const READABLE_TAGS_CODE = `const STAGES = [
 
 //one hue per stage, tinted for the theme the tag is drawn in
 const StageTag = (props: { name: string; hue: string; strength?: ITintStrength }) => {
-    const theme = useThemeBuilder({ theme: useTheme() }, { tint: { hue: props.hue, strength: props.strength } })
-    return <ThemeProvider theme={theme} style={{ padding: '2px 8px', borderRadius: 4 }}>
+    const { semanticColors } = useTheme()
+    const colors = getTintColors(props.hue, { background: semanticColors.bodyBackground, text: semanticColors.bodyText }, props.strength)
+    return <span style={{ padding: '2px 8px', borderRadius: 4, background: colors.background, color: colors.text, border: \`1px solid \${colors.border}\` }}>
         {props.name}
-    </ThemeProvider>
+    </span>
 }
 
 //takes its colours from whatever theme it is drawn in
 const Total = (props: { label: string; value: string }) => {
-    const { palette, semanticColors, fonts } = useTheme()
+    const { palette, semanticColors } = useTheme()
     return <Stack tokens={{ childrenGap: 8 }} style={{ padding: 12, borderLeft: \`4px solid \${palette.themePrimary}\`, background: semanticColors.bodyStandoutBackground }}>
         <Text style={{ color: semanticColors.bodySubtext }}>{props.label}</Text>
-        <Text style={{ ...fonts.xLarge, color: semanticColors.bodyText }}>{props.value}</Text>
+        <Text variant='xLarge' style={{ color: semanticColors.bodyText }}>{props.value}</Text>
         <Stack horizontal tokens={{ childrenGap: 4 }}>{STAGES.map(stage => <StageTag key={stage.name} {...stage} />)}</Stack>
     </Stack>
 }
@@ -92,7 +100,9 @@ const GridExample = () => {
 }
 `
 
-const RED_ROWS_CODE = `const ESCALATED = '#a4262c'
+const RED_ROWS_CODE = `import { createClientSideRowModelModule, createEditingModule, DatasetControl, Grid, IGridModule } from '@talxis/base-controls'
+
+const ESCALATED = '#a4262c'
 
 const escalatedTicketsModule: IGridModule = {
     name: 'escalatedTickets',
@@ -113,7 +123,10 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider })}>
 </DatasetControl>
 `
 
-const DERIVED_CODE = `const HUE = '#d13438'
+const DERIVED_CODE = `import { createThemeBuilder, ITheme, ThemeProvider, useTheme, useThemeBuilder } from '@talxis/base-controls'
+import { PrimaryButton, Stack, Text } from '@fluentui/react'
+
+const HUE = '#d13438'
 
 //outside React, tint and edit the builder, then call getTheme
 const createAlertTheme = (theme: ITheme) => {

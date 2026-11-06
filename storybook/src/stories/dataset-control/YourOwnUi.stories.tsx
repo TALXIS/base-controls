@@ -19,8 +19,7 @@ The control and every part take a \`components\` map of pieces and slots: see [*
 
 ## Wrap the control
 
-- \`className\` adds a class to the control's box.
-- \`scope\` wraps everything inside each mount, such as in a context provider of yours. It renders inside the control, so it can call \`useDatasetControl()\`. Pass the same component on every render.
+\`className\` adds a class to the control's box. \`scope\` is a component that wraps everything inside each mount, such as a context provider of yours; it renders inside the control, so it can call \`useDatasetControl()\`. Pass the same component on every render.
 
 ## Use a design system
 
@@ -28,9 +27,7 @@ Every slot gets the props its default would, so a design system can stand in for
 
 {{story: Everything in Fluent UI v9}}
 
-- Drawn in v9: the records in its \`DataGrid\`, the menus, toolbars, search field and popover, the column editor's drawer, the *Manage views* drawer, the notifications, the empty state and the load error.
-- Left as they are: the loading placeholder, and the column editor's pickers and column list.
-- v9 components need a \`FluentProvider\` around them, so the control's container is one, light or dark to match the Fluent v8 theme.
+The example draws in v9 the records, in its \`DataGrid\`, the menus, toolbars, search field and popover, the column editor's drawer, the *Manage views* drawer, the notifications, the empty state and the load error. It leaves the loading placeholder and the column editor's pickers and column list as they are. v9 components need a \`FluentProvider\` around them, so the control's container is one, light or dark to match the Fluent v8 theme.
 
 ## Add a part of your own
 
@@ -48,49 +45,45 @@ The parts work on the provider, not on the grid, so anything that shows records 
 
 {{story: A different UI per view}}
 
-- Read the records, columns and selection from the provider: see [**Data providers**](?path=/docs/concepts-data-providers--overview).
-- Pass the events your view shows, such as \`onNewDataLoaded\`, \`onRecordsSelected\` and \`onRecordColumnValueChanged\`, to \`useDataProviderEvents\`.
-- Keep what the view should remember, such as its scroll, with \`useControlStateStore\`.
-- Wrap it in \`DatasetControl.EmptyState\` for an empty state: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview).
-- *Edit columns* changes the provider's columns, so offer it only when your view shows them.
-- Every view switch mounts the body anew, so it reads the view once.
+Your view reads the records, columns and selection from the provider (see [**Data providers**](?path=/docs/concepts-data-providers--overview)) and draws again on the events it passes to \`useDataProviderEvents\`, such as \`onNewDataLoaded\`, \`onRecordsSelected\` and \`onRecordColumnValueChanged\`. It keeps what it should remember, such as the gallery's scroll, with \`useControlStateStore\`, and gets an empty state from \`DatasetControl.EmptyState\`: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview). Every view switch mounts the body anew, so it reads the view once.
+
+*Edit columns* changes the provider's columns, so offer it only when your view shows them.
 
 ## Reference
 
 ### Every slot
 
-A piece of – means the part's own slots; a blank default is not exported.
+*Top level* is the part's own slots; a blank default is not exported.
 
-| Part | Piece (\`components\` key) | Slots | Defaults |
-|---|---|---|---|
-| \`DatasetControl\` | – | \`onRenderContainer\` | \`ContainerUiComponents\` |
-| \`DatasetControl\` | \`skeleton\` | \`onRenderSkeleton\` | \`SkeletonUiComponents\` |
-| \`DatasetControl\` | \`skeleton.loadingBoundary\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` |
-| \`DatasetControl\` | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` |
-| \`DatasetControl\` | \`loadingOverlay\` | \`onRenderOverlay\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` |
-| \`Header\` | – | \`onRenderContainer\` | \`HeaderUiComponents\` |
-| \`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\` | – | \`onRenderContainer\` | \`HeaderStartUiComponents\` and the like |
-| \`ViewSwitcher\` | – | \`onRenderButton\` | \`ViewSwitcherUiComponents\` |
-| \`Ribbon\` | – | \`onRenderCommandBar\` | \`RibbonUiComponents\` |
-| \`Ribbon\` | \`loadingBoundary\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` |
-| \`Ribbon\` | \`errorMessage\` | As the control's \`errorMessage\` | \`ErrorMessageBarComponents\` |
-| \`QuickFind\` | – | \`onRenderContainer\`, \`onRenderTextField\` | \`QuickFindUiComponents\` |
-| \`QuickFind\` | \`compact\` | \`onRenderButton\` | \`QuickFindCompactButtonComponents\` |
-| \`QuickFind\` | \`callout\` | \`onRenderCallout\`, \`onRenderLikeWarning\`, \`onRenderDescription\`, \`onRenderColumns\`, \`onRenderColumn\` | \`QuickFindCalloutComponents\` |
-| \`EditColumns\` | \`button\` | \`onRenderButton\`, \`onRenderTooltip\` | \`EditColumnsButtonUiComponents\` |
-| \`EditColumns\` | \`panel\` | \`onRenderPanel\`, \`onRenderFooter\`, \`onRenderCommandBar\` | \`EditColumnsPanelUiComponents\` |
-| \`EditColumns\` | \`scopeSelector\`, \`columnSelector\` | \`onRenderSelector\`, \`onRenderOption\` | \`EditColumnsSelectorUiComponents\` |
-| \`EditColumns\` | \`columnList\` | \`onRenderColumn\` | \`EditColumnsColumnListUiComponents\` |
-| \`EditColumns\` | \`errorMessage\` | As the control's \`errorMessage\` | \`ErrorMessageBarComponents\` |
-| \`Notifications\` | – | \`onRenderNotifications\` | |
-| \`EmptyState\` | – | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyStateUiComponents\` |
-| \`Pagination\` | – | \`onRenderCommandBar\` | \`PaginationUiComponents\` |
-| \`PageSizeSwitcher\` | – | \`onRenderButton\` | \`PageSizeSwitcherUiComponents\` |
-| \`UserQueries\` | \`manageViewsPanel\` | \`onRenderPanel\`, \`onRenderCloseButton\` | \`ManageViewsPanelUiComponents\` |
-| \`UserQueries\` | \`manageViews.datasetControl\` | The control's, plus the pieces \`header\`, \`body\`, \`footer\`, \`ribbon\`, \`quickFind\` and \`pagination\` | |
-| \`UserQueries\` | \`manageViews.grid\` | The \`Grid\`'s | |
+| Part | Key | Slots | Default | Draws |
+|---|---|---|---|---|
+| \`DatasetControl\` | Top level | \`onRenderContainer\` | \`ContainerUiComponents\` | The control's box |
+| \`DatasetControl\` | \`skeleton\` | \`onRenderSkeleton\` | \`SkeletonUiComponents\` | The placeholder while the first page loads |
+| \`DatasetControl\` | \`skeleton.loadingBoundary\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | What holds the placeholder |
+| \`DatasetControl\` | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load |
+| \`DatasetControl\` | \`loadingOverlay\` | \`onRenderOverlay\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | The overlay \`loadingOverlay.show()\` puts over the control |
+| \`Header\` | Top level | \`onRenderContainer\` | \`HeaderUiComponents\` | The header's box, a \`WrapCompactProvider\` |
+| \`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\` | Top level | \`onRenderContainer\` | \`HeaderStartUiComponents\` and the like | The region's box |
+| \`ViewSwitcher\` | Top level | \`onRenderButton\`, with the views as \`menuProps.items\` | \`ViewSwitcherUiComponents\` | The button and its menu |
+| \`Ribbon\` | Top level | \`onRenderCommandBar\`, with the commands as \`items\` | \`RibbonUiComponents\` | The command bar |
+| \`Ribbon\` | \`loadingBoundary\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The shimmer before the first load |
+| \`Ribbon\` | \`errorMessage\` | As the control's \`errorMessage\` | \`ErrorMessageBarComponents\` | A failed first load |
+| \`QuickFind\` | Top level | \`onRenderContainer\`, \`onRenderTextField\` | \`QuickFindUiComponents\` | The box and the search field |
+| \`QuickFind\` | \`compact\` | \`onRenderButton\` | \`QuickFindCompactButtonComponents\` | The search button in a compact header |
+| \`QuickFind\` | \`callout\` | \`onRenderCallout\`, \`onRenderLikeWarning\`, \`onRenderDescription\`, \`onRenderColumns\`, \`onRenderColumn\` | \`QuickFindCalloutComponents\` | The callout listing the columns searched |
+| \`EditColumns\` | \`button\` | \`onRenderButton\`, \`onRenderTooltip\` | \`EditColumnsButtonUiComponents\` | The button that opens the editor |
+| \`EditColumns\` | \`panel\` | \`onRenderPanel\`, \`onRenderFooter\`, \`onRenderCommandBar\` | \`EditColumnsPanelUiComponents\` | The editor's panel, its **Save** and **Cancel**, and the commands above the pickers |
+| \`EditColumns\` | \`scopeSelector\`, \`columnSelector\` | \`onRenderSelector\`, \`onRenderOption\` | \`EditColumnsSelectorUiComponents\` | The *Column source* and column pickers |
+| \`EditColumns\` | \`columnList\` | \`onRenderColumn\` | \`EditColumnsColumnListUiComponents\` | Each chosen column, with its commands |
+| \`EditColumns\` | \`errorMessage\` | As the control's \`errorMessage\` | \`ErrorMessageBarComponents\` | A failed load of the columns |
+| \`Notifications\` | Top level | \`onRenderNotifications\` | | The message bar |
+| \`EmptyState\` | Top level | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`EmptyStateUiComponents\` | The empty state |
+| \`Pagination\` | Top level | \`onRenderCommandBar\`, with the buttons as \`items\` | \`PaginationUiComponents\` | The page buttons |
+| \`PageSizeSwitcher\` | Top level | \`onRenderButton\`, with the sizes as \`menuProps.items\` | \`PageSizeSwitcherUiComponents\` | The range and its menu |
+| \`UserQueries\` | \`manageViewsPanel\` | \`onRenderPanel\`, \`onRenderCloseButton\` | \`ManageViewsPanelUiComponents\` | The *Manage views* panel |
+| \`UserQueries\` | \`manageViews.datasetControl\` | The control's, plus the keys \`header\`, \`body\`, \`footer\`, \`ribbon\`, \`quickFind\` and \`pagination\` | | The control inside *Manage views* |
+| \`UserQueries\` | \`manageViews.grid\` | The \`Grid\`'s | | The grid inside *Manage views* |
 
-- The view switcher and the page size switcher get their menu as \`menuProps.items\`; the ribbon and the paging get their commands as \`items\`.
 - \`skeleton.loadingBoundary.onRenderContainer\` is the placeholder itself, so \`<div {...props} />\` there shows a spinner instead.
 - The column editor's command bar is drawn only with commands, and a column's \`commands\` start with Remove.
 - \`Notifications\` draws a \`NotificationMessageBar\`; call that from your slot to keep the default.

@@ -19,23 +19,21 @@ Base Controls is built on Fluent UI v8, Microsoft's React component library: its
 | Styles | \`mergeStyleSets\`, and the \`styles\` props Fluent's components take |
 | Icons | Fluent's icon font: register it once per window with \`initializeIcons()\`, unless your host already has |
 
-## Fluent's component or Base Controls'
+## Components with a version of their own
 
-Base Controls' versions take the same props as Fluent's. Use them where there is one:
+Where Base Controls has its own version of a Fluent component, use it: it takes the same props as Fluent's and adds the following.
 
 | Base Controls | What it adds to Fluent's |
 |---|---|
 | \`CommandBar\` | Menus and tooltips in the app theme, folds when its own box resizes, no side padding, icon-only buttons when compact, \`align\` |
 | \`ComboBox\`, \`DatePicker\`, \`TimePicker\`, \`TagPicker\` | Lists and calendars in the app theme |
-| \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` | Drawn in the app theme: see [**Theming**](?path=/docs/concepts-theming--overview) |
+| \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` | Drawn in the app theme: see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview) |
 | \`useSurfaceMenuProps(menuProps)\` | A Fluent button's \`menuProps\`, drawn in the app theme |
 | \`useTheme()\` | Throws outside an \`AppThemeProvider\` |
 
 ## Fluent UI v9
 
-- The controls do not use Fluent UI v9.
-- A PCF host hands its controls a v9 theme: build a theme from it with \`createThemeBuilder({ fluentDesignLanguage })\` (see [**Theming**](?path=/docs/concepts-theming--overview)).
-- v9 components in a part of your own need their own \`FluentProvider\`: see [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+The controls do not use Fluent UI v9. A PCF host hands its controls a v9 theme, from which \`createThemeBuilder({ fluentDesignLanguage })\` builds a v8 one: see [**Theming**](?path=/docs/concepts-theming--overview). v9 components in a part of your own need their own \`FluentProvider\`: see [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
 ## Where next
 
@@ -45,6 +43,7 @@ Base Controls' versions take the same props as Fluent's. Use them where there is
 const EXPLORE: IExploreCard[] = [
     { title: 'Theming', iconName: 'Color', href: '?path=/docs/concepts-theming--overview', text: 'Build a theme from your brand colours, and draw your own components in it.' },
     { title: 'Pieces and slots', iconName: 'Edit', href: '?path=/docs/concepts-pieces-and-slots--overview', text: 'Replace the pieces a part draws, with Fluent UI or a design system of your own.' },
+    { title: 'Layout', iconName: 'Devices3', href: '?path=/docs/concepts-layout--overview', text: 'Compact providers, which turn the command bar\'s buttons into icons.' },
 ]
 
 const meta = {

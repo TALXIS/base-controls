@@ -23,6 +23,7 @@ const GridExample = () => {
             <DefaultButton text='Show the data' onClick={() => write(JSON.stringify(apiRef.current?.getData()))} />
             <DefaultButton text='Load again' onClick={() => apiRef.current?.refresh()} />
         </Stack>
+        {/* every event of Form.Root, written to the log */}
         <Form.Root
             onLoad={async () => ({ record: account })}
             onFormReady={onFormReady}

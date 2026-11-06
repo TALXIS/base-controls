@@ -17,6 +17,7 @@ const startQualification = (formContext: IXrmFormContext) => {
 }
 
 const GridExample = () => {
+    //kept in state for the button
     const [formContext, setFormContext] = React.useState<IXrmFormContext>()
     return <Stack tokens={{ childrenGap: 8 }}>
         <Stack horizontal>

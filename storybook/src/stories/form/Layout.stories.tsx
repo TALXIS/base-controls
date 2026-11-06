@@ -12,27 +12,19 @@ A form lays its fields out in tabs; each tab holds columns, each column holds se
 
 ## Tabs
 
-- \`Form.Tabs\` draws a header for each \`Form.Tab\` in it and shows the open one. Headers that do not fit go into a menu.
-- \`expandedTab\` and \`onTabChange\` are required: your state holds the open tab.
-- \`Form.Tab\` takes an \`id\`, unique among the tabs, and a \`label\`; a tab without a label is headed by its id.
-- Tabs are optional: sections can sit straight in \`Form.Root\`, as on [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview).
+\`Form.Tabs\` draws a header for each \`Form.Tab\` inside it and shows the open one; headers that do not fit move into a menu. Your state holds the open tab through \`expandedTab\` and \`onTabChange\`, which are both required. A tab takes an \`id\`, unique among the tabs, and a \`label\`; without a label, it is headed by its id.
 
-## Columns
+Tabs are optional: sections can sit straight in \`Form.Root\`, as they do on [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview).
 
-- Each \`Form.Column\` is one column of its tab's grid, which wraps into rows of as many columns as the breakpoint allows.
-- \`colspan\` makes a column as wide as several, up to the number in a row.
+## Columns and sections
 
-## Sections
-
-- \`Form.Section\` is a box headed by its \`label\`, holding its cells in a grid of its own.
-- \`showLabel={false}\` or \`showBar={false}\` leaves out the heading, and \`visible={false}\` hides the section.
+Each \`Form.Column\` is one column of its tab's grid, and \`colspan\` makes it as wide as several, up to the number in a row. A \`Form.Section\` is a box headed by its \`label\`, holding its cells in a grid of its own. \`showLabel={false}\` or \`showBar={false}\` leaves the heading out, and \`visible={false}\` hides the section.
 
 ## Cells
 
-- \`Form.Cell\` draws a label, the required mark and the control. The label is the column's display name; \`label\` replaces it, and \`label=''\` leaves it out.
-- \`colspan\` and \`rowspan\` make a cell span columns and rows of its section's grid.
-- Labels sit beside the controls, 115px wide or the section's \`labelWidth\`.
-- In a section narrower than 371px, or its \`cellLabelCollapseBreakpoint\`, labels move above the controls. \`cellLabelPosition='Top'\` puts them there at any width.
+\`Form.Cell\` draws a label, the required mark and the control, and \`colspan\` and \`rowspan\` make it span columns and rows of its section's grid. The label is the column's display name: \`label\` replaces it, and \`label=''\` leaves it out.
+
+Labels sit beside the controls, 115px wide or the section's \`labelWidth\`. In a section narrower than 371px, or than its \`cellLabelCollapseBreakpoint\`, they move above the controls, and \`cellLabelPosition='Top'\` puts them there at any width.
 
 ## Breakpoints
 
@@ -45,9 +37,7 @@ A form lays its fields out in tabs; each tab holds columns, each column holds se
 | \`sm\` | 481 to 768px | \`min(lg, 2)\` |
 | \`xs\` | 480px or less | 1 |
 
-- The children are the columns of a tab and the fields of a section, so a section of five fields with no \`layout\` draws five in a row when wide.
-- \`layout={{ lg: 1 }}\` keeps one in a row at any width.
-- \`onColumnsPerRowChanged\` on \`Form.Tab\` reports how many columns the tab draws in a row.
+The children are the columns of a tab and the cells of a section, so a section of five fields with no \`layout\` draws five in a row when it is wide, and \`layout={{ lg: 1 }}\` keeps one in a row at any width. \`onColumnsPerRowChanged\` on \`Form.Tab\` reports how many columns the tab draws in a row, as the line above the example's form shows.
 
 ## Reference
 
@@ -59,9 +49,7 @@ A form lays its fields out in tabs; each tab holds columns, each column holds se
 | \`Form.Section\` | \`id\`, \`label\`, \`layout\`, \`showLabel\`, \`showBar\`, \`visible\`, \`labelWidth\`, \`cellLabelPosition\`, \`cellLabelCollapseBreakpoint\` |
 | \`Form.Cell\` | \`id\`, \`label\`, \`colspan\`, \`rowspan\`, \`requiredLevel\` |
 
-- The \`id\` of a column, section or cell becomes its \`data-id\`, such as \`section-contact\`.
-- \`components\` of \`Form.Tabs\` replaces the headers: see [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview).
-- \`requiredLevel\` of \`Form.Cell\` changes only the mark: see [**Fields and validation**](?path=/docs/controls-form-fields-and-validation--overview).
+Every prop is live. The \`id\` of a column, section or cell becomes its \`data-id\`, such as \`section-contact\`. \`components\` of \`Form.Tabs\` draws the tabs your own way: see [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview). \`requiredLevel\` of \`Form.Cell\` changes only the mark: see [**Fields and validation**](?path=/docs/controls-form-fields-and-validation--overview).
 
 ## Where next
 

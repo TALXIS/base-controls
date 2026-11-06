@@ -10,43 +10,40 @@ Apart from its three columns, a checklist is a grid, so you customise it the way
 
 {{canvas: Run a release board}}
 
+## Add grid features
+
+The checklist's columns take everything a grid column does through \`colDefs\`, as on [**Columns**](?path=/docs/controls-grid-columns--overview). The release board above colours overdue dates, locks finished items, adds *Assign to me* as a cell command and totals the estimates.
+
+\`modules\` replaces the default editing module. Add \`createLicenseModule\`, \`createEditingModule\`, \`createRowSelectionModule\`, \`createClipboardModule\`, \`createAggregationModule\`, \`createLegacyClientApiCompatibilityModule\` or a module of your own. Leave out sorting, filtering and grouping, which change the order, and cell selection, which turns dragging off.
+
 ## Make it read-only
 
 Without the editing module, \`modules={[]}\`, nothing can be ticked, renamed, added, deleted or dragged.
 
 {{story: Keep a finished plan for reference}}
 
-## Add grid features
-
-The checklist's columns take everything a grid column does through \`colDefs\`, as on [**Columns**](?path=/docs/controls-grid-columns--overview). The release board above colours overdue dates, locks finished items, adds *Assign to me* as a cell command and totals the estimates with the aggregation module.
-
-\`modules\` replaces the default editing module:
-
-- Add \`license\`, \`editing\`, \`rowSelection\`, \`clipboard\`, \`aggregation\`, \`legacyClientApiCompatibility\` or your own.
-- Leave out sorting, filtering and grouping, which change the order, and cell selection, which turns dragging off.
-
-## Replace pieces of its cells
-
-The checkbox and name columns are drawn by the checklist's own cells. Through \`colDefs\`, their \`cellRendererParams.components\` take the grid cell's pieces, from [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview), plus a piece of their own:
-
-| Column | Piece | Slots |
-|---|---|---|
-| Completed | \`checkbox\` | \`onRenderButton\`, the button; \`onRenderCheck\`, the check inside it |
-| Name | \`name\` | \`onRenderContainer\`, the box that carries the strike-through |
-
-Replacing a slot keeps the cell's behaviour: ticking and saving work as before.
-
-{{story: Tick items off with a star}}
-
 ## Open an item
 
-Make the name column primary to draw names as links, and handle \`onOpenRecord\` to decide what opening one does; here it opens the item in a form in a panel.
+Make the name column primary to draw names as links, and handle \`onOpenRecord\` to decide what opening one does, as *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview) describes. Here it opens the item in a [**Form**](?path=/docs/controls-form-get-started--overview) in a panel.
 
 {{story: Open an item in a panel}}
 
 ## From your code
 
-The checklist adds a module to the grid: \`useGridModule('checkList')\` in a part the grid draws, or \`grid.modules.find('checkList')\` from \`onReady\`. It offers \`isItem(record)\`, which tells an item from the row that adds one, \`isCompleted(record)\` and \`getFieldMapping()\`. Everything else is the grid's: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+The checklist adds a module to the grid: \`useGridModule('checkList')\` returns it in a part the grid draws, and \`grid.modules.find('checkList')\` from \`onReady\`, as the release board does. It offers \`isItem(record)\`, which tells an item from the row that adds one, \`isCompleted(record)\` and \`getFieldMapping()\`. Everything else is the grid's: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+
+## Changing how it looks
+
+The checkbox and name columns are drawn by the checklist's own cells. Through \`colDefs\`, their \`cellRendererParams.components\` take the grid cell's keys from [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview), plus a key of their own. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+
+| Column | Key | Slots | Default | Draws |
+|---|---|---|---|---|
+| \`fieldMapping.completed\` | \`checkbox\` | \`onRenderButton\`, \`onRenderCheck\` | \`CompletionCheckboxUiComponents\` | The button an item is ticked off with, and the check inside it |
+| \`fieldMapping.name\` | \`name\` | \`onRenderContainer\` | \`NameCellUiComponents\` | The box around the name, which carries the strike-through |
+
+Replacing a slot keeps the cell's behaviour, so ticking and saving work as before.
+
+{{story: Tick items off with a star}}
 
 ## Where next
 
@@ -81,7 +78,7 @@ export const KeepAFinishedPlanForReference: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The launch is over, and the plan is kept for reference with \`modules={[]}\`.`,
+                story: `The launch is over, and the plan is kept for reference with \`modules={[]}\`. Try: click a checkbox, or drag an item.`,
             },
         },
     },

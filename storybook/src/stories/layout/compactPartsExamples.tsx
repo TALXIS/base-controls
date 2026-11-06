@@ -1,7 +1,10 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const TOOLBAR_CODE = `const ACTIONS = [
+const TOOLBAR_CODE = `import { TooltipHost, useCompact, WrapCompactProvider } from '@talxis/base-controls'
+import { DefaultButton, IconButton, SearchBox, Slider, Stack } from '@fluentui/react'
+
+const ACTIONS = [
     { key: 'new', text: 'New deal', iconName: 'Add' },
     { key: 'export', text: 'Export to Excel', iconName: 'ExcelDocument' },
     { key: 'share', text: 'Share', iconName: 'Share' },
@@ -37,7 +40,10 @@ const GridExample = () => {
 }
 `
 
-const FILTER_CHIPS_CODE = `const FILTERS = [
+const FILTER_CHIPS_CODE = `import { useCompact, useCompactItem, useTheme, WrapCompactProvider } from '@talxis/base-controls'
+import { DefaultButton, IconButton, Stack, Text, Toggle } from '@fluentui/react'
+
+const FILTERS = [
     { key: 'stage', label: 'Stage', value: 'Won' },
     { key: 'owner', label: 'Account manager', value: 'Anna Novak' },
     { key: 'region', label: 'Region', value: 'Europe' },
@@ -86,7 +92,10 @@ const GridExample = () => {
 }
 `
 
-const SECTION_TABS_CODE = `const SECTIONS = [
+const SECTION_TABS_CODE = `import { BreakpointCompactProvider, useCompact, useTheme } from '@talxis/base-controls'
+import { Dropdown, Pivot, PivotItem, Slider, Stack, Text } from '@fluentui/react'
+
+const SECTIONS = [
     { key: 'summary', text: 'Summary', content: 'Contoso renewal: $412,500, closing on 30 June.' },
     { key: 'contacts', text: 'Contacts', content: 'Anna Novak, account manager. Ben Carter, procurement.' },
     { key: 'activities', text: 'Activities', content: 'Call with procurement on Tuesday, proposal sent on Friday.' },

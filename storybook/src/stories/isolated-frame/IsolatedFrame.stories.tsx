@@ -27,43 +27,40 @@ The key is any string unique within your app. With the two sides in separate bun
 
 {{block: lifecycle}}
 
-If the frame fails to load, the error shows in its place, with *Try again*, which starts over with a fresh iframe.
+If the frame fails to load, the error shows in its place, with **Try again**, which starts over with a fresh iframe.
 
 ## Options
 
-The host takes these in \`createIsolatedHost\`, or as the third argument of \`createIsolatedComponent\`, and reads them as the frame loads:
+The host takes these in \`createIsolatedHost\`, or as the third argument of \`createIsolatedComponent\`, and reads them as the frame loads.
 
-- **\`scripts\`** (\`IsolatedFrameScript[]\`): what the frame loads, in order, each a URL or \`{ src, type: 'module' }\`. By default, the script the library was loaded from.
-- **\`onPrepareWindow\`** (\`(frameWindow: Window) => void\`): called before the frame's scripts load, so what it puts on the window is there while the frame's code evaluates.
+| Option | Type | Default | Description |
+|---|---|---|---|
+| \`scripts\` | \`IsolatedFrameScript[]\` | The script the library was loaded from | What the frame loads, in order, each a URL or \`{ src, type: 'module' }\`. |
+| \`onPrepareWindow\` | \`(frameWindow: Window) => void\` | None | Called before the frame's scripts load, so what it puts on the window is there while the frame's code evaluates. |
+
+The default \`scripts\` works when everything is one bundle, as in a PCF. When your code is split into chunks, or served as ES modules in development, one module entry that imports the module declaring the frame is enough, such as \`[{ src: '/src/tasks-entry.ts', type: 'module' }]\`. When the content is a bundle of its own, point \`scripts\` at its entry, which calls \`registerIsolatedContent\`.
 
 ## The frame prop
 
-A frame's own settings go in its \`frame\` prop, so every other prop goes to the content untouched. Both fields update on every render, like the content props:
+A frame's own settings go in its \`frame\` prop, so every other prop goes to the content untouched. Both fields are Live, like the content props.
 
-- **\`frame.className\`**: added to the iframe, which fills its parent.
-- **\`frame.title\`**: the frame's accessible name.
-
-## How the frame gets its code
-
-The default \`scripts\` works when everything is one bundle, as in a PCF. Pass \`scripts\` when it is not:
-
-- **Your code is split into chunks, or served as ES modules in development:** one module entry that imports the module declaring the frame is enough, such as \`[{ src: '/src/tasks-entry.ts', type: 'module' }]\`.
-- **The content is a bundle of its own:** point \`scripts\` at its entry, which calls \`registerIsolatedContent\`.
+| Field | Description |
+|---|---|
+| \`className\` | Added to the iframe, which fills its parent. |
+| \`title\` | The frame's accessible name. |
 
 ## What crosses the frame's edge
 
-- **Props and callbacks.** The content gets them as they are, so a callback runs on the page. The framed grid above gets the page's theme this way.
-- **What \`onPrepareWindow\` sets**, such as \`Xrm\` or a configuration object.
-- **The page's \`lang\` and \`dir\`**, copied as the frame loads.
+The content gets its props and callbacks as they are, so a callback runs on the page; the framed grid above gets the page's theme this way. What \`onPrepareWindow\` sets, such as \`Xrm\` or a configuration object, and the page's \`lang\` and \`dir\` are there too. Everything handed over still belongs to the page's window, so \`instanceof\` checks against the frame's classes are false for it, such as \`instanceof Error\` for an error the page's APIs reject with: read its fields instead.
 
-Everything handed over still belongs to the page's window, so \`instanceof\` checks against the frame's classes are false for it, such as \`instanceof Error\` for an error the page's APIs reject with. Read its fields instead.
+Some things stay on their own side:
 
-## What does not
-
-- **Popups stay inside.** Callouts, menus and dialogs cannot extend past the frame.
-- **Size.** The frame fills its parent and does not grow with its content.
-- **Events.** Clicks and key presses inside the frame stay inside it, so the page's shortcuts do not see them, and a click on the page does not close the frame's popups.
-- **Security.** The frame shares the page's origin: it keeps out global styles and globals, not hostile code.
+| What | Inside the frame |
+|---|---|
+| Popups | Callouts, menus and dialogs cannot extend past the frame. |
+| Size | The frame fills its parent and does not grow with its content. |
+| Events | Clicks and key presses stay inside, so the page's shortcuts do not see them, and a click on the page does not close the frame's popups. |
+| Security | The frame shares the page's origin: it keeps out global styles and globals, not hostile code. |
 
 ## Where next
 
@@ -73,6 +70,7 @@ Everything handed over still belongs to the page's window, so \`instanceof\` che
 const EXPLORE: IExploreCard[] = [
     { title: 'Quick start', iconName: 'Rocket', href: '?path=/docs/concepts-quick-start--overview', text: 'The root providers the framed content brings with it.' },
     { title: 'Theming', iconName: 'Color', href: '?path=/docs/concepts-theming--overview', text: 'Build the theme the page hands the frame as a prop.' },
+    { title: 'PCF context', iconName: 'PlugConnected', href: '?path=/docs/concepts-pcf-context--overview', text: 'The context the framed content builds, or takes from Xrm set by onPrepareWindow.' },
 ]
 
 const LIFECYCLE: ILifecycleStep[] = [

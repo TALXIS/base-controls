@@ -17,14 +17,14 @@ A checklist stores nothing itself: every tick, rename, drag, new item and delete
 | Ticks or unticks an item | Sets \`completed\` to \`true\` or \`false\`. |
 | Renames an item, or edits another column | Sets the value, as any grid cell does. |
 | Drags an item | Sets \`stackRank\` to a rank between its new neighbours. |
-| Adds an item in the bottom row | Creates a record with \`provider.newRecord()\` after the last item. |
+| Adds an item in the bottom row | Creates a record with \`provider.newRecord()\` and ranks it after the last item. |
 | Deletes an item | Asks for confirmation, then calls \`provider.deleteRecords()\`. |
 
-With the default auto-save, each change saves its record at once; with \`createEditingModule()\` on its own, changes wait until you save them, as on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). A delete always goes to the provider straight away.
+With the default editing module, each change saves its record at once. With \`createEditingModule()\` in \`modules\` and no auto-save, changes wait until you save them, as [**Editing**](?path=/docs/controls-grid-modules-editing--overview) describes. A delete always goes to the provider straight away.
 
 ## Save to your API
 
-The provider decides where a save goes. Extend it and override \`onRecordSave\` and \`onRecordsDelete\`, as on [**Data providers**](?path=/docs/concepts-data-providers--overview); \`record.isNew()\` tells an item added in the bottom row from one that existed.
+The provider decides where a save goes. Extend it and override \`onRecordSave\` and \`onRecordsDelete\`, as *Your own provider* on [**Data providers**](?path=/docs/concepts-data-providers--overview) shows; \`record.isNew()\` tells an item added in the bottom row from one that already existed.
 
 ## Where next
 

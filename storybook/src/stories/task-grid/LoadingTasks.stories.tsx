@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { OwnTasksExample, RootTaskExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-A task grid loads every task of the view at once, through a task provider that reads them from a store, such as one in memory or a Dataverse table. In \`onLoad\` you return that provider, with a field mapping that names the columns that make the tree: each task's parent and its place among its siblings. Try it below: add a task to \`OFFICE_MOVE\` in **Code**.
+A task grid loads every task of the view at once, through a task provider that reads them from a store, such as one in memory or a Dataverse table. You hand the control that provider together with a field mapping, which names the columns that make the tree: each task's parent and its place among its siblings. Try it below: add a task to \`OFFICE_MOVE\` in **Code**.
 
 {{canvas: Show your own tasks}}
 
@@ -24,7 +24,7 @@ A task grid loads every task of the view at once, through a task provider that r
 | \`stateCode\` | No, \`'statecode'\` | \`0\` is active. See *Inactive tasks* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). |
 | \`percentComplete\` | No | Drawn as a progress bar. |
 | \`startDate\`, \`endDate\` | No | The task's dates. The [**Gantt**](?path=/docs/controls-taskgrid-gantt-get-started--overview) needs both. |
-| \`duration\` | No | Minutes, as a duration column holds them. A day holds \`hoursPerDay\` hours. |
+| \`duration\` | No | Minutes, as a duration column holds them. A day holds as many hours as \`TaskDatasetControl\`'s \`hoursPerDay\`. |
 
 Every other column is an ordinary column of the view.
 
@@ -46,11 +46,7 @@ Every data source also takes \`provider\`, a class extending \`TaskDataProvider\
 
 ### Dataverse
 
-The example's *dataverse.ts* loads the tasks from Dataverse; its parameters are under *Reference* below.
-
-- *Edit* opens the task's form in a side dialog, or the bulk edit form for several, read-only for inactive tasks or without \`enableEditing\`.
-- New tasks are created straight away in their place, with the project lookup filled in when the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module is there.
-- Its helper methods are \`protected\`, for a subclass to change.
+The example's *dataverse.ts* loads the tasks from Dataverse; its parameters are under *Reference* below. *Edit* opens the task's form in a side dialog, or the bulk edit form for several, and the form is told the task is read-only when it is inactive or \`enableEditing\` is off. New tasks are created in their place straight away, with the project lookup filled in when the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module is there. To change how the store works, extend \`DataverseTaskStore\`: its helper methods are \`protected\`.
 
 ## Rescheduled dates
 
@@ -58,7 +54,7 @@ After every save, from a cell, a form, a move or a dependency, the provider asks
 
 ## Start from a task
 
-Return \`rootTaskId\` to show only the tasks under one task, such as one project's. It is read on load: to change it, remount the control with a new \`key\`.
+Return \`rootTaskId\` to show only the tasks under one task, such as one project's. It is read at mount: to change it, remount the control with a new \`key\`, as the example does.
 
 {{story: Start from a task}}
 

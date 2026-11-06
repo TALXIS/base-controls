@@ -68,11 +68,6 @@ const meta = {
 
 export default meta
 
-export const Overview: StoryObj<typeof meta> = {
-    name: 'Overview',
-    render: () => <></>,
-}
-
 export const ReadTheProject: StoryObj<typeof meta> = {
     name: 'Read the project',
     render: () => renderStory(<ProjectExample />),

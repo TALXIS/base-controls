@@ -60,7 +60,6 @@ const GridExample = () => {
 `
 
 const SLOW_LOAD_CODE = `import { IRibbonCommand, Ribbon } from '@talxis/base-controls'
-import { DefaultButton, Stack } from '@fluentui/react'
 
 //stands in for a server call
 const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
@@ -70,15 +69,15 @@ const COMMANDS: IRibbonCommand[] = [
     { id: 'reject', label: 'Reject', iconName: 'Cancel', onExecute: () => callServer(1000) },
 ]
 
-const ApprovalRibbon = () => {
+const GridExample = () => {
     const isFirstLoad = React.useRef(true)
 
-    //a shimmer stands in for the commands until a load finishes
+    //a shimmer stands in for the commands until the load finishes
     const onLoad = async (): Promise<IRibbonCommand[]> => {
         await callServer(2000)
         if (isFirstLoad.current) {
             isFirstLoad.current = false
-            //a load that throws shows the error with Try again
+            //a first load that throws shows the error with Try again
             throw new Error('The commands could not be loaded.')
         }
         return COMMANDS
@@ -86,16 +85,49 @@ const ApprovalRibbon = () => {
 
     return <Ribbon onLoad={onLoad} />
 }
+`
+
+const OWN_COMMANDS_CODE = `import { IRibbonCommand, IRibbonRuntime, Ribbon } from '@talxis/base-controls'
+import { Stack, Text, Toggle } from '@fluentui/react'
 
 const GridExample = () => {
-    const [mountKey, setMountKey] = React.useState(0)
+    const [note, setNote] = React.useState('')
+    const isClosed = React.useRef(false)
+    const ribbonRef = React.useRef<IRibbonRuntime>()
 
-    return <Stack tokens={{ childrenGap: 8 }} horizontalAlign='start'>
-        <ApprovalRibbon key={mountKey} />
-        <DefaultButton text='Mount again' onClick={() => setMountKey(mountKey + 1)} />
+    const onLoad = async (): Promise<IRibbonCommand[]> => [
+        { id: 'approve', label: 'Approve', iconName: 'CheckMark', onExecute: () => setNote('Approved') },
+        { id: 'reject', label: 'Reject', iconName: 'Cancel', onExecute: () => setNote('Rejected') },
+    ]
+
+    //code that does not own onLoad adds to the commands of every load
+    const onMounted = (ribbon: IRibbonRuntime) => {
+        ribbonRef.current = ribbon
+        ribbon.registerCommands(commands => {
+            commands.push({ id: 'history', label: 'History', iconName: 'History', onExecute: () => setNote('History opened') })
+        })
+        //a higher priority runs later, so this hook sees History too
+        ribbon.registerCommands(commands => {
+            for (const command of commands) {
+                command.isDisabled = isClosed.current
+            }
+        }, 10)
+    }
+
+    //hooks run on a load, so reload to apply them now
+    const setClosed = (checked: boolean) => {
+        isClosed.current = checked
+        ribbonRef.current?.reload()
+    }
+
+    return <Stack tokens={{ childrenGap: 8 }}>
+        <Toggle label='Order closed' inlineLabel onChange={(_, checked) => setClosed(!!checked)} />
+        <Ribbon onLoad={onLoad} onMounted={onMounted} />
+        <Text variant='small'>{note}</Text>
     </Stack>
 }
 `
 
 export const RibbonExample = () => <GridExampleRunner seedCode={RIBBON_CODE} tabs={['preview', 'code']} />
 export const SlowLoadExample = () => <GridExampleRunner seedCode={SLOW_LOAD_CODE} tabs={['preview', 'code']} />
+export const OwnCommandsExample = () => <GridExampleRunner seedCode={OWN_COMMANDS_CODE} tabs={['preview', 'code']} />

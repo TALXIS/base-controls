@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { FirstAppExample } from './quickStartExamples'
 
 const DESCRIPTION = `
-The smallest application has the providers every application needs at its root, a data provider with three products, a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) that loads it and a [**Grid**](?path=/docs/controls-grid-get-started--overview) that draws it. Why the application is shaped like this: [**Building blocks**](?path=/docs/concepts-building-blocks--overview). Try it below: open **Code** and change it.
+This page takes you from an empty React application to a first working control: install the packages, wrap the application in the providers every control needs, and add a control below them. The example is a whole application: a data provider with three products, a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) that loads it and a [**Grid**](?path=/docs/controls-grid-get-started--overview) that draws it. Try it below: open **Code** and add a fourth product.
 
 {{canvas: Overview}}
 
@@ -20,14 +20,16 @@ Base Controls runs on React 16.8 or 17 and Fluent UI 8.121.5 or earlier.
 
 ## Set up the application
 
-Wrap the application in the shared providers once, then add controls anywhere below them, as the example does. \`PcfContextProvider\` and \`AppThemeProvider\` are required; add the others when you need what they provide:
+Wrap the application in the providers once, then add controls anywhere below them, as the example does. \`PcfContextProvider\` and \`AppThemeProvider\` are required; add the others when you need what they provide.
 
 | Provider | Provides | Without it |
 |---|---|---|
 | \`PcfContextProvider\` | The user, formatting, dialogs and data access: [**PCF context**](?path=/docs/concepts-pcf-context--overview) | The controls throw |
 | \`AppThemeProvider\` | The theme: [**Theming**](?path=/docs/concepts-theming--overview) | The controls throw |
-| \`StateProvider\` | Saved state: [**State persistence**](?path=/docs/concepts-state-persistence--overview) | One in-memory store for the page |
-| \`LabelsProvider\` | Your wording: [**Localization**](?path=/docs/concepts-localization--overview) | English |
+| \`StateProvider\` | A store for what controls keep across mounts: [**State persistence**](?path=/docs/concepts-state-persistence--overview) | Every control shares one in-memory store for the page |
+| \`LabelsProvider\` | Your wording and translations: [**Localization**](?path=/docs/concepts-localization--overview) | English |
+
+What each part of the example is, and how far you can take it: [**Building blocks**](?path=/docs/concepts-building-blocks--overview).
 
 ## Where next
 

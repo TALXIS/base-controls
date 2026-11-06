@@ -1,8 +1,8 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const COMMAND_BARS_CODE = `import { CommandBar as FluentCommandBar } from '@fluentui/react'
-import { CommandBar } from '@talxis/base-controls'
+const COMMAND_BARS_CODE = `import { CommandBar as FluentCommandBar, ICommandBarItemProps, Label, Slider, Stack } from '@fluentui/react'
+import { CommandBar, ThemeProvider, useTheme, useThemeBuilder } from '@talxis/base-controls'
 
 const ITEMS: ICommandBarItemProps[] = [
     { key: 'new', text: 'New', iconProps: { iconName: 'Add' } },

@@ -12,13 +12,13 @@ The links module draws the task grid's dependencies as arrows between the bars, 
 
 ## What the user can do
 
-With \`enableEditing\`:
+| Gesture | Does |
+|---|---|
+| Drag from the handle at either end of a bar to another bar | Draws a link. The ends it joins decide the type: *finish to start*, *start to start*, *finish to finish* or *start to finish*. A duplicate or a cycle is refused. |
+| Double-click a link | Deletes it, once the user confirms |
+| Point at a link | Shows what it joins |
 
-- Dragging from the handle at either end of a bar to another bar draws a link. The ends it joins decide the type: *finish to start*, *start to start*, *finish to finish* or *start to finish*. A duplicate or a cycle is refused.
-- Double-clicking a link and confirming deletes it.
-- Pointing at a link shows what it joins.
-
-While a link saves, its tasks show as saving.
+Drawing and deleting links needs \`enableEditing\`. While a link saves, its tasks show as saving.
 
 ## Options
 
@@ -31,13 +31,13 @@ While a link saves, its tasks show as saving.
 
 \`createLinksModule\` takes \`components\` for the default link tooltip, read at mount, under \`tooltip\`; each part of \`LinkTooltip\` takes the same slots in its own \`components\`. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
-| Key | Part | Slots | Default | Draws |
+| Part | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`tooltip.callout\` | \`LinkTooltip.Callout\` | \`onRenderCallout\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the link |
-| \`tooltip.header\` | \`LinkTooltip.Header\` | \`onRenderContainer\`, \`onRenderTitle\` | \`TooltipUiHeaderComponents\` | The dependency's type |
-| \`tooltip.fieldRows\` | \`LinkTooltip.FieldRows\` | \`onRenderContainer\` | \`TooltipUiFieldRowsComponents\` | The box the rows sit in |
-| \`tooltip.predecessor\`, \`tooltip.successor\` | \`LinkTooltip.PredecessorRow\`, \`SuccessorRow\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`TooltipUiFieldRowComponents\` | The two tasks |
-| \`tooltip.dateRange\` | \`LinkTooltip.DateRangeRow\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`TooltipUiDateRangeComponents\` | The dates the link joins |
+| \`LinkTooltip.Callout\` | \`tooltip.callout\` | \`onRenderCallout\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the link |
+| \`LinkTooltip.Header\` | \`tooltip.header\` | \`onRenderContainer\`, \`onRenderTitle\` | \`TooltipUiHeaderComponents\` | The dependency's type |
+| \`LinkTooltip.FieldRows\` | \`tooltip.fieldRows\` | \`onRenderContainer\` | \`TooltipUiFieldRowsComponents\` | The box the rows sit in |
+| \`LinkTooltip.PredecessorRow\`, \`SuccessorRow\` | \`tooltip.predecessor\`, \`tooltip.successor\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`TooltipUiFieldRowComponents\` | The two tasks |
+| \`LinkTooltip.DateRangeRow\` | \`tooltip.dateRange\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`TooltipUiDateRangeComponents\` | The dates the link joins |
 
 ## Where next
 

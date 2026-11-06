@@ -131,19 +131,6 @@ const GridExample = () => {
 }
 `
 
-const USER_VIEWS_TYPES_FILE: IGridExampleFile = {
-    name: 'types.ts',
-    code: `//declares a key of your own for saveWithView, beside sorting, filtering and searchQuery
-declare module '@talxis/base-controls' {
-    interface IUserQuerySavedValueMap {
-        layout: string
-    }
-}
-
-export {}
-`,
-}
-
 const USER_VIEWS_DATAVERSE_FILE: IGridExampleFile = {
     name: 'dataverse.ts',
     code: `//in a model-driven app, use one of these modules instead of the localStorage one in GridExample.tsx
@@ -162,5 +149,5 @@ export const createDataverseViewsModule = (context: ComponentFramework.Context) 
 `,
 }
 
-export const UserViewsExample = () => <GridExampleRunner seedCode={withFiles(USER_VIEWS_CODE, VIEWS_FILE, USER_VIEWS_TYPES_FILE, USER_VIEWS_DATAVERSE_FILE)} tabs={['preview', 'code']} />
+export const UserViewsExample = () => <GridExampleRunner seedCode={withFiles(USER_VIEWS_CODE, VIEWS_FILE, USER_VIEWS_DATAVERSE_FILE)} tabs={['preview', 'code']} />
 export const OwnStoreExample = () => <GridExampleRunner seedCode={withFiles(OWN_STORE_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />

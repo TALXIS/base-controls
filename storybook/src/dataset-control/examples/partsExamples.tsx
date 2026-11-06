@@ -4,24 +4,26 @@ import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
 
 const RIBBON_CODE = `import { DealsRibbon } from './DealsRibbon'
 
-const sortBy = async (control: IDatasetControl, name: string) => {
+const NEGOTIATE_STAGE = 3
+const WON_STAGE = 4
+
+//a new selection loads the ribbon again, with the commands for it
+const selectStage = (control: IDatasetControl, stage: number) => {
     const provider = control.getProvider()!
-    //sortDirection 1 is descending
-    provider.setSorting([{ name, sortDirection: 1 }])
-    await provider.refresh()
+    provider.setSelectedRecordIds(provider.getRecords().filter(deal => Number(deal.getValue('stage')) === stage).map(deal => deal.getRecordId()))
 }
 
 //adds a menu to whatever ribbon the control draws
-const addSortMenu = (control: IDatasetControl) => {
+const addSelectMenu = (control: IDatasetControl) => {
     control.parts.observe('ribbon', ribbon => ribbon.registerCommands(commands => {
-        commands.push({ id: 'sort', label: 'Sort', iconName: 'Sort', commands: [
-            { id: 'byValue', label: 'By value', onExecute: () => sortBy(control, 'value') },
-            { id: 'byCloseDate', label: 'By close date', onExecute: () => sortBy(control, 'closedate') },
+        commands.push({ id: 'select', label: 'Select', iconName: 'MultiSelect', commands: [
+            { id: 'selectNegotiating', label: 'Deals in negotiation', onExecute: () => selectStage(control, NEGOTIATE_STAGE) },
+            { id: 'selectWon', label: 'Won deals', onExecute: () => selectStage(control, WON_STAGE) },
         ] })
     }))
 }
 
-const GridExample = () => <DatasetControl stateKey='ribbonDeals' onLoad={async () => ({ provider: createDealsProvider() })} onMounted={addSortMenu} height='440px'>
+const GridExample = () => <DatasetControl stateKey='ribbonDeals' onLoad={async () => ({ provider: createDealsProvider() })} onMounted={addSelectMenu} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             {/* the built-in commands, each off unless asked for */}

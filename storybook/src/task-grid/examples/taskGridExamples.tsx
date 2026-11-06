@@ -60,18 +60,20 @@ const GridExample = () => {
 }
 `
 
-const BASIC_CODE = `const fieldMapping: IFieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', stateCode: 'statecode' }
+const BASIC_CODE = `//the columns that make the tree
+const fieldMapping: IFieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', stateCode: 'statecode' }
 
 const GridExample = () => {
     const database = React.useMemo(() => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA }), [])
 
-    //onLoad returns a field mapping beside the provider
+    //returns the tasks and the field mapping
     const loadTasks = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
         provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
         fieldMapping,
     })
 
-    return <TaskDatasetControl onLoad={loadTasks} enableCreation enableEditing enableDeletion height='420px'>
+    //the DatasetControl for tasks; creating, editing and deleting are off until turned on
+    return <TaskDatasetControl onLoad={loadTasks} enableCreation height='420px'>
         <DatasetControl.Header>
             <DatasetControl.Header.End>
                 <TaskDatasetControl.Ribbon />
@@ -79,7 +81,7 @@ const GridExample = () => {
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            {/* throws outside a TaskDatasetControl */}
+            {/* takes the Grid's props, and throws outside a TaskDatasetControl */}
             <TaskGrid />
         </DatasetControl.Body>
     </TaskDatasetControl>
@@ -156,7 +158,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 12 }}>
         <Dropdown label='Project' styles={{ root: { maxWidth: 320 } }} options={ROOT_OPTIONS} selectedKey={rootTaskId} onChange={(_, option) => setRootTaskId(String(option?.key ?? ''))} />
-        {/* the root is read on load */}
+        {/* the root is read at mount, so a new key mounts the control again */}
         <TaskDatasetControl key={rootTaskId} enableCreation onLoadViews={loadTaskViews} onLoad={loadTasks} height='420px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.End>

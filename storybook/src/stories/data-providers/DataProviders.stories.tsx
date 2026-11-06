@@ -21,9 +21,9 @@ Every provider comes from \`@talxis/client-libraries\` and implements \`IDataPro
 | \`FetchXmlDataProvider\` | A Dataverse table, through FetchXML | Dataverse | Dataverse |
 | Your own | Your API | Your API, or the browser | Your API |
 
-- \`MemoryDataProvider\` also takes a starting \`pageSize\`, \`sorting\`, \`filtering\` and \`searchQuery\`. Without \`pageSize\`, every record is on one page.
-- Its search covers the columns in \`metadata.QuickFindColumns\`, or the columns marked \`isPrimary\` when that is not set. A value matches when it starts with the query, or contains it when the query starts with \`*\`.
-- \`new FetchXmlDataProvider({ fetchXml })\` needs a page that can reach Dataverse, such as a model-driven app. Call \`setViewId(id)\` before the first load to take the columns of a saved view.
+\`MemoryDataProvider\` also takes a starting \`pageSize\`, \`sorting\`, \`filtering\` and \`searchQuery\`; without \`pageSize\`, every record is on one page. Its search covers the columns in \`metadata.QuickFindColumns\`, or the columns marked \`isPrimary\` when that is not set, and a value matches when it starts with the query, or contains it when the query starts with \`*\`.
+
+\`new FetchXmlDataProvider({ fetchXml })\` needs a page that can reach Dataverse, such as a model-driven app. Call \`setViewId(id)\` before the first load to take the columns of a saved view.
 
 ## Hand it to controls
 
@@ -33,11 +33,9 @@ Controls take their provider from around them, not from a prop. A [**DatasetCont
 
 ## Load and read
 
-\`refresh()\` loads the first page and resolves with its records. Loading replaces the records, so their unsaved changes are lost.
+\`refresh()\` loads the first page and resolves with its records. Loading replaces the records, so their unsaved changes are lost: \`refresh()\` never asks. The parts of a DatasetControl that load, such as paging, ask the user first, as [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) describes.
 
-- When a load fails, \`onError\` fires, the call rejects with a \`DataProviderError\`, and \`isError()\` and \`getErrorMessage()\` say why.
-- A DatasetControl asks the user before a load throws unsaved changes away, as [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) describes. If they keep them, nothing loads and \`refresh()\` resolves with \`undefined\`.
-- \`getColumns()\`, \`getMetadata()\` and \`getPaging()\` describe the rest, and \`isLoading()\` says whether a load is running.
+When a load fails, \`onError\` fires, the call rejects with a \`DataProviderError\`, and \`isError()\` and \`getErrorMessage()\` say why. \`isLoading()\` says whether a load is running, and \`getColumns()\`, \`getMetadata()\` and \`getPaging()\` describe the rest.
 
 Some types come back from \`getValue()\` in another shape than the raw data holds them:
 
@@ -59,9 +57,7 @@ Every load, from \`refresh()\` or a page change, runs these steps.
 
 ## Sort, filter, search and page
 
-- Setters only store the new state; call \`refresh()\` to load with it.
-- \`loadNextPage()\`, \`loadPreviousPage()\` and \`loadExactPage(number)\` load straight away.
-- Anything showing the provider reads the same state: what you set from code shows there, and what users set there you read back.
+The setters, such as \`setSorting\`, \`setFiltering\` and \`setSearchQuery\`, only store the new state: call \`refresh()\` to load with it. \`loadNextPage()\`, \`loadPreviousPage()\` and \`loadExactPage(number)\` on \`getPaging()\` load straight away. Anything showing the provider reads the same state, so what you set from code shows there, and what users set there you read back.
 
 {{story: Steer it from your code}}
 
@@ -79,15 +75,19 @@ A record is saved only when it is valid. Set validation, and whether a column is
 
 ## Selection
 
-The provider keeps which records are selected, so anything showing them can select and every other part sees it. Each change raises \`onRecordsSelected\`. Every load after the first clears the selection, except on a group's provider. The example under **React to changes** selects from code.
+The provider keeps which records are selected, so anything showing them can select and every other part sees it. Each change raises \`onRecordsSelected\`. Every load after the first clears the selection, except on a group's provider. The example under *React to changes* selects from code.
 
 ## Groups and totals
 
-Grouping and totals are part of the column definitions. Mark the column to group by with \`grouping\` and the columns to total with \`aggregation\`, then \`refresh()\`. \`getRecords()\` then returns one record per group, and a group's records are in a provider of their own, from \`createGroupedRecordDataProvider(group)\`. The example under **Load and read** groups and totals the deals.
+Grouping and totals are part of the column definitions. Mark the column to group by with \`grouping\` and the columns to total with \`aggregation\`, then \`refresh()\`, as the example under *Load and read* does. The same can be added by call, with \`provider.grouping.addGroupBy({ columnName, alias })\` and \`provider.aggregation.addAggregation({ columnName, alias, aggregationFunction })\`, which need the alias named as the table below names it. \`getRecords()\` then returns one record per group, and a group's records are in a provider of their own, from \`createGroupedRecordDataProvider(group)\`.
 
-- A group record holds its value under \`<column>_group\` and each total under \`<column>_<function>\`, unless the column sets \`alias\`.
-- A grouped column with no aggregation of its own counts its records, under \`<column>_count\`.
-- For totals over every record, define the \`aggregation\` without grouping and read it from a \`TotalRow\`. Await its \`refresh()\` before the first read, and \`destroy()\` it when you are done.
+| A group record holds | Under |
+|---|---|
+| The group's value | \`<column>_group\` |
+| Each total | \`<column>_<function>\`, or the column's \`alias\` |
+| The record count, for a grouped column with no aggregation of its own | \`<column>_count\` |
+
+For totals over every record, define the \`aggregation\` without grouping and read it from a \`TotalRow\`. Await its \`refresh()\` before the first read, and \`destroy()\` it when you are done.
 
 | Function | Gives |
 |---|---|
@@ -97,16 +97,13 @@ Grouping and totals are part of the column definitions. Mark the column to group
 
 ## React to changes
 
-Every change raises an event, so whatever shows the records can draw again. \`addEventListener\` returns a function that removes the listener; \`removeEventListener\` does the same. Every event is listed under **Reference**.
+Every change raises an event, so whatever shows the records can draw again. \`addEventListener\` returns a function that removes the listener; \`removeEventListener\` does the same. Every event is listed under *Reference*.
 
 {{story: React to changes}}
 
 ## Lifetime
 
-Create a provider once and keep it while it is used, such as in \`React.useState\`. \`destroy()\` frees it for good.
-
-- A DatasetControl destroys the provider \`onLoad\` returned when the control unmounts or reloads, or when the load fails.
-- To keep a provider the rest of your page uses too, pass \`destroyProviderOnUnmount={false}\` and destroy it yourself, as the example under **Sort, filter, search and page** does.
+Create a provider once and keep it while it is used, such as in \`React.useState\`; \`destroy()\` frees it for good. A DatasetControl destroys the provider \`onLoad\` returned when the control unmounts or reloads, or when the load fails. To keep a provider the rest of your page uses too, pass \`destroyProviderOnUnmount={false}\` and destroy it yourself, as the example under *Sort, filter, search and page* does.
 
 ## Your own provider
 
@@ -116,7 +113,7 @@ Extend \`MemoryDataProvider\` to keep sorting and paging in the browser:
 
 {{story: Save to your API}}
 
-When your API sorts, filters and pages itself, extend \`DataProvider\`. Set the metadata and columns in the constructor, and implement every member listed under **Reference**:
+When your API sorts, filters and pages itself, extend \`DataProvider\`. Set the metadata and columns in the constructor, and implement every member listed under *Reference*:
 
 {{story: Page on your server}}
 

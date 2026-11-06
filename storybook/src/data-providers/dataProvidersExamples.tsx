@@ -1,7 +1,11 @@
 import React from 'react'
 import { GridExampleRunner } from '../grid/GridExampleRunner'
 
-export const SHARED_PROVIDER_CODE = `const createOrder = () => {
+export const SHARED_PROVIDER_CODE = `import { createClientSideRowModelModule, createEditingModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, useDataProviderEvents, usePcfContext } from '@talxis/base-controls'
+import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
+import { DefaultButton, PrimaryButton, Stack, Text } from '@fluentui/react'
+
+const createOrder = () => {
     const order = new MemoryDataProvider({
         dataSource: [
             { lineid: 'desk', product: 'Standing desk', quantity: 4, unitprice: 640 },
@@ -26,6 +30,7 @@ export const SHARED_PROVIDER_CODE = `const createOrder = () => {
     return order
 }
 
+//draws again on each of these events
 const OrderSummary = () => {
     const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged', 'onAfterSaved'])
     const { formatting } = usePcfContext()
@@ -64,7 +69,11 @@ const GridExample = () => {
 }
 `
 
-export const STEER_FROM_CODE_CODE = `const PRIORITY = [
+export const STEER_FROM_CODE_CODE = `import { createClientSideRowModelModule, createSortingModule, DatasetControl, Grid } from '@talxis/base-controls'
+import { DataTypes, MemoryDataProvider, Operators, Type } from '@talxis/client-libraries'
+import { DefaultButton, Stack } from '@fluentui/react'
+
+const PRIORITY = [
     { Value: 1, Label: 'High', Color: '#a4262c' },
     { Value: 2, Label: 'Normal', Color: '#0078d4' },
     { Value: 3, Label: 'Low', Color: '#038387' },
@@ -135,7 +144,10 @@ const GridExample = () => {
 }
 `
 
-const HAND_DOWN_CODE = `//draws again on each of these events
+const HAND_DOWN_CODE = `import { createClientSideRowModelModule, createRowSelectionModule, DataProviderScope, Grid, useDataProviderEvents } from '@talxis/base-controls'
+import { MessageBar, MessageBarType, SearchBox, Spinner, Stack, Text } from '@fluentui/react'
+
+//draws again on each of these events
 const LoadStatus = () => {
     const provider = useDataProviderEvents(['onLoading', 'onError'])
     if (provider.isError()) {
@@ -176,7 +188,11 @@ const GridExample = () => {
 }
 `
 
-const READ_CODE = `const getStyles = (theme: ITheme) => mergeStyleSets({
+const READ_CODE = `import { ITheme, useTheme } from '@talxis/base-controls'
+import { IColumn, TotalRow } from '@talxis/client-libraries'
+import { DefaultButton, mergeStyleSets, Stack } from '@fluentui/react'
+
+const getStyles = (theme: ITheme) => mergeStyleSets({
     output: { margin: 0, padding: 12, minHeight: 160, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontSize: theme.fonts.small.fontSize, whiteSpace: 'pre-wrap' },
 })
 
@@ -238,7 +254,10 @@ const GridExample = () => {
 }
 `
 
-const EVENTS_CODE = `const getStyles = (theme: ITheme) => mergeStyleSets({
+const EVENTS_CODE = `import { createClientSideRowModelModule, createEditingModule, createRowSelectionModule, DatasetControl, Grid, ITheme, useTheme } from '@talxis/base-controls'
+import { DefaultButton, mergeStyleSets, Stack } from '@fluentui/react'
+
+const getStyles = (theme: ITheme) => mergeStyleSets({
     log: { padding: '8px 12px', minHeight: 132, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontSize: theme.fonts.small.fontSize, lineHeight: '22px' },
     line: { color: theme.semanticColors.bodySubtext },
     latest: { color: theme.semanticColors.bodyText, fontWeight: 600 },
@@ -279,7 +298,10 @@ const GridExample = () => {
 }
 `
 
-const OWN_PROVIDER_CODE = `import { saveProduct } from './api'
+const OWN_PROVIDER_CODE = `import { createClientSideRowModelModule, createEditingModule, DatasetControl, Grid, useDataProviderEvents } from '@talxis/base-controls'
+import { DataTypes, IRecord, IRecordSaveOperationResult, MemoryDataProvider } from '@talxis/client-libraries'
+import { PrimaryButton, Stack, Text } from '@fluentui/react'
+import { saveProduct } from './api'
 
 //its copies are made with the inherited constructor
 class ProductsProvider extends MemoryDataProvider {
@@ -334,7 +356,9 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: creat
 
 const API_FILE = {
     name: 'api.ts',
-    code: `//stands in for your server
+    code: `import { IRawRecord } from '@talxis/client-libraries'
+
+//stands in for your server
 export const saveProduct = async (product: IRawRecord) => {
     await new Promise(resolve => setTimeout(resolve, 600))
     if (product.price < 0) {
@@ -344,7 +368,9 @@ export const saveProduct = async (product: IRawRecord) => {
 `,
 }
 
-const SERVER_PROVIDER_CODE = `import { fetchProducts } from './api'
+const SERVER_PROVIDER_CODE = `import { createClientSideRowModelModule, createSortingModule, DatasetControl, Grid } from '@talxis/base-controls'
+import { DataProvider, DataTypes, IAvailableRelatedColumn, IColumn, ICommand, IRecordDeleteOperationResult, IRecordSaveOperationResult, IRetrievedData, IRetrieveRecordCommandOptions } from '@talxis/client-libraries'
+import { fetchProducts } from './api'
 
 //sorts, searches and pages on the server
 class ProductsProvider extends DataProvider {
@@ -435,7 +461,9 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: new P
 
 const SERVER_API_FILE = {
     name: 'api.ts',
-    code: `//stands in for your server, which sorts, searches and pages the products
+    code: `import { IRawRecord } from '@talxis/client-libraries'
+
+//stands in for your server, which sorts, searches and pages the products
 const PRODUCTS: IRawRecord[] = [
     { productid: 'desk', name: 'Standing desk', price: 640 },
     { productid: 'chair', name: 'Ergonomic chair', price: 410 },
@@ -471,9 +499,9 @@ export const fetchProducts = async (query: IProductQuery) => {
 `,
 }
 
-export const SharedProviderExample = () => <GridExampleRunner seedCode={SHARED_PROVIDER_CODE} />
+export const SharedProviderExample = () => <GridExampleRunner seedCode={SHARED_PROVIDER_CODE} tabs={['preview', 'code']} />
 
-export const SteerFromCodeExample = () => <GridExampleRunner seedCode={STEER_FROM_CODE_CODE} />
+export const SteerFromCodeExample = () => <GridExampleRunner seedCode={STEER_FROM_CODE_CODE} tabs={['preview', 'code']} />
 
 export const HandDownExample = () => <GridExampleRunner seedCode={HAND_DOWN_CODE} />
 
@@ -481,6 +509,6 @@ export const ReadExample = () => <GridExampleRunner seedCode={READ_CODE} tabs={[
 
 export const EventsExample = () => <GridExampleRunner seedCode={EVENTS_CODE} />
 
-export const OwnProviderExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_PROVIDER_CODE }, API_FILE]} />
+export const OwnProviderExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_PROVIDER_CODE }, API_FILE]} tabs={['preview', 'code']} />
 
-export const ServerProviderExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: SERVER_PROVIDER_CODE }, SERVER_API_FILE]} />
+export const ServerProviderExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: SERVER_PROVIDER_CODE }, SERVER_API_FILE]} tabs={['preview', 'code']} />

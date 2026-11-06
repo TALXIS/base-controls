@@ -6,15 +6,13 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { ValidationExample } from '../../form/react-form/fieldsAndValidationExamples'
 
 const DESCRIPTION = `
-\`Form.Field\` binds what is inside it to one column of the record, and says whether that field is required and whether its value is valid. A save checks every field first; when one fails, the save stops, the control shows the error and \`Form.Notifications\` lists every failure. Try it below: type a phone number without a country code and press **Save**.
+Each field of a form is bound to one column of the record, and can be required or checked by rules of your own. A save checks every field first; when one fails, the save stops, the control shows its error and the notifications above the form list every failure. Try it below: type a phone number without a country code and press **Save**.
 
 {{canvas: Check the phone}}
 
 ## Bind a field
 
-- \`name\` is the name of a column of the record. The cell's label, the control and \`useField()\` inside the field all work on that column.
-- Two fields of one name show the same value.
-- \`disabled\` on \`Form.Control\` draws the field read-only, with a lock by the label.
+\`Form.Field\` binds what is inside it to the column named in \`name\`: the cell's label, the control and \`useField()\` inside it all work on that column, and two fields of one name show the same value. \`disabled\` on \`Form.Control\` draws the field read-only, with a lock by the label.
 
 ## Make a field required
 
@@ -28,22 +26,19 @@ A column whose metadata has \`RequiredLevel\` 1 or 2 is required wherever it is 
 
 ## Check a value
 
-- \`validation\` takes \`{ error, errorMessage }\`. Work it out from the value and pass it again whenever it changes, as the example does from \`onFieldValueChanged\`.
-- A save checks a field's \`validation\` first, then the record's own checks: the requirement, a column's \`MaxLength\`, \`MinValue\` and \`MaxValue\`, and the format of an email or a URL.
+\`validation\` on \`Form.Field\` takes \`{ error, errorMessage }\`. Work it out from the value and pass it again whenever the value changes, as the example does from \`onFieldValueChanged\`. A save checks a field's \`validation\` first, then the record's own checks: the requirement, a column's \`MaxLength\`, \`MinValue\` and \`MaxValue\`, and the format of an email or a URL.
 
 ## When errors show
 
-- Nothing shows until the user first tries to save. From then on, each control shows its error under it as its value changes.
-- The failures of a save are its *validation summary*, made again at each save.
-- A save checks every column of the record, whether the form shows it or not.
-- The \`requiredLevel\` and \`validation\` of a field written straight in the children of \`Form.Root\` count even in a tab never opened. Those of a field inside a component of yours count once that component has rendered.
+Nothing shows until the user first tries to save; from then on, each control shows its error under it as its value changes. The failures of a save are its *validation summary*, made again at each save.
+
+A save checks every column of the record, whether the form shows it or not, so a required column left off the form still stops it. The \`requiredLevel\` and \`validation\` of a field written straight in the children of \`Form.Root\` count even in a tab never opened; those of a field inside a component of yours count once that component has rendered.
 
 ## Show messages
 
-- \`Form.Notifications\` shows its \`messages\` first, then the validation summary, each failure after its column's display name. A failed save's \`errors\` land there too: see [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview).
-- A message is \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`. \`text\` is HTML.
-- Several messages fold into one bar headed by their count, coloured by the most severe; a click unfolds them.
-- \`useValidationSummary()\` and \`onValidationSummaryChanged\` hand the summary to your code: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
+\`Form.Notifications\` shows its \`messages\` first, then the validation summary, each failure after its column's display name; the \`errors\` of a failed save land there too. A message is \`{ text, level }\`, where \`text\` is HTML and \`level\` is \`'ERROR'\`, \`'WARNING'\` or \`'INFO'\`. Several messages fold into one bar headed by their count and coloured by the most severe, and a click unfolds them.
+
+Your code reads the summary with \`useValidationSummary()\` or \`onValidationSummaryChanged\`: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
 
 ## Reference
 
@@ -55,7 +50,7 @@ A column whose metadata has \`RequiredLevel\` 1 or 2 is required wherever it is 
 | \`Form.Control\` | \`disabled\` | Draws the field read-only, with a lock by the label. |
 | \`Form.Notifications\` | \`messages\` | \`{ text, level }\` items, shown before the validation summary. |
 
-Every prop is live. \`components\` of \`Form.Control\` and \`Form.Notifications\` changes how they draw: see [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview).
+Every prop is live. \`components\` of \`Form.Control\` and \`Form.Notifications\` draws them your own way: see [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview).
 
 ## Where next
 

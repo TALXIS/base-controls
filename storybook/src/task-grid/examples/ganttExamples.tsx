@@ -8,7 +8,7 @@ interface IGanttExample {
     setup?: string
     /** The Gantt modules after the library module, as array items. */
     ganttModules: string
-    /** The control modules, as array items over `database`. */
+    /** The control modules, as array items. */
     controlModules?: string
     /** The `TaskDatasetControl` props beyond the ones every example sets. */
     controlProps?: string
@@ -19,13 +19,14 @@ ${example.setup ?? ''}
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
     const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
-    const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()], [])
-    const controlModules = React.useMemo(() => [${example.controlModules ?? ''}], [database])
+    const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()], [])${example.controlModules ? `
+    const controlModules = React.useMemo(() => [${example.controlModules.trimEnd()}
+    ], [])` : ''}
     const ganttModules = React.useMemo(() => [
         createLibraryModule(),${example.ganttModules}
     ], [])
 
-    return <TaskDatasetControl modules={controlModules}${example.controlProps ?? ''} onLoadViews={loadTaskViews} onLoad={loadTasks} height='520px'>
+    return <TaskDatasetControl${example.controlModules ? ' modules={controlModules}' : ''}${example.controlProps ?? ''} onLoadViews={loadTaskViews} onLoad={loadTasks} height='520px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher />
@@ -198,10 +199,10 @@ const LINKS_CODE = createGanttCode({
 const OWN_MODULE_CODE = createGanttCode({
     controlProps: ' enableEditing',
     setup: `
-//fiscal years start in July
-const fiscalScaleModule = {
+//fiscal years start in July; zoom out until the scale shows quarters
+const fiscalScaleModule: IGanttModule = {
     name: 'fiscalScale',
-    onLoad: (gantt: any) => {
+    onLoad: gantt => {
         gantt.services.observe('zooming', (zooming: any) => zooming.registerScaleLabel((result: { label: string }, cell: { date: Date, unit: string }) => {
             if (cell.unit === 'quarter') {
                 const month = cell.date.getMonth()
@@ -214,14 +215,14 @@ const fiscalScaleModule = {
 }
 
 //critical tasks are drawn red
-const criticalTasksModule = {
+const criticalTasksModule: IGanttModule = {
     //unique among the Gantt's modules
     name: 'criticalTasks',
     //runs on every mount, before the chart is drawn
-    onLoad: (gantt: any) => {
+    onLoad: gantt => {
         //the tasks service comes with the chart, so observe it
         gantt.services.observe('tasks', (tasks: any) => tasks.registerTask((task: any, { record }: { record: IRecord }) => {
-            if (record.getValue('priority') === 3) {
+            if (Number(record.getValue('priority')) === 3) {
                 task.color = '#d13438'
             }
         }))

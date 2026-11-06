@@ -14,22 +14,19 @@ Map shows the records of a dataset as pins on a map, each at the latitude and lo
 
 Like a PCF control, \`Map\` takes the PCF \`context\` and its \`parameters\`:
 
-- \`Dataset\` holds the records, usually a \`Dataset\` over a data provider: see [**Data providers**](?path=/docs/concepts-data-providers--overview).
-- \`PinMetadata\` names the columns with each record's position: \`LatitudeAttributeName\` and \`LongitudeAttributeName\`.
-- \`MapProvider\` draws the map.
+| Parameter | Holds |
+|---|---|
+| \`Dataset\` | The records, usually a \`Dataset\` over a data provider: see [**Data providers**](?path=/docs/concepts-data-providers--overview) |
+| \`PinMetadata\` | The columns with each record's position: \`LatitudeAttributeName\` and \`LongitudeAttributeName\` |
+| \`MapProvider\` | What draws the map |
 
 A record whose position is not a number gets no pin. The map draws its pins again whenever the dataset loads new records.
 
-## Draw with Google Maps
+## Map providers
 
-\`createGoogleMapsProvider({ apiKey })\` draws the map with the Google Maps JavaScript API, under a key of yours.
+\`createGoogleMapsProvider({ apiKey })\` draws the map with the Google Maps JavaScript API, under a key of yours. It shows one pin close up and fits more pins into view together; without pins, it centres on the user's approximate location, looked up from their IP address. Create it once, outside a render, as each call makes a new component.
 
-- One pin is shown close up; more pins fit into view together.
-- Without pins, the map centres on the user's approximate location, looked up from their IP address.
-
-## Draw with a map of your own
-
-A map provider is any component that takes \`locations\`, each \`{ id, latitude, longitude }\` with the record's id. The example draws with Leaflet and OpenStreetMap this way, as Google Maps needs a key.
+A map provider of your own is any component that takes \`locations\`, each \`{ id, latitude, longitude }\` with the record's id. The example draws with Leaflet and OpenStreetMap this way, as Google Maps needs a key.
 
 ## Where next
 

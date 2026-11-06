@@ -14,7 +14,7 @@ Layout tools fit a component to the box it is given, not to the window: the same
 
 \`WrapCompactProvider\` keeps its parts full size while they fit on one line, and turns them compact the moment they would wrap. In the toolbar above, a button drops its label and a search box narrows.
 
-After every render and every resize, it checks whether a part has moved onto a second line, so the row must be allowed to wrap: give it \`flexWrap: 'wrap'\`.
+It watches for a part moving onto a second line, so the row must be allowed to wrap: give it \`flexWrap: 'wrap'\`.
 
 Adding a part needs nothing: if it does not fit, the parts turn compact. They turn back to full size only once the box is wider than it was when they wrapped, so the toolbar does not flicker at the edge.
 
@@ -32,10 +32,9 @@ When a part goes, the others may fit again, but the box has not grown, so the pr
 
 ## Providers and parts
 
-- Both providers render a \`div\` and pass it any other props, so they are the box itself: give them the flex row or the padding the area needs.
-- Some parts already respond on their own: \`CommandBar\` shows only its icons when compact, and the DatasetControl header is a compact provider.
-- Outside a provider, \`useCompact()\` returns \`false\`, so a part that shrinks still works anywhere.
-- To pin one part at full size inside a compact area, or keep it compact everywhere, wrap it in \`<CompactContext.Provider value={false}>\` or \`value={true}\`.
+Both providers render a \`div\` and pass it any other props, so they are the box itself: give them the flex row or the padding the area needs. Outside a provider, \`useCompact()\` returns \`false\`, so a part that shrinks still works anywhere.
+
+Some parts already respond on their own: \`CommandBar\` shows only its icons when compact, and the DatasetControl header is a compact provider. To pin one part at full size inside a compact area, or keep it compact everywhere, wrap it in \`<CompactContext.Provider value={false}>\` or \`value={true}\`.
 
 ## Where next
 
@@ -44,7 +43,7 @@ When a part goes, the others may fit again, but the box has not grown, so the pr
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Layout', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-layout--overview', text: 'How the DatasetControl header shrinks its parts, and how to place your own in it.' },
-    { title: 'Fluent UI', iconName: 'Puzzle', href: '?path=/docs/concepts-fluent-ui--overview', text: 'Base Controls\' CommandBar, which folds its commands when its own box resizes.' },
+    { title: 'Fluent UI', iconName: 'Design', href: '?path=/docs/concepts-fluent-ui--overview', text: 'Base Controls\' CommandBar, which folds its commands when its own box resizes.' },
 ]
 
 const meta = {

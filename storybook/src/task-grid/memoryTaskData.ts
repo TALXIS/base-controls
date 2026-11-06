@@ -121,15 +121,7 @@ export const COLUMNS: IColumn[] = [
     { name: STATE_CODE_COL, dataType: 'Whole.None', displayName: 'State', visualSizeFactor: 100, isHidden: true },
 ];
 
-/**
- * Returns the hidden (native) columns plus the named visible ones, in the order they appear in
- * {@link COLUMNS}. Used to build each saved view's column set.
- */
-/**
- * Builds a view's column list: every entity column is included, and the ones the view does not name
- * arrive hidden — the same shape a Dataverse saved-query layout produces, which is what keeps them
- * available in the *Edit columns* panel.
- */
+/** Every task column, with the ones not named hidden. */
 export const getQueryColumns = (...visibleColumnNames: string[]): IColumn[] =>
     COLUMNS.map(column => ({
         ...column,

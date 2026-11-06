@@ -18,17 +18,15 @@ A theme is the colours, fonts and effects everything is drawn in. You generate i
 | \`ThemeProvider\` | An area that looks different, such as a dark banner. Themes only what is inside it. |
 | \`ThemeContext\` | The same, without an element of its own: use it for each item of a long list. |
 
-- Without a \`theme\`, a provider takes the one above it, or Fluent's default colours.
-- A control reads the theme when it mounts: to switch themes, remount it with the theme's \`id\` as its \`key\`.
+Without a \`theme\`, a provider takes the one above it, or Fluent's default colours. A control reads the theme when it mounts, so to switch themes, remount it with the theme's \`id\` as its \`key\`, as the example does.
 
 ## Build a theme
 
-\`useThemeBuilder(source, options?)\` generates a theme in a component and keeps it between renders; \`createThemeBuilder(source?)\` returns the builder outside React. Each card below is drawn in one: open **Code** to see how, and change the hue or the font size.
+\`useThemeBuilder(source, options?)\` generates a theme in a component and keeps it between renders; \`createThemeBuilder(source?)\` returns the builder outside React. The source is three colours, an existing theme, or the Fluent design state a PCF host hands its controls. Colours are hex, \`rgb()\`, \`hsl()\` or names, not CSS variables.
 
-{{canvas: Tint and edit}}
+Tinting or changing a colour generates the theme again from its three colours, so a \`{ theme }\` source loses its fonts and earlier edits; add them back with \`edit\`.
 
-- Tinting or changing a colour generates the theme again from its three colours, so a \`{ theme }\` source loses its fonts and earlier edits; add them back with \`edit\`.
-- Colours are hex, \`rgb()\`, \`hsl()\` or names, not CSS variables.
+{{story: Tint and edit}}
 
 ## Surfaces
 
@@ -56,8 +54,9 @@ Read the theme with \`useTheme()\` from \`@talxis/base-controls\` and take colou
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Fluent UI', iconName: 'Puzzle', href: '?path=/docs/concepts-fluent-ui--overview', text: 'Which Fluent UI and Base Controls components to use beside the controls.' },
+    { title: 'Fluent UI', iconName: 'Design', href: '?path=/docs/concepts-fluent-ui--overview', text: 'Which Fluent UI and Base Controls components to use beside the controls.' },
     { title: 'Appearance', iconName: 'Color', href: '?path=/docs/controls-grid-appearance--overview', text: 'Colour the grid\'s cells, rows and headers.' },
+    { title: 'Pieces and slots', iconName: 'Edit', href: '?path=/docs/concepts-pieces-and-slots--overview', text: 'Replace what a part draws with components in your own look.' },
 ]
 
 const meta = {
@@ -84,6 +83,13 @@ export const BrandColours: Story = {
 export const TintAndEdit: Story = {
     name: 'Tint and edit',
     render: () => renderStory(<DerivedThemesExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `Four cards, each drawn in a theme built another way. Try: change the hue, or the font size in the \`edit\`.`,
+            },
+        },
+    },
 }
 
 export const RedRows: Story = {
@@ -104,7 +110,7 @@ export const ReadableTags: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A card reading its colours from \`useTheme()\`, with stage tags tinted from one hue each, in a light and a dark theme.`,
+                story: `A card that reads its colours from \`useTheme()\`, with stage tags from \`getTintColors\`, in a light and a dark theme. Try: change a stage's hue.`,
             },
         },
     },
