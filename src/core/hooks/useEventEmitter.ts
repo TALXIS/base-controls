@@ -1,5 +1,5 @@
 import { IEventEmitter } from "@talxis/client-libraries";
-import { useCallback, useEffect } from "react";
+import { useCallback, useLayoutEffect } from "react";
 import { useLatest } from "./useLatest";
 
 export const useEventEmitter = <T extends { [K in keyof T]: (...args: any[]) => any }>(emitter: Pick<IEventEmitter<T>, 'addEventListener' | 'removeEventListener'> | null | undefined, event: keyof T | (keyof T)[], callback: T[keyof T]) => {
@@ -9,7 +9,8 @@ export const useEventEmitter = <T extends { [K in keyof T]: (...args: any[]) => 
         callbackRef.current(...args);
     }, []);
 
-    useEffect(() => {
+    //in the commit, so an event raised before the passive effects run is not missed
+    useLayoutEffect(() => {
         if (!emitter) return;
         const events = Array.isArray(event) ? event : [event];
         events.map(event => {

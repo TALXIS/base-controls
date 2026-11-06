@@ -38,6 +38,7 @@ const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<
     const { rerender } = useRerender();
     const openErrorDialog = useOpenErrorDialog();
 
+    //subscribed in the commit, before the init below starts
     useEventEmitter<IRuntimeEvents>(lifecycle.events, STATUS_EVENTS, rerender);
     useEventEmitter<IRuntimeEvents>(lifecycle.events, 'onRemountRequested', () => propsRef.current.onRemount());
 

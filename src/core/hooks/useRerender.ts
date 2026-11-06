@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 
 export interface IRerender {
     /** Asks for another render. */
@@ -11,7 +11,8 @@ export const useRerender = (): IRerender => {
     const mountedRef = useRef(false);
     const [revision, setRevision] = useState(() => Symbol('revision'));
 
-    useEffect(() => {
+    //mounted from the commit on, so a rerender asked for before the passive effects counts
+    useLayoutEffect(() => {
         mountedRef.current = true;
         return () => {
             mountedRef.current = false;
