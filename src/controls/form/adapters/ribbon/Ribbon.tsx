@@ -1,6 +1,6 @@
 import { useTheme } from "@theme";
 import { useMemo } from "react";
-import { CommandBarButton, type ICommandBarItemProps } from "@fluentui/react";
+import { CommandBarButton, type IButtonProps, type ICommandBarItemProps, type IComponentAsProps } from "@fluentui/react";
 import { IRibbonComponents, RibbonComponents } from "./components";
 import { getRibbonStyles } from "./styles";
 import { useForm } from "../root/context";
@@ -16,6 +16,7 @@ export interface IFormRibbonProps {
 }
 
 const SaveButton = withButtonLoading(CommandBarButton);
+const SaveCommandButton = (props: IComponentAsProps<ICommandBarItemProps>) => <SaveButton {...props as IButtonProps} isLoading={!!props.isLoading} />;
 const SUCCESS_STATE_TIMEOUT = 2000;
 type TSaveButtonState = 'save' | 'saving' | 'saved';
 
@@ -88,18 +89,17 @@ export const Ribbon = (props: IFormRibbonProps) => {
     const getItems = (): ICommandBarItemProps[] => {
         return [{
             key: 'save',
-            commandBarButtonAs: () => <SaveButton
-                text={getSaveText()}
-                onMouseUp={() => {
-                    if (onSave) {
-                        onSave();
-                    } else {
-                        form.save();
-                    }
-                }}
-                isLoading={saveButtonState === 'saving'}
-                iconProps={getSaveIconProps()}
-            />
+            text: getSaveText(),
+            iconProps: getSaveIconProps(),
+            isLoading: saveButtonState === 'saving',
+            commandBarButtonAs: SaveCommandButton,
+            onClick: () => {
+                if (onSave) {
+                    onSave();
+                } else {
+                    form.save();
+                }
+            }
         }];
     };
 
