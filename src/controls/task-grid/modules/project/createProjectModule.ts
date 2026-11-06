@@ -8,7 +8,7 @@ export interface IProjectModule extends IDatasetControlModule<'project'> { }
 export const createProjectModule = <TData,>(parameters: IProjectParameters<TData>): IProjectModule => ({
     name: 'project',
     onLoad: async datasetControl => {
-        const project = new Project<TData>(datasetControl.parts.get('taskRuntime'), parameters);
+        const project = new Project<TData>(datasetControl.modules.get('taskRuntime'), parameters);
         await project.load();
         return project as Project<unknown>;
     },

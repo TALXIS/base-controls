@@ -15,7 +15,7 @@ declare module "@controls/dataset-control/runtime/interfaces" {
 export const createCustomColumnsModule = (parameters: ICustomColumnsParameters): ICustomColumnsModule => ({
     name: 'customColumns',
     onLoad: async datasetControl => {
-        const customColumns = new CustomColumns(datasetControl.parts.get('taskRuntime'), parameters);
+        const customColumns = new CustomColumns(datasetControl.modules.get('taskRuntime'), parameters);
         await customColumns.load();
         return customColumns;
     },

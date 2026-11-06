@@ -34,10 +34,10 @@ Where the tasks come from, and which columns make the tree, is on [**Loading tas
 
 | Prop | Default | Description |
 |---|---|---|
-| \`onLoad(taskRuntime)\` | Required | Returns the provider, the field mapping and the views. See [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview). |
+| \`onLoad(control)\` | Required | Returns the provider, the field mapping and the views; \`control.modules.get('taskRuntime')\` is the task runtime. See [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview). |
 | \`hoursPerDay\` | \`24\` | How many hours a day of a task's duration holds. |
 | \`modules\` | None | The task modules, and DatasetControl modules such as user views. At mount. See [**Modules**](?path=/docs/controls-taskgrid-modules--overview). |
-| \`onSetup(taskRuntime)\` | None | Passes you the task runtime of each mount. See [**Talking to the task grid**](?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview). |
+| \`onSetup(control)\` | None | Passes you the DatasetControl of each mount, before its modules load; its \`taskRuntime\` module is the task runtime. See [**Talking to the task grid**](?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview). |
 
 \`enableCreation\`, \`enableEditing\`, \`enableDeletion\`, \`defaultCreatePosition\` and the \`onTasks…\` events are on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). Every other prop works as on a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview).
 

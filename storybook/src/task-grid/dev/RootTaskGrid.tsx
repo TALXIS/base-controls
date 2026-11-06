@@ -46,12 +46,15 @@ const GridExample = () => {
         createTaskDraggingModule(),
     ], [])
 
-    const onLoad = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({
-        provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
-        fieldMapping,
-        views: VIEWS,
-        rootTaskId: rootTaskId || undefined,
-    })
+    const onLoad = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
+        const taskRuntime = control.modules.get('taskRuntime')
+        return {
+            provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
+            fieldMapping,
+            views: VIEWS,
+            rootTaskId: rootTaskId || undefined,
+        }
+    }
 
     return <Stack tokens={{ childrenGap: 12 }}>
         <Dropdown label='Root task' styles={{ root: { maxWidth: 360 } }} options={ROOT_OPTIONS} selectedKey={rootTaskId} onChange={(_, option) => setRootTaskId(String(option?.key ?? ''))} />

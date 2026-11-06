@@ -48,7 +48,7 @@ export class TaskRuntime implements ITaskRuntime {
     }
 
     public async load(): Promise<IDatasetControlLoadResult<ITaskViewData>> {
-        const { provider, fieldMapping, rootTaskId, views } = await this._onGetProps().onLoad(this);
+        const { provider, fieldMapping, rootTaskId, views } = await this._onGetProps().onLoad(this.services.get('datasetControl'));
         provider.initialize({ fieldMapping, rootTaskId, defaultCreatePosition: this._onGetProps().defaultCreatePosition, hoursPerDay: this._onGetProps().hoursPerDay });
         provider.registerAvailableColumns(this._addPathColumn);
         //modules waiting for it add columns a user view may keep

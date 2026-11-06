@@ -12,9 +12,9 @@ Your code can create, open, move and delete tasks as the user's commands do, fro
 
 ## Get the task runtime
 
-Every load mounts the control anew, with a new task runtime, so keep the latest one. Outside the control, \`onSetup\` on \`TaskDatasetControl\` passes it to you as each mount starts, before its tasks load, and \`onLoad\` gets the same runtime. Its \`lifecycle\` holds the mount's status and its events, such as \`onReady\` once the tasks have loaded: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
+The task runtime is a module of the DatasetControl, named \`taskRuntime\` and loaded before every other module. Every load mounts the control anew, with a new task runtime, so keep the latest one. Outside the control, \`onSetup\` and \`onLoad\` on \`TaskDatasetControl\` hand you the control, as on a DatasetControl: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview) for its own members. \`onSetup\` runs before the modules load, so get the task runtime there with \`control.modules.observe('taskRuntime', taskRuntime => ...)\`, as the example does. In \`onLoad\`, and from then on, \`control.modules.get('taskRuntime')\` returns it. Its \`lifecycle\` holds the mount's status and its events, such as \`onReady\` once the tasks have loaded: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
-Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
+Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.modules.get('taskRuntime')\`.
 
 ## Tasks
 
@@ -68,7 +68,7 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 | \`getRibbonCommandItems(items)\` | Copies of \`items\` with every ribbon command UI hook applied, menus included. |
 | \`services\` | \`get\`, \`find\` and \`observe\`, by key: \`datasetControl\`, \`pcfContext\`, \`provider\`, \`taskTree\` (the grid's tree, while it is drawn). |
 
-\`services.get('datasetControl')\` is the DatasetControl itself: switch views, reload, and reach its parts and modules, such as \`modules.find('dependencies')\`. See [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
+\`services.get('datasetControl')\` is the DatasetControl itself, the one \`onSetup\` hands you: switch views, reload, and reach its parts and modules, such as \`modules.find('dependencies')\`. See [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 
 ## Where next
 

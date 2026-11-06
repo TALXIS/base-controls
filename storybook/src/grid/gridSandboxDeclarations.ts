@@ -4186,7 +4186,7 @@ interface ITaskRuntime extends IRuntime {
     registerRibbonCommandUi(hook: (item: IContextualMenuItem) => void, priority?: number): () => void;
 }
 
-interface IDatasetControlPartMap {
+interface IDatasetControlModuleMap {
     /** What runs the task grid inside the control. */
     taskRuntime: ITaskRuntime;
 }
@@ -4244,15 +4244,13 @@ declare const createProjectModule: <TData>(parameters: { onCreateStore: (taskRun
 /** The project module for a project held in memory. */
 declare const createMemoryProjectModule: <TData>(parameters: { project: IProjectData<TData> }) => IProjectModule;
 
-interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onSetup' | 'scope' | 'modules'> {
+interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'scope' | 'modules'> {
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
-    /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
-    onSetup?: (taskRuntime: ITaskRuntime) => void;
     /** Hours in a day of a task's duration; 24 when left out. */
     hoursPerDay?: number;
-    /** Returns the provider, field mapping and views; called on every mount. */
-    onLoad: (taskRuntime: ITaskRuntime) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
+    /** Returns the provider, field mapping and views on every mount; control.modules.get('taskRuntime') is the task runtime. */
+    onLoad: (control: IDatasetControl<ITaskViewData>) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
     /** The New command and the add-subtask buttons. */
     enableCreation?: boolean;
     /** Where among its parent's children a new task goes; first when left out. */

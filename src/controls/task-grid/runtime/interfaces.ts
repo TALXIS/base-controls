@@ -88,7 +88,7 @@ export interface ITaskRuntime extends IRuntime {
 }
 
 declare module "@controls/dataset-control/runtime/interfaces" {
-    interface IDatasetControlPartMap {
+    interface IDatasetControlModuleMap {
         /** What runs the task grid inside the control. */
         taskRuntime: ITaskRuntime;
     }

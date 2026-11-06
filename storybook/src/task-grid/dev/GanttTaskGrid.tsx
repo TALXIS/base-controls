@@ -173,7 +173,10 @@ const GridExample = () => {
         createLinksModule(),
     ], [])
 
-    const onLoad = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({ provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: ${data.columns} }) }), fieldMapping, views: VIEWS })
+    const onLoad = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
+        const taskRuntime = control.modules.get('taskRuntime')
+        return { provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: ${data.columns} }) }), fieldMapping, views: VIEWS }
+    }
 
     return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion stateKey='${data.storageKey}' height='100%' onLoad={onLoad}>
         <DatasetControl.Header>

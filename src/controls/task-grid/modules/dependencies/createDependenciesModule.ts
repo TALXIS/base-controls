@@ -7,6 +7,6 @@ export interface IDependenciesModule extends IDatasetControlModule<'dependencies
 /** Holds the tasks' dependencies and counts them in the Predecessors and Successors columns. */
 export const createDependenciesModule = (parameters: IDependenciesParameters): IDependenciesModule => ({
     name: 'dependencies',
-    onLoad: datasetControl => new Dependencies(datasetControl.parts.get('taskRuntime'), parameters),
+    onLoad: datasetControl => new Dependencies(datasetControl.modules.get('taskRuntime'), parameters),
     onDestroy: dependencies => dependencies.destroy(),
 });

@@ -41,7 +41,7 @@ The example's *dataverse.ts* reads the project from Dataverse.
 
 ## From your code
 
-\`taskRuntime.services.get('datasetControl').modules.find('project')\` returns the module, with \`getId()\`, \`getName()\`, \`getEntityName()\`, \`getStartDate()\`, \`getEndDate()\` and \`getData()\`.
+\`control.modules.find('project')\` returns the module from the DatasetControl, as the example does on \`onReady\`. It has \`getId()\`, \`getName()\`, \`getEntityName()\`, \`getStartDate()\`, \`getEndDate()\` and \`getData()\`.
 
 ## Where next
 
