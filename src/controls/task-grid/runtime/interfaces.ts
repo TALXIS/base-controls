@@ -2,7 +2,7 @@ import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react"
 import type { ITaskSavingChains } from "./saving";
 import type { IDatasetControl, IDatasetControlLoadResult } from "@controls/dataset-control/runtime";
 import type { IPcfContext } from "@pcf/interfaces";
-import type { IEventSubscriber, IServiceRegistry } from "@core";
+import type { IEventSubscriber, IRuntime, IServiceRegistry } from "@core";
 import type { ILabels, ILabelSet, Labels } from "@labels";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "./provider";
 import type { ITaskActions } from "./tasks";
@@ -33,11 +33,6 @@ export interface ITaskRuntimeServiceMap extends ITaskRuntimeModuleServiceMap {
     savingChains: ITaskSavingChains;
 }
 
-export interface ITaskRuntimeEvents {
-    /** The mount is going. */
-    onDestroyed: () => void;
-}
-
 /** How `execute` shows a run while it goes. */
 export interface ITaskExecuteLoading {
     /** `false` for a run in the background. */
@@ -60,9 +55,8 @@ export interface ITaskExecuteOptions {
 }
 
 /** One mount of a `TaskDatasetControl`. */
-export interface ITaskRuntime {
+export interface ITaskRuntime extends IRuntime {
     readonly services: IServiceRegistry<ITaskRuntimeServiceMap>;
-    readonly events: IEventSubscriber<ITaskRuntimeEvents>;
     /** Every task action, run through the store under the loading overlay and its error shown. */
     readonly tasks: ITaskActions;
     /** Calls `onLoad`, then initializes and registers the provider it returns. */

@@ -18,7 +18,7 @@ It also keeps what each \`saveWithView\` getter returns, under its key. As the v
 
 ## Save more with a view
 
-\`control.modules.get('userQueries').saveWithView(key, getter, applier?)\` saves what \`getter\` returns with every user view. \`applier(value, provider)\` puts the saved value back as a user view opens, before its first page, such as \`provider.setSorting(sorting)\`; leave it out for a value your own UI reads from \`getView().data\`. Register it in \`onMounted\`, since each mount loads the module anew, as \`saveDealViewData\` in the example's \`views.ts\` does.
+\`control.modules.get('userQueries').saveWithView(key, getter, applier?)\` saves what \`getter\` returns with every user view. \`applier(value, provider)\` puts the saved value back as a user view opens, before its first page, such as \`provider.setSorting(sorting)\`; leave it out for a value your own UI reads from \`getView().data\`. Register it in \`onSetup\`, since each mount loads the module anew, as \`saveDealViewData\` in the example's \`views.ts\` does.
 
 Declare each key you save on \`IUserQuerySavedValueMap\` in \`declare module '@talxis/base-controls'\`, as the example's \`views.ts\` does for sorting, filtering and search. A getter that returns \`undefined\` saves nothing, and one that throws stops the save. \`saveWithView\` returns its unregistration, and registering the same key twice throws.
 

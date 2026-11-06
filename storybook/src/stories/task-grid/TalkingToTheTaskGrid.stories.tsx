@@ -12,13 +12,7 @@ Your code can create, open, move and delete tasks as the user's commands do, fro
 
 ## Get the task runtime
 
-Every load mounts the control anew, with a new task runtime (see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview)), so keep the latest one. Outside the control, three props of \`TaskDatasetControl\` pass it to you:
-
-| Prop | Called |
-|---|---|
-| \`onMounted\` | As a mount starts, before its tasks load. |
-| \`onReady\` | Once the tasks have loaded. |
-| \`onDestroyed\` | As the mount goes, while the provider still holds the tasks. |
+Every load mounts the control anew, with a new task runtime, so keep the latest one. Outside the control, \`onSetup\` on \`TaskDatasetControl\` passes it to you as each mount starts, before its tasks load, and \`onLoad\` gets the same runtime. Its \`lifecycle\` holds the mount's status and its events, such as \`onReady\` once the tasks have loaded: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
 Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.parts.get('taskRuntime')\`.
 
@@ -69,10 +63,10 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 | \`isFlatList()\`, \`setFlatList(isFlatList)\` | The flat list. See [**Views and the tree**](?path=/docs/controls-taskgrid-views-and-the-tree--overview). |
 | \`isCreationEnabled()\`, \`isEditingEnabled()\`, \`isDeletionEnabled()\` | The control's \`enable…\` props. |
 | \`getHoursPerDay()\` | The control's \`hoursPerDay\`. |
+| \`lifecycle\` | The mount's status and lifecycle events. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`registerRibbonCommandUi(hook, priority?)\` | Changes every item \`TaskDatasetControl.Ribbon\` draws, those in its menus too, such as \`item => item.disabled = true\`. Returns its unregistration. |
 | \`getRibbonCommandItems(items)\` | Copies of \`items\` with every ribbon command UI hook applied, menus included. |
 | \`services\` | \`get\`, \`find\` and \`observe\`, by key: \`datasetControl\`, \`pcfContext\`, \`provider\`, \`taskTree\` (the grid's tree, while it is drawn). |
-| \`events\` | \`onDestroyed\`. |
 
 \`services.get('datasetControl')\` is the DatasetControl itself: switch views, reload, and reach its parts and modules, such as \`modules.find('dependencies')\`. See [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview).
 

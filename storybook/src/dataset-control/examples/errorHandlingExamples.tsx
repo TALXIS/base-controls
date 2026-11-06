@@ -20,12 +20,12 @@ const GridExample = () => {
     const [failures, setFailures] = React.useState(0)
 
     //counts each failed load beside what the control shows
-    const onMounted = (control: IDatasetControl) => {
+    const onSetup = (control: IDatasetControl) => {
         control.lifecycle.events.addEventListener('onInitFailed', () => setFailures(count => count + 1))
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <DatasetControl stateKey='deals-error-handling' onLoad={loadDealsOnRetry} onMounted={onMounted} height='420px'>
+        <DatasetControl stateKey='deals-error-handling' onLoad={loadDealsOnRetry} onSetup={onSetup} height='420px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />
@@ -85,7 +85,7 @@ const GridExample = () => {
     }
 
     //logs each failure beside the error dialog
-    const onMounted = (control: IDatasetControl) => {
+    const onSetup = (control: IDatasetControl) => {
         saveDealViewData(control)
         control.parts.observe('ribbon', ribbon => ribbon.events.addEventListener('onExecuteFailed', (command, error) => write(\`\${command.id}: \${(error as Error).message}\`)))
         control.modules.observe('userQueries', userQueries => userQueries.events.addEventListener('onOperationFailed', (error: Error) => write(\`views: \${error.message}\`)))
@@ -93,7 +93,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Server is down' inlineLabel checked={isDown} onChange={(_, checked) => toggleServer(!!checked)} />
-        <DatasetControl modules={modules} onLoad={loadDeals} onMounted={onMounted} stateKey='deals-failed-actions' height='420px'>
+        <DatasetControl modules={modules} onLoad={loadDeals} onSetup={onSetup} stateKey='deals-failed-actions' height='420px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher>

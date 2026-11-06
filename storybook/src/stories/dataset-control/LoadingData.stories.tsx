@@ -58,9 +58,9 @@ const EXPLORE: IExploreCard[] = [
 ]
 
 const LIFECYCLE: ILifecycleStep[] = [
-    { title: 'The control mounts', hook: 'onMounted', text: '`onMounted` gets the new `IDatasetControl` before anything loads, so subscribe to its events here.' },
+    { title: 'The control mounts', hook: 'onSetup', text: '`onSetup` gets the new `IDatasetControl` before anything loads, so subscribe to its events here.' },
     { title: 'The modules load', text: 'Each module\'s `onLoad` runs in the order of `modules`.' },
-    { title: 'The provider is created', hook: 'onLoad', text: '`onLoad` returns `{ provider, views }`, and the modules add their views.' },
+    { title: 'The provider is created', hook: 'onLoad', text: '`onLoad(control)` returns `{ provider, views }`, and the modules add their views.' },
     { title: 'The view is picked', text: 'The control picks the view asked for, or the one the user was on while it is listed, else the first.' },
     { title: 'The view is applied', hook: 'resolve', text: 'The view\'s `resolve(provider)` sets the provider up, then the control sets its linking and columns and puts back what the user changed in the view.' },
     { title: 'The first page loads', hook: 'onReady', text: 'Unless `onLoad` already requested it, the provider loads its first page, then the parts show and `control.lifecycle.events` raises `onReady`.' },

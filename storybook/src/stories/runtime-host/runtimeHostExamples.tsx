@@ -56,8 +56,8 @@ const GridExample = () => {
     const log = (entry: string) => setEntries(current => [...current, entry])
 
     //called with every new runtime, so subscribe here
-    const onMounted = (runtime: DealSummaryRuntime) => {
-        log('onMounted')
+    const onSetup = (runtime: DealSummaryRuntime) => {
+        log('onSetup')
         runtime.lifecycle.events.addEventListener('onReady', () => log('onReady'))
         runtime.lifecycle.events.addEventListener('onInitFailed', error => log(\`onInitFailed: \${(error as Error).message}\`))
         runtime.lifecycle.events.addEventListener('onDestroyed', () => log('onDestroyed'))
@@ -65,7 +65,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 16 }}>
         <Toggle label='Service unavailable' inlineLabel onChange={(_, checked) => { isServiceDown.current = !!checked }} />
-        <RuntimeHost onCreate={() => new DealSummaryRuntime(() => isServiceDown.current)} onMounted={onMounted}>
+        <RuntimeHost onCreate={() => new DealSummaryRuntime(() => isServiceDown.current)} onSetup={onSetup}>
             <DealSummary />
         </RuntimeHost>
         <pre className={styles.log}>{entries.join('\\n')}</pre>

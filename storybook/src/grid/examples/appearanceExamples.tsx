@@ -275,7 +275,7 @@ const GridExample = () => {
         { id: 'remove', label: 'Remove last line', iconName: 'Remove', isDisabled: lineCount.current === 0, onExecute: () => showLines(lineCount.current - 1) },
     ]
 
-    return <DatasetControl onLoad={async () => ({ provider: lines })} onMounted={datasetControl => control.current = datasetControl}>
+    return <DatasetControl onLoad={async () => ({ provider: lines })} onSetup={datasetControl => control.current = datasetControl}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.Ribbon onLoad={loadCommands} />

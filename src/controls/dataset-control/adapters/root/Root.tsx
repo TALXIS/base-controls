@@ -13,7 +13,7 @@ export interface IDatasetControlProps<TData = unknown> {
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
     /** Creates the provider and lists the views, behind the skeleton; called on every mount. */
-    onLoad: () => Promise<IDatasetControlLoadResult<TData>>;
+    onLoad: (control: IDatasetControl<TData>) => Promise<IDatasetControlLoadResult<TData>>;
     /** The parts, laid out in its header, body and footer. */
     children: React.ReactNode;
     /** `'100%'` fills the parent; the content's height when left out. */
@@ -29,7 +29,7 @@ export interface IDatasetControlProps<TData = unknown> {
     /** A stable component wrapping each mount's content, rendered before its load. */
     scope?: React.ComponentType<{ children: React.ReactNode }>;
     /** Called with the control of each mount, before its init; subscribe to its events here. */
-    onMounted?: (control: IDatasetControl<TData>) => void;
+    onSetup?: (control: IDatasetControl<TData>) => void;
 }
 
 /** Loads the provider and holds every part of the control; every load mounts it anew. */
@@ -48,7 +48,7 @@ export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
         theme,
     });
 
-    return <RuntimeHost<DatasetControlRuntime> onCreate={onCreate} onMounted={runtime => propsRef.current.onMounted?.(runtime)} components={{ errorMessage: props.components?.errorMessage }}>
+    return <RuntimeHost<DatasetControlRuntime> onCreate={onCreate} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ errorMessage: props.components?.errorMessage }}>
         {/* the mount never reads view data */}
         <DatasetControlMount {...props as IDatasetControlProps} />
     </RuntimeHost>;

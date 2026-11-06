@@ -10,12 +10,6 @@ export interface ITaskGridGridModuleMap { }
 /** A grid module a task grid accepts. */
 export type ITaskGridGridModule = IGridModule<Exclude<keyof IGridModuleMap, 'rowModel' | 'editing' | 'grouping' | 'aggregation' | 'taskTree'>> | ITaskGridGridModuleMap[keyof ITaskGridGridModuleMap];
 
-/** What a `TaskDatasetControl`'s `onLoad` is called with. */
-export interface ITaskGridLoadParameters {
-    /** The mount the provider is loaded for, to register what the provider's platform adds. */
-    taskRuntime: ITaskRuntime;
-}
-
 /** A view of the tasks, set up on the task provider it is opened on. */
 export type ITaskGridView = IDatasetControlView<ITaskViewData, ITaskDataProvider>;
 

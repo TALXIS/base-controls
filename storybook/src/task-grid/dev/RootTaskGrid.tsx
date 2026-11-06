@@ -46,7 +46,7 @@ const GridExample = () => {
         createTaskDraggingModule(),
     ], [])
 
-    const onLoad = async ({ taskRuntime }: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({
+    const onLoad = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({
         provider: createMemoryTaskDataSource({ taskRuntime, onCreateStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
         fieldMapping,
         views: VIEWS,

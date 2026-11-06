@@ -36,7 +36,7 @@ A user view fails when the store throws, when a \`saveWithView\` getter throws, 
 
 ## React to a failure yourself
 
-The control shows the failure either way. To also log it, or show it elsewhere, listen in \`onMounted\`, which runs for every mount, as both examples do below the control.
+The control shows the failure either way. To also log it, or show it elsewhere, listen in \`onSetup\`, which runs for every mount, as both examples do below the control.
 
 | Event | On | Arguments |
 |---|---|---|

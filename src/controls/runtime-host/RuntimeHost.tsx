@@ -15,7 +15,7 @@ export interface IRuntimeHostProps<TRuntime extends IHostedRuntime> {
     /** Creates the runtime of one mount; called again on every remount. */
     onCreate: () => TRuntime;
     /** Called with each new runtime, before its init; subscribe to its events here. */
-    onMounted?: (runtime: TRuntime) => void;
+    onSetup?: (runtime: TRuntime) => void;
     /** Drawn while it initializes too, so it can show its own loading state; reads the runtime with `useRuntime()`. */
     children?: React.ReactNode;
     /** Replacements for what the host draws itself. */
@@ -41,7 +41,7 @@ const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<
     useEventEmitter<IRuntimeEvents>(lifecycle.events, 'onRemountRequested', () => propsRef.current.onRemount());
 
     useEffect(() => {
-        propsRef.current.onMounted?.(runtime);
+        propsRef.current.onSetup?.(runtime);
         lifecycle.init();
         return () => lifecycle.destroy();
     }, []);

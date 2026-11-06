@@ -22,7 +22,7 @@ const GridExample = () => {
     ], [])
 
     //saveDealViewData keeps the sorting, filters and search with every saved view
-    return <DatasetControl modules={controlModules} stateKey='deals-get-started' onLoad={loadDeals} onMounted={saveDealViewData} height='560px'>
+    return <DatasetControl modules={controlModules} stateKey='deals-get-started' onLoad={loadDeals} onSetup={saveDealViewData} height='560px'>
         {/* every part inside works on the provider onLoad returned */}
         <DatasetControl.Header>
             <DatasetControl.Header.Start>

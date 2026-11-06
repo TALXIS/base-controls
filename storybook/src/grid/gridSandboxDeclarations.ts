@@ -3745,7 +3745,7 @@ interface IRibbonRuntime extends IRuntime {
 
 interface IRibbonProps {
     /** Called on init and on every reload(); the commands registered through registerCommands follow. */
-    onLoad?: () => Promise<IRibbonCommand[]>;
+    onLoad?: (ribbon: IRibbonRuntime) => Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to 'start'. */
     align?: 'start' | 'end';
     /** Put on the ribbon's box, and on the shimmer while loading. */
@@ -3753,7 +3753,7 @@ interface IRibbonProps {
     /** Disables every command, menus included. */
     disabled?: boolean;
     /** Called with the runtime of each mount, before its init; register commands and subscribe here. */
-    onMounted?: (ribbon: IRibbonRuntime) => void;
+    onSetup?: (ribbon: IRibbonRuntime) => void;
     components?: {
         onRenderCommandBar?: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null;
         /** Its container is a shimmer the height of the command bar by default. */
@@ -3959,7 +3959,7 @@ interface IDatasetControlProps<TData = unknown> {
     /** The control's modules, each with a unique name; read on every mount. */
     modules?: IDatasetControlModule[];
     /** Creates the provider and lists the views; called on every mount. */
-    onLoad: () => Promise<IDatasetControlLoadResult<TData>>;
+    onLoad: (control: IDatasetControl<TData>) => Promise<IDatasetControlLoadResult<TData>>;
     children: React.ReactNode;
     /** '100%' fills the parent; the content's height when left out. */
     height?: string;
@@ -3972,7 +3972,7 @@ interface IDatasetControlProps<TData = unknown> {
     /** A stable component wrapping each mount's content, rendered before its load. */
     scope?: React.ComponentType<{ children: React.ReactNode }>;
     /** Called with the control of each mount, before its init; subscribe to its events here. */
-    onMounted?: (control: IDatasetControl<TData>) => void;
+    onSetup?: (control: IDatasetControl<TData>) => void;
 }
 
 interface IErrorMessageBarComponents {
@@ -4034,7 +4034,7 @@ interface IDatasetControlNamespace {
     ViewSwitcher: (props: IViewSwitcherProps) => JSX.Element;
     /** The shared Ribbon, loaded again whenever the selected records change. */
     /** Reach it through control.parts.get('ribbon'). */
-    Ribbon: (props: Omit<IRibbonProps, 'onMounted' | 'align'> & { enableRefresh?: boolean; enableSave?: boolean; enableDiscard?: boolean }) => JSX.Element;
+    Ribbon: (props: Omit<IRibbonProps, 'onSetup' | 'align'> & { enableRefresh?: boolean; enableSave?: boolean; enableDiscard?: boolean }) => JSX.Element;
     QuickFind: (props: {
         components?: Partial<IQuickFindUiComponents>;
     }) => JSX.Element;
@@ -4169,9 +4169,8 @@ interface ITaskActions {
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
 }
 
-interface ITaskRuntime {
+interface ITaskRuntime extends IRuntime {
     readonly services: { get(key: string): any; find(key: string): any; observe(key: string, callback: (service: any) => void | (() => void)): () => void; register(key: string, resolve: () => any): void };
-    readonly events: { addEventListener(event: 'onDestroyed', listener: () => void): void };
     getProvider(): ITaskDataProvider;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;
@@ -4191,12 +4190,6 @@ interface ITaskRuntime {
 
 interface IDatasetControlPartMap {
     /** What runs the task grid inside the control. */
-    taskRuntime: ITaskRuntime;
-}
-
-/** What a TaskDatasetControl's onLoad is called with. */
-interface ITaskGridLoadParameters {
-    /** The mount the provider is loaded for, to register what the provider's platform adds. */
     taskRuntime: ITaskRuntime;
 }
 
@@ -4253,19 +4246,15 @@ declare const createProjectModule: <TData>(parameters: { onCreateStore: (taskRun
 /** The project module for a project held in memory. */
 declare const createMemoryProjectModule: <TData>(parameters: { project: IProjectData<TData> }) => IProjectModule;
 
-interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onMounted' | 'onReady' | 'onDestroyed' | 'scope' | 'modules'> {
+interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'onSetup' | 'scope' | 'modules'> {
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
     /** Called on every mount with its task runtime, before its load; subscribe to its events here. */
-    onMounted?: (taskRuntime: ITaskRuntime) => void;
+    onSetup?: (taskRuntime: ITaskRuntime) => void;
     /** Hours in a day of a task's duration; 24 when left out. */
     hoursPerDay?: number;
-    /** Called on every mount once its load succeeded. */
-    onReady?: (taskRuntime: ITaskRuntime) => void;
-    /** Called as each mount goes, while its provider still holds its data. */
-    onDestroyed?: (taskRuntime: ITaskRuntime) => void;
-    /** Returns the view's provider and field mapping; called on every mount. */
-    onLoad: (parameters: ITaskGridLoadParameters) => Promise<ITaskGridLoadResult>;
+    /** Returns the provider, field mapping and views; called on every mount. */
+    onLoad: (taskRuntime: ITaskRuntime) => Promise<ITaskGridLoadResult>;
     /** The New command and the add-subtask buttons. */
     enableCreation?: boolean;
     /** Where among its parent's children a new task goes; first when left out. */

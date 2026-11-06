@@ -21,7 +21,7 @@ const onLoad = async () => {
 const GridExample = () => {
     const modules = React.useMemo(() => [createLocalStorageUserQueriesModule({ storageKey: 'docs.fluentV9DealViews' })], [])
 
-    return <DatasetControl modules={modules} onLoad={onLoad} onMounted={saveDealViewData} stateKey='fluentV9' height='560px' components={V9.control}>
+    return <DatasetControl modules={modules} onLoad={onLoad} onSetup={saveDealViewData} stateKey='fluentV9' height='560px' components={V9.control}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 {/* save a view of your own, then open Manage views to see its drawer in v9 */}

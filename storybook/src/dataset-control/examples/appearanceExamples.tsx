@@ -24,7 +24,7 @@ const addCommands = (control: IDatasetControl) => {
     }))
 }
 
-const GridExample = () => <DatasetControl stateKey='yourOwnPieces' onLoad={loadDeals} onMounted={addCommands} height='480px'>
+const GridExample = () => <DatasetControl stateKey='yourOwnPieces' onLoad={loadDeals} onSetup={addCommands} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher components={{

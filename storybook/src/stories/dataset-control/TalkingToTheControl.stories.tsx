@@ -12,7 +12,7 @@ Your code can do what the user does through the parts: switch the view, reload, 
 
 ## Get the control
 
-Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar above does. Outside it, \`onMounted\` hands it to you as each mount starts, so add your listeners there: every load is a new mount with a new \`IDatasetControl\`, as [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) explains.
+Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar above does. Outside it, \`onSetup\` hands it to you as each mount starts, so add your listeners there: every load is a new mount with a new \`IDatasetControl\`, as [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) explains.
 
 {{story: Watch the control load}}
 
@@ -132,7 +132,7 @@ export const WatchTheControl: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`onMounted\` and the lifecycle events of every mount, newest first. Try: press **Reload** and watch the old mount go and a new one start.`,
+                story: `\`onSetup\` and the lifecycle events of every mount, newest first. Try: press **Reload** and watch the old mount go and a new one start.`,
             },
         },
     },

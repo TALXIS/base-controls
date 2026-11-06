@@ -36,16 +36,16 @@ When the first load throws, the error shows in place of the commands, with **Det
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
-| \`onLoad\` | \`() => Promise<IRibbonCommand[]>\` | None | Live | Returns the commands. Called at mount and on \`reload()\`. |
+| \`onLoad\` | \`(ribbon: IRibbonRuntime) => Promise<IRibbonCommand[]>\` | None | Live | Returns the commands. Called at mount and on \`reload()\`. |
 | \`align\` | \`'start' \\| 'end'\` | \`'start'\` | Live | The side the commands line up against. |
 | \`disabled\` | \`boolean\` | \`false\` | Live | Disables every command, menus included. |
 | \`className\` | \`string\` | None | Live | Added to the ribbon's box and to its shimmer. |
-| \`onMounted\` | \`(ribbon: IRibbonRuntime) => void\` | None | At mount | Hands over the ribbon of each mount, before it loads. |
+| \`onSetup\` | \`(ribbon: IRibbonRuntime) => void\` | None | At mount | Hands over the ribbon of each mount, before it loads. |
 | \`components\` | \`IRibbonComponents\` | Defaults | Live | See *Changing how it looks*. |
 
 ## From your code
 
-\`onMounted\` hands over the ribbon of each mount. Its \`lifecycle\` holds the status and the lifecycle events every runtime has: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). The ribbon does not know when what your commands depend on changes, so call \`reload()\` then, as the example does when the status changes.
+\`onSetup\` hands over the ribbon of each mount. Its \`lifecycle\` holds the status and the lifecycle events every runtime has: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). The ribbon does not know when what your commands depend on changes, so call \`reload()\` then, as the example does when the status changes.
 
 | Member | Does |
 |---|---|

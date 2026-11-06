@@ -1,10 +1,10 @@
-import { DataTypes, EventEmitter, IColumn } from "@talxis/client-libraries";
+import { DataTypes, IColumn } from "@talxis/client-libraries";
 import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { IDatasetControlLoadResult, IDatasetControlRuntime } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl, IDatasetControlView } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@pcf/interfaces";
-import { HookRegistry, ServiceLocator } from "@core";
+import { HookRegistry, IRuntimeLifecycle, ServiceLocator } from "@core";
 import { ILabels, ILabelSet, Labels } from "@labels";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "./provider";
 import { PATH_COLUMN_NAME } from "./provider/record-tree";
@@ -14,7 +14,7 @@ import { ITaskActions, TaskActions } from "./tasks";
 import { runQuietly } from "./runQuietly";
 import { TaskExecutor } from "./TaskExecutor";
 import { TaskSavingChains } from "./saving";
-import type { ITaskExecuteOptions, ITaskRuntime, ITaskRuntimeEvents, ITaskRuntimeServiceMap, TaskRibbonCommandUiHook } from "./interfaces";
+import type { ITaskExecuteOptions, ITaskRuntime, ITaskRuntimeServiceMap, TaskRibbonCommandUiHook } from "./interfaces";
 
 export interface ITaskRuntimeParameters {
     datasetControl: IDatasetControlRuntime;
@@ -25,7 +25,6 @@ export interface ITaskRuntimeParameters {
 
 export class TaskRuntime implements ITaskRuntime {
     public readonly services = new ServiceLocator<ITaskRuntimeServiceMap>();
-    public readonly events = new EventEmitter<ITaskRuntimeEvents>();
     private _onGetProps: () => ITaskDatasetControlProps;
     private _ribbonCommandUiHooks = new HookRegistry<TaskRibbonCommandUiHook>();
     public readonly tasks: ITaskActions = new TaskActions(this);
@@ -49,13 +48,17 @@ export class TaskRuntime implements ITaskRuntime {
     }
 
     public async load(): Promise<IDatasetControlLoadResult<ITaskViewData>> {
-        const { provider, fieldMapping, rootTaskId, views } = await this._onGetProps().onLoad({ taskRuntime: this });
+        const { provider, fieldMapping, rootTaskId, views } = await this._onGetProps().onLoad(this);
         provider.initialize({ fieldMapping, rootTaskId, defaultCreatePosition: this._onGetProps().defaultCreatePosition, hoursPerDay: this._onGetProps().hoursPerDay });
         provider.registerAvailableColumns(this._addPathColumn);
         //modules waiting for it add columns a user view may keep
         this.services.register('provider', () => provider);
         //a task view is only ever resolved with this task provider
         return { provider, views: views as IDatasetControlView<ITaskViewData>[] | undefined };
+    }
+
+    public get lifecycle(): IRuntimeLifecycle {
+        return this.services.get('datasetControl').lifecycle;
     }
 
     public getView(): ITaskView | undefined {
@@ -108,7 +111,6 @@ export class TaskRuntime implements ITaskRuntime {
 
     /** Called as the mount goes. */
     public destroy(): void {
-        this.events.dispatchEvent('onDestroyed');
         this._savingChains.destroy();
         this.services.destroy();
     }

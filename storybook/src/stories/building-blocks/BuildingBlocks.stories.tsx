@@ -26,7 +26,7 @@ Sorting, filtering, paging, selection and saving work the same in every list, wh
 
 ## The runtime
 
-A control that loads something keeps its state and its work in a *runtime*, a new one for every mount, which \`onMounted\` hands to you. How a mount loads, fails and is replaced: [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
+A control that loads something keeps its state and its work in a *runtime*, a new one for every mount, which \`onSetup\` hands to you. How a mount loads, fails and is replaced: [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
 ## Customise a control
 

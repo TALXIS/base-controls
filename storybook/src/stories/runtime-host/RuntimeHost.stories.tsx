@@ -17,7 +17,7 @@ A control that has to load something before it can draw, such as DatasetControl 
 
 ## Status and events
 
-Code that holds a runtime, such as the one \`onMounted\` hands over, reads its mount through \`runtime.lifecycle\`. A remount brings a new runtime and calls \`onMounted\` again, so subscribe there, as the example's log does.
+Code that holds a runtime, such as the one \`onSetup\` hands over, reads its mount through \`runtime.lifecycle\`. A remount brings a new runtime and calls \`onSetup\` again, so subscribe there, as the example's log does.
 
 | Member | Does |
 |---|---|
@@ -63,7 +63,7 @@ To change the wording of **Try again** and **Details**, see [**Localization**](?
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
 | \`onCreate\` | \`() => TRuntime\` | Required | At mount | Makes the runtime of a mount. |
-| \`onMounted\` | \`(runtime: TRuntime) => void\` | None | At mount | Called with each new runtime, before it loads. |
+| \`onSetup\` | \`(runtime: TRuntime) => void\` | None | At mount | Called with each new runtime, before it loads. |
 | \`children\` | \`ReactNode\` | None | Live | The control, drawn from the start; reads the runtime with \`useRuntime()\`. |
 | \`components\` | \`IRuntimeHostComponents\` | Defaults | Live | See *Changing how it looks*. |
 
@@ -74,7 +74,7 @@ To change the wording of **Try again** and **Details**, see [**Localization**](?
 
 const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The runtime is created', hook: 'onCreate', text: 'The host calls `onCreate` for a new runtime, whose status is `initializing`.' },
-    { title: 'The mount starts', hook: 'onMounted', text: '`onMounted` gets the runtime before it loads, so subscribe to its events here.' },
+    { title: 'The mount starts', hook: 'onSetup', text: '`onSetup` gets the runtime before it loads, so subscribe to its events here.' },
     { title: 'It loads', hook: 'onInit', text: 'The lifecycle runs `onInit` once, while the control draws its loading state.' },
     { title: 'It is ready, or it failed', hook: 'onReady', text: '`onReady` fires, or `onInitFailed` fires and the host shows the error with a retry.' },
     { title: 'It remounts', hook: 'remount()', text: '`remount()`, or the retry, ends the runtime and starts again from the first step.' },

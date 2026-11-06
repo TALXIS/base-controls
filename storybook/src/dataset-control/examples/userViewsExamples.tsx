@@ -10,7 +10,7 @@ const GridExample = () => {
     const modules = React.useMemo(() => [createLocalStorageUserQueriesModule({ storageKey: 'docs.dealViews' })], [])
 
     //saveDealViewData, in views.ts, saves the sorting, filter and search with every view and puts them back
-    return <DatasetControl modules={modules} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='userViews' height='480px'>
+    return <DatasetControl modules={modules} onLoad={loadDeals} onSetup={saveDealViewData} stateKey='userViews' height='480px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>
@@ -112,7 +112,7 @@ const GridExample = () => {
     }, [])
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <DatasetControl modules={modules} onLoad={loadDeals} onMounted={saveDealViewData} stateKey='userViewsOwnStore' height='400px'>
+        <DatasetControl modules={modules} onLoad={loadDeals} onSetup={saveDealViewData} stateKey='userViewsOwnStore' height='400px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher>

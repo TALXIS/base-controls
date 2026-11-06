@@ -16,7 +16,7 @@ const SHIMMER_WIDTH = 208;
 
 export interface IRibbonProps {
     /** Called on init and on every `reload()`; the commands registered through `registerCommands` follow. */
-    onLoad?: () => Promise<IRibbonCommand[]>;
+    onLoad?: (ribbon: IRibbonRuntime) => Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to `'start'`. */
     align?: 'start' | 'end';
     /** Put on the ribbon's box, and on the shimmer while it initializes. */
@@ -24,7 +24,7 @@ export interface IRibbonProps {
     /** Disables every command, menus included. */
     disabled?: boolean;
     /** Called with the runtime of each mount, before its init; register commands and subscribe here. */
-    onMounted?: (ribbon: IRibbonRuntime) => void;
+    onSetup?: (ribbon: IRibbonRuntime) => void;
     /** Replacements for the command bar, the shimmer and the error. */
     components?: IRibbonComponents;
 }
@@ -32,9 +32,9 @@ export interface IRibbonProps {
 /** A command bar of the commands `onLoad` returns: actions run when clicked, menus open. */
 export const Ribbon = (props: IRibbonProps) => {
     const propsRef = useLatest(props);
-    const onCreate = () => new RibbonRuntime({ onLoad: propsRef.current.onLoad && (() => propsRef.current.onLoad!()) });
+    const onCreate = () => new RibbonRuntime({ onLoad: propsRef.current.onLoad && (ribbon => propsRef.current.onLoad!(ribbon)) });
 
-    return <RuntimeHost<RibbonRuntime> onCreate={onCreate} onMounted={ribbon => propsRef.current.onMounted?.(ribbon)} components={{ errorMessage: props.components?.errorMessage }}>
+    return <RuntimeHost<RibbonRuntime> onCreate={onCreate} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} components={{ errorMessage: props.components?.errorMessage }}>
         <RibbonMount {...props} />
     </RuntimeHost>;
 };

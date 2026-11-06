@@ -1,6 +1,8 @@
 {
     ". IDatasetControlEvents": null,
     ". IDatasetControlLoadParameters": null,
+    ". ITaskGridLoadParameters": null,
+    ". ITaskRuntimeEvents": null,
     ". useIsLoading": null,
     ". DatasetAdapter": "DatasetControlEntry",
     ". VirtualDatasetAdapter": "VirtualDatasetControlEntry",

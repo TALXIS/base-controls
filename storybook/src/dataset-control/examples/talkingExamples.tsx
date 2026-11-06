@@ -61,9 +61,9 @@ const GridExample = () => {
     const write = (line: string) => setLog(log => [line, ...log].slice(0, 8))
 
     //every mount hands over a new control, so subscribe to each one here
-    const onMounted = (control: IDatasetControl) => {
+    const onSetup = (control: IDatasetControl) => {
         controlRef.current = control
-        write('onMounted')
+        write('onSetup')
         control.lifecycle.events.addEventListener('onReady', () => write(\`onReady, view \${control.getViewId()}\`))
         control.lifecycle.events.addEventListener('onInitFailed', () => write('onInitFailed'))
         control.lifecycle.events.addEventListener('onRemountRequested', () => write('onRemountRequested'))
@@ -75,7 +75,7 @@ const GridExample = () => {
             <DefaultButton text='Show won deals' onClick={() => { controlRef.current?.loadView('won') }} />
             <DefaultButton text='Reload' onClick={() => { controlRef.current?.reload() }} />
         </Stack>
-        <DatasetControl stateKey='talkingWatch' onLoad={loadDeals} onMounted={onMounted} height='380px'>
+        <DatasetControl stateKey='talkingWatch' onLoad={loadDeals} onSetup={onSetup} height='380px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />

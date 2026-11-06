@@ -22,7 +22,7 @@ const VIEWS: ITaskGridView[] = [
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = async (parameters: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(parameters), views: VIEWS })
+    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(taskRuntime), views: VIEWS })
     const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule(), createFilteringModule()], [])
     const controlModules = React.useMemo(() => ${example.modules}, [database])
 
@@ -128,7 +128,7 @@ const createChecklistStore = (): IChecklistStore => ({
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = async (parameters: ITaskGridLoadParameters): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(parameters), views: VIEWS })
+    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(taskRuntime), views: VIEWS })
     //task and DatasetControl modules, read on every mount
     const controlModules = React.useMemo(() => [
         createTaskDraggingModule(),
@@ -165,11 +165,13 @@ const GridExample = () => {
         createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),
     ], [])
 
-    const onReady = (taskRuntime: ITaskRuntime) => setProject(taskRuntime.services.get('datasetControl').modules.find('project'))
+    const onSetup = (taskRuntime: ITaskRuntime) => {
+        taskRuntime.lifecycle.events.addEventListener('onReady', () => setProject(taskRuntime.services.get('datasetControl').modules.find('project')))
+    }
 
     return <Stack tokens={{ childrenGap: 8 }}>
         {project && <MessageBar>{project.getName()}: {project.getStartDate()?.format('D MMM YYYY')} to {project.getEndDate()?.format('D MMM YYYY')}</MessageBar>}
-        <TaskDatasetControl modules={controlModules} onLoad={loadTasks} onReady={onReady} height='400px'>
+        <TaskDatasetControl modules={controlModules} onSetup={onSetup} onLoad={loadTasks} height='400px'>
             <DatasetControl.Body>
                 <TaskGrid />
             </DatasetControl.Body>

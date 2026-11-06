@@ -52,7 +52,7 @@ const GridExample = () => {
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <Ribbon onLoad={onLoad} onMounted={ribbon => { ribbonRef.current = ribbon }} />
+        <Ribbon onLoad={onLoad} onSetup={ribbon => { ribbonRef.current = ribbon }} />
         <Text>Invoice INV-0042: {status}</Text>
         <Text variant='small'>{note}</Text>
     </Stack>
@@ -101,7 +101,7 @@ const GridExample = () => {
     ]
 
     //code that does not own onLoad adds to the commands of every load
-    const onMounted = (ribbon: IRibbonRuntime) => {
+    const onSetup = (ribbon: IRibbonRuntime) => {
         ribbonRef.current = ribbon
         ribbon.registerCommands(commands => {
             commands.push({ id: 'history', label: 'History', iconName: 'History', onExecute: () => setNote('History opened') })
@@ -122,7 +122,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Order closed' inlineLabel onChange={(_, checked) => setClosed(!!checked)} />
-        <Ribbon onLoad={onLoad} onMounted={onMounted} />
+        <Ribbon onLoad={onLoad} onSetup={onSetup} />
         <Text variant='small'>{note}</Text>
     </Stack>
 }

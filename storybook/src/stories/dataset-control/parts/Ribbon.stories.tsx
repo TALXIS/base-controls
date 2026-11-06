@@ -32,7 +32,7 @@ Each is off until its prop is set, and they come before the commands from \`onLo
 
 ## Props
 
-\`DatasetControl.Ribbon\` takes the props of [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview), such as \`onLoad\`, \`disabled\` and \`components\`, except two: \`align\` follows the region, and \`onMounted\` gives way to \`control.parts\`, under *From your code*. It adds \`enableSave\`, \`enableDiscard\` and \`enableRefresh\`, each a \`boolean\` that defaults to \`false\`, under *Built-in commands*.
+\`DatasetControl.Ribbon\` takes the props of [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview), such as \`onLoad\`, \`disabled\` and \`components\`, except two: \`align\` follows the region, and \`onSetup\` gives way to \`control.parts\`, under *From your code*. It adds \`enableSave\`, \`enableDiscard\` and \`enableRefresh\`, each a \`boolean\` that defaults to \`false\`, under *Built-in commands*.
 
 ## From your code
 

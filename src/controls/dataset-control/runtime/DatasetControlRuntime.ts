@@ -157,7 +157,7 @@ export class DatasetControlRuntime implements IDatasetControlRuntime {
 
     private async _init(): Promise<void> {
         await this._loadModules();
-        const { provider, views = [] } = await this._onGetProps().onLoad();
+        const { provider, views = [] } = await this._onGetProps().onLoad(this);
         try {
             //a copy: the hooks change it in place
             const listedViews = [...views];

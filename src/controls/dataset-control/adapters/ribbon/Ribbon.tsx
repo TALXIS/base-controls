@@ -8,7 +8,7 @@ import { DatasetControlRibbonCommands } from "../../runtime/parts/ribbon/Dataset
 import { getDatasetControlRibbonStyles } from "./styles";
 
 /** Props for `DatasetControl.Ribbon`; reach the ribbon through `control.parts.get('ribbon')`. */
-export interface IDatasetControlRibbonProps extends Omit<IRibbonProps, 'onMounted' | 'align'> {
+export interface IDatasetControlRibbonProps extends Omit<IRibbonProps, 'onSetup' | 'align'> {
     /** Adds Refresh, which loads the records again; asks first when there are unsaved changes. */
     enableRefresh?: boolean;
     /** Adds Save while there are unsaved changes, which saves every changed record. */
@@ -35,11 +35,11 @@ export const Ribbon = (props: IDatasetControlRibbonProps) => {
         }
     }, []);
 
-    const onMounted = (ribbon: IRibbonRuntime) => {
+    const onSetup = (ribbon: IRibbonRuntime) => {
         ribbonRef.current = ribbon;
         commands.attach(ribbon);
         runtime.services.register('ribbon', () => ribbon);
     };
 
-    return <SharedRibbon {...ribbonProps} disabled={props.disabled || provider.isLoading()} align={region === 'end' ? 'end' : 'start'} className={getClassNames([styles.datasetControlRibbon, props.className])} onMounted={onMounted} />;
+    return <SharedRibbon {...ribbonProps} disabled={props.disabled || provider.isLoading()} align={region === 'end' ? 'end' : 'start'} className={getClassNames([styles.datasetControlRibbon, props.className])} onSetup={onSetup} />;
 };

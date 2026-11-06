@@ -35,7 +35,7 @@ export interface IRibbonRuntime extends IRuntime {
 }
 
 export interface IRibbonRuntimeParameters {
-    onLoad?: () => Promise<IRibbonCommand[]>;
+    onLoad?: (ribbon: IRibbonRuntime) => Promise<IRibbonCommand[]>;
 }
 
 export class RibbonRuntime implements IRibbonRuntime {
@@ -44,7 +44,7 @@ export class RibbonRuntime implements IRibbonRuntime {
         onDestroy: () => this._destroy(),
     });
     public readonly events = new EventEmitter<IRibbonRuntimeEvents>();
-    private _onLoad?: () => Promise<IRibbonCommand[]>;
+    private _onLoad?: (ribbon: IRibbonRuntime) => Promise<IRibbonCommand[]>;
     private _commandsHooks = new HookRegistry<RibbonCommandsHook>();
     private _commands?: IRibbonCommand[];
     //a slower earlier reload must not overwrite a newer one
@@ -112,7 +112,7 @@ export class RibbonRuntime implements IRibbonRuntime {
 
     private async _loadCommands(): Promise<IRibbonCommand[]> {
         //a copy: the hooks change it in place, and onLoad may return the same array every time
-        const commands = [...await this._onLoad?.() ?? []];
+        const commands = [...await this._onLoad?.(this) ?? []];
         this._commandsHooks.apply(commands);
         return commands;
     }

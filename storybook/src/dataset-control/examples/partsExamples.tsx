@@ -23,7 +23,7 @@ const addSelectMenu = (control: IDatasetControl) => {
     }))
 }
 
-const GridExample = () => <DatasetControl stateKey='ribbonDeals' onLoad={async () => ({ provider: createDealsProvider() })} onMounted={addSelectMenu} height='440px'>
+const GridExample = () => <DatasetControl stateKey='ribbonDeals' onLoad={async () => ({ provider: createDealsProvider() })} onSetup={addSelectMenu} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             {/* the built-in commands, each off unless asked for */}
@@ -46,12 +46,12 @@ const GridExample = () => {
     const [draft, setDraft] = React.useState('')
 
     //follows the query as it is typed, before it is searched
-    const onMounted = (control: IDatasetControl) => {
+    const onSetup = (control: IDatasetControl) => {
         control.parts.observe('quickFind', quickFind => quickFind.events.addEventListener('onQueryChanged', () => setDraft(quickFind.getQuery())))
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <DatasetControl stateKey='quickFindDeals' onLoad={loadSearchableDeals} onMounted={onMounted} height='440px'>
+        <DatasetControl stateKey='quickFindDeals' onLoad={loadSearchableDeals} onSetup={onSetup} height='440px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.End>
                     <DatasetControl.QuickFind />
@@ -82,7 +82,7 @@ const ColumnsButton = () => {
     return <DefaultButton text='Columns' iconProps={{ iconName: 'ColumnOptions' }} onClick={() => control.parts.get('editColumns').open()} />
 }
 
-const GridExample = () => <DatasetControl stateKey='editColumnsDeals' onLoad={loadDeals} onMounted={addCommands} height='440px'>
+const GridExample = () => <DatasetControl stateKey='editColumnsDeals' onLoad={loadDeals} onSetup={addCommands} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
