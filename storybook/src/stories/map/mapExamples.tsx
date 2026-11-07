@@ -130,7 +130,7 @@ export const useLibraryPicker = (parameters: ILibraryPickerParameters = {}) => {
             <PivotItem itemKey='leaflet' headerText='Leaflet' itemIcon='Nav2DMapView' />
             <PivotItem itemKey='googleMaps' headerText='Google Maps' itemIcon='MapPin' headerButtonProps={{ disabled: !apiKey, title: apiKey ? undefined : 'Paste a Google Maps API key first' }} />
         </Pivot>
-        <TextField className={styles.key} type='password' canRevealPassword placeholder='Paste a Google Maps API key' ariaLabel='Google Maps API key' value={apiKey} onChange={(_, value) => onApiKeyChange(value ?? '')} />
+        <TextField className={styles.key} type='password' canRevealPassword autoComplete='off' data-bwignore data-1p-ignore data-lpignore='true' placeholder='Paste a Google Maps API key' ariaLabel='Google Maps API key' value={apiKey} onChange={(_, value) => onApiKeyChange(value ?? '')} />
     </Stack>
 
     //the map reads its modules as it mounts, so new modules need a new key

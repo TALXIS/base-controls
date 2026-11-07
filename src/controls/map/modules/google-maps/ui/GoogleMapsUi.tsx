@@ -1,5 +1,7 @@
 import { ReactNode, useMemo } from 'react';
+import { ColorScheme } from '@vis.gl/react-google-maps';
 import { getClassNames } from '@core';
+import { isLightColor, useTheme } from '@theme';
 import type { IMapPoint } from '../../../interfaces';
 import { GoogleMapsUiComponents, IGoogleMapsUiComponents } from './components';
 import { getGoogleMapsUiStyles } from './styles';
@@ -18,15 +20,17 @@ export interface IGoogleMapsUiProps {
     components?: Partial<IGoogleMapsUiComponents>;
 }
 
-/** A Google map without its default controls. */
+/** A Google map without its default controls, dark on a theme with a dark background. */
 export const GoogleMapsUiRoot = (props: IGoogleMapsUiProps) => {
     const components = { ...GoogleMapsUiComponents, ...props.components };
+    const theme = useTheme();
     const styles = useMemo(() => getGoogleMapsUiStyles(), []);
     return components.onRenderMap({
         className: getClassNames([styles.map, props.className]),
         defaultCenter: { lat: props.defaultCenter.latitude, lng: props.defaultCenter.longitude },
         defaultZoom: props.defaultZoom,
         mapId: props.mapId,
+        colorScheme: isLightColor(theme.semanticColors.bodyBackground) ? ColorScheme.LIGHT : ColorScheme.DARK,
         disableDefaultUI: true,
         children: props.children,
     });
