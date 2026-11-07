@@ -3,52 +3,51 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { CustomPopupExample, CustomUiExample } from './mapExamples'
+import { PostcardExample, RegionPinsExample } from './mapExamples'
 
 const DESCRIPTION = `
-The map draws a few things through slots you can replace: its box, its loading and error states, and, through its library module, the map and each pin. Everything inside the box belongs to the map library, so a pin of your own is drawn with what that library draws. Both Leaflet and Google Maps draw a Fluent pin, \`MapUi.Marker\`, and a popup built from the shared record card, the one the Gantt's tooltips use. Try it below: click one of the red pins.
+The pins and the popups they open are drawn through slots you can replace, so a pin can take its record's colour, or a popup can show what matters about the record. Both Leaflet and Google Maps draw the same Fluent pin and the same popup card, so the slots you hand the library module look the same in either. Try it below: open a pin with a star, one of the capitals of two million or more.
 
-{{canvas: Mark the large cities}}
+{{canvas: Pins in their region's colour}}
 
 ## Changing how it looks
 
-\`Map\` takes \`components\` for its own slots, and each library module takes \`components\` for the map's under \`map\`, and under \`marker\` the pin's under \`pin\` and the popup's under \`popup\`. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+\`Map\` takes \`components\` for its own slots, and each library module takes \`components\` for the map under \`map\`, and for each pin under \`marker\`. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`Map\` | None | \`onRenderContainer\` | \`MapUiContainerComponents\` | The box the library draws in |
-| \`Map\` | \`loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the map has loaded |
-| \`Map\` | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, such as a map without a library |
-| \`createLeafletModule\` | \`map\` | \`onRenderMap\`, \`onRenderTileLayer\` | \`LeafletUiComponents\` | The react-leaflet map and its tiles |
-| \`createLeafletModule\` | \`marker.pin\` | \`onRenderContainer\`, \`onRenderPin\`, \`onRenderDot\` | \`MapUiMarkerComponents\` | Each pin, the Fluent pin \`MapUi.Marker\`: its box, the teardrop and its white centre |
-| \`createLeafletModule\` | \`marker.popup\` | \`onRender\`, with no props | \`MapPopup.Renderer\` | The whole content of the popup a pin opens; see *Your own popup* |
-| \`createLeafletModule\` | \`marker.popup.container\` | \`onRenderContainer\` | \`LeafletUiPopupComponents\` | Leaflet's popup, drawn as a Fluent callout |
-| \`createLeafletModule\` | \`marker.popup.card\` | \`onRenderContainer\` | \`RecordCardComponents\` | The default popup's card |
-| \`createLeafletModule\` | \`marker.popup.header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRenderContainer\`; \`status\`: the tag's slots | \`RecordCardHeaderComponents\` and the parts' own | The default popup's header: the record's name, and its status tag |
-| \`createGoogleMapsModule\` | \`map\` | \`onRenderMap\` | \`GoogleMapsUiComponents\` | The vis.gl map |
-| \`createGoogleMapsModule\` | \`marker.pin\`, \`marker.popup\` | As for Leaflet, with \`marker.popup.container\` taking \`onRenderContainer\` | \`GoogleMapsUiPopupComponents\` for the container | Each pin, the Fluent pin in a vis.gl \`AdvancedMarker\`, and its popup in Google's info window, drawn as a Fluent callout |
+| \`Map\` | None | \`onRenderContainer\` | \`MapUiContainerComponents\` | The box the library draws in. |
+| \`Map\` | \`loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the map has loaded. |
+| \`Map\` | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, such as a map without a library. |
+| \`createLeafletModule\` | \`map\` | \`onRenderMap\`, \`onRenderTileLayer\` | \`LeafletUiComponents\` | The react-leaflet map and its tiles. |
+| \`createGoogleMapsModule\` | \`map\` | \`onRenderMap\` | \`GoogleMapsUiComponents\` | The vis.gl map. |
+| Both | \`marker.pin\` | \`onRenderContainer\`, \`onRenderPin\`, \`onRenderDot\` | \`MapUiMarkerComponents\` | Each pin, \`Map.Ui.Marker\`: its box, the teardrop, and the white dot in it. \`onRenderPin\` gets \`{ color }\`. |
+| Both | \`marker.popup\` | \`onRender\`, with no props | \`Map.Popup.Renderer\` | The whole content of the popup a pin opens: see *Your own popup*. |
+| Both | \`marker.popup.card\` | \`onRenderContainer\` | \`RecordCardComponents\` | The default popup's card. |
+| Both | \`marker.popup.header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRenderContainer\`; \`status\`: the tag's slots | \`RecordCardHeaderComponents\` and the parts' own | The default popup's header, with the record's name. |
+| \`createLeafletModule\` | \`marker.popup.container\` | \`onRenderContainer\`, with react-leaflet's \`Popup\` props | \`LeafletUiPopupComponents\` | Leaflet's popup, drawn as a Fluent callout. |
+| \`createGoogleMapsModule\` | \`marker.popup.container\` | \`onRenderContainer\`, with vis.gl's \`InfoWindow\` props | \`GoogleMapsUiPopupComponents\` | Google's info window, drawn as a Fluent callout. |
 
 To change the wording of the loading state and the error, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Your own pins
 
-In both libraries, \`marker.pin.onRenderPin\` gets the teardrop's props, \`{ color }\`, and the other slots under \`marker.pin\` and \`marker.popup\` get an element's props; \`marker.popup.container\` gets react-leaflet's \`Popup\` props or vis.gl's \`InfoWindow\` props. A slot component reads the record of its pin with \`useMapRecord()\`, as \`CityPin\` and \`CityTitle\` do in the example, and hands the rest to the default slot.
+A slot under \`marker\` is drawn inside the pin, so a component of yours reads the pin's record with \`useMapRecord()\`, as \`RegionPin\` and \`CapitalDot\` do, and hands everything else to the default slot.
 
 ## Your own popup
 
-The popup a Leaflet pin opens is composed of \`MapPopup\`'s parts, each reading the record of its pin:
+\`marker.popup.onRender\` replaces the popup's content with your own, composed from \`Map.Popup\`'s parts, which read the record of their pin, and the shared \`RecordCard\` parts, which take any value:
 
 | Part | Draws |
 |---|---|
-| \`MapPopup.Renderer\` | The default popup: the card with the header in it. Takes \`components\` as \`{ card, header }\` |
-| \`MapPopup.Card\` | The box the content sits in, \`RecordCard\` |
-| \`MapPopup.Header\` | The record's name; \`statusColumnName\` adds an option set column as a coloured tag |
-| \`MapPopup.FieldRows\` | Holds the field rows |
-| \`MapPopup.FieldRow\` | One column under its display name, given \`columnName\` and an optional \`iconName\`; nothing while empty |
+| \`Map.Popup.Renderer\` | The default popup: the card with the header in it. Takes \`components\` as \`{ card, header }\`. |
+| \`Map.Popup.Card\` | The box the content sits in. |
+| \`Map.Popup.Header\` | The record's name; \`statusColumnName\` adds an option set column as a tag in its option's colour. |
+| \`Map.Popup.FieldRows\` | Holds the field rows. |
+| \`Map.Popup.FieldRow\` | One column under its display name, given \`columnName\` and an optional \`iconName\`; nothing while empty. |
+| \`RecordCardFieldRow\`, \`RecordCardProgress\`, \`RecordCardDateRange\` | A row with a \`label\` and any value, a bar with \`percent\` and \`text\`, and a date range, from the package root. |
 
-\`components.marker.popup.onRender\` replaces the default with a popup of your own, composed from these parts and from the shared \`RecordCard\` parts, which take any value. It is drawn inside Leaflet's popup, so hooks work there: \`CityPopup\` below reads where its pin sits.
-
-{{story: A popup of your own}}
+{{story: A postcard for each capital}}
 
 ## Plain UI
 
@@ -56,10 +55,10 @@ Each part is also exported as plain UI that takes only props, for a map with no 
 
 | Namespace | Holds |
 |---|---|
-| \`MapUi\` | \`Container\`: the map's box. \`Marker\`: the Fluent pin both libraries draw, its tip at the bottom centre of its 32 by 40 box. \`MarkerPin\`: its teardrop, in an optional \`color\` or the theme's primary colour |
-| \`LeafletUi\` | The Leaflet map over \`tileUrl\` and \`attribution\`, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children. \`LeafletUi.Popup\`: Leaflet's popup as a Fluent callout, for inside a react-leaflet marker |
-| Shared, from the package root | \`RecordCard\`, \`RecordCardHeader\` with \`RecordCardHeaderStart\` and \`RecordCardHeaderEnd\`, \`RecordCardTitle\`, \`RecordCardFieldRows\`, \`RecordCardFieldRow\`, \`RecordCardDateRange\`, \`RecordCardProgress\`: a record's summary, as the map's popups and the Gantt's tooltips draw it |
-| \`GoogleMapsUi\` | The Google map under \`mapId\`, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children; render it inside vis.gl's \`APIProvider\`. \`GoogleMapsUi.Popup\`: Google's info window as a Fluent callout, for an Advanced Marker |
+| \`Map.Ui\` | \`Container\`: the map's box. \`Marker\`: the Fluent pin, its tip at the bottom centre of its 32 by 40 box. \`MarkerPin\`: its teardrop, in an optional \`color\` or the theme's primary colour. |
+| \`LeafletUi\` | The Leaflet map over \`tileUrl\` and \`attribution\`, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children. \`LeafletUi.Popup\`: Leaflet's popup as a Fluent callout, for inside a react-leaflet marker. |
+| \`GoogleMapsUi\` | The Google map under \`mapId\`, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children; it goes inside vis.gl's \`APIProvider\`. \`GoogleMapsUi.Popup\`: Google's info window as a Fluent callout, for an Advanced Marker. |
+| From the package root | \`RecordCard\`, \`RecordCardHeader\` with \`RecordCardHeaderStart\` and \`RecordCardHeaderEnd\`, \`RecordCardTitle\`, \`RecordCardFieldRows\`, \`RecordCardFieldRow\`, \`RecordCardDateRange\`, \`RecordCardProgress\` and \`OptionTag\`: a record's summary, as the map's popups and the Gantt's tooltips draw it. |
 
 ## Where next
 
@@ -68,8 +67,8 @@ Each part is also exported as plain UI that takes only props, for a map with no 
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Pieces and slots', iconName: 'Puzzle', href: '?path=/docs/concepts-pieces-and-slots--overview', text: 'How slots work, and how to draw the default.' },
-    { title: 'Map libraries', iconName: 'MapLayers', href: '?path=/docs/controls-map-map-libraries--overview', text: 'Draw with Leaflet or Google Maps, over the tiles you choose.' },
-    { title: 'Write a library', iconName: 'Code', href: '?path=/docs/controls-map-write-a-library--overview', text: 'Draw the whole map with a library of your own.' },
+    { title: 'In a DatasetControl', iconName: 'ViewList', href: '?path=/docs/controls-map-in-a-datasetcontrol--overview', text: 'A popup that shows the columns the user picked.' },
+    { title: 'Map libraries', iconName: 'MapLayers', href: '?path=/docs/controls-map-map-libraries--overview', text: 'Leaflet over the tiles you choose, or Google Maps under your key.' },
 ]
 
 const meta = {
@@ -88,18 +87,18 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const MarkTheLargeCities: Story = {
-    name: 'Mark the large cities',
-    render: () => renderStory(<CustomUiExample />),
+export const PinsInTheirRegionsColour: Story = {
+    name: 'Pins in their region\'s colour',
+    render: () => renderStory(<RegionPinsExample />),
 }
 
-export const APopupOfYourOwn: Story = {
-    name: 'A popup of your own',
-    render: () => renderStory(<CustomPopupExample />),
+export const APostcardForEachCapital: Story = {
+    name: 'A postcard for each capital',
+    render: () => renderStory(<PostcardExample />),
     parameters: {
         docs: {
             description: {
-                story: `\`marker.popup.onRender\` composes the popup from \`MapPopup\`'s parts, with the city's role as the header's tag, a \`RecordCardFieldRow\` and a link. Try: click a pin, then follow its link.`,
+                story: `\`Postcard\` puts the region tag, three rows, the capital's size against the largest one and a link in each popup. Try: open Rome's pin, then Berlin's.`,
             },
         },
     },

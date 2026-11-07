@@ -3,43 +3,54 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { FilterExample, LeafletInstanceExample } from './mapExamples'
+import { EnlargementExample, TourExample } from './mapExamples'
 
 const DESCRIPTION = `
-Your own code can decide which pins the map shows, follow when they change, and reach the library's own map for anything the map itself does not offer. From outside, the map's props hand your code the map; from a component of yours inside it, hooks reach it directly. Try it below: drag the slider to hide the smaller cities.
+Your own code can decide which pins the map shows, draw components of its own in the map's box, move the view and reach the library's own map for anything else. From outside, the map's props hand your code the map; from a component inside it, hooks reach it directly. Try it below: drag the slider back to 1958 and watch the EU shrink to its six founders.
 
-{{canvas: Hide the smaller cities}}
+{{canvas: The EU through the years}}
 
 ## Change the pins
 
-The map draws a pin for each of its data provider's records that has a position, so the provider decides which pins there are. To show fewer, filter the provider and refresh it, as the example does; the pins and the view follow when it loads.
+The map draws a pin for each of its provider's records that has a position, so the provider decides which pins there are. To show fewer, filter the provider and refresh it, as \`onYearChange\` does; the pins and the view follow when it loads.
 
 ## From outside the map
 
 | Prop | Called | Use it to |
 |---|---|---|
-| \`onSetup(map)\` | With each new map, before it loads | Add surfaces and subscribe to what the map offers |
-| \`onLoad(map)\` | Once the modules have loaded; the map waits for a promise it returns | Read the modules, or load what you need first |
+| \`onSetup(map)\` | With each new map, before it loads | Add surfaces and subscribe to what the map offers. |
+| \`onLoad(map)\` | Once the modules have loaded; the map waits for a promise it returns | Read the modules, or load what you need first. |
 
-A remount, such as a new \`key\`, brings a new map and calls both again. How mounts work: [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
+A new \`key\` mounts a new map and calls both again; how mounts work is on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
 | Member | Description |
 |---|---|
 | \`getPoint(record)\` | Where the record's pin goes, as \`{ latitude, longitude }\`; \`undefined\` when its position is not a number. |
 | \`modules\` | The loaded modules: \`modules.get('library')\` is the map library. |
-| \`surfaces\` | What is drawn in the map's box: the library's map, and anything you add. See *From inside the map*. |
-| \`services\` | \`provider\`, the records' data provider, and \`viewport\`, which asks the library to move the view: see [**Write a library**](?path=/docs/controls-map-write-a-library--overview). |
+| \`surfaces\` | What is drawn in the map's box: the library's map, and anything you add. |
+| \`services\` | \`get('provider')\`, the records' provider, and \`get('viewport')\`, which moves the view. |
 | \`lifecycle\` | The mount's status and events: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 
 ## From inside the map
 
-A component of yours is drawn in the map's box, under the map, as a surface: add a hook with \`map.surfaces.hooks.surfaces.add(hook)\` in \`onSetup\` and push \`{ key, onRender }\`, as the example does for \`CityCount\`. \`useMap()\` returns the map, and \`useMapModule(name)\` one of its modules; both throw outside a map. \`useMapRecords()\` returns the records that have a pin and draws the component again when the provider loads new data.
+A component of yours is drawn in the map's box, under the map, as a *surface*: in \`onSetup\`, call \`map.surfaces.hooks.surfaces.add(hook)\` and push \`{ key, onRender }\`, as the example does for \`MemberCount\`. Inside it, and inside a pin or a popup, these hooks reach the map:
+
+| Hook | Returns |
+|---|---|
+| \`useMap()\` | The map. Throws outside one. |
+| \`useMapModule(name)\` | One of its modules, such as \`'library'\`. |
+| \`useMapRecords()\` | The records that have a pin, drawing the component again each time the provider loads new data. |
+| \`useMapRecord()\` | The record of the pin being drawn, inside a pin or its popup. |
+
+## Move the view
+
+\`map.services.get('viewport')\` asks the library to move its map. Its \`fit()\` asks for the view of the current pins, as **Show all** does below, and \`getView()\` returns that view without moving; the views it picks are under *Where the map looks* on [**Map**](?path=/docs/controls-map-get-started--overview).
 
 ## Reach the library's map
 
-\`map.modules.get('library')\` returns the map library, and its \`getInstance()\` the library's own map once it is drawn: a Leaflet \`Map\` or a \`google.maps.Map\`, and \`undefined\` before. To follow the moment it is drawn, type the library as \`ILeaflet\` or \`IGoogleMaps\` and listen to \`onInstanceReady\` on its \`events\`.
+\`map.modules.get('library')\` is the library module, and its \`getInstance()\` returns the library's own map once it is drawn, \`undefined\` before: a Leaflet \`Map\` for \`ILeaflet\`, a \`google.maps.Map\` for \`IGoogleMaps\`. To act the moment it is drawn, listen to \`onInstanceReady\` on the module's \`events\`; \`IGoogleMaps\` also fires \`onPopupChanged\` with the record id of the open popup.
 
-{{story: Reach Leaflet}}
+{{story: A tour from west to east}}
 
 ## Where next
 
@@ -47,9 +58,9 @@ A component of yours is drawn in the map's box, under the map, as a surface: add
 `
 
 const EXPLORE: IExploreCard[] = [
+    { title: 'In a DatasetControl', iconName: 'ViewList', href: '?path=/docs/controls-map-in-a-datasetcontrol--overview', text: 'Let views, quick find and a ribbon decide what the map shows.' },
+    { title: 'Your own UI', iconName: 'Edit', href: '?path=/docs/controls-map-your-own-ui--overview', text: 'Pins and popups of your own.' },
     { title: 'RuntimeHost', iconName: 'Processing', href: '?path=/docs/controls-runtimehost-get-started--overview', text: 'The mount behind the map, and its status and events.' },
-    { title: 'Your own UI', iconName: 'Edit', href: '?path=/docs/controls-map-your-own-ui--overview', text: 'Draw your own pins, popups and box.' },
-    { title: 'Write a library', iconName: 'Code', href: '?path=/docs/controls-map-write-a-library--overview', text: 'Draw the map with a library of your own.' },
 ]
 
 const meta = {
@@ -68,18 +79,18 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const HideTheSmallerCities: Story = {
-    name: 'Hide the smaller cities',
-    render: () => renderStory(<FilterExample />),
+export const TheEuThroughTheYears: Story = {
+    name: 'The EU through the years',
+    render: () => renderStory(<EnlargementExample />),
 }
 
-export const ReachLeaflet: Story = {
-    name: 'Reach Leaflet',
-    render: () => renderStory(<LeafletInstanceExample />),
+export const ATourFromWestToEast: Story = {
+    name: 'A tour from west to east',
+    render: () => renderStory(<TourExample />),
     parameters: {
         docs: {
             description: {
-                story: `\`onLoad\` follows the clicks on Leaflet's map, and a button inside the map moves it through \`useMapModule\`. Try: click anywhere on the map, then press **Show the world**.`,
+                story: `A surface under the map flies the library's own map from capital to capital, and **Show all** asks the viewport to fit every pin. Try: press **Next capital** a few times, then **Show all**.`,
             },
         },
     },

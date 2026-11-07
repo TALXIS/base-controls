@@ -8,7 +8,7 @@ import { MapContext } from "./context";
 import { MapUiContainer } from "./ui";
 
 /** Shows the records of the provider around it as pins, drawn by its library module. */
-export const Map = (props: IMapProps) => {
+export const MapRoot = (props: IMapProps) => {
     const provider = useDataProvider();
     const propsRef = useLatest(props);
     const createRuntime = () => new MapRuntime({ provider, getProps: () => propsRef.current });

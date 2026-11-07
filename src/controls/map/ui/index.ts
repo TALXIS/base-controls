@@ -9,7 +9,7 @@ export * from './marker-pin';
 /** The map's own UI, with no runtime behind it. */
 export interface IMapUi {
     Container: typeof MapUiContainer;
-    /** The Fluent pin Leaflet draws. */
+    /** The Fluent pin both map libraries draw. */
     Marker: typeof MapUiMarker;
     /** The teardrop of the Fluent pin, in a colour. */
     MarkerPin: typeof MapUiMarkerPin;

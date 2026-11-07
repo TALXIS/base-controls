@@ -1,5 +1,5 @@
 export * from './interfaces';
-export * from './Map';
+export * from './namespace';
 export * from './components';
 export * from './context';
 export * from './runtime/MapRuntime';

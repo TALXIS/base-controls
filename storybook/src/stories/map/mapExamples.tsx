@@ -9,438 +9,607 @@ const CITIES_FILE: IGridExampleFile = {
 //the columns a pin's position is read from
 export const FIELD_MAPPING = { latitude: 'lat', longitude: 'lng' }
 
-//an option set: each option's colour is the colour of its tag
-const ROLES = [
-    { Value: 1, Label: 'Capital', Color: '#0078d4' },
-    { Value: 2, Label: 'Regional city', Color: '#038387' },
+export const WISHLIST = 1
+export const VISITED = 2
+
+//option sets: each option's colour is the colour of its tag
+const REGIONS = [
+    { Value: 1, Label: 'Northern Europe', Color: '#4f6bed' },
+    { Value: 2, Label: 'Western Europe', Color: '#038387' },
+    { Value: 3, Label: 'Southern Europe', Color: '#ca5010' },
+    { Value: 4, Label: 'Eastern Europe', Color: '#8764b8' },
+]
+const STATUSES = [
+    { Value: WISHLIST, Label: 'Wishlist', Color: '#0078d4' },
+    { Value: VISITED, Label: 'Visited', Color: '#107c10' },
 ]
 
-//latitude and longitude in decimal degrees
-const CITIES = [
-    { name: 'Prague', lat: 50.0755, lng: 14.4378, population: 1357000, role: 1 },
-    { name: 'Brno', lat: 49.1951, lng: 16.6068, population: 382000, role: 2 },
-    { name: 'Ostrava', lat: 49.8209, lng: 18.2625, population: 284000, role: 2 },
-    { name: 'Warsaw', lat: 52.2297, lng: 21.0122, population: 1863000, role: 1 },
-    { name: 'Krakow', lat: 50.0647, lng: 19.9450, population: 804000, role: 2 },
-    { name: 'Bratislava', lat: 48.1486, lng: 17.1077, population: 475000, role: 1 },
-    { name: 'Budapest', lat: 47.4979, lng: 19.0402, population: 1706000, role: 1 },
+export const COLUMNS = [
+    { name: 'name', displayName: 'Capital', dataType: DataTypes.SingleLineText, isPrimary: true },
+    { name: 'country', displayName: 'Country', dataType: DataTypes.SingleLineText },
+    { name: 'lat', displayName: 'Latitude', dataType: DataTypes.Decimal },
+    { name: 'lng', displayName: 'Longitude', dataType: DataTypes.Decimal },
+    { name: 'population', displayName: 'Population', dataType: DataTypes.WholeNone },
+    { name: 'euSince', displayName: 'EU member since', dataType: DataTypes.WholeNone },
+    { name: 'region', displayName: 'Region', dataType: DataTypes.OptionSet, metadata: { OptionSet: REGIONS } },
+    { name: 'status', displayName: 'Trip', dataType: DataTypes.OptionSet, metadata: { OptionSet: STATUSES } },
 ]
 
+//the capitals of the EU, with latitude and longitude in decimal degrees
+const CAPITALS = [
+    { name: 'Amsterdam', country: 'Netherlands', lat: 52.3676, lng: 4.9041, population: 918000, euSince: 1958, region: 2, status: VISITED },
+    { name: 'Athens', country: 'Greece', lat: 37.9838, lng: 23.7275, population: 643000, euSince: 1981, region: 3, status: WISHLIST },
+    { name: 'Berlin', country: 'Germany', lat: 52.5200, lng: 13.4050, population: 3755000, euSince: 1958, region: 2, status: VISITED },
+    { name: 'Bratislava', country: 'Slovakia', lat: 48.1486, lng: 17.1077, population: 475000, euSince: 2004, region: 4, status: VISITED },
+    { name: 'Brussels', country: 'Belgium', lat: 50.8503, lng: 4.3517, population: 1222000, euSince: 1958, region: 2, status: WISHLIST },
+    { name: 'Bucharest', country: 'Romania', lat: 44.4268, lng: 26.1025, population: 1716000, euSince: 2007, region: 4, status: WISHLIST },
+    { name: 'Budapest', country: 'Hungary', lat: 47.4979, lng: 19.0402, population: 1706000, euSince: 2004, region: 4, status: VISITED },
+    { name: 'Copenhagen', country: 'Denmark', lat: 55.6761, lng: 12.5683, population: 660000, euSince: 1973, region: 1, status: WISHLIST },
+    { name: 'Dublin', country: 'Ireland', lat: 53.3498, lng: -6.2603, population: 592000, euSince: 1973, region: 1, status: WISHLIST },
+    { name: 'Helsinki', country: 'Finland', lat: 60.1699, lng: 24.9384, population: 674000, euSince: 1995, region: 1, status: WISHLIST },
+    { name: 'Lisbon', country: 'Portugal', lat: 38.7223, lng: -9.1393, population: 545000, euSince: 1986, region: 3, status: WISHLIST },
+    { name: 'Ljubljana', country: 'Slovenia', lat: 46.0569, lng: 14.5058, population: 295000, euSince: 2004, region: 3, status: WISHLIST },
+    { name: 'Luxembourg', country: 'Luxembourg', lat: 49.6116, lng: 6.1319, population: 134000, euSince: 1958, region: 2, status: WISHLIST },
+    { name: 'Madrid', country: 'Spain', lat: 40.4168, lng: -3.7038, population: 3332000, euSince: 1986, region: 3, status: WISHLIST },
+    { name: 'Nicosia', country: 'Cyprus', lat: 35.1856, lng: 33.3823, population: 330000, euSince: 2004, region: 3, status: WISHLIST },
+    { name: 'Paris', country: 'France', lat: 48.8566, lng: 2.3522, population: 2103000, euSince: 1958, region: 2, status: VISITED },
+    { name: 'Prague', country: 'Czechia', lat: 50.0755, lng: 14.4378, population: 1357000, euSince: 2004, region: 4, status: VISITED },
+    { name: 'Riga', country: 'Latvia', lat: 56.9496, lng: 24.1052, population: 605000, euSince: 2004, region: 1, status: WISHLIST },
+    { name: 'Rome', country: 'Italy', lat: 41.9028, lng: 12.4964, population: 2748000, euSince: 1958, region: 3, status: VISITED },
+    { name: 'Sofia', country: 'Bulgaria', lat: 42.6977, lng: 23.3219, population: 1236000, euSince: 2007, region: 4, status: WISHLIST },
+    { name: 'Stockholm', country: 'Sweden', lat: 59.3293, lng: 18.0686, population: 984000, euSince: 1995, region: 1, status: WISHLIST },
+    { name: 'Tallinn', country: 'Estonia', lat: 59.4370, lng: 24.7536, population: 454000, euSince: 2004, region: 1, status: WISHLIST },
+    { name: 'Valletta', country: 'Malta', lat: 35.8989, lng: 14.5146, population: 6000, euSince: 2004, region: 3, status: WISHLIST },
+    { name: 'Vienna', country: 'Austria', lat: 48.2082, lng: 16.3738, population: 2005000, euSince: 1995, region: 2, status: VISITED },
+    { name: 'Vilnius', country: 'Lithuania', lat: 54.6872, lng: 25.2797, population: 588000, euSince: 2004, region: 1, status: WISHLIST },
+    { name: 'Warsaw', country: 'Poland', lat: 52.2297, lng: 21.0122, population: 1863000, euSince: 2004, region: 4, status: WISHLIST },
+    { name: 'Zagreb', country: 'Croatia', lat: 45.8150, lng: 15.9819, population: 767000, euSince: 2013, region: 3, status: WISHLIST },
+]
+
+//every provider shares the rows, so a saved change outlives a remount
+export const createCitiesProvider = () => new MemoryDataProvider({
+    dataSource: CAPITALS,
+    metadata: { PrimaryIdAttribute: 'name', PrimaryNameAttribute: 'name', LogicalName: 'capital', QuickFindColumns: ['name', 'country'] },
+    columns: COLUMNS,
+})
+
+//loaded once for a map on its own; a DatasetControl loads its provider itself
 export const createCities = () => {
-    const provider = new MemoryDataProvider({
-        dataSource: CITIES,
-        metadata: { PrimaryIdAttribute: 'name', PrimaryNameAttribute: 'name', LogicalName: 'city', QuickFindColumns: ['name'] },
-        columns: [
-            { name: 'name', displayName: 'City', dataType: DataTypes.SingleLineText },
-            { name: 'lat', displayName: 'Latitude', dataType: DataTypes.Decimal },
-            { name: 'lng', displayName: 'Longitude', dataType: DataTypes.Decimal },
-            { name: 'population', displayName: 'Population', dataType: DataTypes.WholeNone },
-            { name: 'role', displayName: 'Role', dataType: DataTypes.OptionSet, metadata: { OptionSet: ROLES } },
-        ],
-    })
-    //the map draws its pins when the records load
+    const provider = createCitiesProvider()
     provider.refresh()
     return provider
 }
 `,
 }
 
-const run = (code: string, files: IGridExampleFile[] = []) => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code }, ...files, CITIES_FILE]} tabs={['preview', 'code']} />
+const LIBRARY_PICKER_FILE: IGridExampleFile = {
+    name: 'LibraryPicker.tsx',
+    code: `import { createGoogleMapsModule, createLeafletModule, IGoogleMapsComponents, ILeafletComponents, IMapModule } from '@talxis/base-controls'
+import { ChoiceGroup, IChoiceGroupOption, Stack, TextField } from '@fluentui/react'
 
-const GET_STARTED_CODE = `import { createLeafletModule, DataProviderScope, Map } from '@talxis/base-controls'
-import { mergeStyleSets } from '@fluentui/react'
+export type MapLibrary = 'leaflet' | 'googleMaps'
+
+export interface ILibraryPickerParameters {
+    //both libraries take the marker slots in the same shape
+    components?: ILeafletComponents & IGoogleMapsComponents
+    //Leaflet's tiles; OpenStreetMap's when left out
+    tileUrl?: string
+    attribution?: string
+}
+
+//kept for the browser tab, so every example starts on the library and key picked last
+const API_KEY_ITEM = 'mapDocs.googleMapsApiKey'
+const LIBRARY_ITEM = 'mapDocs.library'
+
+const getOptions = (apiKey: string): IChoiceGroupOption[] => [
+    { key: 'leaflet', text: 'Leaflet' },
+    { key: 'googleMaps', text: 'Google Maps', disabled: !apiKey },
+]
+
+export const useLibraryPicker = (parameters: ILibraryPickerParameters = {}) => {
+    const [apiKey, setApiKey] = React.useState(() => sessionStorage.getItem(API_KEY_ITEM) ?? '')
+    const [name, setName] = React.useState<MapLibrary>(() => apiKey && sessionStorage.getItem(LIBRARY_ITEM) === 'googleMaps' ? 'googleMaps' : 'leaflet')
+
+    //the library is a module of the map; Google Maps reads the key when it is picked
+    const modules: IMapModule[] = React.useMemo(() => name === 'googleMaps'
+        ? [createGoogleMapsModule({ apiKey, components: parameters.components })]
+        : [createLeafletModule({ tileUrl: parameters.tileUrl, attribution: parameters.attribution, components: parameters.components })], [name, parameters.tileUrl])
+
+    const onNameChange = (next: MapLibrary) => {
+        setName(next)
+        sessionStorage.setItem(LIBRARY_ITEM, next)
+    }
+    const onApiKeyChange = (next: string) => {
+        setApiKey(next)
+        sessionStorage.setItem(API_KEY_ITEM, next)
+    }
+
+    const picker = <Stack horizontal wrap verticalAlign='start' tokens={{ childrenGap: 24 }}>
+        <ChoiceGroup label='Map library' options={getOptions(apiKey)} selectedKey={name} onChange={(_, option) => onNameChange(option!.key as MapLibrary)} styles={{ flexContainer: { display: 'flex', selectors: { '.ms-ChoiceField': { marginRight: 16 } } } }} />
+        <TextField label='Google Maps API key' type='password' canRevealPassword value={apiKey} onChange={(_, value) => onApiKeyChange(value ?? '')} description={apiKey ? undefined : 'Paste a key of yours to pick Google Maps.'} />
+    </Stack>
+
+    //the map reads its modules as it mounts, so new modules need a new key
+    return { name, modules, mountKey: name + (parameters.tileUrl ?? ''), picker }
+}
+`,
+}
+
+const run = (code: string, ...files: IGridExampleFile[]) => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code }, ...files, LIBRARY_PICKER_FILE, CITIES_FILE]} tabs={['preview', 'code']} />
+
+const GET_STARTED_CODE = `import { DataProviderScope, Map } from '@talxis/base-controls'
+import { mergeStyleSets, Stack } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
+import { useLibraryPicker } from './LibraryPicker'
 
 //the map fills its parent, so the parent sets its size
 const styles = mergeStyleSets({
-    map: { height: 420 },
+    map: { height: 440 },
 })
-
-//the library that draws the map and its pins; Leaflet over OpenStreetMap needs no key
-const MODULES = [createLeafletModule()]
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
+    //the modules: createLeafletModule(), or createGoogleMapsModule({ apiKey }) under your key
+    const library = useLibraryPicker()
 
-    return <div className={styles.map}>
-        <DataProviderScope provider={provider}>
-            <Map fieldMapping={FIELD_MAPPING} modules={MODULES} />
-        </DataProviderScope>
-    </div>
+    return <Stack tokens={{ childrenGap: 12 }}>
+        {library.picker}
+        <div className={styles.map}>
+            {/* the map shows the records of the provider around it */}
+            <DataProviderScope provider={provider}>
+                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+            </DataProviderScope>
+        </div>
+    </Stack>
 }
 `
 
 export const GetStartedExample = () => run(GET_STARTED_CODE)
 
-const DATASET_CONTROL_CODE = `import { createLeafletModule, DatasetControl, Map } from '@talxis/base-controls'
+const TILES_CODE = `import { DataProviderScope, Map } from '@talxis/base-controls'
+import { Dropdown, mergeStyleSets, Stack } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
-
-const MODULES = [createLeafletModule()]
-
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: createCities() })} height='440px'>
-    <DatasetControl.Header>
-        <DatasetControl.Header.End>
-            <DatasetControl.QuickFind />
-        </DatasetControl.Header.End>
-    </DatasetControl.Header>
-    <DatasetControl.Body>
-        {/* shows the control's provider, so the pins follow the search */}
-        <Map fieldMapping={FIELD_MAPPING} modules={MODULES} />
-    </DatasetControl.Body>
-</DatasetControl>
-`
-
-export const DatasetControlExample = () => run(DATASET_CONTROL_CODE)
-
-const LIBRARIES_CODE = `import { createGoogleMapsModule, createLeafletModule, DataProviderScope, Map } from '@talxis/base-controls'
-import { ChoiceGroup, mergeStyleSets, Stack, TextField } from '@fluentui/react'
-import { createCities, FIELD_MAPPING } from './data'
+import { useLibraryPicker } from './LibraryPicker'
 
 const styles = mergeStyleSets({
-    map: { height: 400 },
+    map: { height: 440 },
+    tiles: { width: 240 },
 })
 
-//Leaflet over other tiles: a URL template and the attribution the tiles require
-const CARTO_LIGHT = {
-    tileUrl: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-}
+const OSM = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+const CARTO = OSM + ' &copy; <a href="https://carto.com/attributions">CARTO</a>'
+
+//a tile URL template, and the credit the tile service asks you to show
+const TILES = [
+    { key: 'openStreetMap', text: 'OpenStreetMap', tileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: OSM },
+    { key: 'positron', text: 'CARTO Positron', tileUrl: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', attribution: CARTO },
+    { key: 'darkMatter', text: 'CARTO Dark Matter', tileUrl: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: CARTO },
+    { key: 'topo', text: 'OpenTopoMap', tileUrl: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', attribution: OSM + ', SRTM | &copy; <a href="https://opentopomap.org">OpenTopoMap</a>' },
+]
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
-    const [library, setLibrary] = React.useState('openStreetMap')
-    const [apiKey, setApiKey] = React.useState('')
-
-    //each library is a module and its adapter; the key is read when Google Maps is picked
-    const modules = React.useMemo(() => {
-        switch (library) {
-            case 'carto': return [createLeafletModule(CARTO_LIGHT)]
-            case 'google': return [createGoogleMapsModule({ apiKey })]
-            default: return [createLeafletModule()]
-        }
-    }, [library])
-
-    const options = [
-        { key: 'openStreetMap', text: 'Leaflet, OpenStreetMap' },
-        { key: 'carto', text: 'Leaflet, CARTO light' },
-        { key: 'google', text: 'Google Maps', disabled: !apiKey },
-    ]
+    const [tiles, setTiles] = React.useState(TILES[1])
+    //createLeafletModule({ tileUrl, attribution }); Google Maps draws its own tiles
+    const library = useLibraryPicker({ tileUrl: tiles.tileUrl, attribution: tiles.attribution })
 
     return <Stack tokens={{ childrenGap: 12 }}>
-        <Stack horizontal tokens={{ childrenGap: 24 }} verticalAlign='end'>
-            <ChoiceGroup options={options} selectedKey={library} onChange={(_, option) => setLibrary(option!.key)} />
-            <TextField label='Google Maps API key' type='password' value={apiKey} onChange={(_, value) => setApiKey(value ?? '')} />
-        </Stack>
+        {library.picker}
+        <Dropdown label='Leaflet tiles' className={styles.tiles} options={TILES} selectedKey={tiles.key} disabled={library.name !== 'leaflet'} onChange={(_, option) => setTiles(option as typeof tiles)} />
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                {/* modules are read at mount, so a new library needs a new key */}
-                <Map key={library} fieldMapping={FIELD_MAPPING} modules={modules} />
+                {/* the key changes with the tiles too, so the map mounts again with them */}
+                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
             </DataProviderScope>
         </div>
     </Stack>
 }
 `
 
-export const LibrariesExample = () => run(LIBRARIES_CODE)
+export const TilesExample = () => run(TILES_CODE)
 
-const FILTER_CODE = `import { createLeafletModule, DataProviderScope, IMap, Map, useMapRecords } from '@talxis/base-controls'
+const ENLARGEMENT_CODE = `import { DataProviderScope, IMap, Map, useMapRecords } from '@talxis/base-controls'
+import { Operators, Type } from '@talxis/client-libraries'
 import { mergeStyleSets, Slider, Stack, Text } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
+import { useLibraryPicker } from './LibraryPicker'
 
 const styles = mergeStyleSets({
-    map: { height: 420 },
+    map: { height: 440 },
+    count: { padding: '6px 12px' },
 })
 
-const MODULES = [createLeafletModule()]
+//useMapRecords() draws it again each time the provider loads new data
+const MemberCount = () => <Text className={styles.count}>{useMapRecords().length} member states</Text>
 
-//drawn in the map's box, under the map; useMapRecords() draws it again when the provider loads new data
-const CityCount = () => <Text>{useMapRecords().length} cities on the map</Text>
-
-//called with each new map, before it loads; a surface draws in the map's box
+//called with each new map, before it loads
 const onSetup = (map: IMap) => {
+    //a surface: a component of yours in the map's box, under the map
     map.surfaces.hooks.surfaces.add(surfaces => {
-        surfaces.push({ key: 'cityCount', onRender: () => <CityCount /> })
+        surfaces.push({ key: 'memberCount', onRender: () => <MemberCount /> })
     })
 }
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
-    const [minPopulation, setMinPopulation] = React.useState(0)
+    const library = useLibraryPicker()
+    const [year, setYear] = React.useState(2013)
 
-    //the map shows the provider's records, so filtering the provider filters the pins
-    const onChange = (value: number) => {
-        setMinPopulation(value)
-        provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'population', conditionOperator: Operators.GreaterThanOrEqual.Value, value: String(value) }] })
+    //the pins are the provider's records, so filtering the provider filters the pins
+    const onYearChange = (value: number) => {
+        setYear(value)
+        provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'euSince', conditionOperator: Operators.LessThanOrEqual.Value, value: String(value) }] })
         provider.refresh()
     }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <Slider label='Smallest population' min={0} max={2000000} step={100000} value={minPopulation} valueFormat={value => value.toLocaleString()} onChange={onChange} />
+    return <Stack tokens={{ childrenGap: 12 }}>
+        {library.picker}
+        <Slider label='The EU in' min={1958} max={2013} value={year} onChange={onYearChange} />
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                <Map fieldMapping={FIELD_MAPPING} modules={MODULES} onSetup={onSetup} />
+                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} onSetup={onSetup} />
             </DataProviderScope>
         </div>
     </Stack>
 }
 `
 
-export const FilterExample = () => run(FILTER_CODE)
+export const EnlargementExample = () => run(ENLARGEMENT_CODE)
 
-const LEAFLET_CODE = `import { createLeafletModule, DataProviderScope, ILeaflet, IMap, Map, useMapModule } from '@talxis/base-controls'
-import { DefaultButton, mergeStyleSets, Stack, Text } from '@fluentui/react'
+const TOUR_CODE = `import { DataProviderScope, IGoogleMaps, ILeaflet, IMap, IMapPoint, Map, useMap, useMapRecords } from '@talxis/base-controls'
+import { DefaultButton, mergeStyleSets, PrimaryButton, Stack, Text } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
+import { MapLibrary, useLibraryPicker } from './LibraryPicker'
 
 const styles = mergeStyleSets({
-    map: { height: 420 },
+    map: { height: 480 },
 })
 
-const MODULES = [createLeafletModule()]
+const CITY_ZOOM = 11
 
-const WorldButton = () => {
-    //the library module; getInstance() is Leaflet's own map
-    const leaflet = useMapModule('library') as ILeaflet
-    return <DefaultButton text='Show the world' onClick={() => leaflet.getInstance()?.setView([20, 0], 2)} />
+//each library moves its own map: a Leaflet Map, or a google.maps.Map
+const flyTo = (map: IMap, library: MapLibrary, { latitude, longitude }: IMapPoint) => {
+    if (library === 'leaflet') {
+        (map.modules.get('library') as ILeaflet).getInstance()?.flyTo([latitude, longitude], CITY_ZOOM)
+        return
+    }
+    const googleMap = (map.modules.get('library') as IGoogleMaps).getInstance()
+    googleMap?.panTo({ lat: latitude, lng: longitude })
+    googleMap?.setZoom(CITY_ZOOM)
 }
 
-//a surface draws in the map's box, under the map
-const onSetup = (map: IMap) => {
-    map.surfaces.hooks.surfaces.add(surfaces => {
-        surfaces.push({ key: 'worldButton', onRender: () => <WorldButton /> })
-    })
+const Tour = (props: { library: MapLibrary }) => {
+    const map = useMap()
+    const stops = useMapRecords().sort((a, b) => map.getPoint(a)!.longitude - map.getPoint(b)!.longitude)
+    const [stop, setStop] = React.useState(-1)
+
+    const next = () => {
+        const index = (stop + 1) % stops.length
+        setStop(index)
+        flyTo(map, props.library, map.getPoint(stops[index])!)
+    }
+
+    //the viewport asks the library for the view that fits every pin
+    const showAll = () => {
+        setStop(-1)
+        map.services.get('viewport').fit()
+    }
+
+    return <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 8, padding: 8 }}>
+        <PrimaryButton text='Next capital' iconProps={{ iconName: 'Airplane' }} onClick={next} />
+        <DefaultButton text='Show all' onClick={showAll} />
+        <Text>{stop >= 0 ? stops[stop].getFormattedValue('name') : 'West to east'}</Text>
+    </Stack>
 }
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
-    const [clicked, setClicked] = React.useState('Nowhere yet')
+    const library = useLibraryPicker()
 
-    //the modules have loaded, but Leaflet's map is not drawn yet
-    const onLoad = (map: IMap) => {
-        const leaflet = map.modules.get('library') as ILeaflet
-        leaflet.events.addEventListener('onInstanceReady', instance => {
-            instance.on('click', event => setClicked(event.latlng.lat.toFixed(4) + ', ' + event.latlng.lng.toFixed(4)))
+    //the tour sits under the map, told which library draws it
+    const onSetup = (map: IMap) => {
+        map.surfaces.hooks.surfaces.add(surfaces => {
+            surfaces.push({ key: 'tour', onRender: () => <Tour library={library.name} /> })
         })
     }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <Text>Clicked: {clicked}</Text>
+    return <Stack tokens={{ childrenGap: 12 }}>
+        {library.picker}
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                <Map fieldMapping={FIELD_MAPPING} modules={MODULES} onSetup={onSetup} onLoad={onLoad} />
+                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} onSetup={onSetup} />
             </DataProviderScope>
         </div>
     </Stack>
 }
 `
 
-export const LeafletInstanceExample = () => run(LEAFLET_CODE)
+export const TourExample = () => run(TOUR_CODE)
 
-const CUSTOM_UI_CODE = `import { createLeafletModule, DataProviderScope, ILeafletComponents, IMapComponents, IMapUiMarkerComponents, IRecordCardTitleComponents, Map, MapUiContainerComponents, MapUiMarkerComponents, RecordCardTitleComponents, useMapRecord } from '@talxis/base-controls'
-import { mergeStyleSets } from '@fluentui/react'
+const REGION_PINS_CODE = `import { DataProviderScope, IGoogleMapsComponents, ILeafletComponents, IMapUiMarkerPinProps, Map, useMap, useMapRecord } from '@talxis/base-controls'
+import { Icon, mergeStyleSets, Stack } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
+import { useLibraryPicker } from './LibraryPicker'
 
 const styles = mergeStyleSets({
-    map: { height: 420 },
-    box: { border: '1px solid #c8c6c4', borderRadius: 8, overflow: 'hidden' },
+    map: { height: 440 },
+    //the dot sits in the turned teardrop, so the star turns back upright
+    star: { color: 'white', fontSize: 12, transform: 'rotate(45deg)' },
 })
 
-//the teardrop gets its colour, the popup's title an element's props
-type PinProps = Parameters<IMapUiMarkerComponents['onRenderPin']>[0]
-type TitleProps = Parameters<IRecordCardTitleComponents['onRenderContainer']>[0]
-
-const RED = '#a4262c'
-const isLarge = (population: unknown) => Number(population) >= 1000000
-
-//the map's own slot: draws its default box with one more class
-const MAP_COMPONENTS: IMapComponents = {
-    onRenderContainer: props => MapUiContainerComponents.onRenderContainer({ ...props, className: [props.className, styles.box].join(' ') }),
-}
-
-//a large city gets a red teardrop; the rest keep the theme's colour
-const CityPin = (props: PinProps) => {
+//the teardrop in the colour of the capital's region
+const RegionPin = (props: IMapUiMarkerPinProps) => {
     //the record of the pin being drawn
-    const large = isLarge(useMapRecord().getValue('population'))
-    return MapUiMarkerComponents.onRenderPin(large ? { ...props, color: RED } : props)
+    const record = useMapRecord()
+    const regions = useMap().services.get('provider').getColumnsMap().region.metadata?.OptionSet ?? []
+    const color = regions.find(region => region.Value === Number(record.getValue('region')))?.Color
+    return <Map.Ui.MarkerPin {...props} color={color} />
 }
 
-//the default popup keeps its parts; its title takes the pin's colour
-const CityTitle = (props: TitleProps) => {
-    const large = isLarge(useMapRecord().getValue('population'))
-    return RecordCardTitleComponents.onRenderContainer(large ? { ...props, style: { ...props.style, color: RED } } : props)
+//a star in place of the white dot for a capital of two million or more
+const CapitalDot = (props: React.HTMLAttributes<HTMLDivElement>) => {
+    const isLarge = Number(useMapRecord().getValue('population')) >= 2000000
+    return isLarge ? <Icon iconName='FavoriteStarFill' className={styles.star} /> : <div {...props} />
 }
 
-//marker holds the slots of each pin and of its popup, by part; a component of your own may use hooks
-const COMPONENTS: ILeafletComponents = {
+//the same slots for either library; a component of yours may use hooks
+const COMPONENTS: ILeafletComponents & IGoogleMapsComponents = {
     marker: {
-        pin: { onRenderPin: props => <CityPin {...props} /> },
-        popup: { header: { title: { onRenderContainer: props => <CityTitle {...props} /> } } },
+        pin: {
+            onRenderPin: props => <RegionPin {...props} />,
+            onRenderDot: props => <CapitalDot {...props} />,
+        },
     },
 }
 
-//the library module draws the map and its pins, with these slots
-const MODULES = [createLeafletModule({ components: COMPONENTS })]
-
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
+    //the library module takes the slots: createLeafletModule({ components })
+    const library = useLibraryPicker({ components: COMPONENTS })
 
-    return <div className={styles.map}>
-        <DataProviderScope provider={provider}>
-            <Map fieldMapping={FIELD_MAPPING} modules={MODULES} components={MAP_COMPONENTS} />
-        </DataProviderScope>
-    </div>
+    return <Stack tokens={{ childrenGap: 12 }}>
+        {library.picker}
+        <div className={styles.map}>
+            <DataProviderScope provider={provider}>
+                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+            </DataProviderScope>
+        </div>
+    </Stack>
 }
 `
 
-export const CustomUiExample = () => run(CUSTOM_UI_CODE)
+export const RegionPinsExample = () => run(REGION_PINS_CODE)
 
-const CUSTOM_POPUP_CODE = `import { createLeafletModule, DataProviderScope, Map, MapPopup, RecordCardFieldRow, useMap, useMapRecord } from '@talxis/base-controls'
-import { Link, mergeStyleSets } from '@fluentui/react'
+const POSTCARD_CODE = `import { DataProviderScope, IGoogleMapsComponents, ILeafletComponents, Map, RecordCardFieldRow, RecordCardProgress, useMapRecord, useMapRecords } from '@talxis/base-controls'
+import { Link, mergeStyleSets, Stack } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
+import { useLibraryPicker } from './LibraryPicker'
 
 const styles = mergeStyleSets({
-    map: { height: 420 },
+    map: { height: 480 },
+    link: { display: 'block', marginTop: 8 },
 })
 
-//drawn inside Leaflet's popup, so MapPopup's parts and hooks reach the pin's record
-const CityPopup = () => {
-    const point = useMap().getPoint(useMapRecord())!
-    const osm = \`https://www.openstreetmap.org/?mlat=\${point.latitude}&mlon=\${point.longitude}#map=12/\${point.latitude}/\${point.longitude}\`
+//drawn inside the library's popup, so Map.Popup's parts and the hooks reach the pin's record
+const Postcard = () => {
+    const capital = useMapRecord()
+    const largest = useMapRecords().reduce((a, b) => Number(a.getValue('population')) >= Number(b.getValue('population')) ? a : b)
+    const name = capital.getFormattedValue('name')
+    const share = Number(capital.getValue('population')) / Number(largest.getValue('population')) * 100
 
-    return <MapPopup.Card>
-        {/* the role shows beside the name as a tag in its option's colour */}
-        <MapPopup.Header statusColumnName='role' />
-        <MapPopup.FieldRows>
-            <MapPopup.FieldRow columnName='population' iconName='People' />
-            {/* the shared RecordCard parts take any value, such as where the pin sits */}
-            <RecordCardFieldRow label='Position' iconName='MapPin'>{point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}</RecordCardFieldRow>
-        </MapPopup.FieldRows>
-        <Link href={osm} target='_blank'>Open in OpenStreetMap</Link>
-    </MapPopup.Card>
+    return <Map.Popup.Card>
+        {/* the region beside the name, as a tag in its option's colour */}
+        <Map.Popup.Header statusColumnName='region' />
+        <Map.Popup.FieldRows>
+            <Map.Popup.FieldRow columnName='country' iconName='Flag' />
+            <Map.Popup.FieldRow columnName='population' iconName='People' />
+            {/* the shared RecordCard parts take any value */}
+            <RecordCardFieldRow label='In the EU since' iconName='Calendar'>{capital.getValue('euSince')}</RecordCardFieldRow>
+        </Map.Popup.FieldRows>
+        <RecordCardProgress percent={share} text={\`\${Math.round(share)}% of \${largest.getFormattedValue('name')}\`} />
+        <Link className={styles.link} href={\`https://en.wikipedia.org/wiki/\${name}\`} target='_blank'>Read about {name}</Link>
+    </Map.Popup.Card>
 }
 
-//the whole popup, in place of MapPopup.Renderer, sits with the pin's slots
-const MODULES = [createLeafletModule({ components: { marker: { popup: { onRender: () => <CityPopup /> } } } })]
+//the whole popup, in place of Map.Popup.Renderer
+const COMPONENTS: ILeafletComponents & IGoogleMapsComponents = {
+    marker: { popup: { onRender: () => <Postcard /> } },
+}
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
+    const library = useLibraryPicker({ components: COMPONENTS })
 
-    return <div className={styles.map}>
-        <DataProviderScope provider={provider}>
-            <Map fieldMapping={FIELD_MAPPING} modules={MODULES} />
-        </DataProviderScope>
-    </div>
+    return <Stack tokens={{ childrenGap: 12 }}>
+        {library.picker}
+        <div className={styles.map}>
+            <DataProviderScope provider={provider}>
+                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+            </DataProviderScope>
+        </div>
+    </Stack>
 }
 `
 
-export const CustomPopupExample = () => run(CUSTOM_POPUP_CODE)
+export const PostcardExample = () => run(POSTCARD_CODE)
 
-const DOT_MAP_FILE: IGridExampleFile = {
-    name: 'DotMap.tsx',
-    code: `import { IMap, IMapLibrary, IMapModule, IMapPoint, IMapViewRequest, useMap, useMapModule, useMapRecords } from '@talxis/base-controls'
-import { mergeStyleSets } from '@fluentui/react'
+const TRIP_CODE = `import { DatasetControl, Map } from '@talxis/base-controls'
+import { Stack } from '@fluentui/react'
+import { FIELD_MAPPING } from './data'
+import { loadTrip } from './views'
+import { TripRibbon } from './TripRibbon'
+import { COMPONENTS } from './CityCard'
+import { useLibraryPicker } from './LibraryPicker'
 
-const WIDTH = 800
-const HEIGHT = 420
+const GridExample = () => {
+    //the pins and popups of CityCard.tsx, for either library
+    const library = useLibraryPicker({ components: COMPONENTS })
 
-const styles = mergeStyleSets({
-    svg: { flex: 1, minHeight: 0, width: '100%', background: '#eef3f8' },
-    label: { fontSize: 13, fill: '#323130' },
-})
+    return <Stack tokens={{ childrenGap: 12 }}>
+        {library.picker}
+        <DatasetControl onLoad={loadTrip} height='560px'>
+            <DatasetControl.Header>
+                <DatasetControl.Header.Start>
+                    <DatasetControl.ViewSwitcher />
+                </DatasetControl.Header.Start>
+                <DatasetControl.Header.End>
+                    <TripRibbon />
+                    <DatasetControl.EditColumns />
+                    <DatasetControl.QuickFind />
+                </DatasetControl.Header.End>
+            </DatasetControl.Header>
+            <DatasetControl.Body>
+                {/* takes no provider of its own: it shows the control's */}
+                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+            </DatasetControl.Body>
+        </DatasetControl>
+    </Stack>
+}
+`
 
-//the library's own map is the svg DotMap draws
-class DotMapRuntime implements IMapLibrary {
-    public svg: SVGSVGElement | null = null
+const TRIP_VIEWS_FILE: IGridExampleFile = {
+    name: 'views.ts',
+    code: `import { IDatasetControlLoadResult, IDatasetControlView } from '@talxis/base-controls'
+import { Operators, Type } from '@talxis/client-libraries'
+import { COLUMNS, createCitiesProvider, VISITED, WISHLIST } from './data'
 
-    //the library adds its map to the map's box
-    constructor(map: IMap) {
-        map.surfaces.hooks.surfaces.add(surfaces => {
-            surfaces.push({ key: 'library', onRender: () => <DotMap /> })
-        }, -100)
-    }
+const getColumn = (name: string) => COLUMNS.find(column => column.name === name)!
+//the columns a view shows, in the order it shows them
+const shown = (...names: string[]) => names.map((name, order) => ({ ...getColumn(name), order }))
+//loaded for the pins and the popup's header, never shown
+const READ_BY_THE_MAP = ['lat', 'lng', 'status'].map(name => ({ ...getColumn(name), isHidden: true }))
 
-    public getInstance() {
-        return this.svg
-    }
+const TRIP = { id: 'trip', name: 'My trip' }
+
+const filterByStatus = (provider: IDataProvider, status: number) => {
+    provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'status', conditionOperator: Operators.Equal.Value, value: String(status) }] })
 }
 
-//the map needs one module named library
-export const createDotMapModule = (): IMapModule => ({
-    name: 'library',
-    onLoad: map => new DotMapRuntime(map),
-})
+const VIEWS: IDatasetControlView[] = [
+    { id: 'all', name: 'All capitals', resolve: () => ({ columns: [...shown('name', 'country', 'population'), ...READ_BY_THE_MAP] }) },
+    {
+        id: 'large',
+        name: 'Over a million people',
+        resolve: provider => {
+            provider.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'population', conditionOperator: Operators.GreaterThanOrEqual.Value, value: '1000000' }] })
+            return { columns: [...shown('name', 'population'), ...READ_BY_THE_MAP] }
+        },
+    },
+    {
+        id: 'wishlist',
+        name: 'Wishlist',
+        group: TRIP,
+        resolve: provider => {
+            filterByStatus(provider, WISHLIST)
+            return { columns: [...shown('name', 'country', 'region'), ...READ_BY_THE_MAP] }
+        },
+    },
+    {
+        id: 'visited',
+        name: 'Visited',
+        group: TRIP,
+        resolve: provider => {
+            filterByStatus(provider, VISITED)
+            return { columns: [...shown('name', 'country'), ...READ_BY_THE_MAP] }
+        },
+    },
+]
 
-interface IView {
-    center: IMapPoint
-    zoom: number
-}
-
-//pixels per degree, counting zoom as tiled maps do: zoom 0 is the world in 256 pixels
-const getScale = (zoom: number) => 256 * 2 ** zoom / 360
-
-const toView = (request: IMapViewRequest): IView => {
-    if ('center' in request) {
-        return request
-    }
-    const { north, south, east, west } = request.bounds
-    return {
-        center: { latitude: (north + south) / 2, longitude: (east + west) / 2 },
-        zoom: Math.log2(Math.min((WIDTH - 2 * request.padding) / (east - west), (HEIGHT - 2 * request.padding) / (north - south)) * 360 / 256),
-    }
-}
-
-const DotMap = () => {
-    const map = useMap()
-    const dotMap = useMapModule('library') as DotMapRuntime
-    //draws again each time the provider loads new data
-    const records = useMapRecords()
-    const [view, setView] = React.useState<IView>({ center: { latitude: 0, longitude: 0 }, zoom: 1 })
-
-    //the map asks for a new view through its viewport; ask once for the records already loaded
-    React.useEffect(() => {
-        const viewport = map.services.get('viewport')
-        const stop = viewport.events.addEventListener('onViewRequested', request => setView(toView(request)))
-        viewport.fit()
-        return stop
-    }, [map])
-
-    const scale = getScale(view.zoom)
-    const toX = (longitude: number) => WIDTH / 2 + (longitude - view.center.longitude) * scale
-    const toY = (latitude: number) => HEIGHT / 2 - (latitude - view.center.latitude) * scale
-
-    return <svg ref={svg => { dotMap.svg = svg }} viewBox={'0 0 ' + WIDTH + ' ' + HEIGHT} className={styles.svg}>
-        {records.map(record => {
-            const point = map.getPoint(record)!
-            return <g key={record.getRecordId()}>
-                <circle cx={toX(point.longitude)} cy={toY(point.latitude)} r={6} fill='#0078d4' />
-                <text x={toX(point.longitude) + 10} y={toY(point.latitude) + 4} className={styles.label}>{record.getRecordId()}</text>
-            </g>
-        })}
-    </svg>
+export const loadTrip = async (): Promise<IDatasetControlLoadResult> => {
+    const provider = createCitiesProvider()
+    //what Edit columns offers: a memory provider lists the columns of its saved queries
+    provider.setMetadata({ ...provider.getMetadata(), SavedQueries: [{ columns: ['name', 'country', 'population', 'region'].map(getColumn) }] })
+    return { provider, views: VIEWS }
 }
 `,
 }
 
-const OWN_LIBRARY_CODE = `import { DataProviderScope, Map } from '@talxis/base-controls'
-import { mergeStyleSets } from '@fluentui/react'
-import { createDotMapModule } from './DotMap'
-import { createCities, FIELD_MAPPING } from './data'
+const TRIP_RIBBON_FILE: IGridExampleFile = {
+    name: 'TripRibbon.tsx',
+    code: `import { DatasetControl, IRibbonCommand, useDataProvider } from '@talxis/base-controls'
+import { VISITED, WISHLIST } from './data'
+
+export const TripRibbon = () => {
+    const provider = useDataProvider()
+
+    //saved at once, so it leaves no unsaved changes behind
+    const setStatus = async (capitals: IRecord[], status: number) => {
+        capitals.forEach(capital => capital.setValue('status', status))
+        await provider.save(capitals)
+    }
+
+    //DatasetControl.Ribbon calls onLoad again on every selection, such as one made in a popup
+    const onLoad = async (): Promise<IRibbonCommand[]> => {
+        const capitals = provider.getSelectedRecordIds().map(id => provider.getRecordsMap()[id])
+        if (capitals.length === 0) {
+            return []
+        }
+        return [
+            { id: 'markVisited', label: \`Mark \${capitals.length} as visited\`, iconName: 'CheckMark', onExecute: () => setStatus(capitals, VISITED) },
+            { id: 'backToWishlist', label: 'Back to the wishlist', iconName: 'Heart', onExecute: () => setStatus(capitals, WISHLIST) },
+            { id: 'clearSelection', label: 'Clear selection', iconName: 'Clear', onExecute: () => provider.clearSelectedRecordIds() },
+        ]
+    }
+
+    //Refresh loads the view again, so a city that left its view goes
+    return <DatasetControl.Ribbon enableRefresh onLoad={onLoad} />
+}
+`,
+}
+
+const CITY_CARD_FILE: IGridExampleFile = {
+    name: 'CityCard.tsx',
+    code: `import { IGoogleMapsComponents, ILeafletComponents, IMapUiMarkerPinProps, Map, useDataProviderEvents, useMapRecord } from '@talxis/base-controls'
+import { Link, mergeStyleSets } from '@fluentui/react'
+
+const SELECTED_COLOR = '#323130'
 
 const styles = mergeStyleSets({
-    map: { height: 420 },
+    select: { display: 'block', marginTop: 8 },
 })
 
-//the library of your own, in place of createLeafletModule()
-const MODULES = [createDotMapModule()]
-
-const GridExample = () => {
-    const provider = React.useMemo(createCities, [])
-
-    return <div className={styles.map}>
-        <DataProviderScope provider={provider}>
-            <Map fieldMapping={FIELD_MAPPING} modules={MODULES} />
-        </DataProviderScope>
-    </div>
+//the pin's record and whether it is in the control's selection
+const useCity = () => {
+    const record = useMapRecord()
+    //the control's provider; draws again when the selection or a value changes
+    const provider = useDataProviderEvents(['onRecordsSelected', 'onRecordColumnValueChanged'])
+    const id = record.getRecordId()
+    const selectedIds = provider.getSelectedRecordIds()
+    const isSelected = selectedIds.includes(id)
+    const toggle = () => provider.setSelectedRecordIds(isSelected ? selectedIds.filter(selectedId => selectedId !== id) : [...selectedIds, id])
+    return { record, provider, isSelected, toggle }
 }
-`
 
-export const OwnLibraryExample = () => run(OWN_LIBRARY_CODE, [DOT_MAP_FILE])
+//dark while selected, otherwise in the colour of the trip status
+const CityPin = (props: IMapUiMarkerPinProps) => {
+    const { record, provider, isSelected } = useCity()
+    const statuses = provider.getColumnsMap().status.metadata?.OptionSet ?? []
+    const color = isSelected ? SELECTED_COLOR : statuses.find(status => status.Value === Number(record.getValue('status')))?.Color
+    return <Map.Ui.MarkerPin {...props} color={color} />
+}
+
+//a row for each column the view shows now, so Edit columns changes the popup
+const CityCard = () => {
+    const { provider, isSelected, toggle } = useCity()
+    //the name is in the header; the hidden columns are the ones the map reads
+    const columns = provider.getColumns().filter(column => !column.isHidden && !column.isPrimary)
+
+    return <Map.Popup.Card>
+        <Map.Popup.Header statusColumnName='status' />
+        <Map.Popup.FieldRows>
+            {columns.map(column => <Map.Popup.FieldRow key={column.name} columnName={column.name} />)}
+        </Map.Popup.FieldRows>
+        <Link className={styles.select} onClick={toggle}>{isSelected ? 'Deselect' : 'Select'}</Link>
+    </Map.Popup.Card>
+}
+
+export const COMPONENTS: ILeafletComponents & IGoogleMapsComponents = {
+    marker: {
+        pin: { onRenderPin: props => <CityPin {...props} /> },
+        popup: { onRender: () => <CityCard /> },
+    },
+}
+`,
+}
+
+export const TripPlannerExample = () => run(TRIP_CODE, TRIP_VIEWS_FILE, TRIP_RIBBON_FILE, CITY_CARD_FILE)
