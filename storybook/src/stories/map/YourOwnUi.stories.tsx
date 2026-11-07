@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { PostcardExample, RegionPinsExample } from './mapExamples'
+import { BoardingPassExample, PostcardExample, RegionPinsExample } from './mapExamples'
 
 const DESCRIPTION = `
 The pins and the popups they open are drawn through slots you can replace, so a pin can take its record's colour, or a popup can show what matters about the record. Both Leaflet and Google Maps draw the same Fluent pin and the same popup card, so the slots you hand the library module look the same in either. Try it below: open a pin with a star, one of the capitals of two million or more.
@@ -48,6 +48,12 @@ A slot under \`marker\` is drawn inside the pin, so a component of yours reads t
 | \`RecordCardFieldRow\`, \`RecordCardProgress\`, \`RecordCardDateRange\` | A row with a \`label\` and any value, a bar with \`percent\` and \`text\`, and a date range, from the package root. |
 
 {{story: A postcard for each capital}}
+
+## A popup all your own
+
+The parts are a head start, not a limit: {B}onRender{B} can return anything. The popup's bubble keeps its shadow and corners, and inside it a component of yours draws what it likes with the hooks, here a boarding pass from Prague in the colour of the capital's region, with the distance and the flight time worked out from where both pins sit. It reads the theme with {B}useTheme(){B}, so it turns dark with the map.
+
+{{story: A boarding pass for each capital}}
 
 ## Plain UI
 
@@ -99,6 +105,18 @@ export const APostcardForEachCapital: Story = {
         docs: {
             description: {
                 story: `\`Postcard\` puts the region tag, three rows, the capital's size against the largest one and a link in each popup. Try: open Rome's pin, then Berlin's.`,
+            },
+        },
+    },
+}
+
+export const ABoardingPassForEachCapital: Story = {
+    name: 'A boarding pass for each capital',
+    render: () => renderStory(<BoardingPassExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `\`BoardingPass\` is drawn from scratch: a band in the region's colour, the route from Prague, four facts and a tear-off stub. Try: open Lisbon's pin, then Helsinki's, then Prague's.`,
             },
         },
     },

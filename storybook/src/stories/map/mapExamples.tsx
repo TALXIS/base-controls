@@ -467,6 +467,134 @@ const GridExample = () => {
 
 export const PostcardExample = () => run(POSTCARD_CODE)
 
+const BOARDING_PASS_CODE = `import { DataProviderScope, IGoogleMapsComponents, ILeafletComponents, IMapPoint, Map, useMap, useMapRecord, useMapRecords, useTheme } from '@talxis/base-controls'
+import { FontWeights, Icon, ITheme, mergeStyleSets, Stack, Text } from '@fluentui/react'
+import { createCities, FIELD_MAPPING } from './data'
+import { useLibraryPicker } from './LibraryPicker'
+
+const HOME = 'Prague'
+const CRUISE_SPEED_KMH = 800
+const TAXI_AND_CLIMB_MINUTES = 30
+
+const pageStyles = mergeStyleSets({
+    map: { height: 480 },
+})
+
+//nothing here comes from the map: the whole popup is yours
+const getStyles = (theme: ITheme, color: string) => mergeStyleSets({
+    pass: { width: 280, overflow: 'hidden', borderRadius: 6, fontFamily: theme.fonts.medium.fontFamily },
+    //the region's colour, lit at the top left
+    band: { padding: '12px 16px', color: '#ffffff', background: \`linear-gradient(120deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.22)), \${color}\` },
+    //Fluent's Text sets a colour of its own
+    caption: { color: '#ffffff', fontSize: 12, fontWeight: FontWeights.semibold, letterSpacing: 2, textTransform: 'uppercase', textShadow: '0 1px 2px rgba(0, 0, 0, 0.25)' },
+    bandIcon: { color: '#ffffff', fontSize: 16 },
+    route: { padding: '14px 16px 4px' },
+    code: { fontSize: 30, fontWeight: FontWeights.bold, letterSpacing: 1, lineHeight: '34px' },
+    plane: { fontSize: 18, color },
+    city: { fontSize: 12, color: theme.semanticColors.bodySubtext },
+    facts: { padding: '10px 16px 14px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', rowGap: 2 },
+    label: { fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: theme.semanticColors.bodySubtext },
+    value: { fontSize: 14, fontWeight: FontWeights.semibold },
+    //the tear-off line, with a notch cut on each side in the popup's own colour
+    perforation: {
+        position: 'relative',
+        borderTop: \`2px dashed \${theme.semanticColors.bodyDivider}\`,
+        selectors: {
+            '::before, ::after': { content: '""', position: 'absolute', top: -9, width: 16, height: 16, borderRadius: '50%', background: theme.semanticColors.bodyBackground },
+            '::before': { left: -8 },
+            '::after': { right: -8 },
+        },
+    },
+    stub: { padding: '12px 16px 14px' },
+    barcode: { height: 34, background: \`repeating-linear-gradient(90deg, \${theme.semanticColors.bodyText} 0 2px, transparent 2px 4px, \${theme.semanticColors.bodyText} 4px 5px, transparent 5px 8px)\` },
+})
+
+//great-circle distance in kilometres
+const getDistance = (from: IMapPoint, to: IMapPoint) => {
+    const toRadians = (degrees: number) => degrees * Math.PI / 180
+    const latitude = toRadians(to.latitude - from.latitude)
+    const longitude = toRadians(to.longitude - from.longitude)
+    const a = Math.sin(latitude / 2) ** 2 + Math.cos(toRadians(from.latitude)) * Math.cos(toRadians(to.latitude)) * Math.sin(longitude / 2) ** 2
+    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+const toCode = (name: string) => name.slice(0, 3).toUpperCase()
+
+//the same capital always gets the same gate and seat
+const getGate = (name: string) => 'ABCD'[name.length % 4] + ((name.charCodeAt(0) * 7) % 40 + 1)
+const getSeat = (name: string) => ((name.charCodeAt(1) % 30) + 1) + 'ABCDEF'[name.length % 6]
+
+const BoardingPass = () => {
+    const theme = useTheme()
+    const map = useMap()
+    const capital = useMapRecord()
+    const home = useMapRecords().find(record => record.getValue('name') === HOME)!
+    //the band takes the colour of the capital's region
+    const regions = map.services.get('provider').getColumnsMap().region.metadata?.OptionSet ?? []
+    const color = regions.find(region => region.Value === Number(capital.getValue('region')))?.Color ?? theme.palette.themePrimary
+    const styles = React.useMemo(() => getStyles(theme, color), [theme, color])
+
+    const name = String(capital.getValue('name'))
+    const kilometres = Math.round(getDistance(map.getPoint(home)!, map.getPoint(capital)!))
+    const minutes = Math.round(kilometres / CRUISE_SPEED_KMH * 60) + TAXI_AND_CLIMB_MINUTES
+
+    if (name === HOME) {
+        return <div className={styles.pass}>
+            <div className={styles.band}><Text className={styles.caption}>Home base</Text></div>
+            <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 10 }} className={styles.route}>
+                <Icon iconName='Home' className={styles.plane} />
+                <Text className={styles.code}>{toCode(name)}</Text>
+            </Stack>
+            <Text block className={styles.stub}>Every trip starts here. Pick another capital to fly to it.</Text>
+        </div>
+    }
+
+    return <div className={styles.pass}>
+        <Stack horizontal horizontalAlign='space-between' verticalAlign='center' className={styles.band}>
+            <Text className={styles.caption}>Boarding pass</Text>
+            <Icon iconName='Airplane' className={styles.bandIcon} />
+        </Stack>
+        <Stack horizontal horizontalAlign='space-between' verticalAlign='center' className={styles.route}>
+            <Stack><Text className={styles.code}>{toCode(HOME)}</Text><Text className={styles.city}>{HOME}</Text></Stack>
+            <Icon iconName='AirplaneSolid' className={styles.plane} />
+            <Stack horizontalAlign='end'><Text className={styles.code}>{toCode(name)}</Text><Text className={styles.city}>{name}</Text></Stack>
+        </Stack>
+        <div className={styles.facts}>
+            <Text className={styles.label}>Distance</Text><Text className={styles.label}>Flight</Text><Text className={styles.label}>Gate</Text><Text className={styles.label}>Seat</Text>
+            <Text className={styles.value}>{kilometres.toLocaleString()} km</Text>
+            <Text className={styles.value}>{Math.floor(minutes / 60)}h {minutes % 60}m</Text>
+            <Text className={styles.value}>{getGate(name)}</Text>
+            <Text className={styles.value}>{getSeat(name)}</Text>
+        </div>
+        <div className={styles.perforation} />
+        <div className={styles.stub}>
+            <div className={styles.barcode} />
+        </div>
+    </div>
+}
+
+//the whole popup, in place of Map.Popup.Renderer
+const COMPONENTS: ILeafletComponents & IGoogleMapsComponents = {
+    marker: { popup: { onRender: () => <BoardingPass /> } },
+}
+
+const GridExample = () => {
+    const provider = React.useMemo(createCities, [])
+    const library = useLibraryPicker({ components: COMPONENTS })
+
+    return <Stack tokens={{ childrenGap: 12 }}>
+        {library.picker}
+        <div className={pageStyles.map}>
+            <DataProviderScope provider={provider}>
+                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+            </DataProviderScope>
+        </div>
+    </Stack>
+}
+`
+
+export const BoardingPassExample = () => run(BOARDING_PASS_CODE)
+
 const TRIP_CODE = `import { DatasetControl, Map } from '@talxis/base-controls'
 import { Stack } from '@fluentui/react'
 import { FIELD_MAPPING } from './data'
