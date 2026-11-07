@@ -2,17 +2,16 @@ import { useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Marker } from "react-leaflet";
 import { divIcon } from "leaflet";
-import type { IRecord } from "@talxis/client-libraries";
-import { MapRecordContext, useMap, useMapRecords } from "../../../../context";
+import { useMap, useMapRecord } from "../../../../context";
 import { IMapUiMarkerComponents, MapUiMarker } from "../../../../ui";
 import { MAP_UI_MARKER_HEIGHT, MAP_UI_MARKER_WIDTH } from "../../../../ui/marker/styles";
-import { IMapPopupRendererComponents, MapPopup } from "../../../../adapters/popup";
+import { MapMarkers } from "../../../../adapters/markers";
+import type { IMapPopupComponents } from "../../../../adapters/popup";
+import { MapPopupContent } from "../../../../adapters/popup/MapPopupContent";
 import { ILeafletUiPopupComponents, LeafletUi } from "../../ui";
 
 /** The popup a pin opens. */
-export interface ILeafletMarkerPopupComponents extends IMapPopupRendererComponents {
-    /** The whole content, composed from `MapPopup`'s parts; `card` and `header` go unused with it. */
-    onRender?: () => JSX.Element | null;
+export interface ILeafletMarkerPopupComponents extends IMapPopupComponents {
     /** Leaflet's popup around the content. */
     container?: Partial<ILeafletUiPopupComponents>;
 }
@@ -35,13 +34,13 @@ export interface ILeafletMarkersProps {
 
 /** Draws a pin for each record with a position, with its popup. */
 export const LeafletMarkers = (props: ILeafletMarkersProps) => {
-    return <>{useMapRecords().map(record => <MapRecordContext.Provider key={record.getRecordId()} value={record}>
-        <LeafletMarker record={record} {...props} />
-    </MapRecordContext.Provider>)}</>;
+    return <MapMarkers>
+        <LeafletMarker components={props.components?.marker} />
+    </MapMarkers>;
 };
 
-const LeafletMarker = (props: ILeafletMarkersProps & { record: IRecord }) => {
-    const point = useMap().getPoint(props.record)!;
+const LeafletMarker = (props: { components?: ILeafletMarkerComponents }) => {
+    const point = useMap().getPoint(useMapRecord())!;
     const element = useMemo(() => document.createElement('div'), []);
     //an empty className drops the white square Leaflet draws behind a div icon
     const icon = useMemo(() => divIcon({
@@ -51,13 +50,12 @@ const LeafletMarker = (props: ILeafletMarkersProps & { record: IRecord }) => {
         iconAnchor: [MAP_UI_MARKER_WIDTH / 2, MAP_UI_MARKER_HEIGHT],
         popupAnchor: [0, -MAP_UI_MARKER_HEIGHT],
     }), [element]);
-    const marker = props.components?.marker ?? {};
-    const popup = marker.popup ?? {};
+    const popup = props.components?.popup;
 
     return <Marker position={[point.latitude, point.longitude]} icon={icon}>
-        <LeafletUi.Popup components={popup.container}>
-            {popup.onRender ? popup.onRender() : <MapPopup.Renderer components={{ card: popup.card, header: popup.header }} />}
+        <LeafletUi.Popup components={popup?.container}>
+            <MapPopupContent components={popup} />
         </LeafletUi.Popup>
-        {createPortal(<MapUiMarker components={marker.pin} />, element)}
+        {createPortal(<MapUiMarker components={props.components?.pin} />, element)}
     </Marker>;
 };

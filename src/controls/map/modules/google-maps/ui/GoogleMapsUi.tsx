@@ -9,6 +9,8 @@ export interface IGoogleMapsUiProps {
     /** Where the view starts. */
     defaultCenter: IMapPoint;
     defaultZoom: number;
+    /** The Map ID from Google Cloud's Map management; Advanced Markers need one. */
+    mapId: string;
     /** Drawn inside the Google map, where its hooks work. */
     children?: ReactNode;
     className?: string;
@@ -24,6 +26,7 @@ export const GoogleMapsUiRoot = (props: IGoogleMapsUiProps) => {
         className: getClassNames([styles.map, props.className]),
         defaultCenter: { lat: props.defaultCenter.latitude, lng: props.defaultCenter.longitude },
         defaultZoom: props.defaultZoom,
+        mapId: props.mapId,
         disableDefaultUI: true,
         children: props.children,
     });

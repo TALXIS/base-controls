@@ -4926,9 +4926,10 @@ type IRecordCardHeaderPartsComponents = import('@talxis/base-controls').IRecordC
 type IRecordCardTitleComponents = import('@talxis/base-controls').IRecordCardTitleComponents;
 type IRecordCardFieldRowComponents = import('@talxis/base-controls').IRecordCardFieldRowComponents;
 type ILeafletUiPopupComponents = import('@talxis/base-controls').ILeafletUiPopupComponents;
-type IGoogleMapsUiMarkerProps = import('@talxis/base-controls').IGoogleMapsUiMarkerProps;
 type IGoogleMapsUiComponents = import('@talxis/base-controls').IGoogleMapsUiComponents;
-type IGoogleMapsUiMarkerComponents = import('@talxis/base-controls').IGoogleMapsUiMarkerComponents;
+type IGoogleMapsUiPopupComponents = import('@talxis/base-controls').IGoogleMapsUiPopupComponents;
+type IGoogleMapsMarkerComponents = import('@talxis/base-controls').IGoogleMapsMarkerComponents;
+type IMapPopupComponents = import('@talxis/base-controls').IMapPopupComponents;
 declare const MapUi: typeof import('@talxis/base-controls').MapUi;
 declare const MapUiContainerComponents: typeof import('@talxis/base-controls').MapUiContainerComponents;
 declare const MapUiMarkerComponents: typeof import('@talxis/base-controls').MapUiMarkerComponents;
@@ -4955,7 +4956,7 @@ declare const RecordCardComponents: typeof import('@talxis/base-controls').Recor
 declare const LeafletUiPopupComponents: typeof import('@talxis/base-controls').LeafletUiPopupComponents;
 declare const GoogleMapsUi: typeof import('@talxis/base-controls').GoogleMapsUi;
 declare const GoogleMapsUiComponents: typeof import('@talxis/base-controls').GoogleMapsUiComponents;
-declare const GoogleMapsUiMarkerComponents: typeof import('@talxis/base-controls').GoogleMapsUiMarkerComponents;
+declare const GoogleMapsUiPopupComponents: typeof import('@talxis/base-controls').GoogleMapsUiPopupComponents;
 declare module 'react-leaflet';
 declare const ControlComponents: typeof import('@talxis/base-controls').ControlComponents;
 type IXrmFormContext = import('@talxis/base-controls').IXrmFormContext;

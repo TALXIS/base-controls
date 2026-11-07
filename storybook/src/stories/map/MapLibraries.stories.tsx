@@ -15,7 +15,7 @@ The map works out its pins and where to look, but a *map library* draws them, ov
 | Module | Draws with |
 |---|---|
 | \`createLeafletModule({ tileUrl?, attribution?, components? })\` | Leaflet, over OpenStreetMap tiles unless \`tileUrl\` and \`attribution\` name others. Needs no key |
-| \`createGoogleMapsModule({ apiKey, components? })\` | The Google Maps JavaScript API, under a key of yours |
+| \`createGoogleMapsModule({ apiKey, mapId?, components? })\` | The Google Maps JavaScript API, under a key of yours |
 
 The module goes in \`modules\`; \`components\` replaces its slots, as [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview) shows. Google Maps holds the map in its loading state until its API has loaded. The map reads \`modules\` only as it mounts, so to switch libraries, mount it again with a new \`key\`, as the example does. Whichever library draws, the map moves the view the same way: see *Where the map looks* on [**Map**](?path=/docs/controls-map-get-started--overview).
 
@@ -26,6 +26,8 @@ Leaflet needs its stylesheet, which your app imports once, with \`import 'leafle
 ## Google Maps
 
 \`apiKey\` is a key for the Maps JavaScript API from the Google Cloud console. The map draws without Google's own buttons, such as zoom and Street View.
+
+\`mapId\` is a Map ID, which you create in the same Google Cloud project under *Map management*. It ties the map to the configuration Google keeps for it, such as its style, and Google needs one to draw Advanced Markers, which the pins are. Without it the map uses \`DEMO_MAP_ID\`, an ID Google shares for development and demos; create your own for production.
 
 ## Where next
 

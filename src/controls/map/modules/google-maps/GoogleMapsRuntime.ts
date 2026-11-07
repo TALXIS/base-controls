@@ -10,6 +10,8 @@ import { GoogleMaps, IGoogleMapsComponents } from "./adapters/google-maps";
 export interface IGoogleMapsParameters {
     /** A Google Maps JavaScript API key. */
     apiKey: string;
+    /** The Map ID from Google Cloud's Map management; Google's `DEMO_MAP_ID` when left out. */
+    mapId?: string;
     /** Replacements for the map's slots and its pins' slots. */
     components?: IGoogleMapsComponents;
 }
@@ -17,6 +19,8 @@ export interface IGoogleMapsParameters {
 export interface IGoogleMapsEvents {
     /** Fires once Google Maps has drawn the map, with its instance. */
     onInstanceReady: (instance: google.maps.Map) => void;
+    /** Fires when a pin's popup opens or closes, with the open popup's record id. */
+    onPopupChanged: (recordId: string | undefined) => void;
 }
 
 /** The map drawn with Google Maps; it is the map's `library` module. */
@@ -32,6 +36,10 @@ export interface IGoogleMapsInternal extends IGoogleMaps {
     getComponents(): IGoogleMapsComponents;
     /** @returns Unsets `instance`. */
     setInstance(instance: google.maps.Map): () => void;
+    /** The record whose pin's popup is open; one at a time, as Leaflet keeps it. */
+    getOpenRecordId(): string | undefined;
+    openPopup(recordId: string): void;
+    closePopup(): void;
 }
 
 export interface IGoogleMapsConstructorParameters {
@@ -47,6 +55,7 @@ export class GoogleMapsRuntime implements IGoogleMapsInternal {
     private _viewport: MapViewport;
     private _parameters: IGoogleMapsParameters;
     private _instance?: google.maps.Map;
+    private _openRecordId?: string;
     private _stopListening: () => void;
     private _removeSurface: () => void;
 
@@ -80,10 +89,30 @@ export class GoogleMapsRuntime implements IGoogleMapsInternal {
         };
     }
 
+    public getOpenRecordId(): string | undefined {
+        return this._openRecordId;
+    }
+
+    public openPopup(recordId: string): void {
+        this._setOpenRecordId(recordId);
+    }
+
+    public closePopup(): void {
+        this._setOpenRecordId(undefined);
+    }
+
     public destroy(): void {
         this._stopListening();
         this._removeSurface();
         this.events.clearEventListeners();
+    }
+
+    private _setOpenRecordId(recordId: string | undefined): void {
+        if (this._openRecordId === recordId) {
+            return;
+        }
+        this._openRecordId = recordId;
+        this.events.dispatchEvent('onPopupChanged', recordId);
     }
 
     private _onSurfaces = (surfaces: IMapSurface[]): void => {

@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { CustomPopupExample, CustomUiExample } from './mapExamples'
 
 const DESCRIPTION = `
-The map draws a few things through slots you can replace: its box, its loading and error states, and, through its library module, the map and each pin. Everything inside the box belongs to the map library, so a pin of your own is drawn with what that library draws. Leaflet draws a Fluent pin, \`MapUi.Marker\`, and a popup built from the shared record card, the one the Gantt's tooltips use. Try it below: click one of the red pins.
+The map draws a few things through slots you can replace: its box, its loading and error states, and, through its library module, the map and each pin. Everything inside the box belongs to the map library, so a pin of your own is drawn with what that library draws. Both Leaflet and Google Maps draw a Fluent pin, \`MapUi.Marker\`, and a popup built from the shared record card, the one the Gantt's tooltips use. Try it below: click one of the red pins.
 
 {{canvas: Mark the large cities}}
 
@@ -26,13 +26,13 @@ The map draws a few things through slots you can replace: its box, its loading a
 | \`createLeafletModule\` | \`marker.popup.card\` | \`onRenderContainer\` | \`RecordCardComponents\` | The default popup's card |
 | \`createLeafletModule\` | \`marker.popup.header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRenderContainer\`; \`status\`: the tag's slots | \`RecordCardHeaderComponents\` and the parts' own | The default popup's header: the record's name, and its status tag |
 | \`createGoogleMapsModule\` | \`map\` | \`onRenderMap\` | \`GoogleMapsUiComponents\` | The vis.gl map |
-| \`createGoogleMapsModule\` | \`marker\` | \`onRenderMarker\` | \`GoogleMapsUiMarkerComponents\` | Each pin: a vis.gl marker |
+| \`createGoogleMapsModule\` | \`marker.pin\`, \`marker.popup\` | As for Leaflet, with \`marker.popup.container\` taking \`onRenderContainer\` | \`GoogleMapsUiPopupComponents\` for the container | Each pin, the Fluent pin in a vis.gl \`AdvancedMarker\`, and its popup in Google's info window, drawn as a Fluent callout |
 
 To change the wording of the loading state and the error, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Your own pins
 
-For Leaflet, \`marker.pin.onRenderPin\` gets the teardrop's props, \`{ color }\`, and the other slots under \`marker.pin\` and \`marker.popup\` get an element's props. For Google Maps, \`onRenderMarker\` gets vis.gl's \`Marker\` props. A slot component reads the record of its pin with \`useMapRecord()\`, as \`CityPin\` and \`CityTitle\` do in the example, and hands the rest to the default slot.
+In both libraries, \`marker.pin.onRenderPin\` gets the teardrop's props, \`{ color }\`, and the other slots under \`marker.pin\` and \`marker.popup\` get an element's props; \`marker.popup.container\` gets react-leaflet's \`Popup\` props or vis.gl's \`InfoWindow\` props. A slot component reads the record of its pin with \`useMapRecord()\`, as \`CityPin\` and \`CityTitle\` do in the example, and hands the rest to the default slot.
 
 ## Your own popup
 
@@ -56,10 +56,10 @@ Each part is also exported as plain UI that takes only props, for a map with no 
 
 | Namespace | Holds |
 |---|---|
-| \`MapUi\` | \`Container\`: the map's box. \`Marker\`: the Fluent pin Leaflet draws, its tip at the bottom centre of its 32 by 40 box. \`MarkerPin\`: its teardrop, in an optional \`color\` or the theme's primary colour |
+| \`MapUi\` | \`Container\`: the map's box. \`Marker\`: the Fluent pin both libraries draw, its tip at the bottom centre of its 32 by 40 box. \`MarkerPin\`: its teardrop, in an optional \`color\` or the theme's primary colour |
 | \`LeafletUi\` | The Leaflet map over \`tileUrl\` and \`attribution\`, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children. \`LeafletUi.Popup\`: Leaflet's popup as a Fluent callout, for inside a react-leaflet marker |
 | Shared, from the package root | \`RecordCard\`, \`RecordCardHeader\` with \`RecordCardHeaderStart\` and \`RecordCardHeaderEnd\`, \`RecordCardTitle\`, \`RecordCardFieldRows\`, \`RecordCardFieldRow\`, \`RecordCardDateRange\`, \`RecordCardProgress\`: a record's summary, as the map's popups and the Gantt's tooltips draw it |
-| \`GoogleMapsUi\` | The Google map, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children; render it inside vis.gl's \`APIProvider\`. \`GoogleMapsUi.Marker\`: one pin at \`position\` |
+| \`GoogleMapsUi\` | The Google map under \`mapId\`, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children; render it inside vis.gl's \`APIProvider\`. \`GoogleMapsUi.Popup\`: Google's info window as a Fluent callout, for an Advanced Marker |
 
 ## Where next
 

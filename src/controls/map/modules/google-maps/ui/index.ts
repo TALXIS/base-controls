@@ -1,17 +1,18 @@
 import { GoogleMapsUiRoot } from './GoogleMapsUi';
-import { GoogleMapsUiMarker } from './marker';
+import { GoogleMapsUiPopup } from './popup';
 
 export type { IGoogleMapsUiProps } from './GoogleMapsUi';
 export * from './components';
-export * from './marker';
+export type { IGoogleMapsUiPopupProps, IGoogleMapsUiPopupComponents } from './popup';
+export { GoogleMapsUiPopup, GoogleMapsUiPopupComponents } from './popup';
 
 /** The parts of {@link GoogleMapsUi}. */
 export interface IGoogleMapsUiParts {
-    /** One pin. */
-    Marker: typeof GoogleMapsUiMarker;
+    /** Google's info window, drawn as a Fluent callout. */
+    Popup: typeof GoogleMapsUiPopup;
 }
 
 /** The Google map as plain UI, with no runtime behind it. */
 export const GoogleMapsUi: typeof GoogleMapsUiRoot & IGoogleMapsUiParts = Object.assign(GoogleMapsUiRoot, {
-    Marker: GoogleMapsUiMarker,
+    Popup: GoogleMapsUiPopup,
 });
