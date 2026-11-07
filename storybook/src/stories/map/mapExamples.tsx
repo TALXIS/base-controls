@@ -85,7 +85,7 @@ export const createCities = () => {
 const LIBRARY_PICKER_FILE: IGridExampleFile = {
     name: 'LibraryPicker.tsx',
     code: `import { createGoogleMapsModule, createLeafletModule, IGoogleMapsComponents, ILeafletComponents, IMapModule } from '@talxis/base-controls'
-import { ChoiceGroup, IChoiceGroupOption, Stack, TextField } from '@fluentui/react'
+import { mergeStyleSets, Pivot, PivotItem, Stack, TextField } from '@fluentui/react'
 
 export type MapLibrary = 'leaflet' | 'googleMaps'
 
@@ -101,10 +101,10 @@ export interface ILibraryPickerParameters {
 const API_KEY_ITEM = 'mapDocs.googleMapsApiKey'
 const LIBRARY_ITEM = 'mapDocs.library'
 
-const getOptions = (apiKey: string): IChoiceGroupOption[] => [
-    { key: 'leaflet', text: 'Leaflet' },
-    { key: 'googleMaps', text: 'Google Maps', disabled: !apiKey },
-]
+const styles = mergeStyleSets({
+    picker: { minHeight: 40 },
+    key: { width: 300 },
+})
 
 export const useLibraryPicker = (parameters: ILibraryPickerParameters = {}) => {
     const [apiKey, setApiKey] = React.useState(() => sessionStorage.getItem(API_KEY_ITEM) ?? '')
@@ -124,9 +124,13 @@ export const useLibraryPicker = (parameters: ILibraryPickerParameters = {}) => {
         sessionStorage.setItem(API_KEY_ITEM, next)
     }
 
-    const picker = <Stack horizontal wrap verticalAlign='start' tokens={{ childrenGap: 24 }}>
-        <ChoiceGroup label='Map library' options={getOptions(apiKey)} selectedKey={name} onChange={(_, option) => onNameChange(option!.key as MapLibrary)} styles={{ flexContainer: { display: 'flex', selectors: { '.ms-ChoiceField': { marginRight: 16 } } } }} />
-        <TextField label='Google Maps API key' type='password' canRevealPassword value={apiKey} onChange={(_, value) => onApiKeyChange(value ?? '')} description={apiKey ? undefined : 'Paste a key of yours to pick Google Maps.'} />
+    //a tab per library; Google Maps opens once a key is pasted
+    const picker = <Stack horizontal wrap horizontalAlign='space-between' verticalAlign='center' tokens={{ childrenGap: 12 }} className={styles.picker}>
+        <Pivot linkFormat='tabs' selectedKey={name} onLinkClick={item => item && onNameChange(item.props.itemKey as MapLibrary)}>
+            <PivotItem itemKey='leaflet' headerText='Leaflet' itemIcon='Nav2DMapView' />
+            <PivotItem itemKey='googleMaps' headerText='Google Maps' itemIcon='MapPin' headerButtonProps={{ disabled: !apiKey, title: apiKey ? undefined : 'Paste a Google Maps API key first' }} />
+        </Pivot>
+        <TextField className={styles.key} type='password' canRevealPassword placeholder='Paste a Google Maps API key' ariaLabel='Google Maps API key' value={apiKey} onChange={(_, value) => onApiKeyChange(value ?? '')} />
     </Stack>
 
     //the map reads its modules as it mounts, so new modules need a new key
