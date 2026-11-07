@@ -243,6 +243,31 @@ A record's expressions decide how its columns behave: validation, required level
 - **The Form** adds its rules as hooks on the record it is given and removes them when it unmounts; its own combining code goes.
 - **The grid's validation** adds a hook instead of taking the slot.
 - **Xrm scripts** (\`setValidation\`, \`setRequiredLevel\`) add hooks for the form's lifetime.
+
+## 9. Take filters as hooks
+
+A provider's filter is the user's: what a view sets, what quick find and the grid's column filters add, and what the user clears. Some parts need a filter of their own that holds whatever the user does, such as a map loading only the records in its box, or a task grid hiding inactive tasks. Each should add its filter and take it back without touching the user's or anyone else's.
+
+### Today
+
+- **One filter, last writer wins.** \`setFiltering\` replaces the whole filter, so a part that wants to keep a condition of its own has to read the filter, edit it and set it back, and the next view switch or quick find replaces it again.
+- **A part's conditions show as the user's.** Whatever is merged into the filter comes back from \`getFiltering()\`, so the grid's filter callouts and anything that clears the filter see it, and can show it or remove it as if the user had set it.
+- **What works around it:** \`TaskDataProvider.setInactiveTasksHidden\` drops its state-code condition from the filter's top level, adds it back, and sets the edited filter. A view or quick find that sets a filter of its own loses the condition until it is set again.
+- **What it holds back:** a map that loads only the records in the box it shows would have to wrap the user's filter beside its box on every pan and zoom, recognise its own box again after someone else changed the filter, and refresh a second time.
+
+### What every provider should do
+
+- **Register a filter as a hook,** \`provider.hooks.filtering.add(hook, priority?)\`, that returns a function removing it. The hook returns a \`FilterExpression\`, or \`null\` while it has nothing to add.
+- **Called on every load,** so a hook returns its current filter, such as the box the map shows now, and changing it is only a \`refresh()\`.
+- **ANDed with the user's filter when the query is built:** the FetchXML provider adds each as its own filter element, the memory provider applies each after the user's. The user's filter is never edited, whatever its operator or nesting.
+- **Kept apart from the user's filter:** \`getFiltering()\` and \`setFiltering()\` stay the user's, so the filtering UI never shows or clears a hooked filter. \`getEffectiveFiltering()\` returns both together, for anything that needs what was really queried, such as an export.
+- **Removing one leaves the others,** and the provider loads again only when asked, as after any filter change.
+
+### What would use it
+
+- **The task grid:** hiding inactive tasks becomes a hook that returns the state-code condition while they are hidden; \`setInactiveTasksHidden\` only refreshes.
+- **The map:** a hook that returns the box it shows, added as the map loads and removed as it unmounts. The map refreshes after each pan or zoom, and the user's filter, a view's and quick find's stay as they are.
+- **Security or scope filters** a consumer wants on every query, such as records of one business unit, without a view or the user being able to clear them.
 `
 
 const meta = {

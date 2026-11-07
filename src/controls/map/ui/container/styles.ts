@@ -5,6 +5,8 @@ const MIN_HEIGHT = 200;
 export const getMapUiContainerStyles = (height?: string) => {
     return mergeStyleSets({
         container: {
+            //the loading overlay covers the nearest positioned element
+            position: 'relative',
             display: 'flex',
             flexDirection: 'column',
             width: '100%',

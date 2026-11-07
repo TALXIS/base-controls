@@ -67,11 +67,20 @@ const CAPITALS = [
 ]
 
 //every provider shares the rows, so a saved change outlives a remount
-export const createCitiesProvider = () => new MemoryDataProvider({
-    dataSource: CAPITALS,
-    metadata: { PrimaryIdAttribute: 'name', PrimaryNameAttribute: 'name', LogicalName: 'capital', QuickFindColumns: ['name', 'country'] },
-    columns: COLUMNS,
-})
+export const createCitiesProvider = () => {
+    const provider = new MemoryDataProvider({
+        dataSource: CAPITALS,
+        metadata: { PrimaryIdAttribute: 'name', PrimaryNameAttribute: 'name', LogicalName: 'capital', QuickFindColumns: ['name', 'country'] },
+        columns: COLUMNS,
+    })
+    //TEMPORARY: every load takes 5s, to see the map's loading overlay
+    const getDataAsync = provider.getDataAsync.bind(provider)
+    provider.getDataAsync = async (...args: Parameters<typeof getDataAsync>) => {
+        await new Promise(resolve => setTimeout(resolve, 5000))
+        return getDataAsync(...args)
+    }
+    return provider
+}
 
 //loaded once for a map on its own; a DatasetControl loads its provider itself
 export const createCities = () => {
