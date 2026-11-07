@@ -228,6 +228,7 @@
     ". IMapProviderProps": null,
     ". createGoogleMapsProvider": null,
     ". IGoogleMapsConfig": null,
+    ". IMapLocation": null,
     "./gantt ITooltipUiDateRangeComponents": null,
     "./gantt ITooltipUiDateRangeProps": null,
     "./gantt ITooltipUiFieldRowComponents": null,

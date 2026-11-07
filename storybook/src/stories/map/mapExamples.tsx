@@ -9,15 +9,21 @@ const CITIES_FILE: IGridExampleFile = {
 //the columns a pin's position is read from
 export const FIELD_MAPPING = { latitude: 'lat', longitude: 'lng' }
 
+//an option set: each option's colour is the colour of its tag
+const ROLES = [
+    { Value: 1, Label: 'Capital', Color: '#0078d4' },
+    { Value: 2, Label: 'Regional city', Color: '#038387' },
+]
+
 //latitude and longitude in decimal degrees
 const CITIES = [
-    { name: 'Prague', lat: 50.0755, lng: 14.4378, population: 1357000 },
-    { name: 'Brno', lat: 49.1951, lng: 16.6068, population: 382000 },
-    { name: 'Ostrava', lat: 49.8209, lng: 18.2625, population: 284000 },
-    { name: 'Warsaw', lat: 52.2297, lng: 21.0122, population: 1863000 },
-    { name: 'Krakow', lat: 50.0647, lng: 19.9450, population: 804000 },
-    { name: 'Bratislava', lat: 48.1486, lng: 17.1077, population: 475000 },
-    { name: 'Budapest', lat: 47.4979, lng: 19.0402, population: 1706000 },
+    { name: 'Prague', lat: 50.0755, lng: 14.4378, population: 1357000, role: 1 },
+    { name: 'Brno', lat: 49.1951, lng: 16.6068, population: 382000, role: 2 },
+    { name: 'Ostrava', lat: 49.8209, lng: 18.2625, population: 284000, role: 2 },
+    { name: 'Warsaw', lat: 52.2297, lng: 21.0122, population: 1863000, role: 1 },
+    { name: 'Krakow', lat: 50.0647, lng: 19.9450, population: 804000, role: 2 },
+    { name: 'Bratislava', lat: 48.1486, lng: 17.1077, population: 475000, role: 1 },
+    { name: 'Budapest', lat: 47.4979, lng: 19.0402, population: 1706000, role: 1 },
 ]
 
 export const createCities = () => {
@@ -29,6 +35,7 @@ export const createCities = () => {
             { name: 'lat', displayName: 'Latitude', dataType: DataTypes.Decimal },
             { name: 'lng', displayName: 'Longitude', dataType: DataTypes.Decimal },
             { name: 'population', displayName: 'Population', dataType: DataTypes.WholeNone },
+            { name: 'role', displayName: 'Role', dataType: DataTypes.OptionSet, metadata: { OptionSet: ROLES } },
         ],
     })
     //the map draws its pins when the records load
@@ -228,7 +235,7 @@ const GridExample = () => {
 
 export const LeafletInstanceExample = () => run(LEAFLET_CODE)
 
-const CUSTOM_UI_CODE = `import { createLeafletModule, DataProviderScope, ILeafletComponents, ILeafletMarkersComponents, IMapComponents, IMapUiMarkerComponents, LeafletMarkersComponents, Map, MapUiContainerComponents, MapUiMarkerComponents, useMapRecord } from '@talxis/base-controls'
+const CUSTOM_UI_CODE = `import { createLeafletModule, DataProviderScope, ILeafletComponents, IMapComponents, IMapUiMarkerComponents, IRecordCardTitleComponents, Map, MapUiContainerComponents, MapUiMarkerComponents, RecordCardTitleComponents, useMapRecord } from '@talxis/base-controls'
 import { mergeStyleSets } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 
@@ -237,9 +244,12 @@ const styles = mergeStyleSets({
     box: { border: '1px solid #c8c6c4', borderRadius: 8, overflow: 'hidden' },
 })
 
-//the teardrop slot gets a div's props, the popup slot react-leaflet's
+//the teardrop gets its colour, the popup's title an element's props
 type PinProps = Parameters<IMapUiMarkerComponents['onRenderPin']>[0]
-type PopupProps = Parameters<ILeafletMarkersComponents['onRenderPopup']>[0]
+type TitleProps = Parameters<IRecordCardTitleComponents['onRenderContainer']>[0]
+
+const RED = '#a4262c'
+const isLarge = (population: unknown) => Number(population) >= 1000000
 
 //the map's own slot: draws its default box with one more class
 const MAP_COMPONENTS: IMapComponents = {
@@ -249,20 +259,22 @@ const MAP_COMPONENTS: IMapComponents = {
 //a large city gets a red teardrop; the rest keep the theme's colour
 const CityPin = (props: PinProps) => {
     //the record of the pin being drawn
-    const city = useMapRecord()
-    const large = Number(city.getValue('population')) >= 1000000
-    return MapUiMarkerComponents.onRenderPin(large ? { ...props, style: { ...props.style, background: '#a4262c' } } : props)
+    const large = isLarge(useMapRecord().getValue('population'))
+    return MapUiMarkerComponents.onRenderPin(large ? { ...props, color: RED } : props)
 }
 
-const CityPopup = (props: PopupProps) => {
-    const city = useMapRecord()
-    return LeafletMarkersComponents.onRenderPopup({ ...props, children: \`\${city.getValue('name')}: \${Number(city.getValue('population')).toLocaleString()} people\` })
+//the default popup keeps its parts; its title takes the pin's colour
+const CityTitle = (props: TitleProps) => {
+    const large = isLarge(useMapRecord().getValue('population'))
+    return RecordCardTitleComponents.onRenderContainer(large ? { ...props, style: { ...props.style, color: RED } } : props)
 }
 
-//the pins' slots: marker holds the Fluent pin's own; a component of your own may use hooks
+//marker holds the slots of each pin and of its popup, by part; a component of your own may use hooks
 const COMPONENTS: ILeafletComponents = {
-    marker: { onRenderPin: props => <CityPin {...props} /> },
-    onRenderPopup: props => <CityPopup {...props} />,
+    marker: {
+        pin: { onRenderPin: props => <CityPin {...props} /> },
+        popup: { header: { title: { onRenderContainer: props => <CityTitle {...props} /> } } },
+    },
 }
 
 //the library module draws the map and its pins, with these slots
@@ -281,38 +293,33 @@ const GridExample = () => {
 
 export const CustomUiExample = () => run(CUSTOM_UI_CODE)
 
-const CUSTOM_POPUP_CODE = `import { createLeafletModule, DataProviderScope, ILeafletComponents, ILeafletMarkersComponents, LeafletMarkersComponents, Map, useMap, useMapRecord } from '@talxis/base-controls'
-import { Link, mergeStyleSets, Stack, Text } from '@fluentui/react'
+const CUSTOM_POPUP_CODE = `import { createLeafletModule, DataProviderScope, Map, MapPopup, RecordCardFieldRow, useMap, useMapRecord } from '@talxis/base-controls'
+import { Link, mergeStyleSets } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 
 const styles = mergeStyleSets({
     map: { height: 420 },
 })
 
-//the popup slot gets react-leaflet's own Popup props
-type PopupProps = Parameters<ILeafletMarkersComponents['onRenderPopup']>[0]
-
-//drawn inside Leaflet's popup, so hooks reach the map and the pin's record
-const CityCard = () => {
-    const city = useMapRecord()
-    const point = useMap().getPoint(city)!
+//drawn inside Leaflet's popup, so MapPopup's parts and hooks reach the pin's record
+const CityPopup = () => {
+    const point = useMap().getPoint(useMapRecord())!
     const osm = \`https://www.openstreetmap.org/?mlat=\${point.latitude}&mlon=\${point.longitude}#map=12/\${point.latitude}/\${point.longitude}\`
 
-    return <Stack tokens={{ childrenGap: 4 }}>
-        <Text variant='large'>{city.getValue('name')}</Text>
-        <Text>{Number(city.getValue('population')).toLocaleString()} people</Text>
-        <Text variant='small'>{point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}</Text>
+    return <MapPopup.Card>
+        {/* the role shows beside the name as a tag in its option's colour */}
+        <MapPopup.Header statusColumnName='role' />
+        <MapPopup.FieldRows>
+            <MapPopup.FieldRow columnName='population' iconName='People' />
+            {/* the shared RecordCard parts take any value, such as where the pin sits */}
+            <RecordCardFieldRow label='Position' iconName='MapPin'>{point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}</RecordCardFieldRow>
+        </MapPopup.FieldRows>
         <Link href={osm} target='_blank'>Open in OpenStreetMap</Link>
-    </Stack>
+    </MapPopup.Card>
 }
 
-//keeps the default popup and its props, with a card of your own inside
-const COMPONENTS: ILeafletComponents = {
-    onRenderPopup: (props: PopupProps) => LeafletMarkersComponents.onRenderPopup({ ...props, minWidth: 180, children: <CityCard /> }),
-}
-
-//the library module draws the map and its pins, with these slots
-const MODULES = [createLeafletModule({ components: COMPONENTS })]
+//the whole popup, in place of MapPopup.Renderer, sits with the pin's slots
+const MODULES = [createLeafletModule({ components: { marker: { popup: { onRender: () => <CityPopup /> } } } })]
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])

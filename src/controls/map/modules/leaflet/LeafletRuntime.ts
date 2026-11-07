@@ -13,7 +13,7 @@ export interface ILeafletParameters {
     tileUrl?: string;
     /** The attribution the tiles require; OpenStreetMap's by default. */
     attribution?: string;
-    /** Replacements for the map's slots and its pins' slots. */
+    /** Replacements for the map's, its pins' and its popup's slots. */
     components?: ILeafletComponents;
 }
 

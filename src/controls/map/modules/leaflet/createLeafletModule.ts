@@ -1,3 +1,4 @@
+import React from "react";
 import type { IMapModule } from "../../interfaces";
 import { ILeafletParameters, LeafletRuntime } from "./LeafletRuntime";
 

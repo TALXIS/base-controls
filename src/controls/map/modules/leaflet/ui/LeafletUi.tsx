@@ -19,7 +19,7 @@ export interface ILeafletUiProps {
 }
 
 /** A Leaflet map over a tile layer; Leaflet's CSS is the app's to import. */
-export const LeafletUi = (props: ILeafletUiProps) => {
+export const LeafletUiRoot = (props: ILeafletUiProps) => {
     const components = { ...LeafletUiComponents, ...props.components };
     const styles = useMemo(() => getLeafletUiStyles(), []);
     return components.onRenderMap({
