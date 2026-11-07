@@ -1,6 +1,7 @@
 import { useTheme } from '@theme';
 import * as React from 'react';
 
+import { EDIT_COLUMNS_WIDTH, QUICK_FIND_WIDTH, RIBBON_WIDTH, VIEW_SWITCHER_WIDTH } from '../layout';
 import { getDatasetControlUiSkeletonStyles } from './styles';
 
 /** What the placeholder is shaped like. */
@@ -21,11 +22,6 @@ export interface IDatasetControlUiSkeletonShimmerProps {
 }
 
 const DEFAULT_COLUMNS = ['0 0 32px', '2 1 0', '1 1 0', '1 1 0', '1 1 0', '1 1 0'];
-//the widths of the parts and their own shimmers, so nothing jumps when they replace the placeholder
-const VIEW_SWITCHER_WIDTH = 120;
-const RIBBON_WIDTH = 208;
-const EDIT_COLUMNS_WIDTH = 119;
-const QUICK_FIND_WIDTH = 230;
 const DEFAULT_ROW_COUNT = 20;
 
 //how much of each column the shimmer fills, indexed modulo their length so a column count other than the

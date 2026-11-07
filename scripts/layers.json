@@ -61,6 +61,8 @@
             "runtime-host"
         ],
         "map": [
+            "dataset-control",
+            "ribbon",
             "runtime-host"
         ],
         "isolated-frame": []

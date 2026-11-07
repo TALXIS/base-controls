@@ -14,6 +14,10 @@ A map can be the body of a [**DatasetControl**](?path=/docs/controls-datasetcont
 
 \`Map\` goes in \`DatasetControl.Body\` with no provider of its own, as in the example's \`GridExample.tsx\`, and the parts go in the header as for any body: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). The control mounts its body again for each load, such as a view switch or saving the columns, and the map with it, so its view fits the new pins each time.
 
+## The placeholder
+
+Until its first load, a \`DatasetControl\` shows a placeholder shaped like a grid. \`Map.Ui.Skeleton\` draws a map in place of the grid's rows and footer, under the same header, so nothing jumps when the map arrives. Hand it to \`components.skeleton.onRenderSkeleton\`, as \`GridExample.tsx\` does; it takes the control's \`height\` and \`showHeader\`.
+
 ## Views
 
 Each view in \`views.ts\` sets the provider up in \`resolve\`, such as *Wishlist* filtering on the trip status, and returns its columns. List the latitude and longitude columns in every view with \`isHidden: true\`, as \`READ_BY_THE_MAP\` does, so they are loaded for the pins without being shown or listed in Edit columns. How views work: [**Views**](?path=/docs/controls-datasetcontrol-views--overview).

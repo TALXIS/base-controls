@@ -618,7 +618,8 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 12 }}>
         {library.picker}
-        <DatasetControl onLoad={loadTrip} height='560px'>
+        {/* a map in place of the table while the control loads */}
+        <DatasetControl onLoad={loadTrip} height='560px' components={{ skeleton: { onRenderSkeleton: props => <Map.Ui.Skeleton {...props} /> } }}>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />
