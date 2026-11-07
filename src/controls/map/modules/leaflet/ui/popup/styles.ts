@@ -19,11 +19,6 @@ export const getLeafletUiPopupStyles = (theme: ITheme) => mergeStyleSets({
                 background: theme.semanticColors.bodyBackground,
                 boxShadow: theme.effects.elevation8,
             },
-            '& a.leaflet-popup-close-button': {
-                top: 10,
-                right: 8,
-                color: theme.palette.neutralSecondary,
-            },
         },
     },
 });
