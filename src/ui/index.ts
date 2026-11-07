@@ -17,4 +17,5 @@ export * from './loading';
 export * from './option-tag';
 export * from './record-card';
 export * from './shimmer';
+export * from './spinner';
 export * from './layout';

@@ -1,4 +1,5 @@
-import { ISpinnerProps, ITextProps, Spinner, Text } from "@fluentui/react";
+import { ISpinnerProps, ITextProps, Text } from "@fluentui/react";
+import { Spinner } from "../spinner";
 
 /** The replaceable pieces of the loading boundary. */
 export interface ILoadingBoundaryComponents {

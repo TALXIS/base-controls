@@ -1,4 +1,5 @@
-import { IOverlayProps, ISpinnerProps, ITextProps, Overlay, Text, Spinner } from "@fluentui/react";
+import { IOverlayProps, ISpinnerProps, ITextProps, Overlay, Text } from "@fluentui/react";
+import { Spinner } from "../../spinner";
 
 /** The replaceable pieces of the loading overlay. */
 export interface ILoadingOverlayComponents {

@@ -1,4 +1,5 @@
-import { IButtonProps, IconButton, ISpinnerProps, Spinner } from "@fluentui/react";
+import { IButtonProps, IconButton, ISpinnerProps } from "@fluentui/react";
+import { Spinner } from "@ui";
 import { IRecordSaveUiErrorCalloutProps, RecordSaveUiErrorCallout } from "../error-callout";
 
 /** The indicator button's props, with how the save went. */

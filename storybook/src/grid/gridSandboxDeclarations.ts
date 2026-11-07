@@ -57,7 +57,7 @@ declare const ProgressIndicator: typeof import('@fluentui/react').ProgressIndica
 declare const SearchBox: typeof import('@fluentui/react').SearchBox;
 declare const Separator: typeof import('@fluentui/react').Separator;
 declare const Slider: typeof import('@fluentui/react').Slider;
-declare const Spinner: typeof import('@fluentui/react').Spinner;
+declare const Spinner: typeof import('@talxis/base-controls').Spinner;
 declare const Stack: typeof import('@fluentui/react').Stack;
 /** Registers Fluent's icon font; a new window, such as an isolated frame, needs it once. */
 declare const initializeIcons: typeof import('@fluentui/react').initializeIcons;

@@ -70,8 +70,8 @@ const GridExample = () => {
 }
 `
 
-const KEEP_STATE_CODE = `import { IRuntime, IStateStore, RuntimeHost, RuntimeLifecycle, useControlStateStore, useRuntime } from '@talxis/base-controls'
-import { Dropdown, Spinner, Stack, Text } from '@fluentui/react'
+const KEEP_STATE_CODE = `import { IRuntime, IStateStore, RuntimeHost, RuntimeLifecycle, Spinner, useControlStateStore, useRuntime } from '@talxis/base-controls'
+import { Dropdown, Stack, Text } from '@fluentui/react'
 
 const DEALS = [
     { owner: 'Anna Novak', value: 4000 },

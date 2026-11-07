@@ -144,8 +144,8 @@ const GridExample = () => {
 }
 `
 
-const HAND_DOWN_CODE = `import { createClientSideRowModelModule, createRowSelectionModule, DataProviderScope, Grid, useDataProviderEvents } from '@talxis/base-controls'
-import { MessageBar, MessageBarType, SearchBox, Spinner, Stack, Text } from '@fluentui/react'
+const HAND_DOWN_CODE = `import { createClientSideRowModelModule, createRowSelectionModule, DataProviderScope, Grid, Spinner, useDataProviderEvents } from '@talxis/base-controls'
+import { MessageBar, MessageBarType, SearchBox, Stack, Text } from '@fluentui/react'
 
 //draws again on each of these events
 const LoadStatus = () => {

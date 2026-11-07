@@ -1,4 +1,5 @@
-import { ISpinnerProps, ITextProps, Text, Spinner } from "@fluentui/react";
+import { ISpinnerProps, ITextProps, Text } from "@fluentui/react";
+import { Spinner } from "@ui";
 
 /** The replaceable pieces of the spinner over the grid. */
 export interface IOverlayUiLoadingComponents {
