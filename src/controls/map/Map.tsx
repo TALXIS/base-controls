@@ -23,7 +23,7 @@ const MapMount = (props: IMapProps) => {
     const { loading, errorMessage, ...containerComponents } = props.components ?? {};
 
     return <MapContext.Provider value={runtime}>
-        <MapUiContainer className={props.className} components={containerComponents}>
+        <MapUiContainer height={props.height} className={props.className} components={containerComponents}>
             {runtime.surfaces.getSurfaces().map(surface => <Fragment key={surface.key}>{surface.onRender()}</Fragment>)}
         </MapUiContainer>
     </MapContext.Provider>;

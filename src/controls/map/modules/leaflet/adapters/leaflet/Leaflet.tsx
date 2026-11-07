@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useMap as useLeafletInstance } from "react-leaflet";
+import { useResizeObserver } from "@core";
 import { useMapModule } from "../../../../context";
 import type { ILeafletInternal } from "../../LeafletRuntime";
 import { LeafletUi, ILeafletUiComponents } from "../../ui";
@@ -30,5 +31,8 @@ export const Leaflet = () => {
 const LeafletInstance = (props: { leaflet: ILeafletInternal }) => {
     const instance = useLeafletInstance();
     useEffect(() => props.leaflet.setInstance(instance), [instance]);
+    //Leaflet follows the window's size, not its box's
+    const observe = useResizeObserver(() => instance.invalidateSize());
+    useEffect(() => observe(instance.getContainer()), [instance]);
     return null;
 };

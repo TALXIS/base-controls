@@ -45,6 +45,7 @@ It moves again each time the provider loads new data; in between, the user pans 
 | \`modules\` | \`IMapModule[]\` | Required | At mount | The map's modules, with one named \`library\`. To change them, mount the map again with a new \`key\`. |
 | \`onSetup\` | \`(map: IMap) => void\` | None | At mount | Called with each new map, before it loads: see [**Talking to the map**](?path=/docs/controls-map-talking-to-the-map--overview). |
 | \`onLoad\` | \`(map: IMap) => void \\| Promise<void>\` | None | At mount | Called once the modules have loaded; the map waits for a promise it returns. |
+| \`height\` | \`string\` | Fills its parent | Live | A length such as \`'480px'\`; left out, the map fills its parent: see [**Layout**](?path=/docs/controls-map-layout--overview). |
 | \`className\` | \`string\` | None | Live | A class for the map's box. |
 | \`components\` | \`IMapComponents\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview). |
 

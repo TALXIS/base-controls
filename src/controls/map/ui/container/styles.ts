@@ -1,13 +1,16 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getMapUiContainerStyles = () => {
+const MIN_HEIGHT = 200;
+
+export const getMapUiContainerStyles = (height?: string) => {
     return mergeStyleSets({
         container: {
-            width: '100%',
-            height: '100%',
-            minHeight: 200,
             display: 'flex',
             flexDirection: 'column',
+            width: '100%',
+            minWidth: 0,
+            //fills a flex parent's free space or a sized parent's height
+            ...(height ? { height } : { flex: '1 1 auto', height: '100%', minHeight: MIN_HEIGHT }),
         },
     });
 };

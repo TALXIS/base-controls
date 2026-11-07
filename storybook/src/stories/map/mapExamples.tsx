@@ -170,6 +170,36 @@ const GridExample = () => {
 
 export const GetStartedExample = () => run(GET_STARTED_CODE)
 
+const LAYOUT_CODE = `import { DataProviderScope, Map } from '@talxis/base-controls'
+import { mergeStyleSets, Slider, Stack } from '@fluentui/react'
+import { createCities, FIELD_MAPPING } from './data'
+import { useLibraryPicker } from './LibraryPicker'
+
+const styles = mergeStyleSets({
+    //a flex column with a height; the map takes all of it
+    panel: { display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid #c8c6c4', borderRadius: 8 },
+})
+
+const GridExample = () => {
+    const provider = React.useMemo(createCities, [])
+    const library = useLibraryPicker()
+    const [containerHeight, setContainerHeight] = React.useState(440)
+
+    return <Stack tokens={{ childrenGap: 12 }}>
+        {library.picker}
+        <Slider label='Container height' min={220} max={700} step={20} value={containerHeight} onChange={setContainerHeight} showValue valueFormat={value => value + 'px'} styles={{ root: { width: 300 } }} />
+        <div className={styles.panel} style={{ height: containerHeight }}>
+            <DataProviderScope provider={provider}>
+                {/* no height: the map takes the space its parent gives it */}
+                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+            </DataProviderScope>
+        </div>
+    </Stack>
+}
+`
+
+export const LayoutExample = () => run(LAYOUT_CODE)
+
 const TILES_CODE = `import { DataProviderScope, Map } from '@talxis/base-controls'
 import { Dropdown, mergeStyleSets, Stack } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'

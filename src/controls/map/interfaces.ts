@@ -44,6 +44,8 @@ export interface IMapProps {
     onSetup?: (map: IMap) => void;
     /** Called once as the map loads, after its modules. */
     onLoad?: (map: IMap) => void | Promise<void>;
+    /** A length such as `'480px'`; left out, the map fills its parent. */
+    height?: string;
     className?: string;
     /** Replacements for the map's slots. */
     components?: IMapComponents;
