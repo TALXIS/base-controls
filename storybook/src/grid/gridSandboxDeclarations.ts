@@ -4800,8 +4800,8 @@ declare const createTaskDrawingModule: (parameters?: { components?: { preview?: 
 declare const createTaskSelectionModule: (parameters?: { enableSelectionBox?: boolean }) => IGanttModule;
 type TaskTooltipSlots = Partial<{ [slot: string]: (props: any) => JSX.Element | null }>;
 
-/** Finds the hovered or dragged bar; its parts go inside it. */
-declare const TaskTooltip: ((props: { children?: React.ReactNode }) => JSX.Element | null) & {
+/** The parts a task tooltip is composed of; the module draws them for the hovered bar. */
+declare const TaskTooltip: {
     /** The default tooltip: the name and status, the progress, and when it runs. */
     Renderer: (props: { components?: { callout?: TaskTooltipSlots; header?: { [part: string]: TaskTooltipSlots }; progress?: TaskTooltipSlots; dateRange?: TaskTooltipSlots } }) => JSX.Element;
     /** The callout next to the pointer: onRenderCallout, onRenderContainer. */
@@ -4825,7 +4825,7 @@ declare const TaskTooltip: ((props: { children?: React.ReactNode }) => JSX.Eleme
 };
 
 /** What a bar says when the pointer is on it, composed from TaskTooltip's parts. */
-declare const createTaskTooltipModule: (parameters?: { onRender?: () => JSX.Element | null; statusColumnName?: string }) => IGanttModule;
+declare const createTaskTooltipModule: (parameters?: { components?: { onRender?: () => JSX.Element | null; [part: string]: unknown }; statusColumnName?: string }) => IGanttModule;
 /** Draws the dependencies module's dependencies between the bars. */
 declare const createLinksModule: (parameters?: {}) => IGanttModule;
 

@@ -15,12 +15,11 @@ The tooltip module shows what a bar is about when the pointer rests on it: by de
 | Option | Description |
 |---|---|
 | \`statusColumnName\` | An option set column, shown in the header as a pill in its option's colour. |
-| \`onRender\` | The whole tooltip, composed from \`TaskTooltip\`'s parts. See below. |
-| \`components\` | Slots of the default tooltip; not read with \`onRender\`. See *Changing how it looks* below. |
+| \`components\` | \`onRender\`, the whole tooltip composed from \`TaskTooltip\`'s parts (see below), or the default tooltip's slots, not read with \`onRender\` (see *Changing how it looks*). |
 
 ## Parts
 
-\`onRender\` returns a \`TaskTooltip\` with the parts you want, in your order.
+\`components.onRender\` returns the parts you want, in your order, starting with \`TaskTooltip.Callout\`. The module draws them for the hovered or dragged bar, so they need no wrapper.
 
 | Part | Description |
 |---|---|

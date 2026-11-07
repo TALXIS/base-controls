@@ -32,6 +32,7 @@ export interface ILeaflet extends IMapLibrary {
 /** What the adapter reads of the module. */
 export interface ILeafletInternal extends ILeaflet {
     getTiles(): { tileUrl: string; attribution: string };
+    getComponents(): ILeafletComponents;
     /** @returns Unsets `instance`. */
     setInstance(instance: LeafletMap): () => void;
 }
@@ -66,6 +67,10 @@ export class LeafletRuntime implements ILeafletInternal {
         return this._instance;
     }
 
+    public getComponents(): ILeafletComponents {
+        return this._parameters.components ?? {};
+    }
+
     public getTiles(): { tileUrl: string; attribution: string } {
         return {
             tileUrl: this._parameters.tileUrl ?? OPEN_STREET_MAP_TILES,
@@ -91,7 +96,7 @@ export class LeafletRuntime implements ILeafletInternal {
     }
 
     private _onSurfaces = (surfaces: IMapSurface[]): void => {
-        surfaces.push({ key: 'library', onRender: () => createElement(Leaflet, { components: this._parameters.components }) });
+        surfaces.push({ key: 'library', onRender: () => createElement(Leaflet) });
     };
 
     private _onViewRequested = (request: IMapViewRequest): void => {

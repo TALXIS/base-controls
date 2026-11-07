@@ -158,8 +158,8 @@ const GridExample = () => {
         createTaskSelectionModule(),
         createTaskTooltipModule({
             statusColumnName: 'statuscode',
-            onRender: () => <TaskTooltip>
-                <TaskTooltip.Callout>
+            components: {
+                onRender: () => <TaskTooltip.Callout>
                     <TaskTooltip.Header />
                     <TaskTooltip.ProgressRow />
                     <TaskTooltip.FieldRows>
@@ -167,8 +167,8 @@ const GridExample = () => {
                         <TaskTooltip.FieldRow columnName='priority' />
                     </TaskTooltip.FieldRows>
                     <TaskTooltip.DateRangeRow />
-                </TaskTooltip.Callout>
-            </TaskTooltip>,
+                </TaskTooltip.Callout>,
+            },
         }),
         createLinksModule(),
     ], [])

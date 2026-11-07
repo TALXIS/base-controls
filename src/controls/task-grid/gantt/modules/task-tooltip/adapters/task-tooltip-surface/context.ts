@@ -28,7 +28,7 @@ TaskTooltipContext.displayName = 'TaskTooltip';
 export const useTaskTooltip = (): ITaskTooltipContext => {
     const context = useContext(TaskTooltipContext);
     if (!context) {
-        throw new Error('This has to be drawn inside TaskTooltip, which is what finds the task it is for.');
+        throw new Error('This has to be drawn in the task tooltip, which createTaskTooltipModule draws for the hovered bar.');
     }
     return context;
 };

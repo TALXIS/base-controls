@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { ITooltipUiCalloutComponents, TooltipUiCallout } from "../../../../ui/tooltip";
-import { useTaskTooltip } from "../task-tooltip-root";
+import { useTaskTooltip } from "../task-tooltip-surface/context";
 
 export interface ITaskTooltipCalloutProps {
     children?: ReactNode;

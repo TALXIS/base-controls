@@ -1,7 +1,7 @@
 import { useLabels } from "@labels";
 import { LINKS_LABELS } from "../../labels";
 import { IRecordCardFieldRowComponents, RecordCardFieldRow } from "@ui";
-import { useLinkTooltip } from "../link-tooltip-root";
+import { useLinkTooltip } from "../link-tooltip-surface/context";
 
 export interface ILinkTooltipTaskRowProps {
     end: 'predecessor' | 'successor';

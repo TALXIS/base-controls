@@ -7,7 +7,7 @@ import { runQuietly } from "../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import { ILinkTooltipRendererComponents } from "./adapters/renderer/components";
-import { LinkTooltipRenderer } from "./adapters/renderer/LinkTooltipRenderer";
+import { LinkTooltipSurface } from "./adapters/link-tooltip-surface";
 import { LINKS_LABELS } from "./labels";
 import { LINK_DRAG_POINTER_VARIABLES, LINK_DROP_ATTRIBUTE, LINK_SAVING_CLASS } from "./classNames";
 import { getDragLinkTooltipClass, getDragLinkTooltipHtml, IDragLinkTooltipEnd } from "./dragTooltip";
@@ -15,14 +15,17 @@ import { getLinksStyles } from "./styles";
 
 export interface ILinksParameters {
     components?: ILinksComponents;
-    /** A dependency line's tooltip, composed from `LinkTooltip`'s parts. */
-    onRenderTooltip?: () => JSX.Element | null;
+}
+
+/** A dependency line's tooltip: the whole of it, or the default's parts. */
+export interface ILinkTooltipComponents extends ILinkTooltipRendererComponents {
+    /** The whole tooltip, composed from `LinkTooltip`'s parts; the default's parts go unused with it. */
+    onRender?: () => JSX.Element | null;
 }
 
 /** The replaceable pieces of the links, by the part they belong to. */
 export interface ILinksComponents {
-    /** The default dependency tooltip's pieces, unused with `onRenderTooltip`. */
-    tooltip?: ILinkTooltipRendererComponents;
+    tooltip?: ILinkTooltipComponents;
 }
 
 /** The `links` module: the `dependencies` module's dependencies drawn between the bars. */
@@ -128,8 +131,7 @@ export class Links implements ILinks {
     }
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {
-        const onRenderTooltip = this._parameters.onRenderTooltip;
-        surfaces.push({ key: 'linkTooltip', onRender: () => onRenderTooltip ? onRenderTooltip() : createElement(LinkTooltipRenderer, { components: this.getComponents().tooltip }) });
+        surfaces.push({ key: 'linkTooltip', onRender: () => createElement(LinkTooltipSurface) });
     };
 
     private _onChartReady = (chart: GanttStatic): (() => void) => {

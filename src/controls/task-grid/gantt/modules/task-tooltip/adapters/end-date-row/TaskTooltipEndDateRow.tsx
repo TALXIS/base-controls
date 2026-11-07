@@ -1,5 +1,5 @@
 import { IRecordCardFieldRowComponents, RecordCardFieldRow } from "@ui";
-import { useTaskTooltip } from "../task-tooltip-root";
+import { useTaskTooltip } from "../task-tooltip-surface/context";
 
 export interface ITaskTooltipEndDateRowProps {
     /** Defaults to `CalendarReply`. */

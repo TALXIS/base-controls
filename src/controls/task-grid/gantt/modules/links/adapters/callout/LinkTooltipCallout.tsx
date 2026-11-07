@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { ITooltipUiCalloutComponents, TooltipUiCallout } from "../../../../ui/tooltip";
-import { useLinkTooltip } from "../link-tooltip-root";
+import { useLinkTooltip } from "../link-tooltip-surface/context";
 
 export interface ILinkTooltipCalloutProps {
     children?: ReactNode;

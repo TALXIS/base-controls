@@ -21,7 +21,7 @@ LinkTooltipContext.displayName = 'LinkTooltip';
 export const useLinkTooltip = (): ILinkTooltipContext => {
     const context = useContext(LinkTooltipContext);
     if (!context) {
-        throw new Error('This has to be drawn inside LinkTooltip, which is what finds the dependency it is for.');
+        throw new Error('This has to be drawn in the link tooltip, which createLinksModule draws for the hovered line.');
     }
     return context;
 };

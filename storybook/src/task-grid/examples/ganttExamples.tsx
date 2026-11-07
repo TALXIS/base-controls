@@ -170,8 +170,8 @@ const TOOLTIP_CODE = createGanttCode({
         createTaskTooltipModule({
             statusColumnName: 'statuscode',
             //leave onRender out for the default tooltip
-            onRender: () => <TaskTooltip>
-                <TaskTooltip.Callout>
+            components: {
+                onRender: () => <TaskTooltip.Callout>
                     <TaskTooltip.Header />
                     <TaskTooltip.ProgressRow />
                     <TaskTooltip.FieldRows>
@@ -180,8 +180,8 @@ const TOOLTIP_CODE = createGanttCode({
                         {/* add a FieldRow for description */}
                     </TaskTooltip.FieldRows>
                     <TaskTooltip.DateRangeRow />
-                </TaskTooltip.Callout>
-            </TaskTooltip>,
+                </TaskTooltip.Callout>,
+            },
         }),`,
 })
 

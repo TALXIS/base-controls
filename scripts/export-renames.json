@@ -249,5 +249,9 @@
     "./gantt TooltipUiHeader": null,
     "./gantt TooltipUiHeaderComponents": null,
     "./gantt TooltipUiProgress": null,
-    "./gantt TooltipUiProgressComponents": null
+    "./gantt TooltipUiProgressComponents": null,
+    "./gantt TaskTooltipRoot": null,
+    "./gantt ITaskTooltipRootProps": null,
+    "./gantt LinkTooltipRoot": null,
+    "./gantt ILinkTooltipRootProps": null
 }

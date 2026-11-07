@@ -1,4 +1,3 @@
-import { TaskTooltipRoot } from "./adapters/task-tooltip-root";
 import { TaskTooltipRenderer } from "./adapters/renderer";
 import { TaskTooltipCallout } from "./adapters/callout";
 import { TaskTooltipHeader } from "./adapters/header";
@@ -10,7 +9,7 @@ import { TaskTooltipDurationRow } from "./adapters/duration-row";
 import { TaskTooltipDateRangeRow } from "./adapters/date-range-row";
 import { TaskTooltipProgressRow } from "./adapters/progress-row";
 
-/** The parts a task tooltip is composed of, all inside `TaskTooltip`. */
+/** The parts a task tooltip is composed of; the module draws them for the hovered or dragged bar. */
 export interface ITaskTooltipParts {
     /** The default tooltip, built from the parts below. */
     Renderer: typeof TaskTooltipRenderer;
@@ -34,8 +33,7 @@ export interface ITaskTooltipParts {
     ProgressRow: typeof TaskTooltipProgressRow;
 }
 
-/** Finds the hovered or dragged bar and draws its children for that task. */
-export const TaskTooltip: typeof TaskTooltipRoot & ITaskTooltipParts = Object.assign(TaskTooltipRoot, {
+export const TaskTooltip: ITaskTooltipParts = {
     Renderer: TaskTooltipRenderer,
     Callout: TaskTooltipCallout,
     Header: TaskTooltipHeader,
@@ -46,4 +44,4 @@ export const TaskTooltip: typeof TaskTooltipRoot & ITaskTooltipParts = Object.as
     DurationRow: TaskTooltipDurationRow,
     DateRangeRow: TaskTooltipDateRangeRow,
     ProgressRow: TaskTooltipProgressRow,
-});
+};

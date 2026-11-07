@@ -1,7 +1,7 @@
 import type { IRecord } from "@talxis/client-libraries";
 import type { GanttSpanEdge } from "../../../../schedule";
 import { IRecordCardDateRangeComponents, RecordCardDateRange } from "@ui";
-import { useLinkTooltip } from "../link-tooltip-root";
+import { useLinkTooltip } from "../link-tooltip-surface/context";
 
 export interface ILinkTooltipDateRangeRowProps {
     components?: Partial<IRecordCardDateRangeComponents>;

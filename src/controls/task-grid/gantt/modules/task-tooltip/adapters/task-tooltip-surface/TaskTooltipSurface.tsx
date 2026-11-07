@@ -1,24 +1,22 @@
-import { ReactNode, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { IPoint } from "@fluentui/react";
 import { useEventEmitter } from "@core";
 import { GANTT_TASK_LINE_CLASS } from "../../../../chart";
-import { useGantt, useGanttService } from "../../../../context";
+import { useGantt, useGanttModule, useGanttService } from "../../../../context";
 import type { IGanttDraggingEvents } from "../../../../dragging";
 import { isChartPointerBusy, useHoverIntent } from "../../../../hover";
+import { TaskTooltipRenderer } from "../renderer/TaskTooltipRenderer";
 import { TaskTooltipContext } from "./context";
-
-export interface ITaskTooltipRootProps {
-    children?: ReactNode;
-}
 
 interface IHoveredTask {
     taskId: string;
     target: IPoint;
 }
 
-/** Finds the bar under the pointer, or the one being dragged, and draws its children for it. */
-export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
+/** Finds the bar under the pointer, or the one being dragged, and draws its tooltip. */
+export const TaskTooltipSurface = () => {
     const gantt = useGantt();
+    const { onRender, ...parts } = useGanttModule('taskTooltip').getComponents();
     const chart = useGanttService('chart');
     const dragging = useGanttService('dragging');
     const tasks = useGanttService('tasks');
@@ -65,7 +63,9 @@ export const TaskTooltipRoot = (props: ITaskTooltipRootProps) => {
     const calculatedDuration = span && schedule.calculateDuration(span, record);
     const duration = draggedTaskIdRef.current === hovered.taskId ? calculatedDuration : schedule.getDuration(record) ?? calculatedDuration;
     const context = { gantt, record, task, span, target: hovered.target, duration, color: getBarColor(chart.getTaskNode(hovered.taskId)) };
-    return <TaskTooltipContext.Provider value={context}>{props.children}</TaskTooltipContext.Provider>;
+    return <TaskTooltipContext.Provider value={context}>
+        {onRender ? onRender() : <TaskTooltipRenderer components={parts} />}
+    </TaskTooltipContext.Provider>;
 };
 
 const getBarColor = (bar: HTMLElement | null): string | undefined => {

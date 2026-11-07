@@ -29,6 +29,7 @@ export interface IGoogleMaps extends IMapLibrary {
 /** What the adapter reads of the module. */
 export interface IGoogleMapsInternal extends IGoogleMaps {
     getParameters(): IGoogleMapsParameters;
+    getComponents(): IGoogleMapsComponents;
     /** @returns Unsets `instance`. */
     setInstance(instance: google.maps.Map): () => void;
 }
@@ -60,6 +61,10 @@ export class GoogleMapsRuntime implements IGoogleMapsInternal {
         return this._instance;
     }
 
+    public getComponents(): IGoogleMapsComponents {
+        return this._parameters.components ?? {};
+    }
+
     public getParameters(): IGoogleMapsParameters {
         return this._parameters;
     }
@@ -82,7 +87,7 @@ export class GoogleMapsRuntime implements IGoogleMapsInternal {
     }
 
     private _onSurfaces = (surfaces: IMapSurface[]): void => {
-        surfaces.push({ key: 'library', onRender: () => createElement(GoogleMaps, { components: this._parameters.components }) });
+        surfaces.push({ key: 'library', onRender: () => createElement(GoogleMaps) });
     };
 
     private _onViewRequested = (request: IMapViewRequest): void => {

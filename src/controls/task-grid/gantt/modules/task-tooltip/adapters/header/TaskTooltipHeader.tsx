@@ -1,6 +1,6 @@
 import { useGanttModule } from "../../../../context";
 import { IRecordCardHeaderPartsComponents, OptionTag, RecordCardHeader, RecordCardHeaderEnd, RecordCardHeaderStart, RecordCardTitle } from "@ui";
-import { useTaskTooltip } from "../task-tooltip-root";
+import { useTaskTooltip } from "../task-tooltip-surface/context";
 
 export interface ITaskTooltipHeaderProps {
     components?: IRecordCardHeaderPartsComponents;

@@ -1,7 +1,7 @@
 import { useLabels } from "@labels";
 import { TASK_TOOLTIP_LABELS } from "../../labels";
 import { IRecordCardFieldRowComponents, RecordCardFieldRow } from "@ui";
-import { useTaskTooltip } from "../task-tooltip-root";
+import { useTaskTooltip } from "../task-tooltip-surface/context";
 
 export interface ITaskTooltipDurationRowProps {
     /** Defaults to `Clock`. */

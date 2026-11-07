@@ -14,15 +14,11 @@ export interface ILeafletComponents extends Partial<ILeafletMarkersComponents> {
     map?: Partial<ILeafletUiComponents>;
 }
 
-export interface ILeafletProps {
-    components?: ILeafletComponents;
-}
-
 /** Draws the map with Leaflet, a pin for each record, and its view. */
-export const Leaflet = (props: ILeafletProps) => {
+export const Leaflet = () => {
     const leaflet = useMapModule('library') as ILeafletInternal;
     const { tileUrl, attribution } = leaflet.getTiles();
-    const { map, ...markerComponents } = props.components ?? {};
+    const { map, ...markerComponents } = leaflet.getComponents();
 
     return <LeafletUi tileUrl={tileUrl} attribution={attribution} defaultCenter={DEFAULT_CENTER} defaultZoom={DEFAULT_ZOOM} components={map}>
         <LeafletInstance leaflet={leaflet} />

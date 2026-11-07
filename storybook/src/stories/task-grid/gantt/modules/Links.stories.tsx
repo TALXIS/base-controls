@@ -24,8 +24,7 @@ Drawing and deleting links needs \`enableEditing\`. While a link saves, its task
 
 | Option | Description |
 |---|---|
-| \`onRenderTooltip\` | A link's whole tooltip, composed from \`LinkTooltip\`'s parts: \`Callout\`, \`Header\`, \`FieldRows\`, \`PredecessorRow\`, \`SuccessorRow\` and \`DateRangeRow\`. |
-| \`components\` | Slots of the default link tooltip. See *Changing how it looks* below. |
+| \`components\` | Under \`tooltip\`: \`onRender\`, a link's whole tooltip composed from \`LinkTooltip\`'s parts (\`Callout\`, \`Header\`, \`FieldRows\`, \`PredecessorRow\`, \`SuccessorRow\`, \`DateRangeRow\`), or the default tooltip's slots. See *Changing how it looks* below. |
 
 ## Changing how it looks
 

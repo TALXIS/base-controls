@@ -16,18 +16,15 @@ export interface IGoogleMapsComponents {
     marker?: Partial<IGoogleMapsUiMarkerComponents>;
 }
 
-export interface IGoogleMapsProps {
-    components?: IGoogleMapsComponents;
-}
-
 /** Draws the map with Google Maps, a pin for each record, and its view. */
-export const GoogleMaps = (props: IGoogleMapsProps) => {
+export const GoogleMaps = () => {
     const googleMaps = useMapModule('library') as IGoogleMapsInternal;
+    const components = googleMaps.getComponents();
 
     return <APIProvider apiKey={googleMaps.getParameters().apiKey}>
-        <GoogleMapsUi defaultCenter={DEFAULT_CENTER} defaultZoom={DEFAULT_ZOOM} components={props.components?.map}>
+        <GoogleMapsUi defaultCenter={DEFAULT_CENTER} defaultZoom={DEFAULT_ZOOM} components={components.map}>
             <GoogleMapsInstance googleMaps={googleMaps} />
-            <GoogleMapsMarkers components={props.components?.marker} />
+            <GoogleMapsMarkers components={components.marker} />
         </GoogleMapsUi>
     </APIProvider>;
 };

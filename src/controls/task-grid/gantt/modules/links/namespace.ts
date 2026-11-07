@@ -1,4 +1,3 @@
-import { LinkTooltipRoot } from "./adapters/link-tooltip-root";
 import { LinkTooltipRenderer } from "./adapters/renderer";
 import { LinkTooltipCallout } from "./adapters/callout";
 import { LinkTooltipHeader } from "./adapters/header";
@@ -7,7 +6,7 @@ import { LinkTooltipPredecessorRow } from "./adapters/predecessor-row";
 import { LinkTooltipSuccessorRow } from "./adapters/successor-row";
 import { LinkTooltipDateRangeRow } from "./adapters/date-range-row";
 
-/** The parts a dependency tooltip is composed of, all inside `LinkTooltip`. */
+/** The parts a dependency tooltip is composed of; the module draws them for the hovered line. */
 export interface ILinkTooltipParts {
     /** The default tooltip, built from the parts below. */
     Renderer: typeof LinkTooltipRenderer;
@@ -23,8 +22,7 @@ export interface ILinkTooltipParts {
     DateRangeRow: typeof LinkTooltipDateRangeRow;
 }
 
-/** Finds the hovered dependency line and draws its children for that dependency. */
-export const LinkTooltip: typeof LinkTooltipRoot & ILinkTooltipParts = Object.assign(LinkTooltipRoot, {
+export const LinkTooltip: ILinkTooltipParts = {
     Renderer: LinkTooltipRenderer,
     Callout: LinkTooltipCallout,
     Header: LinkTooltipHeader,
@@ -32,4 +30,4 @@ export const LinkTooltip: typeof LinkTooltipRoot & ILinkTooltipParts = Object.as
     PredecessorRow: LinkTooltipPredecessorRow,
     SuccessorRow: LinkTooltipSuccessorRow,
     DateRangeRow: LinkTooltipDateRangeRow,
-});
+};
