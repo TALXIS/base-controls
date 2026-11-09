@@ -6,8 +6,6 @@ const createPipelineProvider = () => {
     const deals = createDealsProvider()
     deals.grouping.addGroupBy({ columnName: 'owner', alias: 'owner_group' })
     deals.aggregation.addAggregation({ columnName: 'value', alias: 'value_sum', aggregationFunction: 'sum' })
-    deals.aggregation.addAggregation({ columnName: 'probability', alias: 'probability_avg', aggregationFunction: 'avg' })
-    deals.setSorting([{ name: 'value', sortDirection: 1 }])
     return deals
 }
 
@@ -18,11 +16,9 @@ const GridExample = () => {
         <DatasetControl.Body>
             <ClientSideGrid
                 modules={[
-                    createSortingModule(),
                     createGroupingModule({ defaultExpandedLevel: 0 }),
                     createAggregationModule(),
                 ]}
-                enableOptionSetColors
                 height='480px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -36,7 +32,6 @@ const createWeekProvider = () => {
     timesheets.grouping.addGroupBy({ columnName: 'employee', alias: 'employee_group' })
     timesheets.grouping.addGroupBy({ columnName: 'date', alias: 'date_group' })
     timesheets.aggregation.addAggregation({ columnName: 'hours', alias: 'hours_sum', aggregationFunction: 'sum' })
-    timesheets.setSorting([{ name: 'employee', sortDirection: 0 }, { name: 'date', sortDirection: 0 }])
     return timesheets
 }
 
@@ -57,8 +52,7 @@ const GridExample = () => {
                     label='Group the week'
                     selectedKey={type}
                     options={[{ key: 'nested', text: 'By employee, then by day' }, { key: 'flat', text: 'One group per employee and day' }]}
-                    onChange={(_, option) => changeType(option?.key as GroupingType)}
-                    styles={{ flexContainer: { display: 'flex', gap: 24 } }} />
+                    onChange={(_, option) => changeType(option?.key as GroupingType)} />
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
@@ -68,7 +62,6 @@ const GridExample = () => {
                     createGroupingModule({ type, defaultExpandedLevel: 0 }),
                     createAggregationModule(),
                 ]}
-                enableOptionSetColors
                 height='480px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -89,11 +82,9 @@ const GridExample = () => {
         <DatasetControl.Body>
             <ClientSideGrid
                 modules={[
-                    createSortingModule(),
                     createFilteringModule(),
                     createAggregationModule(),
                 ]}
-                enableOptionSetColors
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -104,7 +95,6 @@ export const EXPAND_FROM_RIBBON_CODE = `const createReviewProvider = () => {
     const timesheets = createTimesheetsProvider()
     timesheets.grouping.addGroupBy({ columnName: 'status', alias: 'status_group' })
     timesheets.grouping.addGroupBy({ columnName: 'employee', alias: 'employee_group' })
-    timesheets.aggregation.addAggregation({ columnName: 'hours', alias: 'hours_sum', aggregationFunction: 'sum' })
     return timesheets
 }
 
@@ -132,12 +122,7 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <ClientSideGrid
-                modules={[
-                    createGroupingModule(),
-                    createAggregationModule(),
-                ]}
-                enableOptionSetColors
+            <ClientSideGrid modules={[createGroupingModule()]}
                 onSetup={grid => { gridRef.current = grid }}
                 height='440px' />
         </DatasetControl.Body>
@@ -200,7 +185,6 @@ const GridExample = () => {
                     createGroupingModule({ defaultExpandedLevel: 0 }),
                     createAggregationModule(),
                 ]}
-                enableOptionSetColors
                 onSetup={onSetup}
                 height='440px' />
         </DatasetControl.Body>

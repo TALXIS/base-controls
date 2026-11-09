@@ -14,7 +14,7 @@ The Gantt draws the task grid's tasks on a timeline, row for row with the grid b
 
 {{story: Bars beside the grid}}
 
-The Gantt has its own entry, \`@talxis/base-controls/gantt\`, so a task grid without one never loads DHTMLX. It needs the \`startDate\` and \`endDate\` of the field mapping: see [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
+\`TaskGantt\` and its modules come from their own entry, \`@talxis/base-controls/gantt\`, so a task grid without a Gantt never loads DHTMLX; the rest comes from \`@talxis/base-controls\`. \`TaskGantt.Split\` puts the \`TaskGrid\` and the \`TaskGantt\` side by side in the body, and \`TaskGantt.ZoomSlider\` goes in the header. The Gantt needs \`startDate\` and \`endDate\` in the field mapping: see *Field mapping* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
 
 ## What it draws
 
@@ -23,7 +23,7 @@ The Gantt has its own entry, \`@talxis/base-controls/gantt\`, so a task grid wit
 | with a start and an end | a bar, filled as far as \`percentComplete\` |
 | that starts and ends at the same time | a milestone diamond |
 | with subtasks, while the tree is shown | a thinner summary bar |
-| missing a date, or ending before it starts | nothing |
+| missing a date, or ending before it starts | nothing, until the user draws its dates (see [**Editing on the timeline**](?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview)) |
 
 Names stay in the grid. Started, done, inactive, locked and saving tasks each have a look of their own.
 
@@ -34,11 +34,11 @@ Names stay in the grid. Started, done, inactive, locked and saving tasks each ha
 | both date only | the task's last day | whole days | days |
 | either with a time of day | the moment it ends | 15 minutes to a day, by zoom | hours |
 
-With \`duration\` mapped, the Gantt writes it along with the dates: the working minutes between them, a day counted as \`hoursPerDay\` hours, [**Non-working days**](?path=/docs/controls-taskgrid-gantt-modules-non-working-days--overview) left out. A change on the timeline saves like an edit in the grid. The Gantt does not schedule tasks itself: see *Rescheduled dates* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
+With \`duration\` mapped, the Gantt writes it along with the dates: the working minutes between them, with a day of the \`hoursPerDay\` hours that \`onLoad\` returns, and [**Non-working days**](?path=/docs/controls-taskgrid-gantt-modules-non-working-days--overview) left out. A change on the timeline is written as an edit in the grid is, and saves straight away with \`createTaskEditingModule()\` in \`TaskGrid\`. The Gantt does not schedule tasks itself: see *Rescheduled dates* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
 
 ## Zoom and navigation
 
-Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty timeline to scroll it. The ribbon gains *Zoom to fit* and *Go to today*, and the subject cell of every task with a date *Show on timeline*. With a \`stateKey\`, the zoom and the split's width are kept per view and saved with user views.
+Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty timeline to scroll it. The ribbon gains *Zoom to fit* and *Go to today*, and the subject cell of every task with a date *Show on timeline*. With a \`stateKey\` on \`TaskGantt\` and on \`TaskGantt.Split\`, the zoom and the split's width are kept per view, and user views save them.
 
 ## Changing how it looks
 
@@ -46,29 +46,29 @@ Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty ti
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`TaskGantt\` | \`chart\` | \`onRenderContainer\`, \`onRenderChart\` | | The chart's box |
-| | \`overlay\` | \`onRenderContainer\` | | The overlay while the tasks load |
+| \`TaskGantt\` | \`chart\` | \`onRenderContainer\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` must pass on its \`ref\` |
+| | \`overlay\` | \`onRenderContainer\` | \`GanttUiOverlayComponents\` | The overlay while the tasks load |
 | | \`skeleton\` | \`onRenderContainer\`, \`onRenderSkeleton\` | \`GanttUiSkeletonComponents\` | The placeholder before the chart is drawn |
-| \`TaskGantt.Split\` | Top level | \`onRenderContainer\`, \`onRenderGridPane\`, \`onRenderGanttPane\`, \`onRenderHandle\` | | The two panes and the handle between them |
-| \`TaskGantt.ZoomSlider\` | Top level | \`onRenderContainer\`, \`onRenderSlider\`, \`onRenderZoomButton\` | | The slider and its buttons |
+| \`TaskGantt.Split\` | Top level | \`onRenderContainer\`, \`onRenderGridPane\`, \`onRenderGanttPane\`, \`onRenderHandle\` | \`GridGanttUiSplitComponents\` | The two panes and the handle between them |
+| \`TaskGantt.ZoomSlider\` | Top level | \`onRenderContainer\`, \`onRenderSlider\`, \`onRenderZoomButton\` | \`GanttUiZoomSliderComponents\` | The slider and its buttons |
 
 ## Reference
 
 ### Props
 
-| Component | Prop | Default | Description |
-|---|---|---|---|
-| \`TaskGantt\` | \`modules\` | Required | The Gantt's modules. A library module is required. At mount. |
-| | \`stateKey\` | None | Where the zoom is kept, per view. |
-| | \`timelineLimits\` | Today ± 25 years | \`{ start?, end? }\`, how far the timeline scrolls. Widened to fit the tasks. |
-| | \`components\` | Defaults | See *Changing how it looks* above. |
-| \`TaskGantt.Split\` | \`children\` | Required | The \`TaskGrid\`, then the \`TaskGantt\`. |
-| | \`defaultGanttSize\` | \`60\` | The Gantt's share of the width, in percent. |
-| | \`stateKey\` | None | Where the user's width is kept, per view. |
-| | \`components\` | Defaults | See *Changing how it looks* above. |
-| \`TaskGantt.ZoomSlider\` | \`components\` | Defaults | See *Changing how it looks* above. |
+| Component | Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|---|
+| \`TaskGantt\` | \`modules\` | \`IGanttModule[]\` | Required | At mount | The Gantt's modules, a library module among them. |
+| | \`stateKey\` | \`string\` | None | At mount | Where the zoom is kept, per view. |
+| | \`timelineLimits\` | \`{ start?: Dayjs, end?: Dayjs }\` | Today ± 25 years | Live | How far the timeline scrolls. Widened to fit the tasks. |
+| | \`components\` | \`ITaskGanttComponents\` | Defaults | Live | See *Changing how it looks* above. |
+| \`TaskGantt.Split\` | \`children\` | Two elements | Required | Live | The \`TaskGrid\`, then the \`TaskGantt\`. |
+| | \`defaultGanttSize\` | \`number\` | \`60\` | At mount | The Gantt's share of the width, in percent, until the user drags the handle. |
+| | \`stateKey\` | \`string\` | None | At mount | Where the user's width is kept, per view. |
+| | \`components\` | \`Partial<IGridGanttUiSplitComponents>\` | Defaults | Live | See *Changing how it looks* above. |
+| \`TaskGantt.ZoomSlider\` | \`components\` | \`Partial<IGanttUiZoomSliderComponents>\` | Defaults | Live | See *Changing how it looks* above. |
 
-The Gantt's strings are labels: see [**Localization**](?path=/docs/concepts-localization--overview).
+To change the Gantt's strings, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 

@@ -2,16 +2,15 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
 const RIBBON_CODE = `import { IRibbonCommand, IRibbon, Ribbon } from '@talxis/base-controls'
-import { Stack, Text } from '@fluentui/react'
+import { Text } from '@fluentui/react'
 
-type Status = 'Draft' | 'Sent' | 'Paid'
+type Status = 'Draft' | 'Sent'
 
 //stands in for a server call
 const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
 const GridExample = () => {
     const [status, setStatus] = React.useState<Status>('Draft')
-    const [note, setNote] = React.useState('')
     const ribbonRef = React.useRef<IRibbon>()
 
     //the ribbon calls onLoad at mount and on reload(), so it reloads when the status changes
@@ -34,28 +33,23 @@ const GridExample = () => {
     //the previous commands stay until these arrive
     const onLoad = async (): Promise<IRibbonCommand[]> => {
         await callServer(800)
-        const commands: IRibbonCommand[] = []
-        if (status === 'Draft') {
-            commands.push({ id: 'send', label: 'Send', iconName: 'Send', onExecute: send })
-        }
-        if (status === 'Sent') {
-            commands.push({ id: 'markPaid', label: 'Mark as paid', iconName: 'Money', onExecute: () => setStatus('Paid') })
-            commands.push({ id: 'remind', label: 'Send reminder', iconName: 'Mail', onExecute: sendReminder })
-        }
-        //a command with commands opens a menu of them
-        commands.push({ id: 'download', label: 'Download', iconName: 'Download', commands: [
-            { id: 'pdf', label: 'As PDF', onExecute: () => setNote('Downloaded as PDF') },
-            { id: 'csv', label: 'As CSV', onExecute: () => setNote('Downloaded as CSV') },
-        ] })
-        commands.push({ id: 'reopen', label: 'Reopen', iconName: 'Undo', disabled: status === 'Draft', onExecute: () => setStatus('Draft') })
-        return commands
+        return [
+            status === 'Draft'
+                ? { id: 'send', label: 'Send', iconName: 'Send', onExecute: send }
+                : { id: 'remind', label: 'Send reminder', iconName: 'Mail', onExecute: sendReminder },
+            //a command with commands opens a menu of them
+            { id: 'download', label: 'Download', iconName: 'Download', commands: [
+                { id: 'pdf', label: 'As PDF', onExecute: () => callServer(500) },
+                { id: 'csv', label: 'As CSV', onExecute: () => callServer(500) },
+            ] },
+            { id: 'reopen', label: 'Reopen', iconName: 'Undo', disabled: status === 'Draft', onExecute: () => setStatus('Draft') },
+        ]
     }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
+    return <>
         <Ribbon onLoad={onLoad} onSetup={ribbon => { ribbonRef.current = ribbon }} />
         <Text>Invoice INV-0042: {status}</Text>
-        <Text variant='small'>{note}</Text>
-    </Stack>
+    </>
 }
 `
 
@@ -63,11 +57,6 @@ const SLOW_LOAD_CODE = `import { IRibbonCommand, Ribbon } from '@talxis/base-con
 
 //stands in for a server call
 const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
-
-const COMMANDS: IRibbonCommand[] = [
-    { id: 'approve', label: 'Approve', iconName: 'CheckMark', onExecute: () => callServer(1000) },
-    { id: 'reject', label: 'Reject', iconName: 'Cancel', onExecute: () => callServer(1000) },
-]
 
 const GridExample = () => {
     const isFirstLoad = React.useRef(true)
@@ -80,7 +69,10 @@ const GridExample = () => {
             //a first load that throws shows the error with Try again
             throw new Error('The commands could not be loaded.')
         }
-        return COMMANDS
+        return [
+            { id: 'approve', label: 'Approve', iconName: 'CheckMark', onExecute: () => callServer(1000) },
+            { id: 'reject', label: 'Reject', iconName: 'Cancel', onExecute: () => callServer(1000) },
+        ]
     }
 
     return <Ribbon onLoad={onLoad} />
@@ -88,24 +80,23 @@ const GridExample = () => {
 `
 
 const OWN_COMMANDS_CODE = `import { IRibbonCommand, IRibbon, Ribbon } from '@talxis/base-controls'
-import { Stack, Text, Toggle } from '@fluentui/react'
+import { Toggle } from '@fluentui/react'
 
 const GridExample = () => {
-    const [note, setNote] = React.useState('')
     const isClosed = React.useRef(false)
     const ribbonRef = React.useRef<IRibbon>()
 
     //returned directly, so the ribbon draws them without a shimmer
     const onLoad = (): IRibbonCommand[] => [
-        { id: 'approve', label: 'Approve', iconName: 'CheckMark', onExecute: () => setNote('Approved') },
-        { id: 'reject', label: 'Reject', iconName: 'Cancel', onExecute: () => setNote('Rejected') },
+        { id: 'approve', label: 'Approve', iconName: 'CheckMark', onExecute: () => {} },
+        { id: 'reject', label: 'Reject', iconName: 'Cancel', onExecute: () => {} },
     ]
 
     //code that does not own onLoad adds to the commands of every load
     const onSetup = (ribbon: IRibbon) => {
         ribbonRef.current = ribbon
         ribbon.hooks.commands.add(commands => {
-            commands.push({ id: 'history', label: 'History', iconName: 'History', onExecute: () => setNote('History opened') })
+            commands.push({ id: 'history', label: 'History', iconName: 'History', onExecute: () => {} })
         })
         //a higher priority runs later, so this hook sees History too
         ribbon.hooks.commands.add(commands => {
@@ -121,11 +112,10 @@ const GridExample = () => {
         ribbonRef.current?.reload()
     }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
+    return <>
         <Toggle label='Order closed' inlineLabel onChange={(_, checked) => setClosed(!!checked)} />
         <Ribbon onLoad={onLoad} onSetup={onSetup} />
-        <Text variant='small'>{note}</Text>
-    </Stack>
+    </>
 }
 `
 

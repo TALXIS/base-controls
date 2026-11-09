@@ -12,7 +12,7 @@ The grid draws in the app theme (see [**Theming**](?path=/docs/concepts-theming-
 
 ## What you can change
 
-Size, density and colours are on this page. Whatever else the grid draws takes a \`components\` map of pieces and slots, on \`<Grid>\`, on a module, or in a column's \`cellRendererParams\` and \`headerComponentParams\`; each page below lists its own under *Changing how it looks*, and how pieces and slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+Size, density and colours are on this page. Whatever else the grid draws takes a \`components\` map of pieces and slots, on the grid, on a module, or in a column's \`cellRendererParams\` and \`headerComponentParams\`; each page below lists its own under *Changing how it looks*, and how pieces and slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | To change | See |
 |---|---|
@@ -49,7 +49,7 @@ Add a hook to \`grid.services.get('cells').hooks.theme\`, in \`onSetup\` or a mo
 
 \`builder.tint(hue, strength?)\` tints a cell by a hue: \`'subtle'\` by default, \`'strong'\`, or \`'solid'\`, which fills it. For full control, set \`builder.colors\` (\`primary\`, \`background\`, \`text\`), and the cell's value, links, tags and editor all follow. Colour formats and helpers such as \`getTextColorForBackground\` are on [**Theming**](?path=/docs/concepts-theming--overview).
 
-The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). Zebra rows and grouping colour rows too, and while the rows are grouped, grouping wins over a hook at the default priority, so register a row's colours at \`GRID_MODULE_PRIORITY.grouping + 1\` (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
+The theme is applied again whenever the record changes; if it depends on anything else, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). Zebra rows and grouping colour rows too, and while the rows are grouped, grouping wins over a hook at the default priority, so add a hook that colours a row at \`GRID_MODULE_PRIORITY.grouping + 1\` (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
 
 {{story: Tint escalated tickets}}
 
@@ -65,7 +65,7 @@ Add a hook to \`grid.services.get('columns').headers.hooks.theme\`. It runs for 
 
 ## Change the AG Grid theme
 
-Under the cells, AG Grid draws the row lines, hover and selection, the focus and range borders and its popups, in a theme the grid builds from the app theme: see *The AG Grid theme* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). To change it, register \`hooks.theme.add(hook, priority?)\` on the \`gridTheme\` service in a module and replace \`result.theme\`, usually with \`withParams\`. Colour cells and headers through the hooks above instead.
+Under the cells, AG Grid draws the row lines, hover and selection, the focus and range borders and its popups, in a theme the grid builds from the app theme: see *The AG Grid theme* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). To change it, add a hook to \`grid.services.get('gridTheme').hooks.theme\` in a module and replace \`result.theme\`, usually with \`withParams\`. Colour cells and headers through the hooks above instead.
 
 {{story: Draw lines between columns}}
 

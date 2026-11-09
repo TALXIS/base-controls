@@ -38,17 +38,17 @@ Subscribe in \`onSetup\`, which receives each new grid before it loads. Listener
 
 ### Props
 
-The grid takes no strings as props: its labels are on [**Localization**](?path=/docs/concepts-localization--overview).
+\`ClientSideGrid\`, \`ServerSideGrid\` and \`Grid\` take the same props. The grid takes no strings as props: its labels are on [**Localization**](?path=/docs/concepts-localization--overview).
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
-| \`modules\` | \`IGridModule[]\` | Required | At mount | The features, in load order; a row model is required. See [**Modules**](?path=/docs/controls-grid-modules--overview). |
+| \`modules\` | \`IGridModule[]\` | None; required on \`Grid\` | At mount | The features. \`ClientSideGrid\` and \`ServerSideGrid\` add their row model to them; \`Grid\` adds none, so its \`modules\` must hold one. See [**Modules**](?path=/docs/controls-grid-modules--overview). |
 | \`enableNavigation\` | \`boolean\` | \`true\` | At mount | Draws lookups, emails, phones, URLs and the primary column as links, and opens a record on a double-click in a grid without the editing module. |
 | \`enableOptionSetColors\` | \`boolean\` | \`false\` | At mount | Draws options that have a colour as tags. |
 | \`enableZebra\` | \`boolean\` | \`true\` | At mount | Shades every other row. |
 | \`rowHeight\` | \`number\` | \`42\` | At mount | A row's height, in pixels. |
 | \`maxVisibleRows\` | \`number\` | \`15\` | Live | How many rows a grid without \`height\` grows to before it scrolls. |
-| \`height\` | \`string\` | None | Live | The grid's height, as a CSS length; without one the grid grows with its rows. See *Size the grid* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`height\` | \`string\` | None | Live | The grid's height, as a CSS length; without one the grid grows with its rows. Inside a DatasetControl that has a \`height\`, the grid fills the control's body instead. See *Size the grid* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
 | \`className\` | \`string\` | None | Live | Added to the grid's root element. |
 | \`components\` | \`IGridComponents\` | \`{}\` | Live | The overlays and the loading and error rows. See [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview). |
 | \`stateKey\` | \`string\` | None | At mount | The key the user's place is kept under. See [**State**](?path=/docs/controls-grid-state--overview). |
@@ -71,6 +71,7 @@ Columns, row heights, locks and what opening a record does are set with hooks in
 | \`columns.events\` | \`onCellDoubleClicked\` | \`record\`, \`columnName\` | On a double-click on a provider column's cell, group rows and the totals row included. |
 | \`columns.events\` | \`onColumnsChanged\` | \`columns: IColumn[]\` | After the user resizes or moves a column, with the provider's columns updated. |
 | \`rows.events\` | \`onRowClicked\` | \`record: IRecord\` | On a click on a row, group rows and the totals row included. With row selection, a click on the checkbox, on a cell's commands or a plain click on a group row does not fire it. |
+| \`rows.events\` | \`onHighlightedRowsChanged\` | None | When the row the user hovers or focuses changes, or the selection does. |
 | \`cells.events\` | \`onFocusedCellChanged\` | \`record?\`, \`columnName?\` | Each time a cell takes focus; both are \`undefined\` when the focus leaves the rows. |
 
 ## Where next

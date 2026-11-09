@@ -10,19 +10,14 @@ const CULTURES = [
     { key: 'en-US', text: 'English (United States)', lcid: 1033 },
     { key: 'cs-CZ', text: 'Čeština', lcid: 1029 },
     { key: 'de-DE', text: 'Deutsch', lcid: 1031 },
-    { key: 'ja-JP', text: '日本語', lcid: 1041 },
 ]
 
 export const Invoice = () => {
     const { formatting } = usePcfContext()
-    const issued = dayjs('2026-03-15T14:30').toDate()
-    const due = dayjs('2026-04-14').toDate()
     return <Stack tokens={{ childrenGap: 4 }}>
-        <Text>Issued: {formatting.formatDateShort(issued, true)}</Text>
-        <Text>Due: {formatting.formatDateLong(due)}</Text>
-        <Text>Total: {formatting.formatCurrency(12480.5, 2)}</Text>
+        <Text>Issued: {formatting.formatDateShort(new Date('2026-03-15T14:30'), true)}</Text>
         <Text>Hours: {formatting.formatDecimal(1234.75, 2)}</Text>
-        <Text>Time spent: {formatting.formatDuration(150)}</Text>
+        <Text>Total: {formatting.formatCurrency(12480.5, 2)}</Text>
     </Stack>
 }
 

@@ -20,8 +20,8 @@ const components: IRibbonComponents = {
     onRenderCommandBar: props => RibbonUiCommandBarComponents.onRenderCommandBar({ ...props, items: props.items.map(item => ({ ...item, iconOnly: true })) }),
     //a piece: the slots of the shimmer the ribbon shows while it loads
     shimmer: {
-        //draws the default shimmer, as wide as two commands
-        onRenderShimmer: props => RibbonUiShimmerComponents.onRenderShimmer({ ...props, width: 160 }),
+        //draws the default shimmer, as wide as the two icon-only commands
+        onRenderShimmer: props => RibbonUiShimmerComponents.onRenderShimmer({ ...props, width: 80 }),
     },
 }
 

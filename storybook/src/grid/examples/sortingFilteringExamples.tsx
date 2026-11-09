@@ -8,7 +8,6 @@ export const TRIAGE_QUEUE_CODE = `const GridExample = () => <DatasetControl onLo
                 createSortingModule(),
                 createFilteringModule(),
             ]}
-            enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -20,7 +19,7 @@ const RESOLVED = '4'
 //the grid opens with this sort and filter
 const createQueueProvider = () => {
     const tickets = createTicketsProvider()
-    tickets.setSorting([{ name: 'assignee', sortDirection: 0 }, { name: 'duedate', sortDirection: 0 }])
+    tickets.setSorting([{ name: 'assignee', sortDirection: 0 }])
     tickets.setFiltering({
         filterOperator: Type.And.Value,
         conditions: [{ attributeName: 'status', conditionOperator: Operators.DoesNotEqual.Value, value: RESOLVED }],
@@ -38,7 +37,6 @@ const GridExample = () => {
                     createSortingModule(),
                     createFilteringModule(),
                 ]}
-                enableOptionSetColors
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -47,21 +45,11 @@ const GridExample = () => {
 
 export const TAILORED_FILTERS_CODE = `//each list keeps the operator its data type's filter opens on
 const FILTER_OPERATORS = new Map([
-    ['ticketnumber', [Operators.Like.Value, Operators.Equal.Value]],
     ['title', [Operators.Like.Value, Operators.NotLike.Value]],
-    ['customer', [Operators.Like.Value, Operators.Equal.Value]],
-    ['assignee', [Operators.Like.Value, Operators.DoesNotContainData.Value]],
-    ['priority', [Operators.Equal.Value, Operators.DoesNotEqual.Value]],
     ['status', [Operators.Equal.Value, Operators.DoesNotEqual.Value]],
-    ['duedate', [Operators.On.Value, Operators.OnOrBefore.Value, Operators.OnOrAfter.Value, Operators.Between.Value, Operators.Today.Value]],
+    ['duedate', [Operators.On.Value, Operators.OnOrBefore.Value, Operators.Today.Value]],
+    //no operators: the column cannot be filtered
     ['timespent', []],
-])
-
-const FILTER_PLACEHOLDERS = new Map([
-    ['ticketnumber', 'CAS-01045'],
-    ['title', 'A word from the subject'],
-    ['customer', 'Part of the company name'],
-    ['assignee', 'Part of a name'],
 ])
 
 const createQueueProvider = () => {
@@ -79,9 +67,8 @@ const filterPlaceholdersModule: IGridModule = {
     priority: 1,
     onLoad: grid => {
         grid.modules.get('filtering').hooks.filterControlParameters.add((result, { column, control }) => {
-            const placeholder = FILTER_PLACEHOLDERS.get(column.name)
-            if (control === 'value' && placeholder) {
-                result.Placeholder = { raw: placeholder }
+            if (column.name === 'title' && control === 'value') {
+                result.Placeholder = { raw: 'A word from the subject' }
             }
         })
     },
@@ -94,11 +81,9 @@ const GridExample = () => {
         <DatasetControl.Body>
             <ClientSideGrid
                 modules={[
-                    createSortingModule(),
                     createFilteringModule(),
                     filterPlaceholdersModule,
                 ]}
-                enableOptionSetColors
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>

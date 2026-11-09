@@ -23,16 +23,16 @@ Two parts page through the records: \`DatasetControl.PageSizeSwitcher\` shows wh
 
 ### PageSizeSwitcher
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100, 250 | The sizes the menu offers. At mount. |
-| \`components\` | \`Partial<IDatasetControlUiPageSizeSwitcherComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100, 250 | At mount | The sizes the menu offers. |
+| \`components\` | \`Partial<IDatasetControlUiPageSizeSwitcherComponents>\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ### Pagination
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| \`components\` | \`Partial<IDatasetControlUiPaginationComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`components\` | \`Partial<IDatasetControlUiPaginationComponents>\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
@@ -57,7 +57,7 @@ Two parts page through the records: \`DatasetControl.PageSizeSwitcher\` shows wh
 | \`moveFirst()\`, \`movePrevious()\`, \`moveNext()\` | Loads that page, asking about unsaved changes first. |
 | \`events\` | \`onPagingChanged\`, whenever the page changes or starts loading. |
 
-**Strings:** \`PAGE_SIZE_SWITCHER_LABELS\`, keys \`pageSizeSwitcher.*\`, and \`PAGINATION_LABELS\`, keys \`pagination.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+To change the range text or the tooltips, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 

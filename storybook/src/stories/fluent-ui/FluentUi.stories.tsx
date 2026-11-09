@@ -28,6 +28,7 @@ Where Base Controls has its own version of a Fluent component, use it: it takes 
 | \`CommandBar\` | Menus and tooltips in the app theme, folds when its own box resizes, no side padding, icon-only buttons when compact, \`align\` |
 | \`ComboBox\`, \`DatePicker\`, \`TimePicker\`, \`TagPicker\` | Lists and calendars in the app theme |
 | \`Callout\`, \`ContextualMenu\`, \`TooltipHost\`, \`Panel\`, \`Dialog\` | Drawn in the app theme: see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview) |
+| \`Spinner\` | Drawn and animated as Fluent UI v9 draws its spinner |
 | \`useSurfaceMenuProps(menuProps)\` | A Fluent button's \`menuProps\`, drawn in the app theme |
 | \`useTheme()\` | Throws outside an \`AppThemeProvider\` |
 

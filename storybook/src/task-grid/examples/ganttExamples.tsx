@@ -3,128 +3,135 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { TASK_EXAMPLE_TABS, withTasks } from './shared'
 
+//what each package entry exports that these examples use
+const ENTRY_EXPORTS: [string, string[]][] = [
+    ['@talxis/base-controls', ['DatasetControl', 'TaskDatasetControl', 'TaskGrid', 'createRowSelectionModule', 'createTaskEditingModule', 'createMemoryProjectModule', 'createMemoryDependenciesModule']],
+    ['@talxis/base-controls/gantt', ['IGanttModule', 'IMarker', 'INonWorkingDay', 'TaskGantt', 'TaskTooltip', 'useMarker', 'createLibraryModule', 'createMemoryMarkersModule', 'createMemoryNonWorkingDaysModule', 'createBarDraggingModule', 'createTaskDrawingModule', 'createTaskSelectionModule', 'createTaskTooltipModule', 'createLinksModule']],
+]
+
+//puts an import line for every entry the code uses on top of it
+const withImports = (code: string) => ENTRY_EXPORTS
+    .map(([entry, names]) => [entry, names.filter(name => new RegExp(`\\b${name}\\b`).test(code))] as const)
+    .filter(([, names]) => names.length > 0)
+    .map(([entry, names]) => `import { ${names.join(', ')} } from '${entry}'\n`)
+    .join('') + code
+
 interface IGanttExample {
     /** Declarations above the component. */
     setup?: string
-    /** The Gantt modules after the library module, as array items. */
-    ganttModules: string
+    /** The parts at the start and the end of the header, as JSX. */
+    header?: { start?: string, end?: string }
+    /** The `TaskDatasetControl` props beyond `onLoad` and `height`. */
+    controlProps?: string
     /** The control modules, as array items. */
     controlModules?: string
-    /** The `TaskDatasetControl` props beyond the ones every example sets. */
-    controlProps?: string
+    /** The `TaskGrid` modules, as one line of array items. */
+    gridModules?: string
+    /** The Gantt modules after the library module, as array items. */
+    ganttModules: string
 }
 
-const createGanttCode = (example: IGanttExample) => `import { createLoadTasks, createTaskDatabase } from './tasks'
+const createHeaderRegion = (region: 'Start' | 'End', parts?: string) => parts ? `
+            <DatasetControl.Header.${region}>
+                ${parts}
+            </DatasetControl.Header.${region}>` : ''
+
+const createHeader = (header?: IGanttExample['header']) => header ? `
+        <DatasetControl.Header>${createHeaderRegion('Start', header.start)}${createHeaderRegion('End', header.end)}
+        </DatasetControl.Header>` : ''
+
+const createGanttCode = (example: IGanttExample) => withImports(`import { createLoadTasks, createTaskDatabase } from './tasks'
 ${example.setup ?? ''}
 const GridExample = () => {
-    const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
-    const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()], [])${example.controlModules ? `
-    const controlModules = React.useMemo(() => [${example.controlModules.trimEnd()}
-    ], [])` : ''}
-    const ganttModules = React.useMemo(() => [
+    const database = React.useMemo(createTaskDatabase, [])${example.controlModules ? `
+    const controlModules = [${example.controlModules}
+    ]` : ''}
+    const ganttModules = [
         createLibraryModule(),${example.ganttModules}
-    ], [])
+    ]
 
-    return <TaskDatasetControl${example.controlModules ? ' modules={controlModules}' : ''}${example.controlProps ?? ''} onLoad={loadTasks} height='520px'>
-        <DatasetControl.Header>
-            <DatasetControl.Header.Start>
-                <DatasetControl.ViewSwitcher />
-                <TaskGantt.ZoomSlider />
-            </DatasetControl.Header.Start>
-            <DatasetControl.Header.End>
-                <TaskDatasetControl.Ribbon />
-                <TaskDatasetControl.Settings />
-            </DatasetControl.Header.End>
-        </DatasetControl.Header>
+    return <TaskDatasetControl${example.controlModules ? ' modules={controlModules}' : ''}${example.controlProps ?? ''} onLoad={createLoadTasks(database)} height='520px'>${createHeader(example.header)}
         <DatasetControl.Body>
             <TaskGantt.Split>
-                <TaskGrid modules={gridModules} />
+                <TaskGrid${example.gridModules ? ` modules={[${example.gridModules}]}` : ''} />
                 <TaskGantt modules={ganttModules} />
             </TaskGantt.Split>
         </DatasetControl.Body>
     </TaskDatasetControl>
 }
-`
+`)
 
 const PROJECT = `
         createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),`
 
 const SHOWCASE_CODE = createGanttCode({
-    controlProps: ' enableCreation enableEditing enableDeletion',
-    controlModules: `${PROJECT}
-        createTaskDraggingModule(),
-        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
-    `,
+    header: { start: '<TaskGantt.ZoomSlider />', end: '<TaskDatasetControl.Ribbon />' },
+    controlProps: ' enableEditing',
+    gridModules: 'createTaskEditingModule()',
     ganttModules: `
-        createMemoryMarkersModule({ markers: [{ id: 'beta', text: 'Beta', date: dayjs('2025-12-01') }] }),
-        createMemoryNonWorkingDaysModule({ nonWorkingDays: NON_WORKING_DAYS }),
-        createBarDraggingModule(),
-        //hold Ctrl and drag over a row to draw a task
-        createTaskDrawingModule(),
-        createTaskSelectionModule(),
-        //point at a bar
-        createTaskTooltipModule({ statusColumnName: 'statuscode' }),
-        //drag from the end of one bar to another to link them
-        createLinksModule(),`,
+        createBarDraggingModule(),`,
 })
 
-const BASIC_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks'
+const BASIC_CODE = withImports(`import { createLoadTasks, createTaskDatabase } from './tasks'
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
-    //the Gantt needs the startDate and endDate tasks.ts maps
-    const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
-    //the library module is required
-    const ganttModules = React.useMemo(() => [createLibraryModule()], [])
 
-    return <TaskDatasetControl onLoad={loadTasks} height='480px'>
+    //the Gantt needs the startDate and endDate tasks.ts maps
+    return <TaskDatasetControl onLoad={createLoadTasks(database)} height='480px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <TaskGantt.ZoomSlider />
             </DatasetControl.Header.Start>
-            <DatasetControl.Header.End>
-                <TaskDatasetControl.Ribbon />
-            </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
             {/* the grid, then the Gantt */}
             <TaskGantt.Split>
                 <TaskGrid />
-                <TaskGantt modules={ganttModules} />
+                {/* the library module is required */}
+                <TaskGantt modules={[createLibraryModule()]} />
             </TaskGantt.Split>
         </DatasetControl.Body>
     </TaskDatasetControl>
 }
-`
+`)
 
 const MODULES_CODE = createGanttCode({
-    controlProps: ' enableEditing',
-    controlModules: `
-        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
-    `,
+    header: { start: '<TaskGantt.ZoomSlider />', end: `<TaskDatasetControl.Ribbon />
+                <TaskDatasetControl.Settings />` },
+    controlProps: ' enableCreation enableEditing',
+    controlModules: `${PROJECT}
+        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),`,
+    gridModules: `createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()`,
     ganttModules: `
         //a feature left out is not there at all
+        createMemoryMarkersModule({ markers: [{ id: 'beta', text: 'Beta', date: dayjs('2025-12-01') }] }),
+        createMemoryNonWorkingDaysModule({ nonWorkingDays: NON_WORKING_DAYS }),
         createBarDraggingModule(),
+        //Ctrl+drag over a row draws a new task
+        createTaskDrawingModule(),
+        createTaskSelectionModule(),
         createTaskTooltipModule({ statusColumnName: 'statuscode' }),
         createLinksModule(),`,
 })
 
 const EDITING_CODE = createGanttCode({
+    header: { end: '<TaskDatasetControl.Ribbon />' },
     controlProps: ' enableCreation enableEditing',
+    gridModules: `createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()`,
     ganttModules: `
         //needs enableEditing
-        createBarDraggingModule({ enableMove: true, enableResize: true }),
-        //needs enableCreation
+        createBarDraggingModule(),
+        //Ctrl+drag over a row draws a new task with enableCreation
         createTaskDrawingModule(),
-        createTaskSelectionModule({ enableSelectionBox: true }),`,
+        createTaskSelectionModule(),`,
 })
 
 const MARKERS_CODE = createGanttCode({
     setup: `
 const RELEASES: IMarker[] = [
     { id: 'beta', text: 'Beta', date: dayjs('2025-12-01'), color: '#8764b8' },
-    { id: 'launch', text: 'Launch', date: dayjs('2026-01-20'), color: '#107c10' },
+    { id: 'launch', text: 'Launch', date: dayjs('2026-04-01'), color: '#107c10' },
 ]
 
 //useMarker() returns the marker this chip draws
@@ -137,34 +144,36 @@ const LaunchChip = (props: React.HTMLAttributes<HTMLDivElement>) => {
     return <div {...props}>{marker.text} · {days >= 0 ? 'in ' + days + ' days' : Math.abs(days) + ' days ago'}</div>
 }
 `,
-    controlModules: PROJECT,
+    controlModules: `
+        //its start and end are marked too${PROJECT}`,
     ganttModules: `
         createMemoryMarkersModule({
             markers: RELEASES,
-            today: { color: '#d13438' },
-            project: { color: '#ca5010' },
             components: { chip: { onRenderChip: props => <LaunchChip {...props} /> } },
         }),`,
 })
 
 const NON_WORKING_DAYS_CODE = createGanttCode({
-    controlProps: ' enableEditing',
     setup: `
-const COMPANY_DAYS: INonWorkingDay[] = [
-    ...NON_WORKING_DAYS,
+const HOLIDAYS: INonWorkingDay[] = [
+    //endDate is the last day, included
+    { id: 'christmas', date: dayjs('2025-12-24'), endDate: dayjs('2025-12-26'), description: 'Christmas holidays', recurrence: 'FREQ=YEARLY' },
+    { id: 'newYearsDay', date: dayjs('2026-01-01'), description: "New Year's Day", recurrence: 'FREQ=YEARLY' },
     //every month's first Friday
     { id: 'teamDay', date: dayjs('2025-10-03'), description: 'Team day', recurrence: 'FREQ=MONTHLY;BYDAY=1FR' },
-    //endDate is the last day, included
-    { id: 'hackathon', date: dayjs('2025-11-24'), endDate: dayjs('2025-11-26'), description: 'Hackathon' },
 ]
 `,
+    header: { start: '<TaskGantt.ZoomSlider />', end: '<TaskDatasetControl.Settings />' },
+    controlProps: ' enableEditing',
+    gridModules: 'createTaskEditingModule()',
     ganttModules: `
-        createMemoryNonWorkingDaysModule({ nonWorkingDays: COMPANY_DAYS, enableWeekends: true }),
+        createMemoryNonWorkingDaysModule({ nonWorkingDays: HOLIDAYS }),
         createBarDraggingModule(),`,
 })
 
 const TOOLTIP_CODE = createGanttCode({
     controlProps: ' enableEditing',
+    gridModules: 'createTaskEditingModule()',
     ganttModules: `
         createBarDraggingModule(),
         createTaskTooltipModule({
@@ -189,24 +198,24 @@ const LINKS_CODE = createGanttCode({
     controlProps: ' enableEditing',
     controlModules: `
         //the links module draws what this module holds
-        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
-    `,
+        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),`,
     ganttModules: `
-        createBarDraggingModule(),
         createLinksModule(),`,
 })
 
 const OWN_MODULE_CODE = createGanttCode({
+    header: { start: '<TaskGantt.ZoomSlider />' },
     controlProps: ' enableEditing',
+    gridModules: 'createTaskEditingModule()',
     setup: `
 //fiscal years start in July; zoom out until the scale shows quarters
 const fiscalScaleModule: IGanttModule = {
     name: 'fiscalScale',
     onLoad: gantt => {
-        gantt.services.observe('zooming', (zooming: any) => zooming.hooks.scaleLabel.add((result: { label: string }, cell: { date: Date, unit: string }) => {
-            if (cell.unit === 'quarter') {
-                const month = cell.date.getMonth()
-                const fiscalYear = month >= 6 ? cell.date.getFullYear() + 1 : cell.date.getFullYear()
+        gantt.services.observe('zooming', zooming => zooming.hooks.scaleLabel.add((result, { date, unit }) => {
+            if (unit === 'quarter') {
+                const month = date.getMonth()
+                const fiscalYear = month >= 6 ? date.getFullYear() + 1 : date.getFullYear()
                 result.label = 'FY' + String(fiscalYear).slice(2) + ' Q' + (Math.floor(((month + 6) % 12) / 3) + 1)
             }
         }))
@@ -221,7 +230,7 @@ const criticalTasksModule: IGanttModule = {
     //runs on every mount, before the chart is drawn
     onLoad: gantt => {
         //the tasks service comes with the chart, so observe it
-        gantt.services.observe('tasks', (tasks: any) => tasks.hooks.task.add((task: any, { record }: { record: IRecord }) => {
+        gantt.services.observe('tasks', tasks => tasks.hooks.task.add((task, { record }) => {
             if (Number(record.getValue('priority')) === 3) {
                 task.color = '#d13438'
             }
@@ -238,10 +247,26 @@ const criticalTasksModule: IGanttModule = {
 const PRO_LIBRARY_FILE: IGridExampleFile = {
     name: 'pro.ts',
     code: `//with a DHTMLX Gantt PRO licence, use this library module instead of createLibraryModule() in GridExample.tsx
+import { createProLibraryModule } from '@talxis/base-controls/gantt'
 import { Gantt } from 'dhtmlx-gantt-pro'
 import 'dhtmlx-gantt-pro/codebase/dhtmlxgantt.css'
 
 export const libraryModule = createProLibraryModule({ Gantt })
+`,
+}
+
+const OWN_MODULE_TYPES_FILE: IGridExampleFile = {
+    name: 'types.ts',
+    code: `//a module file, so the block below adds to the Gantt's own types
+export {}
+
+declare module '@talxis/base-controls/gantt' {
+    //each module's name and what its onLoad returns
+    interface IGanttModuleMap {
+        fiscalScale: {}
+        criticalTasks: {}
+    }
+}
 `,
 }
 
@@ -253,4 +278,4 @@ export const GanttMarkersExample = () => <GridExampleRunner seedCode={withTasks(
 export const GanttNonWorkingDaysExample = () => <GridExampleRunner seedCode={withTasks(NON_WORKING_DAYS_CODE)} tabs={TASK_EXAMPLE_TABS} />
 export const GanttTooltipExample = () => <GridExampleRunner seedCode={withTasks(TOOLTIP_CODE)} tabs={TASK_EXAMPLE_TABS} />
 export const GanttLinksExample = () => <GridExampleRunner seedCode={withTasks(LINKS_CODE)} tabs={TASK_EXAMPLE_TABS} />
-export const GanttOwnModuleExample = () => <GridExampleRunner seedCode={withTasks(OWN_MODULE_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttOwnModuleExample = () => <GridExampleRunner seedCode={[...withTasks(OWN_MODULE_CODE), OWN_MODULE_TYPES_FILE]} tabs={TASK_EXAMPLE_TABS} />

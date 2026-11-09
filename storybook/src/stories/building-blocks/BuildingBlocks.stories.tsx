@@ -26,7 +26,7 @@ Sorting, filtering, paging, selection and saving work the same in every list, wh
 
 ## The runtime
 
-A control that loads something keeps its state and its work in a *runtime*, a new one for every mount, which \`onSetup\` hands to you. How a mount loads, fails and is replaced: [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
+DatasetControl, the grids, the map and the ribbon keep their state and their work in a *runtime*, a new one for every mount, which \`onSetup\` hands to you. How a mount loads, fails and is replaced: [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). A Form does not run on a runtime: it hands you its API through \`onFormReady\` and \`useForm()\`, as [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview) describes.
 
 ## Customise a control
 
@@ -39,7 +39,7 @@ A control that loads something keeps its state and its work in a *runtime*, a ne
 
 ## Parts without a control
 
-Every part is split in two. The *UI* takes plain props and owns the look: its styles, its default texts and its \`components\`. The *adapter* reads the control's runtime and draws the UI with props. As the UI never reads a runtime, it also draws from your own state, with no control behind it.
+Every part is split in two. The *UI* takes plain props and owns the look: its styles and its \`components\`. The *adapter* reads the control's runtime and draws the UI with props, texts included. As the UI never reads a runtime, it also draws from your own state, with no control behind it.
 
 {{story: Plain UI}}
 
@@ -81,7 +81,7 @@ export const PureUi: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The DatasetControl's frame, view switcher, quick find and paging, with the form's sections as cards, all drawn from React state. Try: set a deal's stage to **Won**, then switch to **Won deals**.`,
+                story: `The DatasetControl's frame and view switcher, with the form's sections as cards, all drawn from React state. Try: set a deal's stage to **Won**, then switch to **Won deals**.`,
             },
         },
     },

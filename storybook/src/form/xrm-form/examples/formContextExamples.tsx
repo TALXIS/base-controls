@@ -1,10 +1,10 @@
 import React from 'react'
 import { GridExampleRunner } from '../../../grid/GridExampleRunner'
-import { withAccount } from './shared'
+import { accountTab, DETAILS_TAB, ITabSpec, withAccount } from './shared'
 
 const START_QUALIFICATION_CODE = `import { XrmForm } from '@talxis/base-controls'
 import type { IXrmFormContext } from '@talxis/base-controls'
-import { PrimaryButton, Stack } from '@fluentui/react'
+import { PrimaryButton } from '@fluentui/react'
 import { loadAccount } from './account'
 
 //a form script, written as it would be for Dataverse
@@ -19,13 +19,11 @@ const startQualification = (formContext: IXrmFormContext) => {
 const GridExample = () => {
     //kept in state for the button
     const [formContext, setFormContext] = React.useState<IXrmFormContext>()
-    return <Stack tokens={{ childrenGap: 8 }}>
-        <Stack horizontal>
-            <PrimaryButton text='Start qualification' disabled={!formContext} onClick={() => startQualification(formContext!)} />
-        </Stack>
+    return <>
+        <PrimaryButton text='Start qualification' disabled={!formContext} onClick={() => startQualification(formContext!)} />
         {/* called once the record and the FormXml are loaded */}
         <XrmForm onLoad={loadAccount} onFormReady={params => setFormContext(params.formContext)} />
-    </Stack>
+    </>
 }
 `
 
@@ -49,7 +47,7 @@ const GridExample = () => <XrmForm onLoad={loadAccount} onFormReady={({ formCont
 
 const DIGITAL_ONLY_CODE = `import { XrmForm } from '@talxis/base-controls'
 import type { IXrmFormContext } from '@talxis/base-controls'
-import { Stack, Toggle } from '@fluentui/react'
+import { Toggle } from '@fluentui/react'
 import { loadAccount } from './account'
 
 //one script switches both ways
@@ -63,10 +61,10 @@ const setDigitalOnly = (formContext: IXrmFormContext, isDigitalOnly: boolean) =>
 
 const GridExample = () => {
     const [formContext, setFormContext] = React.useState<IXrmFormContext>()
-    return <Stack tokens={{ childrenGap: 8 }}>
+    return <>
         <Toggle label='Digital only' inlineLabel disabled={!formContext} onChange={(_, checked) => setDigitalOnly(formContext!, !!checked)} />
         <XrmForm onLoad={loadAccount} onFormReady={params => setFormContext(params.formContext)} />
-    </Stack>
+    </>
 }
 `
 
@@ -89,10 +87,22 @@ const GridExample = () => <XrmForm onLoad={loadAccount} onFormReady={({ formCont
 }} />
 `
 
-export const StartQualificationExample = () => <GridExampleRunner seedCode={withAccount(START_QUALIFICATION_CODE)} tabs={['preview', 'code']} />
+const DIGITAL_ONLY_TABS: ITabSpec[] = [
+    {
+        name: 'summary',
+        label: 'Summary',
+        columns: [
+            { width: '65%', sections: [{ name: 'account_information', label: 'Account information', fields: ['name', 'telephone1', 'websiteurl'] }] },
+            { width: '35%', sections: [{ name: 'status', label: 'Status', fields: ['creditonhold'] }] },
+        ],
+    },
+    DETAILS_TAB,
+]
 
-export const CheckWebsiteExample = () => <GridExampleRunner seedCode={withAccount(CHECK_WEBSITE_CODE)} tabs={['preview', 'code']} />
+export const StartQualificationExample = () => <GridExampleRunner seedCode={withAccount(START_QUALIFICATION_CODE, [accountTab('name', 'websiteurl'), DETAILS_TAB])} tabs={['preview', 'code']} />
 
-export const DigitalOnlyExample = () => <GridExampleRunner seedCode={withAccount(DIGITAL_ONLY_CODE)} tabs={['preview', 'code']} />
+export const CheckWebsiteExample = () => <GridExampleRunner seedCode={withAccount(CHECK_WEBSITE_CODE, [accountTab('name', 'websiteurl')])} tabs={['preview', 'code']} />
 
-export const CancelSaveExample = () => <GridExampleRunner seedCode={withAccount(CANCEL_SAVE_CODE)} tabs={['preview', 'code']} />
+export const DigitalOnlyExample = () => <GridExampleRunner seedCode={withAccount(DIGITAL_ONLY_CODE, DIGITAL_ONLY_TABS)} tabs={['preview', 'code']} />
+
+export const CancelSaveExample = () => <GridExampleRunner seedCode={withAccount(CANCEL_SAVE_CODE, [accountTab('name', 'creditonhold', 'description')])} tabs={['preview', 'code']} />

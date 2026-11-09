@@ -32,9 +32,9 @@ The provider supplies what the pickers list, fetched anew each time the editor o
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| \`components\` | \`IEditColumnsComponents\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`components\` | \`IEditColumnsComponents\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
@@ -56,23 +56,24 @@ The session holds the edit until it is saved:
 | Member | Does |
 |---|---|
 | \`getColumns()\` | The visible chosen columns, in order. |
-| \`onGetAvailableColumns(query?)\` | Fetches the columns the picker offers, filtered by \`query\`. |
+| \`getAvailableColumns(query?)\` | Fetches the columns the column picker offers, filtered by \`query\`. |
+| \`getScopes(query?)\` | The entities the *Column source* picker offers: the records' own, then the related ones. |
 | \`addColumn(column)\` | Adds the column first. |
 | \`removeColumn(name)\` | Removes the column. |
 | \`moveColumn(name, targetName)\` | Moves the column to where \`targetName\` is. |
 | \`setScope(scope)\` | Sets which entity the columns being added come from. |
 | \`refreshColumns()\` | Gives the chosen columns the provider's current definitions, after they changed. |
-| \`events\` | \`onColumnsChanged\`, whenever the chosen columns change. |
+| \`events\` | \`onColumnsChanged\` whenever the chosen columns change, \`onScopeChanged\` when the source changes, and \`onLoadFailed\` when fetching columns fails. |
 
 ## Add your own commands
 
-\`hook(commands, session)\` changes the commands above the pickers in place, and \`hook(commands, column, session)\` those of each chosen column, with Remove first. Both return their unregistration, and a higher \`priority\` runs later.
+\`hook(commands, session)\` changes the commands above the pickers in place, and \`hook(commands, column, session)\` those of each chosen column, with Remove first. Both return their remover, and a higher \`priority\` runs later.
 
 The example adds **Keep only the deal** above the pickers.
 
 Dragging swallows clicks: give column commands \`onMouseUp\`, not \`onClick\`.
 
-**Strings:** \`EDIT_COLUMNS_LABELS\`, keys \`editColumns.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+To change the editor's labels, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 

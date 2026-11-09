@@ -3,45 +3,13 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { TASK_EXAMPLE_TABS, withTasks } from './shared'
 
-interface IModuleExample {
-    /** Declarations above the component, such as the module's view. */
-    setup: string
-    /** The control modules, as an array expression over `database`. */
-    modules: string
-    /** The view's columns, as an expression. */
-    columns: string
-    /** Parts added to the header's end, before the ribbon. */
-    headerParts?: string
-}
+const CUSTOM_COLUMNS_CODE = `import { createIndexedDbCustomColumnsModule, createTaskEditingModule, DatasetControl, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { createLoadTasks, createTaskDatabase } from './tasks'
 
-const createModuleCode = (example: IModuleExample) => `import { createLoadTasks, createTaskDatabase } from './tasks'
-${example.setup}
-const VIEWS: ITaskGridView[] = [
-    { id: 'all', name: 'All tasks', resolve: () => ({ columns: ${example.columns} }) },
-]
+const loadTasks = createLoadTasks(createTaskDatabase())
 
 const GridExample = () => {
-    const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(taskRuntime), views: VIEWS })
-    const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule(), createFilteringModule()], [])
-    const controlModules = React.useMemo(() => ${example.modules}, [database])
-
-    return <TaskDatasetControl modules={controlModules} enableCreation enableEditing enableDeletion onLoad={loadTasks} height='480px'>
-        <DatasetControl.Header>
-            <DatasetControl.Header.End>${example.headerParts ?? ''}
-                <TaskDatasetControl.Ribbon />
-            </DatasetControl.Header.End>
-        </DatasetControl.Header>
-        <DatasetControl.Body>
-            <TaskGrid modules={gridModules} />
-        </DatasetControl.Body>
-    </TaskDatasetControl>
-}
-`
-
-const CUSTOM_COLUMNS_CODE = createModuleCode({
-    setup: '',
-    modules: `[
+    const modules = [
         //a new database starts with these columns
         createIndexedDbCustomColumnsModule({
             databaseName: 'taskGridDocs.customColumns',
@@ -52,14 +20,26 @@ const CUSTOM_COLUMNS_CODE = createModuleCode({
             enableCreation: true,
             enableDeletion: true,
         }),
-    ]`,
-    columns: `getTaskColumns('subject', 'statuscode', 'scheduledend')`,
-    headerParts: `
-                <DatasetControl.EditColumns />`,
-})
+    ]
 
-const LOOKUP_MANY_CODE = createModuleCode({
-    setup: `
+    return <TaskDatasetControl modules={modules} enableEditing onLoad={loadTasks} height='480px'>
+        <DatasetControl.Header>
+            <DatasetControl.Header.End>
+                <DatasetControl.EditColumns />
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            {/* edits the custom columns' values in place */}
+            <TaskGrid modules={[createTaskEditingModule()]} />
+        </DatasetControl.Body>
+    </TaskDatasetControl>
+}
+`
+
+const LOOKUP_MANY_CODE = `import { createFilteringModule, createMemoryLookupManyModule, createTaskEditingModule, DatasetControl, ILookupManyColumn, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { IColumn } from '@talxis/client-libraries'
+import { createLoadTasks, createTaskDatabase } from './tasks'
+
 //assignedto draws people, tags coloured pills, and teams plain ones; try another appearance
 const COLUMNS: { [columnName: string]: ILookupManyColumn } = {
     assignedto: { displayName: 'Assigned to', entityName: 'mem_person', appearance: { type: 'people' } },
@@ -69,77 +49,122 @@ const COLUMNS: { [columnName: string]: ILookupManyColumn } = {
 
 //a view lists each column by name, as a Lookup.Simple column; filter one from its column menu
 const VIEW_COLUMNS: IColumn[] = Object.keys(COLUMNS).map(name => ({ name, displayName: COLUMNS[name].displayName, dataType: 'Lookup.Simple', visualSizeFactor: 200 }))
-`,
-    modules: `[createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: COLUMNS, values: LOOKUP_MANY_VALUES })]`,
-    columns: `[...getTaskColumns('subject', 'statuscode'), ...VIEW_COLUMNS]`,
-})
 
-const TEMPLATES_CODE = createModuleCode({
-    setup: `
+const loadTasks = createLoadTasks(createTaskDatabase(), [
+    { id: 'all', name: 'All tasks', resolve: () => ({ columns: [...getTaskColumns('subject', 'statuscode'), ...VIEW_COLUMNS] }) },
+])
+
+//LOOKUP_MANY_SOURCES and LOOKUP_MANY_VALUES are the sample records of these docs
+const GridExample = () => <TaskDatasetControl modules={[createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: COLUMNS, values: LOOKUP_MANY_VALUES })]} enableEditing onLoad={loadTasks} height='480px'>
+    <DatasetControl.Body>
+        <TaskGrid modules={[createTaskEditingModule(), createFilteringModule()]} />
+    </DatasetControl.Body>
+</TaskDatasetControl>
+`
+
+const TEMPLATES_CODE = `import { createMemoryTemplatesModule, createRowSelectionModule, DatasetControl, IMemoryTemplate, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { createLoadTasks, createTaskDatabase } from './tasks'
+
+//the templates create their tasks in the database the task store reads
+const database = createTaskDatabase()
+const loadTasks = createLoadTasks(database)
+
 //listed under From template; select a task to save it as a template of your own
 const ONBOARDING: IMemoryTemplate = {
     id: 'onboarding',
     name: 'Onboard a new colleague',
     data: { priority: 1 },
     children: [
-        { data: { subject: 'Prepare the laptop', estimatedeffort: 2 } },
-        { data: { subject: 'Create the accounts', estimatedeffort: 1 } },
-        { data: { subject: 'First week', estimatedeffort: 40 }, children: [
+        { data: { subject: 'Prepare the laptop' } },
+        { data: { subject: 'Create the accounts' } },
+        { data: { subject: 'First week' }, children: [
             { data: { subject: 'Meet the team' } },
             { data: { subject: 'Pick a first task' } },
         ] },
     ],
 }
-`,
-    modules: `[createMemoryTemplatesModule({ database, templates: [ONBOARDING, ...TEMPLATES] })]`,
-    columns: `getTaskColumns('subject', 'priority', 'estimatedeffort')`,
-})
 
-const CHECKLIST_CODE = createModuleCode({
-    setup: `
+const GridExample = () => <TaskDatasetControl modules={[createMemoryTemplatesModule({ database, templates: [ONBOARDING] })]} enableCreation onLoad={loadTasks} height='480px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.End>
+            <TaskDatasetControl.Ribbon />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <TaskGrid modules={[createRowSelectionModule({ mode: 'single' })]} />
+    </DatasetControl.Body>
+</TaskDatasetControl>
+`
+
+const CHECKLIST_CODE = `import { createMemoryTaskChecklistModule, DatasetControl, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { IColumn } from '@talxis/client-libraries'
+import { createLoadTasks, createTaskDatabase } from './tasks'
+
 //a view lists the column as a Lookup.Simple column
 const CHECKLIST: IColumn = { name: 'checklist__virtual', displayName: 'Checklist', dataType: 'Lookup.Simple', visualSizeFactor: 100 }
-`,
-    modules: `[createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS })]`,
-    columns: `[...getTaskColumns('subject', 'statuscode', 'percentcomplete'), CHECKLIST]`,
-})
 
-const DEPENDENCIES_CODE = createModuleCode({
-    setup: `
+const loadTasks = createLoadTasks(createTaskDatabase(), [
+    { id: 'all', name: 'All tasks', resolve: () => ({ columns: [...getTaskColumns('subject', 'percentcomplete'), CHECKLIST] }) },
+])
+
+//CHECKLIST_ITEMS are the sample checklists of these docs, by task id
+const GridExample = () => <TaskDatasetControl modules={[createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS })]} onLoad={loadTasks} height='480px'>
+    <DatasetControl.Body>
+        <TaskGrid />
+    </DatasetControl.Body>
+</TaskDatasetControl>
+`
+
+const DEPENDENCIES_CODE = `import { createMemoryDependenciesModule, createRowSelectionModule, DatasetControl, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { IColumn } from '@talxis/client-libraries'
+import { createLoadTasks, createTaskDatabase } from './tasks'
+
 //a view lists the counts as Lookup.Simple columns
 const COUNTS: IColumn[] = [
     { name: 'predecessors__virtual', displayName: 'Predecessors', dataType: 'Lookup.Simple', visualSizeFactor: 100 },
     { name: 'successors__virtual', displayName: 'Successors', dataType: 'Lookup.Simple', visualSizeFactor: 100 },
 ]
-`,
-    modules: `[createMemoryDependenciesModule({ dependencies: DEPENDENCIES })]`,
-    columns: `[...getTaskColumns('subject', 'scheduledstart', 'scheduledend'), ...COUNTS]`,
-})
 
-const MODULES_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks'
+const loadTasks = createLoadTasks(createTaskDatabase(), [
+    { id: 'all', name: 'All tasks', resolve: () => ({ columns: [...getTaskColumns('subject'), ...COUNTS] }) },
+])
 
-const VIEWS: ITaskGridView[] = [
+//DEPENDENCIES are the sample dependencies of these docs
+const GridExample = () => <TaskDatasetControl modules={[createMemoryDependenciesModule({ dependencies: DEPENDENCIES })]} enableDeletion onLoad={loadTasks} height='480px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.End>
+            <TaskDatasetControl.Ribbon />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        {/* Delete acts on the selected rows */}
+        <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' })]} />
+    </DatasetControl.Body>
+</TaskDatasetControl>
+`
+
+const MODULES_CODE = `import { createLocalStorageUserQueriesModule, createSortingModule, createTaskChecklistModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ITaskChecklistItem, ITaskViewData, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { createLoadTasks, createTaskDatabase } from './tasks'
+
+//CHECKLIST_COLUMN and CHECKLIST_ITEMS are the sample checklists of these docs
+const loadTasks = createLoadTasks(createTaskDatabase(), [
     { id: 'all', name: 'All tasks', resolve: () => ({ columns: [...getTaskColumns('subject', 'statuscode', 'percentcomplete'), CHECKLIST_COLUMN] }) },
-]
-
-const createChecklistStore = (): ITaskChecklistStore => ({
-    loadItems: async taskIds => new Map<string, ITaskChecklistItem[]>(taskIds.map(taskId => [taskId, CHECKLIST_ITEMS[taskId] ?? []])),
-})
+])
 
 const GridExample = () => {
-    const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(taskRuntime), views: VIEWS })
     //task and DatasetControl modules, read on every mount
-    const controlModules = React.useMemo(() => [
+    const controlModules = [
         createTaskDraggingModule(),
         //the base factory makes your store on every mount
-        createTaskChecklistModule({ createStore: createChecklistStore }),
+        createTaskChecklistModule({
+            createStore: () => ({ loadItems: async taskIds => new Map<string, ITaskChecklistItem[]>(taskIds.map(taskId => [taskId, CHECKLIST_ITEMS[taskId] ?? []])) }),
+        }),
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'taskGridDocs.modules.views' }),
-    ], [])
+    ]
     //Grid modules, read at mount
-    const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule(), createSortingModule()], [])
+    const gridModules = [createTaskEditingModule(), createSortingModule()]
 
-    return <TaskDatasetControl modules={controlModules} enableEditing onLoad={loadTasks} stateKey='taskGridDocs.modules' height='440px'>
+    return <TaskDatasetControl modules={controlModules} enableEditing onLoad={loadTasks} height='440px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.ViewSwitcher>
@@ -148,41 +173,42 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <TaskGrid stateKey='grid' modules={gridModules} />
+            <TaskGrid modules={gridModules} />
         </DatasetControl.Body>
     </TaskDatasetControl>
 }
 `
 
-const PROJECT_CODE = `import { createLoadTasks, createTaskDatabase } from './tasks'
+const PROJECT_CODE = `import { createMemoryProjectModule, DatasetControl, IDatasetControl, IProject, ITaskViewData, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { MessageBar } from '@fluentui/react'
+import { createLoadTasks, createTaskDatabase } from './tasks'
+
+const loadTasks = createLoadTasks(createTaskDatabase())
 
 const GridExample = () => {
     const [project, setProject] = React.useState<IProject>()
-    const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
-    //loaded before the tasks, on every mount
-    const controlModules = React.useMemo(() => [
-        createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),
-    ], [])
 
     const onSetup = (control: IDatasetControl<ITaskViewData>) => {
         control.lifecycle.events.addEventListener('onReady', () => setProject(control.modules.find('project')))
     }
 
-    return <Stack tokens={{ childrenGap: 8 }}>
+    return <>
         {project && <MessageBar>{project.getName()}: {project.getStartDate()?.format('D MMM YYYY')} to {project.getEndDate()?.format('D MMM YYYY')}</MessageBar>}
-        <TaskDatasetControl modules={controlModules} onSetup={onSetup} onLoad={loadTasks} height='400px'>
+        {/* loaded before the tasks, on every mount */}
+        <TaskDatasetControl modules={[createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } })]} onSetup={onSetup} onLoad={loadTasks} height='400px'>
             <DatasetControl.Body>
                 <TaskGrid />
             </DatasetControl.Body>
         </TaskDatasetControl>
-    </Stack>
+    </>
 }
 `
 
 const LOOKUP_MANY_DATAVERSE_FILE: IGridExampleFile = {
     name: 'dataverse.ts',
-    code: `//in a model-driven app, use this module instead of the memory one in GridExample.tsx
+    code: `import { createDataverseLookupManyModule } from '@talxis/base-controls'
+
+//in a model-driven app, use this module instead of the memory one in GridExample.tsx
 export const createAssigneesModule = (projectId: string) => createDataverseLookupManyModule({
     hostRecord: { entityName: 'msdyn_project', id: projectId },
     columns: {
@@ -201,21 +227,27 @@ export const createAssigneesModule = (projectId: string) => createDataverseLooku
 
 const CUSTOM_COLUMNS_TALXIS_FILE: IGridExampleFile = {
     name: 'talxis.ts',
-    code: `//with TALXIS, use this module instead of the IndexedDB one in GridExample.tsx
+    code: `import { createTalxisCustomColumnsModule } from '@talxis/base-controls'
+
+//with TALXIS, use this module instead of the IndexedDB one in GridExample.tsx
 export const createProjectColumnsModule = (projectId: string) => createTalxisCustomColumnsModule({ entityName: 'task', recordId: projectId, enableCreation: true, enableEditing: true, enableDeletion: true })
 `,
 }
 
 const PROJECT_DATAVERSE_FILE: IGridExampleFile = {
     name: 'dataverse.ts',
-    code: `//in a model-driven app, use this module instead of the memory one in GridExample.tsx
+    code: `import { createDataverseProjectModule } from '@talxis/base-controls'
+
+//in a model-driven app, use this module instead of the memory one in GridExample.tsx
 export const createDataverseProject = (projectId: string) => createDataverseProjectModule({ entityName: 'msdyn_project', id: projectId, startDateColumn: 'msdyn_scheduledstart', endDateColumn: 'msdyn_finish', columns: ['msdyn_customer'] })
 `,
 }
 
 const DEPENDENCIES_DATAVERSE_FILE: IGridExampleFile = {
     name: 'dataverse.ts',
-    code: `//in a model-driven app, use this module instead of the memory one in GridExample.tsx
+    code: `import { createDataverseDependenciesModule } from '@talxis/base-controls'
+
+//in a model-driven app, use this module instead of the memory one in GridExample.tsx
 export const dependenciesModule = createDataverseDependenciesModule({
     entityName: 'new_taskdependency',
     predecessorAttribute: 'new_predecessorid',

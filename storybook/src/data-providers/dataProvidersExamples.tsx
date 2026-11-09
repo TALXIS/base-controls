@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../grid/GridExampleRunner'
 
-export const SHARED_PROVIDER_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, createSortingModule, DatasetControl, useDataProviderEvents, usePcfContext } from '@talxis/base-controls'
+export const SHARED_PROVIDER_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, DatasetControl, useDataProviderEvents, usePcfContext } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 import { DefaultButton, PrimaryButton, Stack, Text } from '@fluentui/react'
 
@@ -12,14 +12,12 @@ const createOrder = () => {
             { lineid: 'chair', product: 'Ergonomic chair', quantity: 4, unitprice: 410 },
             { lineid: 'lamp', product: 'Desk lamp', quantity: 6, unitprice: 85 },
             { lineid: 'monitor', product: 'Monitor arm', quantity: 8, unitprice: 120 },
-            { lineid: 'cabinet', product: 'Filing cabinet', quantity: 2, unitprice: 230 },
-            { lineid: 'whiteboard', product: 'Whiteboard 180 x 90 cm', quantity: 1, unitprice: 310 },
         ],
         metadata: { PrimaryIdAttribute: 'lineid', PrimaryNameAttribute: 'product', LogicalName: 'orderline', QuickFindColumns: ['product'] },
         columns: [
-            { name: 'product', displayName: 'Product', dataType: DataTypes.SingleLineText, visualSizeFactor: 260 },
-            { name: 'quantity', displayName: 'Quantity', dataType: DataTypes.WholeNone, visualSizeFactor: 110 },
-            { name: 'unitprice', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 130 },
+            { name: 'product', displayName: 'Product', dataType: DataTypes.SingleLineText },
+            { name: 'quantity', displayName: 'Quantity', dataType: DataTypes.WholeNone },
+            { name: 'unitprice', displayName: 'Unit price', dataType: DataTypes.Currency },
         ],
     })
     //validation and required levels are set on each record as it loads
@@ -52,12 +50,7 @@ const GridExample = () => {
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <ClientSideGrid
-                modules={[
-                    createRowSelectionModule({ mode: 'multiple' }),
-                    createEditingModule(),
-                    createSortingModule(),
-                ]} />
+            <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
         </DatasetControl.Body>
         <DatasetControl.Footer>
             <DatasetControl.Footer.Start>
@@ -72,28 +65,25 @@ export const STEER_FROM_CODE_CODE = `import { ClientSideGrid, createSortingModul
 import { DataTypes, MemoryDataProvider, Operators, Type } from '@talxis/client-libraries'
 import { DefaultButton, Stack } from '@fluentui/react'
 
-const PRIORITY = [
-    { Value: 1, Label: 'High', Color: '#a4262c' },
-    { Value: 2, Label: 'Normal', Color: '#0078d4' },
-    { Value: 3, Label: 'Low', Color: '#038387' },
-]
-
 const createTickets = () => new MemoryDataProvider({
     dataSource: [
-        { ticketid: 't1', title: 'Printer on 2nd floor jams', priority: 2, createdon: dayjs().subtract(1, 'day').format('YYYY-MM-DD') },
-        { ticketid: 't2', title: 'VPN drops every hour', priority: 1, createdon: dayjs().subtract(3, 'day').format('YYYY-MM-DD') },
-        { ticketid: 't3', title: 'New laptop for Petra', priority: 3, createdon: dayjs().subtract(8, 'day').format('YYYY-MM-DD') },
-        { ticketid: 't4', title: 'Payroll export fails', priority: 1, createdon: dayjs().format('YYYY-MM-DD') },
-        { ticketid: 't5', title: 'Printer toner is low', priority: 3, createdon: dayjs().subtract(5, 'day').format('YYYY-MM-DD') },
-        { ticketid: 't6', title: 'Meeting room screen flickers', priority: 2, createdon: dayjs().subtract(2, 'day').format('YYYY-MM-DD') },
-        { ticketid: 't7', title: 'Email signature for sales team', priority: 3, createdon: dayjs().subtract(12, 'day').format('YYYY-MM-DD') },
-        { ticketid: 't8', title: 'Shared drive is read-only', priority: 1, createdon: dayjs().subtract(1, 'day').format('YYYY-MM-DD') },
+        { ticketid: 't1', title: 'Printer on 2nd floor jams', priority: 2, createdon: '2026-11-08' },
+        { ticketid: 't2', title: 'VPN drops every hour', priority: 1, createdon: '2026-11-06' },
+        { ticketid: 't3', title: 'New laptop for Petra', priority: 3, createdon: '2026-11-01' },
+        { ticketid: 't4', title: 'Payroll export fails', priority: 1, createdon: '2026-11-09' },
+        { ticketid: 't5', title: 'Printer toner is low', priority: 3, createdon: '2026-11-04' },
+        { ticketid: 't6', title: 'Meeting room screen flickers', priority: 2, createdon: '2026-11-07' },
+        { ticketid: 't7', title: 'Shared drive is read-only', priority: 1, createdon: '2026-11-08' },
     ],
     metadata: { PrimaryIdAttribute: 'ticketid', PrimaryNameAttribute: 'title', LogicalName: 'ticket', QuickFindColumns: ['title'] },
     columns: [
-        { name: 'title', displayName: 'Title', dataType: DataTypes.SingleLineText, visualSizeFactor: 280 },
-        { name: 'priority', displayName: 'Priority', dataType: DataTypes.OptionSet, visualSizeFactor: 120, metadata: { OptionSet: PRIORITY } },
-        { name: 'createdon', displayName: 'Created', dataType: DataTypes.DateAndTimeDateOnly, visualSizeFactor: 130 },
+        { name: 'title', displayName: 'Title', dataType: DataTypes.SingleLineText },
+        {
+            name: 'priority', displayName: 'Priority', dataType: DataTypes.OptionSet, metadata: {
+                OptionSet: [{ Value: 1, Label: 'High', Color: '#a4262c' }, { Value: 2, Label: 'Normal', Color: '#0078d4' }, { Value: 3, Label: 'Low', Color: '#038387' }],
+            },
+        },
+        { name: 'createdon', displayName: 'Created', dataType: DataTypes.DateAndTimeDateOnly },
     ],
     pageSize: 5,
 })
@@ -113,11 +103,6 @@ const GridExample = () => {
     const newestFirst = () => apply(() => tickets.setSorting([{ name: 'createdon', sortDirection: 1 }]))
     const highPriorityOnly = () => apply(() => tickets.setFiltering({ filterOperator: Type.And.Value, conditions: [{ attributeName: 'priority', conditionOperator: Operators.Equal.Value, value: '1' }] }))
     const searchPrinter = () => apply(() => tickets.setSearchQuery('printer'))
-    const reset = () => apply(() => {
-        tickets.setSorting([])
-        tickets.setFiltering(null)
-        tickets.setSearchQuery('')
-    })
     //paging loads straight away
     const nextPage = async () => await tickets.getPaging().loadNextPage()
 
@@ -127,11 +112,10 @@ const GridExample = () => {
             <DefaultButton text='High priority only' onClick={highPriorityOnly} />
             <DefaultButton text='Search "printer"' onClick={searchPrinter} />
             <DefaultButton text='Next page' onClick={nextPage} />
-            <DefaultButton text='Reset' onClick={reset} />
         </Stack>
         <DatasetControl onLoad={async () => ({ provider: tickets, destroyProviderOnUnmount: false })} height='340px'>
             <DatasetControl.Body>
-                <ClientSideGrid modules={[createSortingModule()]} enableOptionSetColors />
+                <ClientSideGrid modules={[createSortingModule()]} />
             </DatasetControl.Body>
             <DatasetControl.Footer>
                 <DatasetControl.Footer.End>
@@ -143,18 +127,10 @@ const GridExample = () => {
 }
 `
 
-const HAND_DOWN_CODE = `import { ClientSideGrid, createRowSelectionModule, DataProviderScope, Spinner, useDataProviderEvents } from '@talxis/base-controls'
-import { MessageBar, MessageBarType, SearchBox, Stack, Text } from '@fluentui/react'
+const HAND_DOWN_CODE = `import { ClientSideGrid, createRowSelectionModule, DataProviderScope, useDataProviderEvents } from '@talxis/base-controls'
+import { Stack, Text } from '@fluentui/react'
 
 //draws again on each of these events
-const LoadStatus = () => {
-    const provider = useDataProviderEvents(['onLoading', 'onError'])
-    if (provider.isError()) {
-        return <MessageBar messageBarType={MessageBarType.error}>{provider.getErrorMessage()}</MessageBar>
-    }
-    return provider.isLoading() ? <Spinner label='Loading' labelPosition='right' /> : null
-}
-
 const SelectedCount = () => {
     const provider = useDataProviderEvents(['onRecordsSelected'])
     return <Text>{provider.getSelectedRecordIds().length} selected</Text>
@@ -162,46 +138,30 @@ const SelectedCount = () => {
 
 const GridExample = () => {
     const [deals] = React.useState(createDealsProvider)
-    const [search, setSearch] = React.useState('')
-    React.useEffect(() => () => deals.destroy(), [deals])
 
     //nothing inside DataProviderScope loads the provider for you
     React.useEffect(() => {
-        const load = async () => {
-            deals.setSearchQuery(search)
-            await deals.refresh()
-        }
-        load()
-    }, [search])
+        deals.refresh()
+        return () => deals.destroy()
+    }, [deals])
 
     return <DataProviderScope provider={deals}>
         <Stack tokens={{ childrenGap: 12 }}>
-            <Stack horizontal wrap verticalAlign='center' tokens={{ childrenGap: 16 }}>
-                <SearchBox placeholder='Search deals' onSearch={setSearch} onClear={() => setSearch('')} styles={{ root: { width: 240 } }} />
-                <SelectedCount />
-                <LoadStatus />
-            </Stack>
+            <SelectedCount />
             <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' })]} height='360px' />
         </Stack>
     </DataProviderScope>
 }
 `
 
-const READ_CODE = `import { ITheme, useTheme } from '@talxis/base-controls'
-import { IColumn, TotalRow } from '@talxis/client-libraries'
-import { DefaultButton, mergeStyleSets, Stack } from '@fluentui/react'
-
-const getStyles = (theme: ITheme) => mergeStyleSets({
-    output: { margin: 0, padding: 12, minHeight: 160, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontSize: theme.fonts.small.fontSize, whiteSpace: 'pre-wrap' },
-})
+const READ_CODE = `import { IColumn, TotalRow } from '@talxis/client-libraries'
+import { DefaultButton, Stack } from '@fluentui/react'
 
 const describe = (value: any) => value instanceof Date ? 'Date ' + dayjs(value).format('YYYY-MM-DD') : JSON.stringify(value)
 
 const sumOfValue = (column: IColumn): IColumn => column.name === 'value' ? { ...column, aggregation: { aggregationFunction: 'sum' } } : column
 
 const GridExample = () => {
-    const theme = useTheme()
-    const styles = React.useMemo(() => getStyles(theme), [theme])
     const [lines, setLines] = React.useState(['Pick what to read.'])
 
     const readDeal = async () => {
@@ -248,23 +208,15 @@ const GridExample = () => {
             <DefaultButton text='Group by account manager' onClick={groupByOwner} />
             <DefaultButton text='Total value' onClick={totalValue} />
         </Stack>
-        <pre className={styles.output}>{lines.join('\\n')}</pre>
+        <pre>{lines.join('\\n')}</pre>
     </Stack>
 }
 `
 
-const EVENTS_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, DatasetControl, ITheme, useTheme } from '@talxis/base-controls'
-import { DefaultButton, mergeStyleSets, Stack } from '@fluentui/react'
-
-const getStyles = (theme: ITheme) => mergeStyleSets({
-    log: { padding: '8px 12px', minHeight: 132, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontSize: theme.fonts.small.fontSize, lineHeight: '22px' },
-    line: { color: theme.semanticColors.bodySubtext },
-    latest: { color: theme.semanticColors.bodyText, fontWeight: 600 },
-})
+const EVENTS_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, DatasetControl } from '@talxis/base-controls'
+import { DefaultButton, Stack } from '@fluentui/react'
 
 const GridExample = () => {
-    const theme = useTheme()
-    const styles = React.useMemo(() => getStyles(theme), [theme])
     const [deals] = React.useState(createDealsProvider)
     const [log, setLog] = React.useState<string[]>([])
     const write = (line: string) => setLog(log => [line, ...log].slice(0, 6))
@@ -290,17 +242,23 @@ const GridExample = () => {
                 <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
             </DatasetControl.Body>
         </DatasetControl>
-        <div className={styles.log}>
-            {log.map((line, index) => <div key={index} className={index === 0 ? styles.latest : styles.line}>{line}</div>)}
-        </div>
+        {/* the latest event first */}
+        <pre>{log.join('\\n')}</pre>
     </Stack>
 }
 `
 
 const OWN_PROVIDER_CODE = `import { ClientSideGrid, createEditingModule, DatasetControl, useDataProviderEvents } from '@talxis/base-controls'
-import { DataTypes, IRecord, IRecordSaveOperationResult, MemoryDataProvider } from '@talxis/client-libraries'
+import { DataTypes, IRawRecord, IRecord, IRecordSaveOperationResult, MemoryDataProvider } from '@talxis/client-libraries'
 import { PrimaryButton, Stack, Text } from '@fluentui/react'
-import { saveProduct } from './api'
+
+//stands in for your server
+const saveProduct = async (product: IRawRecord) => {
+    await new Promise(resolve => setTimeout(resolve, 600))
+    if (product.price < 0) {
+        throw new Error(product.name + ': the server refuses a negative price.')
+    }
+}
 
 //its copies are made with the inherited constructor
 class ProductsProvider extends MemoryDataProvider {
@@ -322,8 +280,8 @@ const createProducts = () => new ProductsProvider({
     ],
     metadata: { PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' },
     columns: [
-        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText, visualSizeFactor: 240 },
-        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency, visualSizeFactor: 130 },
+        { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText },
+        { name: 'price', displayName: 'Price', dataType: DataTypes.Currency },
     ],
 })
 
@@ -353,20 +311,6 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: creat
 </DatasetControl>
 `
 
-const API_FILE = {
-    name: 'api.ts',
-    code: `import { IRawRecord } from '@talxis/client-libraries'
-
-//stands in for your server
-export const saveProduct = async (product: IRawRecord) => {
-    await new Promise(resolve => setTimeout(resolve, 600))
-    if (product.price < 0) {
-        throw new Error(product.name + ': the server refuses a negative price.')
-    }
-}
-`,
-}
-
 const SERVER_PROVIDER_CODE = `import { ClientSideGrid, createSortingModule, DatasetControl } from '@talxis/base-controls'
 import { DataProvider, DataTypes, IAvailableRelatedColumn, IColumn, ICommand, IRecordDeleteOperationResult, IRecordSaveOperationResult, IRetrievedData, IRetrieveRecordCommandOptions } from '@talxis/client-libraries'
 import { fetchProducts } from './api'
@@ -378,8 +322,8 @@ class ProductsProvider extends DataProvider {
         super(options)
         this.setMetadata({ PrimaryIdAttribute: 'productid', PrimaryNameAttribute: 'name', LogicalName: 'product' })
         this.setColumns([
-            { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 240 },
-            { name: 'price', displayName: 'Price', dataType: DataTypes.Currency, visualSizeFactor: 130 },
+            { name: 'name', displayName: 'Product', dataType: DataTypes.SingleLineText, isPrimary: true },
+            { name: 'price', displayName: 'Price', dataType: DataTypes.Currency },
         ])
         this.getPaging().setPageSize(5)
     }
@@ -472,10 +416,6 @@ const PRODUCTS: IRawRecord[] = [
     { productid: 'shelf', name: 'Wall shelf', price: 95 },
     { productid: 'cabinet', name: 'Filing cabinet', price: 230 },
     { productid: 'whiteboard', name: 'Whiteboard', price: 150 },
-    { productid: 'footrest', name: 'Footrest', price: 45 },
-    { productid: 'sofa', name: 'Lounge sofa', price: 980 },
-    { productid: 'plant', name: 'Office plant', price: 35 },
-    { productid: 'locker', name: 'Locker', price: 310 },
 ]
 
 interface IProductQuery {
@@ -508,6 +448,6 @@ export const ReadExample = () => <GridExampleRunner seedCode={READ_CODE} tabs={[
 
 export const EventsExample = () => <GridExampleRunner seedCode={EVENTS_CODE} />
 
-export const OwnProviderExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_PROVIDER_CODE }, API_FILE]} tabs={['preview', 'code']} />
+export const OwnProviderExample = () => <GridExampleRunner seedCode={OWN_PROVIDER_CODE} tabs={['preview', 'code']} />
 
 export const ServerProviderExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: SERVER_PROVIDER_CODE }, SERVER_API_FILE]} tabs={['preview', 'code']} />

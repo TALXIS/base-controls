@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { TemplatesExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-A template is a task with subtasks, created again in one go. The templates module adds *From template* beside *New*, and *Save as template* for a selected task. Try it below: pick *From template* from the arrow next to *New*.
+A template is a task with subtasks, created again in one go. The templates module adds *From template* under *New*, and *Save as template* for a selected task. Try it below: open *New* and pick *From template*.
 
 {{canvas: Create tasks from a template}}
 
@@ -18,7 +18,7 @@ With \`enableCreation\`, *From template* sits in the ribbon's *New* menu, for to
 
 | Factory | Keeps the templates |
 |---|---|
-| \`createMemoryTemplatesModule\` | In memory. \`templates\` are the starting templates, and \`database\` is the \`MemoryTaskDatabase\` the tasks are created in, the one the \`MemoryTaskStore\` reads. Templates saved by the user last as long as the module. |
+| \`createMemoryTemplatesModule\` | In memory. \`templates\` are the starting templates, and \`database\` is the \`MemoryTaskDatabase\` the tasks are created in, the one the \`MemoryTaskStore\` reads. Templates the user saves are kept until the control mounts again, such as on a view switch. |
 | \`createTemplatesModule\` | In a store of yours: \`createStore\` returns an \`ITemplatesStore\`. |
 
 A memory template is a task: \`data\` holds its column values, and \`children\` its subtasks, each with \`data\` and \`children\` of its own. The template's own task is named after it.
@@ -29,8 +29,8 @@ A memory template is a task: \`data\` holds its column values, and \`children\` 
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`selector\` | \`onRenderContainer\` | | The template picker's frame |
-| \`list\` | \`onRenderRecord\` | | A template in the picker's list |
+| \`selector\` | \`onRenderContainer\` | \`TemplatesUiRecordSelectorFrameComponents\` | The template picker's frame |
+| \`list\` | \`onRenderRecord\` | \`TemplatesUiRecordListComponents\` | A template in the picker's list |
 
 ## Reference
 

@@ -24,7 +24,7 @@ Put \`DatasetControl.Notifications\` between the header and the body. It draws t
 
 - **HTML:** a message's \`text\` is drawn as HTML, so escape anything you did not write; the provider's error is escaped.
 - **Colour:** the most severe level among the messages sets the bar's colour.
-- **Several messages:** two or more fold under a summary that opens them; its text is the label \`notificationMessageBar.groupedNotificationsSummary\`.
+- **Several messages:** two or more fold under a summary that opens them.
 - **Load error:** shows while the provider's last load failed, and goes once it loads again.
 - **Empty state:** the children stay while the provider loads, so a load does not flash the empty state.
 
@@ -32,17 +32,17 @@ Put \`DatasetControl.Notifications\` between the header and the body. It draws t
 
 ### Notifications
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| \`messages\` | \`INotificationMessage[]\` | None | Messages of your own: \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`. |
-| \`components\` | \`Partial<IDatasetControlNotificationsComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`messages\` | \`INotificationMessage[]\` | None | Live | Messages of your own: \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`. |
+| \`components\` | \`Partial<IDatasetControlNotificationsComponents>\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ### EmptyState
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| \`children\` | \`ReactNode\` | None | What shows the records. |
-| \`components\` | \`Partial<IDatasetControlUiEmptyStateComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`children\` | \`ReactNode\` | None | Live | What shows the records. |
+| \`components\` | \`Partial<IDatasetControlUiEmptyStateComponents>\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
@@ -53,7 +53,7 @@ Put \`DatasetControl.Notifications\` between the header and the body. It draws t
 | \`getMessages()\` | The provider's load error, while there is one; your own \`messages\` are not in it. |
 | \`events\` | \`onNotificationsChanged\`, whenever the provider fails or loads. |
 
-**Strings:** \`NOTIFICATION_MESSAGE_BAR_LABELS\`, keys \`notificationMessageBar.*\`, and \`EMPTY_STATE_LABELS\`, keys \`emptyState.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+To change the summary or the empty state's text, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 

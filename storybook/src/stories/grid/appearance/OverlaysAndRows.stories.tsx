@@ -6,19 +6,19 @@ import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { EmptyCatalogueExample, ErrorRowsExample, LoadingRowsExample, WarehouseLoadingExample } from '../../../grid/examples/customComponentsExamples'
 
 const DESCRIPTION = `
-While the provider loads, or when it holds no records, the grid draws an overlay over the rows; a group whose records are still loading, or failed to load, gets a row in their place. \`components\` on \`<Grid>\` redraws each of them, from a different icon to a card of your own. Try it below: open **Code** and change the hint under the message.
+While the provider loads, or when it holds no records, the grid draws an overlay over the rows; a group whose records are still loading, or failed to load, gets a row in their place. The grid's \`components\` prop redraws each of them, from a different icon to a card of your own. Try it below: open **Code** and change the hint under the message.
 
 {{canvas: Show an empty catalogue}}
 
 ## Changing how it looks
 
-These are the only pieces \`<Grid>\` itself takes \`components\` for. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+These are the only pieces the grid itself takes \`components\` for. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
 | \`overlays.emptyState\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`DatasetControlUiEmptyStateComponents\` | The overlay of a grid with no rows |
 | \`overlays.loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | | The overlay while the provider loads; the text is the provider's loading message, drawn only while there is one |
-| \`rows.loading\` | \`onRenderShimmer\` | | A group's records while they load on the server-side row model |
+| \`rows.loading\` | \`onRenderShimmer\` | | A group's records while they load in a \`ServerSideGrid\` |
 | \`rows.error\` | \`onRenderMessageBar\` | | Records or totals that failed to load, with the provider's error message |
 
 ## No records
@@ -31,13 +31,13 @@ These are the only pieces \`<Grid>\` itself takes \`components\` for. How slots 
 
 {{story: Wait for the warehouse}}
 
-\`rows.loading\` draws a group's records while they load on the server-side row model.
+\`rows.loading\` draws a group's records while they load in a \`ServerSideGrid\`, which fetches them as the group opens.
 
 {{story: Show rows that are still loading}}
 
 ## Failed loads
 
-\`rows.error\` draws a group's records that failed to load on the server-side row model, and a totals row whose query failed.
+\`rows.error\` draws a group's records that failed to load in a \`ServerSideGrid\`, and a totals row whose query failed.
 
 {{story: Try a category again}}
 
@@ -47,7 +47,7 @@ These are the only pieces \`<Grid>\` itself takes \`components\` for. How slots 
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/controls-grid-modules--overview', text: 'Pick the row model that loads a group\'s records as it opens.' },
+    { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/controls-grid-modules--overview', text: 'How ServerSideGrid loads a group\'s records as it opens.' },
     { title: 'Localization', iconName: 'Translate', href: '?path=/docs/concepts-localization--overview', text: 'Change the empty state\'s text and every other label.' },
     { title: 'Custom cells', iconName: 'TableComputed', href: '?path=/docs/controls-grid-appearance-custom-cells--overview', text: 'Redraw pieces of a column\'s cells, or lay a cell out yourself.' },
 ]
@@ -91,7 +91,7 @@ export const RowsThatAreStillLoading: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`rows.loading\` draws a category's rows as a spinner while they load on the server-side row model. Try: open a category (AG Grid Enterprise).`,
+                story: `\`rows.loading\` draws a category's rows as a spinner while they load in a \`ServerSideGrid\`. Try: open a category (AG Grid Enterprise).`,
             },
         },
     },

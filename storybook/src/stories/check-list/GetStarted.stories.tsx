@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { BasicUsageExample, LaunchPlanExample } from '../../check-list/checkListExamples'
+import { BasicUsageExample, LaunchPlanExample } from '../../check-list/checklistExamples'
 
 const DESCRIPTION = `
 A checklist is a to-do list built on a [**Grid**](?path=/docs/controls-grid-get-started--overview): users tick items off, rename them, drag them into a new order, add items in the bottom row and delete them. Each item is a record of a data provider, so the list is stored wherever the provider stores it. Try it below: tick an item off, then drag it to a new place.
@@ -30,12 +30,12 @@ Each of the three must be a column of the provider, or the checklist throws. A r
 
 \`Checklist\` takes every grid prop on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview), \`onSetup\` included. These are its own, or differ:
 
-| Prop | Default | Description |
-|---|---|---|
-| \`fieldMapping\` | Required | The three columns above. At mount. |
-| \`modules\` | Auto-saving editing | Grid modules in place of the default; \`[]\` makes the list read-only. The row model and the checklist's own module are always added. Which grid modules work is on [**Customisation**](?path=/docs/controls-checklist-customisation--overview). At mount. |
-| \`enableZebra\` | \`false\` | Unlike \`Grid\`, rows are not striped. |
-| \`enableOptionSetColors\` | \`true\` | Unlike \`Grid\`, options with a colour are drawn as tags. |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`fieldMapping\` | \`IChecklistFieldMapping\` | Required | At mount | The three columns above. |
+| \`modules\` | \`IChecklistGridModule[]\` | An auto-saving editing module | At mount | Grid modules in place of the default; \`[]\` makes the list read-only. The row model and the checklist's own module are always added. Which grid modules work is on [**Customisation**](?path=/docs/controls-checklist-customisation--overview). |
+| \`enableZebra\` | \`boolean\` | \`false\` | At mount | Shades every other row; off by default, unlike \`Grid\`. |
+| \`enableOptionSetColors\` | \`boolean\` | \`true\` | At mount | Draws options that have a colour as tags; on by default, unlike \`Grid\`. |
 
 ## Where next
 

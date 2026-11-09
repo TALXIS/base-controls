@@ -1,10 +1,8 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import { withRecord } from './shared'
+import { accountRecord } from './shared'
 
-const FROM_OUTSIDE_CODE = `import { createAccount } from './record'
-
-const account = createAccount()
+const FROM_OUTSIDE_CODE = `const account = ${accountRecord(['name', 'telephone1'])}
 
 const GridExample = () => {
     const apiRef = React.useRef<IFormApi>()
@@ -17,7 +15,7 @@ const GridExample = () => {
         write('onFormReady')
     }
 
-    return <Stack tokens={{ childrenGap: 12 }}>
+    return <>
         <Stack horizontal tokens={{ childrenGap: 8 }}>
             <DefaultButton text='Set the phone' onClick={() => apiRef.current?.getField('telephone1').setValue('+420 800 123 456')} />
             <DefaultButton text='Show the data' onClick={() => write(JSON.stringify(apiRef.current?.getData()))} />
@@ -34,20 +32,17 @@ const GridExample = () => {
             onValidationSummaryChanged={summary => write(\`onValidationSummaryChanged: \${summary.length} errors\`)}
             onError={message => write(\`onError: \${message}\`)}>
             <Form.Ribbon />
-            <Form.Notifications />
-            <Form.Section label='Account' layout={{ lg: 2 }}>
+            <Form.Section label='Account'>
                 <Form.Field name='name'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                 <Form.Field name='telephone1'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
             </Form.Section>
         </Form.Root>
-        <Text variant='small' style={{ fontFamily: 'monospace', whiteSpace: 'pre-line', wordBreak: 'break-all' }}>{log.join('\\n')}</Text>
-    </Stack>
+        <Text style={{ whiteSpace: 'pre-line', wordBreak: 'break-all' }}>{log.join('\\n')}</Text>
+    </>
 }
 `
 
-const FROM_INSIDE_CODE = `import { createAccount } from './record'
-
-const account = createAccount()
+const FROM_INSIDE_CODE = `const account = ${accountRecord(['name', 'telephone1'])}
 
 //inside Form.Root, useForm returns the form and useField one of its fields
 const SaveBar = () => {
@@ -74,14 +69,13 @@ const SaveBar = () => {
 
 const GridExample = () => <Form.Root onLoad={async () => ({ record: account })}>
     <SaveBar />
-    <Form.Notifications />
-    <Form.Section label='Account' layout={{ lg: 2 }}>
+    <Form.Section label='Account'>
         <Form.Field name='name'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
         <Form.Field name='telephone1'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
     </Form.Section>
 </Form.Root>
 `
 
-export const FromOutsideExample = () => <GridExampleRunner seedCode={withRecord(FROM_OUTSIDE_CODE)} tabs={['preview', 'code']} />
+export const FromOutsideExample = () => <GridExampleRunner seedCode={FROM_OUTSIDE_CODE} tabs={['preview', 'code']} />
 
-export const FromInsideExample = () => <GridExampleRunner seedCode={withRecord(FROM_INSIDE_CODE)} tabs={['preview', 'code']} />
+export const FromInsideExample = () => <GridExampleRunner seedCode={FROM_INSIDE_CODE} tabs={['preview', 'code']} />

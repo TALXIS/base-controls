@@ -1,23 +1,9 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
+import { accountRecord } from './shared'
 
 const ACCOUNT_FORM_CODE = `//one account held in memory
-const account = createMemoryRecord({
-    columns: [
-        //RequiredLevel 2 makes the column required
-        { name: 'name', displayName: 'Account name', dataType: DataTypes.SingleLineText, metadata: { RequiredLevel: 2 } },
-        { name: 'telephone1', displayName: 'Phone', dataType: DataTypes.SingleLinePhone },
-        { name: 'emailaddress1', displayName: 'Email', dataType: DataTypes.SingleLineEmail },
-        { name: 'industrycode', displayName: 'Industry', dataType: DataTypes.OptionSet, metadata: { OptionSet: [
-            { Value: 1, Label: 'Consulting', Color: '#0078d4' },
-            { Value: 2, Label: 'Manufacturing', Color: '#8764b8' },
-        ] } },
-        { name: 'numberofemployees', displayName: 'Employees', dataType: DataTypes.WholeNone },
-        { name: 'description', displayName: 'Description', dataType: DataTypes.Multiple },
-    ],
-    data: { accountid: '1', name: 'Contoso Ltd.', telephone1: '+420 123 456 789', emailaddress1: 'info@contoso.com', industrycode: 2, numberofemployees: 250, description: 'Makes office furniture.' },
-    metadata: { PrimaryIdAttribute: 'accountid', PrimaryNameAttribute: 'name' },
-})
+const account = ${accountRecord(['name', 'telephone1', 'industrycode', 'description'])}
 
 const GridExample = () => {
     //your state holds the open tab
@@ -36,13 +22,11 @@ const GridExample = () => {
                         {/* binds to the column of that name */}
                         <Form.Field name='name'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                         <Form.Field name='telephone1'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
-                        <Form.Field name='emailaddress1'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                     </Form.Section>
                 </Form.Column>
                 <Form.Column>
                     <Form.Section label='Company'>
                         <Form.Field name='industrycode'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
-                        <Form.Field name='numberofemployees'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                     </Form.Section>
                 </Form.Column>
             </Form.Tab>

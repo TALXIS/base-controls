@@ -6,13 +6,21 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { OwnTasksExample, RootTaskExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
-A task grid loads every task of the view at once, through a task provider that reads them from a store, such as one in memory or a Dataverse table. You hand the control that provider together with a field mapping, which names the columns that make the tree: each task's parent and its place among its siblings. Try it below: add a task to \`OFFICE_MOVE\` in **Code**.
+A task grid loads every task of the view at once from a *store*, such as one in memory or a Dataverse table. You hand the control that store together with a field mapping, which names the columns that make the tree: each task's parent and its place among its siblings. Try it below: add a task to \`OFFICE_MOVE\` in **Code**.
 
 {{canvas: Show your own tasks}}
 
 ## Load the tasks
 
-\`onLoad(control)\` gets the DatasetControl, whose \`control.modules.get('taskRuntime')\` is the task runtime to pass to the data source. It returns the \`provider\` and the \`fieldMapping\`, the \`views\` to switch between (see [**Views and the tree**](?path=/docs/controls-taskgrid-views-and-the-tree--overview)), and a \`rootTaskId\` to show only part of the tree (see *Start from a task* below). Everything else works as on a DatasetControl, errors included: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) and [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
+\`onLoad\` on \`TaskDatasetControl\` is called on every mount with the task runtime, and the control builds its task provider over the store it returns. Everything else works as on a DatasetControl, errors included: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) and [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
+
+| Key | Required | Description |
+|---|---|---|
+| \`store\` | Yes | Where the tasks are kept. See *Stores* below. |
+| \`fieldMapping\` | Yes | The columns that make the tree. See *Field mapping* below. |
+| \`views\` | No | The views to switch between. See [**Views and the tree**](?path=/docs/controls-taskgrid-views-and-the-tree--overview). Without them, the grid shows the store's columns. |
+| \`rootTaskId\` | No | Shows only the tasks under one task. See *Start from a task* below. |
+| \`hoursPerDay\` | No | How many hours a day of a task's duration holds; \`24\` when left out. |
 
 ## Field mapping
 
@@ -24,25 +32,23 @@ A task grid loads every task of the view at once, through a task provider that r
 | \`stateCode\` | No, \`'statecode'\` | \`0\` is active. See *Inactive tasks* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). |
 | \`percentComplete\` | No | Drawn as a progress bar. |
 | \`startDate\`, \`endDate\` | No | The task's dates. The [**Gantt**](?path=/docs/controls-taskgrid-gantt-get-started--overview) needs both. |
-| \`duration\` | No | Minutes, as a duration column holds them. A day holds as many hours as \`TaskDatasetControl\`'s \`hoursPerDay\`. |
+| \`duration\` | No | Minutes, as a duration column holds them. A day holds \`hoursPerDay\` hours. |
 
 Every other column is an ordinary column of the view.
 
-## Data sources and stores
+## Stores
 
-A task provider reads and writes its tasks through a *store*, and a data source puts the two together. You pass the data source an \`createStore(taskRuntime)\` that creates the store on every load:
+A store reads and writes the tasks for the task provider. Create a new one in every \`onLoad\`, with the task runtime it gets:
 
-| Store | Data source | Tasks are kept |
-|---|---|---|
-| \`MemoryTaskStore\` | \`createMemoryTaskProvider\` | In a \`MemoryTaskDatabase\`, in the page. For prototypes, tests and these docs. |
-| \`DataverseTaskStore\` | \`createDataverseTaskProvider\` | In a Dataverse table, read through FetchXML and edited in its forms. TALXIS tasks load with it too. |
-| Your own \`ITaskStore\` | \`createTaskProvider\` | Wherever your store reads and writes them. See *Your own store* below. |
-
-Every data source also takes \`provider\`, a class extending \`TaskDataProvider\`, to change the provider itself.
+| Store | Tasks are kept |
+|---|---|
+| \`MemoryTaskStore\` | In a \`MemoryTaskDatabase\`, in the page. For prototypes, tests and these docs. |
+| \`DataverseTaskStore\` | In a Dataverse table, read through FetchXML and edited in its forms. TALXIS tasks load with it too. |
+| Your own \`ITaskStore\` | Wherever your store reads and writes them. See *Your own store* below. |
 
 ### Memory
 
-\`MemoryTaskDatabase\` copies \`records\` and keeps every change; the example above uses one. Creating and deleting pause briefly, as a server would, and opening a task shows an alert. Memory modules that create tasks, such as templates, take the same \`database\`.
+\`MemoryTaskStore\` takes the \`taskRuntime\`, the \`database\` and the \`columns\` that views and *Edit columns* pick from. \`MemoryTaskDatabase\` takes \`records\` and \`metadata\` with its \`PrimaryIdAttribute\`, copies the records and keeps every change, so create it once outside \`onLoad\`, as the example does. Creating and deleting pause briefly, as a server would, and opening a task shows an alert. Memory modules that create tasks, such as templates, take the same \`database\`.
 
 ### Dataverse
 
@@ -50,7 +56,7 @@ The example's *dataverse.ts* loads the tasks from Dataverse; its parameters are 
 
 ## Rescheduled dates
 
-After every save, from a cell, a form, a move or a dependency, the provider asks the store what the backend changed through \`synchronize\`, so dates a backend rescheduled show up. \`DataverseTaskStore\` implements it, and it is optional on a store of your own.
+After every save, creation and deletion, from a cell, a form, a move, a template or a dependency, the provider asks the store through \`synchronize()\` what the backend changed, and merges those tasks in, keeping the user's unsaved edits, so dates a backend rescheduled show up. \`DataverseTaskStore\` implements it by reading the tasks modified since its last read, and it is optional on a store of your own.
 
 ## Start from a task
 
@@ -60,7 +66,7 @@ Return \`rootTaskId\` to show only the tasks under one task, such as one project
 
 ## Your own store
 
-Implement \`ITaskStore\`, listed under *Reference* below, and pass it to \`createTaskProvider\`. Throw "Not implemented." from a method your backend does not support.
+Implement \`ITaskStore\`, listed under *Reference* below, and return it from \`onLoad\` as \`store\`. Throw "Not implemented." from a method your backend does not support.
 
 ## Reference
 
@@ -68,10 +74,11 @@ Implement \`ITaskStore\`, listed under *Reference* below, and pass it to \`creat
 
 | Parameter | Description |
 |---|---|
+| \`taskRuntime\` | Required. The task runtime \`onLoad\` gets. |
 | \`fetchXml\` | Required. Selects the tasks. It is a Liquid template over \`project\`, from the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module, and \`hostRecord\`. |
 | \`hostRecord\` | \`{ entityName, id?, data? }\`, the record the grid sits on, such as the one the form shows. |
 | \`form\` | How tasks open: \`editId\` and \`bulkEditId\` pick the forms, and \`getParameters(operation, defaults)\` changes what \`Xrm.Navigation.navigateTo\` gets. |
-| \`getNewTaskDefaults\` | \`(params) => IRawRecord\`, values every new task starts with. |
+| \`getNewTaskDefaults\` | \`(params) => IRawRecord\`, or a promise of one: values every new task starts with; the values it is created with win. |
 
 ### Your own store
 

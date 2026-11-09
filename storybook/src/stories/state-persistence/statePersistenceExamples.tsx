@@ -4,13 +4,8 @@ import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from '../../dataset-control/examples/shared'
 
 const COME_BACK_CODE = `import { ClientSideGrid, createSortingModule, DatasetControl, StateProvider, StateStore } from '@talxis/base-controls'
-import { DefaultButton, mergeStyleSets, Stack, Text } from '@fluentui/react'
+import { DefaultButton, Stack, Text } from '@fluentui/react'
 import { loadDeals } from './views'
-
-const styles = mergeStyleSets({
-    layout: { display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 16 },
-    store: { margin: 0, padding: 12, fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4, overflow: 'auto', maxHeight: 420 },
-})
 
 const modules = [createSortingModule()]
 
@@ -19,9 +14,6 @@ export const Deals = () => <DatasetControl stateKey='deals' onLoad={loadDeals} h
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
         </DatasetControl.Header.Start>
-        <DatasetControl.Header.End>
-            <DatasetControl.QuickFind />
-        </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
         <ClientSideGrid stateKey='grid' modules={modules} />
@@ -41,21 +33,15 @@ const GridExample = () => {
     return <StateProvider store={store}>
         <Stack tokens={{ childrenGap: 12 }}>
             <DefaultButton text={isShown ? 'Leave the deals' : 'Come back'} onClick={() => setIsShown(!isShown)} styles={{ root: { alignSelf: 'flex-start' } }} />
-            <div className={styles.layout}>
-                {isShown ? <Deals /> : <Text>You left the deals.</Text>}
-                <pre className={styles.store}>{kept}</pre>
-            </div>
+            {isShown ? <Deals /> : <Text>You left the deals.</Text>}
+            <pre style={{ maxHeight: 320, overflow: 'auto' }}>{kept}</pre>
         </Stack>
     </StateProvider>
 }
 `
 
 const OWN_COMPONENT_CODE = `import { StateProvider, StateStore, useControlStateStore } from '@talxis/base-controls'
-import { mergeStyleSets, Stack, TextField, Toggle } from '@fluentui/react'
-
-const styles = mergeStyleSets({
-    store: { margin: 0, padding: 12, fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4 },
-})
+import { Stack, TextField, Toggle } from '@fluentui/react'
 
 interface IDraftNoteProps {
     onWritten: () => void
@@ -88,21 +74,17 @@ const GridExample = () => {
     const [, setRevision] = React.useState(0)
 
     return <StateProvider store={store}>
-        <Stack tokens={{ childrenGap: 12 }} styles={{ root: { maxWidth: 520 } }}>
+        <Stack tokens={{ childrenGap: 12 }}>
             <Toggle label='Show the note' inlineLabel checked={isShown} onChange={(_, checked) => setIsShown(!!checked)} />
             {isShown && <Planner onWritten={() => setRevision(revision => revision + 1)} />}
-            <pre className={styles.store}>{JSON.stringify(state, null, 2)}</pre>
+            <pre>{JSON.stringify(state, null, 2)}</pre>
         </Stack>
     </StateProvider>
 }
 `
 
 const SCOPES_CODE = `import { StateStore } from '@talxis/base-controls'
-import { DefaultButton, mergeStyleSets, Stack } from '@fluentui/react'
-
-const styles = mergeStyleSets({
-    store: { margin: 0, padding: 12, fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4 },
-})
+import { DefaultButton, Stack } from '@fluentui/react'
 
 const GridExample = () => {
     const state = React.useMemo(() => ({}), [])
@@ -115,14 +97,14 @@ const GridExample = () => {
         setRevision(revision => revision + 1)
     }
 
-    return <Stack tokens={{ childrenGap: 12 }} styles={{ root: { maxWidth: 520 } }}>
+    return <Stack tokens={{ childrenGap: 12 }}>
         <Stack horizontal wrap tokens={{ childrenGap: 8 }}>
             <DefaultButton text="set('zoom', 2)" onClick={() => run(() => store.set('zoom', 2))} />
             <DefaultButton text="scope('planner').set('view', 'week')" onClick={() => run(() => store.scope('planner').set('view', 'week'))} />
             <DefaultButton text="… .scope('filters').set('owner', 'Jana')" onClick={() => run(() => store.scope('planner').scope('filters').set('owner', 'Jana'))} />
             <DefaultButton text="delete('zoom')" onClick={() => run(() => store.delete('zoom'))} />
         </Stack>
-        <pre className={styles.store}>{JSON.stringify(state, null, 2)}</pre>
+        <pre>{JSON.stringify(state, null, 2)}</pre>
     </Stack>
 }
 `

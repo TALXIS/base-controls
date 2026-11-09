@@ -6,7 +6,7 @@ import { OwnStoreExample, UserViewsExample } from '../../dataset-control/example
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-User views let each user keep a view the way they sorted, filtered and arranged it: they save it as a view of their own, listed under *My views* in the view switcher, and open it later like any other. Add a user queries module to the control and put \`DatasetControl.UserQueries\` in the view switcher, which then offers **Save as new view**, **Save changes** and **Manage views**. Try it below: sort a column, then pick **Save as new view**.
+User views let each user keep a view the way they sorted, filtered and arranged it: they save it as a view of their own, listed under *My views* in the view switcher, and open it later like any other. A user queries module adds **Save as new view**, **Save changes** and **Manage views** to the view switcher, and \`DatasetControl.UserQueries\` in the switcher draws the *Manage views* panel. Try it below: sort a column, then pick **Save as new view**.
 
 {{canvas: Save your own views}}
 
@@ -18,9 +18,9 @@ It also keeps what each \`saveWithView\` getter returns, under its key. As the v
 
 ## Save more with a view
 
-\`control.modules.get('userQueries').saveWithView(key, getter, applier?)\` saves what \`getter\` returns with every user view. \`applier(value, provider)\` puts the saved value back as a user view opens, before its first page, such as \`provider.setSorting(sorting)\`; leave it out for a value your own UI reads from \`getView().data\`. Register it in \`onSetup\`, since each mount loads the module anew, as \`saveDealViewData\` in the example's \`views.ts\` does.
+\`control.modules.get('userQueries').saveWithView(key, getter, applier?)\` saves what \`getter\` returns with every user view. \`applier(value, provider)\` puts the saved value back as a user view opens, before its first page, such as \`provider.setSorting(sorting)\`; leave it out for a value your own UI reads from \`getView().data\`. Call it in \`onSetup\`, since each mount loads the module anew, as \`saveDealViewData\` in the example's \`views.ts\` does.
 
-Declare each key you save on \`IUserQuerySavedValueMap\` in \`declare module '@talxis/base-controls'\`, as the example's \`views.ts\` does for sorting, filtering and search. A getter that returns \`undefined\` saves nothing, and one that throws stops the save. \`saveWithView\` returns its unregistration, and registering the same key twice throws.
+Declare each key you save on \`IUserQuerySavedValueMap\` in \`declare module '@talxis/base-controls'\`, as the example's \`views.ts\` does for sorting, filtering and search. A getter that returns \`undefined\` saves nothing, and one that throws stops the save. \`saveWithView\` returns its remover, and a second call for the same key throws.
 
 ## Where views are kept
 
@@ -57,10 +57,10 @@ The example's \`dataverse.ts\` creates both Dataverse modules. Both need a page 
 
 ## Good to know
 
-- \`DatasetControl.UserQueries\` throws without a user queries module.
+- \`DatasetControl.UserQueries\` throws without a user queries module, and without it **Manage views** opens nothing.
 - Closing *Manage views* loads the control again, so the switcher lists the views as they are now.
 - A failed save or delete opens the error dialog: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview).
-- The commands' strings are \`userQueries.*\` labels: see [**Localization**](?path=/docs/concepts-localization--overview).
+- To change the commands' labels, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Reference
 
@@ -80,10 +80,10 @@ The example's \`dataverse.ts\` creates both Dataverse modules. Both need a page 
 
 | Member | Description |
 |---|---|
-| \`isUserView(viewId)\` | Whether the view is one of the user's. |
-| \`saveAsNew()\`, \`create(name)\` | Saves what the control shows as a new view, asking for a name or under \`name\`, and opens it. |
-| \`save()\` | Saves what the control shows into the open user view. |
-| \`events\` | \`onManageRequested\`, \`onOperationFailed(error)\`. |
+| \`saveWithView(key, getter, applier?)\` | Saves a value of your own with every user view: see *Save more with a view*. |
+| \`getManageProvider()\` | The provider *Manage views* edits the views in, from the store's \`createManageProvider()\`. |
+| \`deleteViews(viewIds)\` | Deletes the views through that provider; a failure raises \`onOperationFailed\`. |
+| \`events\` | \`onManageRequested\` when the user picks **Manage views**, \`onOperationFailed(error)\` when a save or delete fails. |
 
 ## Where next
 
@@ -123,7 +123,7 @@ export const KeepViewsInYourOwnStore: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A store of your own, logging each call the control makes to it. Try: sort a column and pick **Save as new view**.`,
+                story: `A store of your own, logging each call the control makes to it. Try: pick **Save as new view** and name the view.`,
             },
         },
     },

@@ -6,8 +6,6 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { AccountFormExample } from '../../form/react-form/getStartedExamples'
 
 const DESCRIPTION = `
-> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
-
 A form edits one record, laid out in tabs, columns and sections, with each field drawn by the Base Controls field for its data type. It keeps track of unsaved changes, checks every field before it saves, and shows what stopped a save. Try it below: clear *Account name* and press **Save**.
 
 {{canvas: Overview}}

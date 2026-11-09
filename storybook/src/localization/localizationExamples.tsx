@@ -26,21 +26,20 @@ const createDeals = (columnNames: string[]) => new MemoryDataProvider({
     dataSource: [
         { dealid: 'contoso', name: 'Contoso: CRM rollout', value: 4000, closedate: '2026-03-15' },
         { dealid: 'fabrikam', name: 'Fabrikam: Support renewal', value: 21500, closedate: '2026-04-02' },
-        { dealid: 'northwind', name: 'Northwind: Data migration', value: 9000, closedate: '2026-05-20' },
         { dealid: 'litware', name: 'Litware: Onboarding', value: 14000, closedate: '2026-06-30' },
     ],
     metadata: { PrimaryIdAttribute: 'dealid', PrimaryNameAttribute: 'name', LogicalName: 'deal' },
     columns: [
-        { name: 'name', displayName: columnNames[0], dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 240 },
-        { name: 'value', displayName: columnNames[1], dataType: DataTypes.Currency, visualSizeFactor: 130 },
-        { name: 'closedate', displayName: columnNames[2], dataType: DataTypes.DateAndTimeDateOnly, visualSizeFactor: 130 },
+        { name: 'name', displayName: columnNames[0], dataType: DataTypes.SingleLineText, isPrimary: true },
+        { name: 'value', displayName: columnNames[1], dataType: DataTypes.Currency },
+        { name: 'closedate', displayName: columnNames[2], dataType: DataTypes.DateAndTimeDateOnly },
     ],
 })
 
 const GridExample = () => {
     const [language, setLanguage] = React.useState(LANGUAGES[0])
     return <Stack tokens={{ childrenGap: 12 }}>
-        <ChoiceGroup selectedKey={language.key} options={LANGUAGES} onChange={(_, option) => setLanguage(LANGUAGES.find(other => other.key === option?.key)!)} styles={{ flexContainer: { display: 'flex', gap: 24 } }} />
+        <ChoiceGroup selectedKey={language.key} options={LANGUAGES} onChange={(_, option) => setLanguage(LANGUAGES.find(other => other.key === option?.key)!)} />
         <PcfContextProvider userSettings={{ lcid: language.lcid, formatInfoCultureName: language.culture }}>
             <LabelsProvider labels={language.labels}>
                 {/* remounted, so the grid builds again with the new labels and culture */}

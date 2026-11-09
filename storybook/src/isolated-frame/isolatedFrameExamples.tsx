@@ -6,7 +6,6 @@ const ISOLATION_FILES: IGridExampleFile[] = [
     {
         name: 'GridExample.tsx',
         code: `import { createIsolatedHost, ITheme, useTheme } from '@talxis/base-controls'
-import { Stack } from '@fluentui/react'
 import { DealsGrid } from './deals'
 
 //another app's global CSS on the same page: it restyles every AG Grid it reaches
@@ -34,15 +33,11 @@ const GridExample = () => {
         return () => style.remove()
     }, [])
 
-    return <Stack horizontal tokens={{ childrenGap: 16 }} styles={{ root: { height: 640 } }}>
-        <Stack.Item grow styles={{ root: { flexBasis: 0, minWidth: 0 } }}>
-            <DealsGrid heading='In the page' />
-        </Stack.Item>
-        <Stack.Item grow styles={{ root: { flexBasis: 0, minWidth: 0 } }}>
-            {/* frame sets up the iframe; every other prop goes to the content */}
-            <IsolatedDeals theme={theme} frame={{ title: 'Deals' }} />
-        </Stack.Item>
-    </Stack>
+    return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, height: 640 }}>
+        <DealsGrid heading='In the page' />
+        {/* frame sets up the iframe; every other prop goes to the content */}
+        <IsolatedDeals theme={theme} frame={{ title: 'Deals' }} />
+    </div>
 }
 `,
     },
@@ -75,28 +70,26 @@ defineIsolatedContent('deals', FramedDeals)
     },
     {
         name: 'deals.tsx',
-        code: `import { ClientSideGrid, createSortingModule, DatasetControl, Grid } from '@talxis/base-controls'
+        code: `import { ClientSideGrid, DatasetControl } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
-import { Stack, Text } from '@fluentui/react'
+import { Text } from '@fluentui/react'
 
 //used by both sides: the page and the frame each run their own copy
 const createDeals = () => new MemoryDataProvider({
     dataSource: [
-        { dealid: 'contoso', name: 'Contoso: CRM rollout', owner: 'Anna Novak', value: 4000 },
-        { dealid: 'fabrikam', name: 'Fabrikam: Support renewal', owner: 'Ben Carter', value: 21500 },
-        { dealid: 'northwind', name: 'Northwind: Data migration', owner: 'Anna Novak', value: 9000 },
-        { dealid: 'litware', name: 'Litware: Onboarding', owner: 'Ben Carter', value: 14000 },
+        { dealid: 'contoso', name: 'Contoso: CRM rollout', value: 4000 },
+        { dealid: 'fabrikam', name: 'Fabrikam: Support renewal', value: 21500 },
+        { dealid: 'northwind', name: 'Northwind: Data migration', value: 9000 },
     ],
     metadata: { PrimaryIdAttribute: 'dealid', PrimaryNameAttribute: 'name', LogicalName: 'deal' },
     columns: [
-        { name: 'name', displayName: 'Deal', dataType: DataTypes.SingleLineText, visualSizeFactor: 220 },
-        { name: 'owner', displayName: 'Account manager', dataType: DataTypes.SingleLineText, visualSizeFactor: 160 },
-        { name: 'value', displayName: 'Value', dataType: DataTypes.Currency, visualSizeFactor: 120 },
+        { name: 'name', displayName: 'Deal', dataType: DataTypes.SingleLineText },
+        { name: 'value', displayName: 'Value', dataType: DataTypes.Currency },
     ],
 })
 
-export const DealsGrid = (props: { heading: string }) => <Stack tokens={{ childrenGap: 8 }} styles={{ root: { padding: 12 } }}>
-    <Text variant='mediumPlus'>{props.heading}</Text>
+export const DealsGrid = (props: { heading: string }) => <div>
+    <Text>{props.heading}</Text>
     <DatasetControl onLoad={async () => ({ provider: createDeals() })} height='560px'>
         <DatasetControl.Header>
             <DatasetControl.Header.End>
@@ -105,10 +98,10 @@ export const DealsGrid = (props: { heading: string }) => <Stack tokens={{ childr
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <ClientSideGrid modules={[createSortingModule()]} />
+            <ClientSideGrid />
         </DatasetControl.Body>
     </DatasetControl>
-</Stack>
+</div>
 `,
     },
 ]

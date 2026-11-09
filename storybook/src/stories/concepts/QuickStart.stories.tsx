@@ -29,6 +29,8 @@ Wrap the application in the providers once, then add controls anywhere below the
 | \`StateProvider\` | A store for what controls keep across mounts: [**State persistence**](?path=/docs/concepts-state-persistence--overview) | Every control shares one in-memory store for the page |
 | \`LabelsProvider\` | Your wording and translations: [**Localization**](?path=/docs/concepts-localization--overview) | English |
 
+The controls draw Fluent's icons: register them once with \`initializeIcons()\` from \`@fluentui/react\`, as [**Fluent UI**](?path=/docs/concepts-fluent-ui--overview) describes.
+
 What each part of the example is, and how far you can take it: [**Building blocks**](?path=/docs/concepts-building-blocks--overview).
 
 ## Where next

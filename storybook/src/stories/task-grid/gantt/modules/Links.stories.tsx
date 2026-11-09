@@ -14,7 +14,7 @@ The links module draws the task grid's dependencies as arrows between the bars, 
 
 | Gesture | Does |
 |---|---|
-| Drag from the handle at either end of a bar to another bar | Draws a link. The ends it joins decide the type: *finish to start*, *start to start*, *finish to finish* or *start to finish*. A duplicate or a cycle is refused. |
+| Drag from the handle at either end of a bar to another bar | Draws a link. The ends it joins decide the type: *finish to start*, *start to start*, *finish to finish* or *start to finish*. A duplicate, a cycle or a link to a task that is saving is refused. |
 | Double-click a link | Deletes it, once the user confirms |
 | Point at a link | Shows what it joins |
 
@@ -24,7 +24,9 @@ Drawing and deleting links needs \`enableEditing\`. While a link saves, its task
 
 | Option | Description |
 |---|---|
-| \`components\` | Under \`tooltip\`: \`onRender\`, a link's whole tooltip composed from \`LinkTooltip\`'s parts (\`Callout\`, \`Header\`, \`FieldRows\`, \`PredecessorRow\`, \`SuccessorRow\`, \`DateRangeRow\`), or the default tooltip's slots. See *Changing how it looks* below. |
+| \`components\` | Under \`tooltip\`: \`onRender\`, a link's whole tooltip composed from \`LinkTooltip\`'s parts (\`Callout\`, \`Header\`, \`FieldRows\`, \`PredecessorRow\`, \`SuccessorRow\`, \`DateRangeRow\`), or the default tooltip's slots (see *Changing how it looks* below), which \`onRender\` leaves unused. |
+
+\`onRender\` returns the parts in your order, starting with \`LinkTooltip.Callout\`, as on [**Tooltip**](?path=/docs/controls-taskgrid-gantt-modules-tooltip--overview). A part of your own reads the link with \`useLinkTooltip()\`: its \`dependency\`, and the \`predecessor\` and \`successor\` records.
 
 ## Changing how it looks
 

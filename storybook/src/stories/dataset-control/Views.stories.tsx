@@ -16,7 +16,7 @@ The switcher needs only a view's name; what the view shows is resolved when it o
 
 | Key | Description |
 |---|---|
-| \`id\` | Identifies the view. |
+| \`id\` | Unique among the control's views. |
 | \`name\` | Shown in the switcher. |
 | \`group\` | \`{ id, name }\`: the header the view is listed under. Views without one go under *System views*. |
 | \`resolve(provider)\` | Required. Sets up the provider the view opens on, such as its filter or sorting, and returns what the view shows; can be async. |
@@ -39,10 +39,10 @@ A user queries module adds *Save as new view*, *Save changes* and *Manage views*
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| \`components\` | \`IViewSwitcherComponents\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
-| \`children\` | \`ReactNode\` | None | What adds to the switcher, such as \`DatasetControl.UserQueries\`. |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`components\` | \`IViewSwitcherComponents\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| \`children\` | \`ReactNode\` | None | Live | What adds to the switcher, such as \`DatasetControl.UserQueries\`. |
 
 ## From your code
 
@@ -50,9 +50,9 @@ The control opens and lists views with \`loadView\`, \`reload\`, \`getViews\` an
 
 | Member | Does |
 |---|---|
-| \`getViews()\`, \`getCurrentView()\` | The views, and the open one as listed; \`undefined\` when it is not among them. |
+| \`getViews()\`, \`getView()\` | The views, and the open one as listed; \`undefined\` when it is not among them. |
 | \`select(viewId)\` | Opens the view; nothing when it is already open. |
-| \`hooks.items.add(hook, priority?)\` | Adds to the switcher's menu: \`hook(items)\` changes the Fluent \`IContextualMenuItem\`s in place each time the menu opens. Returns its unregistration. |
+| \`hooks.items.add(hook, priority?)\` | Adds to the switcher's menu: \`hook(items)\` changes the Fluent \`IContextualMenuItem\`s in place each time the menu opens. Returns its remover. |
 
 ## Where next
 

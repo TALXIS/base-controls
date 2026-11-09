@@ -1,6 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../../../grid/GridExampleRunner'
-import { withAccount } from './shared'
+import { accountTab, withAccount } from './shared'
 
 const OWN_CONTROL_CODE = `import { ControlComponents, useField, XrmForm } from '@talxis/base-controls'
 import { ChoiceGroup } from '@fluentui/react'
@@ -41,6 +41,6 @@ const GridExample = () => {
 }
 `
 
-export const OwnControlExample = () => <GridExampleRunner seedCode={withAccount(OWN_CONTROL_CODE)} tabs={['preview', 'code']} />
+export const OwnControlExample = () => <GridExampleRunner seedCode={withAccount(OWN_CONTROL_CODE, [accountTab('name', 'industrycode')])} tabs={['preview', 'code']} />
 
-export const RibbonCommandExample = () => <GridExampleRunner seedCode={withAccount(RIBBON_COMMAND_CODE)} tabs={['preview', 'code']} />
+export const RibbonCommandExample = () => <GridExampleRunner seedCode={withAccount(RIBBON_COMMAND_CODE, [accountTab('name', 'creditonhold')])} tabs={['preview', 'code']} />

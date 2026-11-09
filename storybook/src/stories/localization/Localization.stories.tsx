@@ -16,7 +16,7 @@ Every string the controls draw is a *label*: a key such as \`'quickFind.searchPl
 |---|---|
 | A provider leaves a key out | The key falls back to the provider above, then to English, so a page sets its language once and one control can still reword a label. |
 | A label holds \`{{ placeholders }}\` | It is a Liquid template: keep the placeholders and any filters in a translation. |
-| Labels change after mount | Components draw again with them, but what a control has built, such as grid cells or headers, keeps its text: remount the control with a new \`key\`, as the example does, or redraw the grid as on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). |
+| Labels change after mount | Components draw again with them, but what a control has built, such as grid cells or headers, keeps its text: remount the control with a new \`key\`, as the example does, or redraw the grid as *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) describes. |
 | A name comes from your data | View, column and option names are data, not labels: translate them where you define them, as the example does with its columns. |
 | A date or number is drawn | It follows the user's culture from the [**PCF context**](?path=/docs/concepts-pcf-context--overview), not the labels. |
 

@@ -51,7 +51,6 @@ const GridExample = () => {
                     createRowSelectionModule({ mode: 'multiple' }),
                     createSortingModule(),
                 ]}
-                enableOptionSetColors
                 onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
@@ -69,11 +68,9 @@ export const GRID_LIFE_CODE = `const createLifeLogModule = (log: (message: strin
 })
 
 const GridExample = () => {
-    const theme = useTheme()
     const [lines, setLines] = React.useState<string[]>([])
     const [isOpen, setIsOpen] = React.useState(true)
     const log = (message: string) => setLines(current => [...current, message])
-    const lifeLog = React.useMemo(() => createLifeLogModule(log), [])
 
     const onSetup = (grid: IGrid) => {
         log('onSetup: the grid hands itself to your code')
@@ -90,14 +87,14 @@ const GridExample = () => {
         <DatasetControl onLoad={async () => ({ provider: provider })}>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
-                    <DefaultButton iconProps={{ iconName: isOpen ? 'Cancel' : 'OpenPane' }} text={isOpen ? 'Close the grid' : 'Open the grid'} onClick={() => setIsOpen(!isOpen)} />
+                    <DefaultButton text={isOpen ? 'Close the grid' : 'Open the grid'} onClick={() => setIsOpen(!isOpen)} />
                 </DatasetControl.Header.Start>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                {isOpen && <ClientSideGrid modules={[lifeLog]} onSetup={onSetup} onLoad={() => log('onLoad: awaited before AG Grid renders')} height='320px' />}
+                {isOpen && <ClientSideGrid modules={[createLifeLogModule(log)]} onSetup={onSetup} onLoad={() => log('onLoad: awaited before AG Grid renders')} height='320px' />}
             </DatasetControl.Body>
         </DatasetControl>
-        <Stack tokens={{ childrenGap: 4 }} styles={{ root: { padding: 12, borderRadius: 4, background: theme.semanticColors.bodyStandoutBackground } }}>
+        <Stack tokens={{ childrenGap: 4 }}>
             {lines.map((line, index) => <Text key={index} variant='small'>{line}</Text>)}
         </Stack>
     </Stack>

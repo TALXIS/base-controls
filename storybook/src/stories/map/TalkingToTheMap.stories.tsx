@@ -47,7 +47,7 @@ A component of yours goes in the map as a child and is drawn in the map's box, u
 
 ## Reach the library's map
 
-\`map.modules.get('library')\` is the library module, and its \`getInstance()\` returns the library's own map once it is drawn, \`undefined\` before: a Leaflet \`Map\` for \`ILeaflet\`, a \`google.maps.Map\` for \`IGoogleMaps\`. To act the moment it is drawn, listen to \`onInstanceReady\` on the module's \`events\`; \`IGoogleMaps\` also fires \`onPopupChanged\` with the record id of the open popup.
+\`map.modules.get('library')\` is the library module, and its \`getInstance()\` returns the library's own map once it is drawn, \`undefined\` before: a Leaflet \`Map\` for \`ILeaflet\`, a \`google.maps.Map\` for \`IGoogleMaps\`. To act the moment it is drawn, listen to \`onInstanceReady\` on the module's \`events\`; \`IGoogleMaps\` also fires \`onPopupChanged\` with the record id of the open popup, or \`undefined\` once it closes.
 
 {{story: A tour from west to east}}
 

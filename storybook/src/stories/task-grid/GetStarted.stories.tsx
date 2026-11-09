@@ -32,14 +32,13 @@ Where the tasks come from, and which columns make the tree, is on [**Loading tas
 
 ### TaskDatasetControl props
 
-| Prop | Default | Description |
-|---|---|---|
-| \`onLoad(control)\` | Required | Returns the provider, the field mapping and the views; \`control.modules.get('taskRuntime')\` is the task runtime. See [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview). |
-| \`hoursPerDay\` | \`24\` | How many hours a day of a task's duration holds. |
-| \`modules\` | None | The task modules, and DatasetControl modules such as user views. At mount. See [**Modules**](?path=/docs/controls-taskgrid-modules--overview). |
-| \`onSetup(control)\` | None | Passes you the DatasetControl of each mount, before its modules load; its \`taskRuntime\` module is the task runtime. See [**Talking to the task grid**](?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview). |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`onLoad\` | \`(taskRuntime: ITaskRuntime) => ITaskGridLoadResult \\| Promise<ITaskGridLoadResult>\` | Required | At mount | Gets the task runtime and returns the store, the field mapping and the views. See [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview). |
+| \`modules\` | \`IDatasetControlModule[]\` | None | At mount | The task modules, and DatasetControl modules such as user views. See [**Modules**](?path=/docs/controls-taskgrid-modules--overview). |
+| \`onSetup\` | \`(control: IDatasetControl<ITaskViewData>) => void\` | None | At mount | Gets the DatasetControl of each mount, before its modules load. See [**Talking to the task grid**](?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview). |
 
-\`enableCreation\`, \`enableEditing\`, \`enableDeletion\`, \`defaultCreatePosition\` and the \`onTasks…\` events are on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). Every other prop works as on a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview).
+\`enableCreation\`, \`enableEditing\`, \`enableDeletion\` and \`defaultCreatePosition\` are on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). Every other prop works as on a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview).
 
 ### Parts
 
@@ -53,14 +52,14 @@ Every DatasetControl part works inside a \`TaskDatasetControl\`. Three are its o
 
 ### TaskGrid props
 
-\`TaskGrid\` takes every prop of \`<Grid />\` (see [**Props and events**](?path=/docs/controls-grid-props-and-events--overview)). These differ:
+\`TaskGrid\` takes every prop of a Grid (see [**Props and events**](?path=/docs/controls-grid-props-and-events--overview)). These differ:
 
-| Prop | Default | Description |
-|---|---|---|
-| \`modules\` | None | Grid modules. At mount. See *Where modules go* on [**Modules**](?path=/docs/controls-taskgrid-modules--overview). |
-| \`components\` | Defaults | The Grid's pieces, plus the task grid's own cells. See *Changing how it looks* above. |
-| \`enableZebra\` | \`false\` | Shades every other row. At mount. |
-| \`enableOptionSetColors\` | \`true\` | Draws options that have a colour as tags. At mount. |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`modules\` | \`ITaskGridGridModule[]\` | None | At mount | Grid modules. See *Where modules go* on [**Modules**](?path=/docs/controls-taskgrid-modules--overview). |
+| \`components\` | \`ITaskGridComponents\` | Defaults | Live | The Grid's pieces, plus the task grid's own cells. See *Changing how it looks* above. |
+| \`enableZebra\` | \`boolean\` | \`false\` | At mount | Shades every other row. |
+| \`enableOptionSetColors\` | \`boolean\` | \`true\` | At mount | Draws options that have a colour as tags. |
 
 ## Where next
 

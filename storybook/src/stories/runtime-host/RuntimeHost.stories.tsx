@@ -42,7 +42,7 @@ A remount makes a new runtime, so anything that must survive it, such as what th
 
 ## Write a runtime
 
-A runtime is a class with a \`lifecycle\`: a \`RuntimeLifecycle\` given \`onInit\`, which loads what the control needs and throws when it cannot, and optionally \`onDestroy\`, which releases what the runtime holds. Without \`onInit\`, the runtime is ready at once. The runtime's own members, such as \`getTotal()\` in the example, sit beside \`lifecycle\`.
+A runtime is a class with a \`lifecycle\`: a \`RuntimeLifecycle\` given \`onInit\`, which loads what the control needs and throws when it cannot, and optionally \`onDestroy\`, which releases what the runtime holds. Without \`onInit\`, the runtime is ready at once. The runtime's own members, such as \`getTotal()\` in the example, sit beside \`lifecycle\`. An optional \`getStateStore()\` returns the store the controls inside the host keep their state in; without it, they use the store around the host.
 
 ## Draw the mount
 
@@ -50,7 +50,7 @@ The host draws the loading state and a failed load; the control draws the rest. 
 
 ## Changing how it looks
 
-\`RuntimeHost\` takes \`components\` for what it draws itself: the loading state and the error. A component in \`loading\` can read the runtime with \`useRuntime()\`, as the second example's spinner does. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+\`RuntimeHost\` takes \`components\` for what it draws itself: the loading state and the error. A component in \`loading\` can read the runtime with \`useRuntime()\`, as the spinner in *Keep the picked owner* does. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -76,7 +76,7 @@ To change the wording of **Try again** and **Details**, see [**Localization**](?
 const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The runtime is created', hook: 'createRuntime', text: 'The host calls `createRuntime` for a new runtime, whose status is `initializing`.' },
     { title: 'The mount starts', hook: 'onSetup', text: '`onSetup` gets the runtime before it loads, so subscribe to its events here.' },
-    { title: 'It loads', hook: 'onInit', text: 'The lifecycle runs `onInit` once, before the first paint, while the host draws the loading state.' },
+    { title: 'It loads', hook: 'onInit', text: 'The host starts the lifecycle before the first paint, which runs `onInit` once while the host draws the loading state.' },
     { title: 'It is ready, or it failed', hook: 'onReady', text: '`onReady` fires and the host draws the control, or `onInitFailed` fires and the host shows the error with a retry.' },
     { title: 'It remounts', hook: 'remount()', text: '`remount()`, or the retry, ends the runtime and starts again from the first step.' },
     { title: 'It is destroyed', hook: 'onDestroy', text: '`onDestroyed` fires, then `onDestroy` releases what the runtime holds.' },

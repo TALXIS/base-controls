@@ -6,24 +6,24 @@ import { ExploreCards, IExploreCard } from '../../../../grid/showcase/ExploreCar
 import { GanttNonWorkingDaysExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-The non-working days module shades weekends and the days you list, such as holidays, on the timeline, and leaves them out of every task's duration. Try it below: drag a bar onto a weekend.
+The non-working days module shades weekends and the days you list, such as holidays, on the timeline, and leaves them out of every task's duration. Try it below: zoom in until the scale shows days, then drag a bar onto a weekend.
 
 {{canvas: Shade the holidays}}
 
 ## What it does
 
-The days are shaded while the zoom shows single days, and pointing at one on the scale shows its description. Durations count only working time, and a bar dragged or drawn onto non-working days slides off them in the direction it moved. *Hide non-working days* in \`TaskDatasetControl.Settings\` takes them off the timeline, a choice kept per view and saved with user views.
+The days are shaded while the zoom shows single days, and pointing at one on the scale shows its description. Durations count only working time, and a bar dragged or drawn onto non-working days slides off them in the direction it moved. *Hide non-working days* in \`TaskDatasetControl.Settings\` takes them off the timeline while it shows single days, a choice kept per view and saved with user views.
 
 ## A non-working day
 
-| Field | Description |
-|---|---|
-| \`id\` | Required. |
-| \`date\` | Required. The first day, or of the first occurrence when it recurs. |
-| \`endDate\` | The last day, included. Leave it out for a single day. |
-| \`description\` | What the scale says when the day is pointed at. |
-| \`recurrence\` | An <a href="https://icalendar.org/iCalendar-RFC-5545/3-8-5-3-recurrence-rule.html" target="_blank" rel="noreferrer">RRULE</a> starting at \`date\`, such as \`FREQ=YEARLY\`, \`FREQ=YEARLY;BYEASTER=-2\` for Good Friday, or \`FREQ=MONTHLY;BYDAY=-1FR\` for every month's last Friday. |
-| \`data\` | Anything else the day carries. |
+| Field | Default | Description |
+|---|---|---|
+| \`id\` | Required | |
+| \`date\` | Required | A \`Dayjs\`: the first day, or that of the first occurrence when it recurs. |
+| \`endDate\` | The \`date\` | The last day, included. |
+| \`description\` | None | What the scale says when the day is pointed at. |
+| \`recurrence\` | None | An <a href="https://icalendar.org/iCalendar-RFC-5545/3-8-5-3-recurrence-rule.html" target="_blank" rel="noreferrer">RRULE</a> starting at \`date\`, such as \`FREQ=YEARLY\`, \`FREQ=YEARLY;BYEASTER=-2\` for Good Friday, or \`FREQ=MONTHLY;BYDAY=-1FR\` for every month's last Friday. |
+| \`data\` | None | Anything else the day carries, read back with the module's \`getNonWorkingDays(date)\`. |
 
 ## Options
 
@@ -39,7 +39,9 @@ The days are shaded while the zoom shows single days, and pointing at one on the
 | Factory | Days |
 |---|---|
 | \`createMemoryNonWorkingDaysModule\` | \`nonWorkingDays\`: the days. |
-| \`createNonWorkingDaysModule\` | Weekends only, or a store of yours: \`createStore\` returns a store with \`loadNonWorkingDays()\`, which returns the days. |
+| \`createNonWorkingDaysModule\` | Weekends only, or a store of yours: \`createStore\` returns a store with \`loadNonWorkingDays()\`, which returns the days. The chart does not wait for them. |
+
+The module's \`reload()\` reads the store again and redraws the chart: reach the module by its name, \`nonWorkingDays\`, as on [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview).
 
 ## Changing how it looks
 
@@ -47,7 +49,7 @@ The days are shaded while the zoom shows single days, and pointing at one on the
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`tooltip\` | \`onRenderCallout\`, \`onRenderContainer\`, \`onRenderDescription\` (with the whole \`day\`) | \`NonWorkingDaysUiTooltipComponents\` | What a shaded day on the scale says when pointed at |
+| \`tooltip\` | \`onRenderCallout\`, \`onRenderContainer\`, \`onRenderDescription\` (with the day's \`id\` and \`description\` as \`day\`) | \`NonWorkingDaysUiTooltipComponents\` | What a shaded day on the scale says when pointed at |
 
 ## Where next
 

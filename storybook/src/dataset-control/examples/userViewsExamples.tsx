@@ -5,32 +5,30 @@ import { VIEWS_FILE, withFiles } from './shared'
 
 const USER_VIEWS_CODE = `import { loadDeals, saveDealViewData } from './views'
 
-const GridExample = () => {
-    //keeps the user's views in this browser's localStorage
-    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule({ storageKey: 'docs.dealViews' })], [])
+//keeps the user's views in this browser's localStorage
+const userViews = createLocalStorageUserQueriesModule({ storageKey: 'docs.dealViews' })
 
-    //saveDealViewData, in views.ts, saves the sorting, filter and search with every view and puts them back
-    return <DatasetControl modules={modules} onLoad={loadDeals} onSetup={saveDealViewData} stateKey='userViews' height='480px'>
-        <DatasetControl.Header>
-            <DatasetControl.Header.Start>
-                <DatasetControl.ViewSwitcher>
-                    {/* adds Save changes, Save as new view and Manage views to the switcher */}
-                    <DatasetControl.UserQueries />
-                </DatasetControl.ViewSwitcher>
-            </DatasetControl.Header.Start>
-            <DatasetControl.Header.End>
-                <DatasetControl.EditColumns />
-                <DatasetControl.QuickFind />
-            </DatasetControl.Header.End>
-        </DatasetControl.Header>
-        <DatasetControl.Body>
-            <ClientSideGrid stateKey='grid' modules={[createSortingModule()]} />
-        </DatasetControl.Body>
-    </DatasetControl>
-}
+//saveDealViewData, in views.ts, saves the sorting, filter and search with every view and puts them back
+const GridExample = () => <DatasetControl modules={[userViews]} onLoad={loadDeals} onSetup={saveDealViewData} height='480px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            <DatasetControl.ViewSwitcher>
+                {/* the Manage views panel the module's command opens */}
+                <DatasetControl.UserQueries />
+            </DatasetControl.ViewSwitcher>
+        </DatasetControl.Header.Start>
+        <DatasetControl.Header.End>
+            <DatasetControl.EditColumns />
+            <DatasetControl.QuickFind />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <ClientSideGrid modules={[createSortingModule()]} />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
-const OWN_STORE_CODE = `import { loadDeals, saveDealViewData } from './views'
+const OWN_STORE_CODE = `import { loadDeals } from './views'
 
 interface IStoredView {
     id: string
@@ -44,7 +42,7 @@ class ManageViewsProvider extends MemoryDataProvider {
         super({
             dataSource: _views.map(({ id, name }) => ({ id, name })),
             metadata: { PrimaryIdAttribute: 'id', PrimaryNameAttribute: 'name' },
-            columns: [{ name: 'name', displayName: 'Name', dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 300 }],
+            columns: [{ name: 'name', displayName: 'Name', dataType: DataTypes.SingleLineText, isPrimary: true }],
         })
     }
 
@@ -94,25 +92,17 @@ class MemoryViewsStore implements IUserQueriesStore {
     }
 }
 
-const getLogStyles = (theme: ITheme) => mergeStyleSets({
-    log: { padding: '8px 12px', minHeight: 132, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontFamily: 'Consolas, monospace', lineHeight: '22px' },
-    line: { color: theme.semanticColors.bodySubtext },
-    latest: { color: theme.semanticColors.bodyText, fontWeight: 600 },
-})
-
 const GridExample = () => {
-    const theme = useTheme()
-    const styles = React.useMemo(() => getLogStyles(theme), [theme])
     const [log, setLog] = React.useState<string[]>([])
 
-    //one store across mounts
+    //one store across renders and mounts
     const modules = React.useMemo(() => {
         const store = new MemoryViewsStore(line => setLog(log => [line, ...log].slice(0, 6)))
         return [createUserQueriesModule({ createStore: () => store })]
     }, [])
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <DatasetControl modules={modules} onLoad={loadDeals} onSetup={saveDealViewData} stateKey='userViewsOwnStore' height='400px'>
+        <DatasetControl modules={modules} onLoad={loadDeals} height='400px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher>
@@ -121,15 +111,38 @@ const GridExample = () => {
                 </DatasetControl.Header.Start>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <ClientSideGrid stateKey='grid' modules={[createSortingModule()]} />
+                <ClientSideGrid />
             </DatasetControl.Body>
         </DatasetControl>
-        <div className={styles.log}>
-            {log.map((line, index) => <div key={index} className={index === 0 ? styles.latest : styles.line}>{line}</div>)}
-        </div>
+        {log.map((line, index) => <Text key={index}>{line}</Text>)}
     </Stack>
 }
 `
+
+//the deal views, plus the values saved with every user view
+const USER_VIEWS_VIEWS_FILE: IGridExampleFile = {
+    name: 'views.ts',
+    code: `${VIEWS_FILE.code}
+//the keys saveDealViewData saves, declared once in your project
+declare module '@talxis/base-controls' {
+    interface IUserQuerySavedValueMap {
+        sorting: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[]
+        filtering: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null
+        searchQuery: string
+    }
+}
+
+/** Saves the sorting, filter and search with every user view and puts them back as it opens. */
+export const saveDealViewData = (control: IDatasetControl) => {
+    const provider = () => control.getProvider()!
+    control.modules.observe('userQueries', userQueries => {
+        userQueries.saveWithView('sorting', () => provider().getSorting(), (sorting, provider) => provider.setSorting(sorting))
+        userQueries.saveWithView('filtering', () => provider().getFiltering(), (filtering, provider) => provider.setFiltering(filtering))
+        userQueries.saveWithView('searchQuery', () => provider().getSearchQuery(), (searchQuery, provider) => provider.setSearchQuery(searchQuery))
+    })
+}
+`,
+}
 
 const USER_VIEWS_DATAVERSE_FILE: IGridExampleFile = {
     name: 'dataverse.ts',
@@ -148,5 +161,5 @@ export const createDataverseViewsModule = (context: ComponentFramework.Context) 
 `,
 }
 
-export const UserViewsExample = () => <GridExampleRunner seedCode={withFiles(USER_VIEWS_CODE, VIEWS_FILE, USER_VIEWS_DATAVERSE_FILE)} tabs={['preview', 'code']} />
+export const UserViewsExample = () => <GridExampleRunner seedCode={withFiles(USER_VIEWS_CODE, USER_VIEWS_VIEWS_FILE, USER_VIEWS_DATAVERSE_FILE)} tabs={['preview', 'code']} />
 export const OwnStoreExample = () => <GridExampleRunner seedCode={withFiles(OWN_STORE_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />

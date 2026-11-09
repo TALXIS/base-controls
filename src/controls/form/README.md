@@ -51,7 +51,7 @@ export const AccountForm = () => {
 };
 ```
 
-`onLoad` resolves `{ record }` on mount and on refresh; remount with a `key` to load another record. The form edits that record in place and saves through `record.save()`, so a record from a grid or any data provider can be passed as is.
+`onLoad` resolves `{ record }` on mount and on `reload()`; remount with a `key` to load another record. The form edits that record in place and saves through `record.save()`, so a record from a grid or any data provider can be passed as is.
 
 ## Record contract: columns, metadata, and data
 
@@ -242,7 +242,7 @@ Lookup fields currently only work in environments where `window.Xrm` is availabl
 - loads the record through `onLoad()`
 - binds fields to the record model
 - validates before save
-- saves through `record.save()`, and with `autoSave` after each change the user commits
+- saves through `record.save()`, and with `enableAutoSave` after each change the user commits
 - exposes lifecycle callbacks through `IFormProps`
 
 Useful callbacks:
@@ -253,7 +253,7 @@ Useful callbacks:
 - `onFieldValueChanged(fieldName, newValue)`
 - `onValidationSummaryChanged(validationSummary)`
 - `onDirtyStateChanged(isDirty)`
-- `onError(error, message)`
+- `onError(message, details)`
 
 ### `Form.Control`
 
@@ -310,7 +310,7 @@ That makes it the default place to surface validation problems discovered during
 
 The imperative API surfaced by `onFormReady` currently allows you to:
 
-- `refresh()` the runtime
+- `reload()` to call `onLoad` again and rebuild the form
 - `getData()` for current in-memory values
 - `getField(name)` for a minimal imperative field handle
 
@@ -383,7 +383,7 @@ The main workflow is the composed `Form` runtime above.
 If you intentionally want the presentational layout pieces without binding to the form model, import them from the UI subtree instead of from the composed `Form` entry point:
 
 ```tsx
-import { FormUi } from "@talxis/base-controls/components/Form/components/ui";
+import { FormUi } from "@talxis/base-controls";
 ```
 
 This is useful for:

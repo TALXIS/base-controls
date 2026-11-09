@@ -12,7 +12,7 @@ A task view looks at the tasks a particular way, such as sorted by start date or
 
 ## Set up a view
 
-\`onLoad\` returns the views with the tasks, \`DatasetControl.ViewSwitcher\` shows them, and each view's \`resolve(provider)\` sets the provider up and returns its columns as the view opens, as on a DatasetControl (see [**Views**](?path=/docs/controls-datasetcontrol-views--overview)). In \`resolve\`, a task view calls:
+\`onLoad\` returns the views with the store, \`DatasetControl.ViewSwitcher\` shows them, and each view's \`resolve(provider)\` sets the provider up and returns its columns as the view opens, as on a DatasetControl (see [**Views**](?path=/docs/controls-datasetcontrol-views--overview)). In \`resolve\`, a task view calls:
 
 | Method | Description |
 |---|---|
@@ -29,7 +29,7 @@ Ancestors a filter or a search keeps are in italics where they do not match them
 
 ## Flat list
 
-A flat list shows the matching tasks on their own, without their ancestors. A *Path* column after the subject lists each task's ancestors, and tasks cannot be dragged. The user switches it with *Show hierarchy* in \`TaskDatasetControl.Settings\`, and your code with \`taskRuntime.setFlatList()\`.
+A flat list shows the matching tasks on their own, without their ancestors. A *Path* column after the subject lists each task's ancestors, the column of **+** buttons is hidden, and tasks cannot be dragged. The user switches it with *Show hierarchy* in \`TaskDatasetControl.Settings\`, and your code with \`taskRuntime.setFlatList()\`.
 
 ## User views and state
 

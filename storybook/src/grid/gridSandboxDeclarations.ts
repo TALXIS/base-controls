@@ -15,6 +15,10 @@ type Dayjs = import('dayjs').Dayjs;
 
 /** What React's types say about JSX, for an editor that cannot load them. */
 declare namespace JSX {
+    type Element = any;
+    interface IntrinsicElements {
+        [name: string]: any;
+    }
     interface ElementAttributesProperty {
         props: {};
     }
@@ -24,6 +28,17 @@ declare namespace JSX {
     interface IntrinsicAttributes {
         key?: React.Key | null;
     }
+}
+
+/** The React types examples name, for an editor that cannot load React's own. */
+declare namespace React {
+    type Key = string | number;
+    type ReactNode = any;
+    type ReactElement<P = any> = any;
+    type CSSProperties = any;
+    type HTMLAttributes<T> = any;
+    type ComponentType<P = {}> = any;
+    type FC<P = {}> = any;
 }
 
 declare const ActionButton: typeof import('@fluentui/react').ActionButton;
@@ -1742,8 +1757,8 @@ interface IGridCell {
 
 interface IGridCells {
     readonly events: IEventSubscriber<IGridCellsEvents>;
-    /** Redraws every cell, for state their records do not hold. */
-    render(): void;
+    /** Redraws every cell, or only those in columnNames, for state their records do not hold. */
+    render(parameters?: { columnNames?: string[] }): void;
     getCells(): IGridCell[];
     /** The cell drawing this field, where one is on screen. */
     getCell(record: IRecord, columnName: string): IGridCell | undefined;
@@ -3532,11 +3547,12 @@ interface IDatasetControlLoadResult<TData = unknown> {
 interface IDatasetControlViewSwitcher {
     /** The views of this mount, from the control's onLoad. */
     getViews(): IDatasetControlView[];
-    getCurrentView(): IDatasetControlView | undefined;
+    /** undefined when the loaded view is not among the views. */
+    getView(): IDatasetControlView | undefined;
     /** Loads the control for the view. */
     select(viewId: string): void;
     readonly hooks: {
-        /** Registers a hook over the items of the switcher's menu, which it adds to or changes in place. */
+        /** A hook over the items of the switcher's menu, which it adds to or changes in place. */
         readonly items: IHookPoint<(items: IContextualMenuItem[]) => void>;
     };
 }
@@ -3604,7 +3620,11 @@ interface IUserQuerySavedValueMap {
 
 /** The userQueries module, as datasetControl.modules.get('userQueries') returns it. */
 interface IDatasetControlUserQueries {
-    readonly events: IEventSubscriber<{ onOperationFailed: (error: unknown) => void }>;
+    readonly events: IEventSubscriber<{ onManageRequested: () => void; onOperationFailed: (error: unknown) => void }>;
+    /** The provider the Manage views panel lists the user views from. */
+    getManageProvider(): IDataProvider;
+    /** Deletes the user views with these ids. */
+    deleteViews(viewIds: string[]): Promise<void>;
     /** Saves what getValue returns with every user view; applyValue puts it back as a user view opens. */
     saveWithView<TKey extends keyof IUserQuerySavedValueMap & string>(key: TKey, getValue: () => IUserQuerySavedValueMap[TKey] | undefined, applyValue?: (value: IUserQuerySavedValueMap[TKey], provider: IDataProvider) => void): () => void;
 }
@@ -4178,7 +4198,7 @@ interface ITaskActions {
 }
 
 interface ITaskRuntime extends IRuntime {
-    readonly services: { get(key: string): any; find(key: string): any; observe(key: string, effect: (service: any) => void | (() => void)): () => void; register(key: string, resolve: () => any): void };
+    readonly services: { get(key: string): any; find(key: string): any; observe(key: string, effect: (service: any) => void | (() => void)): () => void; has(key: string): boolean; provide(key: string, service: any, parameters?: { onDestroy?: (service: any) => void }): () => void };
     getProvider(): ITaskDataProvider;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;
@@ -4271,6 +4291,27 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
     enableEditing?: boolean;
     /** The Delete command. */
     enableDeletion?: boolean;
+}
+
+/** A toggle in TaskDatasetControl.Settings. */
+interface ITaskGridSetting {
+    key: string;
+    label: string;
+    isChecked: boolean;
+    onChange: (isChecked: boolean) => void;
+}
+
+/** The toggles of TaskDatasetControl.Settings, the taskSettings part. */
+interface ITaskSettings {
+    readonly hooks: {
+        readonly settings: IHookPoint<(settings: ITaskGridSetting[]) => void>;
+    };
+    getSettings(): ITaskGridSetting[];
+}
+
+interface IDatasetControlPartMap {
+    /** TaskDatasetControl.Settings, while it is rendered. */
+    taskSettings: ITaskSettings;
 }
 
 interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
@@ -4662,15 +4703,17 @@ interface IMarker {
     date: import('dayjs').Dayjs;
     /** The line's and the chip's colour; the theme's primary colour by default. */
     color?: string;
+    /** How the line is drawn; dotted by default. */
+    lineStyle?: 'solid' | 'dotted';
 }
 
 type MarkerSlot = (props: any) => JSX.Element | null;
 
 interface IMarkersOptions {
     /** Today: enableMarker defaults to \`true\`, color to the theme's primary colour. */
-    today?: { enableMarker?: boolean; color?: string };
+    today?: { enableMarker?: boolean; color?: string; lineStyle?: 'solid' | 'dotted' };
     /** The project module's start and end: enableMarkers defaults to \`true\`, color to the theme's primary colour. */
-    project?: { enableMarkers?: boolean; color?: string };
+    project?: { enableMarkers?: boolean; color?: string; lineStyle?: 'solid' | 'dotted' };
     /** The replaceable pieces of the markers: layer, column, track, scale and line each have onRenderContainer; chip has onRenderTooltip and onRenderChip. */
     components?: {
         layer?: Partial<{ onRenderContainer: MarkerSlot }>;
@@ -4723,7 +4766,9 @@ interface INonWorkingDaysOptions {
     /** Whether Saturdays and Sundays are non-working days. Defaults to true. */
     enableWeekends?: boolean;
     isVisibleByDefault?: boolean;
-    /** The tooltip's replaceable pieces: onRenderCallout, onRenderContainer, and onRenderDescription, which gets the whole day. */
+    /** Whether a dragged or drawn task may start or end on a non-working day. Defaults to false. */
+    enableDropOnNonWorkingDays?: boolean;
+    /** The tooltip's replaceable pieces: onRenderCallout, onRenderContainer, and onRenderDescription, which gets the day's id and description. */
     components?: {
         tooltip?: Partial<{
             onRenderCallout: (props: any) => JSX.Element | null;
@@ -4742,7 +4787,7 @@ declare const createNonWorkingDaysModule: (parameters?: INonWorkingDaysOptions &
 declare const createMemoryNonWorkingDaysModule: (parameters: INonWorkingDaysOptions & { nonWorkingDays: INonWorkingDay[] }) => IGanttModule;
 /** Moves and resizes bars, writing the dates once the bar is dropped. */
 declare const createBarDraggingModule: (parameters?: { enableMove?: boolean; enableResize?: boolean }) => IGanttModule;
-/** Ctrl+drag over the timeline draws a new task. */
+/** Ctrl+drag draws a new task; a drag along a dateless row draws its dates. */
 declare const createTaskDrawingModule: (parameters?: { components?: { preview?: { [slot: string]: unknown } } }) => IGanttModule;
 /** Selects tasks from the chart; Shift+drag selects the bars under a band. */
 declare const createTaskSelectionModule: (parameters?: { enableSelectionBox?: boolean }) => IGanttModule;
@@ -4795,6 +4840,7 @@ declare namespace ComponentFramework {
 }
 declare module 'react-dom';
 declare module 'dhtmlx-gantt-pro';
+declare module '@talxis/base-controls/gantt' { export { TaskGantt, TaskTooltip, useMarker, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, IGanttModule, IMarker, INonWorkingDay } from '@talxis/base-controls'; export interface IGanttModuleMap {} }
 
 /** The instances grid modules provide, by name; extend it for a module of your own. */
 interface IGridModuleMap {}

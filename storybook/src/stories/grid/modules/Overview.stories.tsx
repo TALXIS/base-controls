@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { OpenTicketGroupsExample, PickModulesExample } from '../../../grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-Editing, selecting, sorting, filtering, grouping, totals and copying are modules: you pass the ones you want in \`modules\`, and a feature you leave out is not there at all. Every grid also needs exactly one row model, which is a module too. Try it below: turn off *Sorting* and open a column's menu.
+Editing, selecting, sorting, filtering, grouping, totals and copying are modules: you pass the ones you want in \`modules\`, and a feature you leave out is not there at all. How the grid gets its rows is a module too, the row model, which \`ClientSideGrid\` and \`ServerSideGrid\` load for you. Try it below: turn off *Sorting* and open a column's menu.
 
 {{canvas: Pick the features of a ticket queue}}
 
@@ -14,7 +14,7 @@ Editing, selecting, sorting, filtering, grouping, totals and copying are modules
 
 | Module | Adds | See |
 |---|---|---|
-| \`createClientSideRowModelModule()\`, \`createServerSideRowModelModule()\` | How the grid gets its rows; every grid needs one | *Row models* below |
+| \`createClientSideRowModelModule()\`, \`createServerSideRowModelModule()\` | How the grid gets its rows; \`ClientSideGrid\` and \`ServerSideGrid\` load one | *Row models* below |
 | \`createEditingModule()\` | Editing in place, a save status per row, locks and saving | [**Editing**](?path=/docs/controls-grid-modules-editing--overview) |
 | \`createRowSelectionModule({ mode })\`, \`createCellSelectionModule()\`, \`createClipboardModule()\` | Selecting rows, highlighting blocks of cells, copying and pasting | [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) |
 | \`createSortingModule()\`, \`createFilteringModule()\` | Sorting and filtering from a column's menu | [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview) |
@@ -43,14 +43,14 @@ The key holds for the whole page: once one grid registers it, every grid on the 
 
 ## Row models
 
-The row model decides how the grid gets its rows. Both show the provider's current page (see *Paging* on [**Data**](?path=/docs/controls-grid-data--overview)), and without grouping they show the same rows. They differ once the rows are grouped:
+The row model decides how the grid gets its rows, and you pick it with the component: \`ClientSideGrid\` loads the client-side row model ahead of your \`modules\`, and \`ServerSideGrid\` the server-side one. Both show the provider's current page (see *Paging* on [**Data**](?path=/docs/controls-grid-data--overview)), and without grouping they show the same rows. They differ once the rows are grouped:
 
-| Row model | A group's records | Opening a group | Requests to your data source |
-|---|---|---|---|
-| \`createClientSideRowModelModule()\` | Fetched for every group, at every level, as soon as the provider loads | Instant, once the groups have arrived | One per group, all at once, after every load |
-| \`createServerSideRowModelModule()\` | Fetched when the group opens | Shows a loading row until the records arrive | One per group the user opens; after a reload, one per group still open |
+| Component | Row model | A group's records | Opening a group | Requests to your data source |
+|---|---|---|---|---|
+| \`ClientSideGrid\` | \`createClientSideRowModelModule()\` | Fetched for every group, at every level, as soon as the provider loads | Instant, once the groups have arrived | One per group, all at once, after every load |
+| \`ServerSideGrid\` | \`createServerSideRowModelModule()\`, AG Grid Enterprise | Fetched when the group opens | Shows a loading row until the records arrive | One per group the user opens; after a reload, one per group still open |
 
-Use the client side by default, and the server side when users group by a column with many values or into big groups.
+Use \`ClientSideGrid\` by default, and \`ServerSideGrid\` when users group by a column with many values or into big groups. \`Grid\` itself loads no row model, so its \`modules\` must hold exactly one of the two.
 
 {{story: Open ticket groups on demand}}
 
@@ -87,7 +87,7 @@ export const OpenTicketGroupsOnDemand: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A support queue grouped by customer, against a slow service that counts its fetches. Try: pick *Server side* and open a customer (AG Grid Enterprise).`,
+                story: `A support queue grouped by customer, against a slow service that counts its fetches, drawn by \`ClientSideGrid\` or \`ServerSideGrid\`. Try: pick *Server side (Enterprise)* and open a customer.`,
             },
         },
     },

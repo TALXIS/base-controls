@@ -41,7 +41,7 @@ const GridExample = () => {
 `
 
 const FILTER_CHIPS_CODE = `import { useCompact, useCompactItem, useTheme, WrapCompactProvider } from '@talxis/base-controls'
-import { DefaultButton, IconButton, Stack, Text, Toggle } from '@fluentui/react'
+import { IconButton, Stack, Text } from '@fluentui/react'
 
 const FILTERS = [
     { key: 'stage', label: 'Stage', value: 'Won' },
@@ -50,14 +50,10 @@ const FILTERS = [
     { key: 'value', label: 'Value', value: 'Over $10,000' },
 ]
 
-interface IChipProps {
-    label: string
-    value: string
-    onRemove: () => void
-}
-
 //the label and the value while the row fits, only the value once it would wrap
-const Chip = (props: IChipProps) => {
+const Chip = (props: { label: string, value: string, onRemove: () => void }) => {
+    //tells the provider when the chip goes, so the rest try full size again
+    useCompactItem()
     const isCompact = useCompact()
     const theme = useTheme()
     return <Stack horizontal verticalAlign='center' style={{ padding: '2px 4px 2px 10px', borderRadius: 16, background: theme.palette.themeLighter }}>
@@ -66,40 +62,21 @@ const Chip = (props: IChipProps) => {
     </Stack>
 }
 
-//tells the provider when the chip goes
-const TrackedChip = (props: IChipProps) => {
-    useCompactItem()
-    return <Chip {...props} />
-}
-
 const GridExample = () => {
-    const theme = useTheme()
     const [filters, setFilters] = React.useState(FILTERS)
-    const [isTracked, setIsTracked] = React.useState(true)
-    const ChipComponent = isTracked ? TrackedChip : Chip
-
-    return <Stack tokens={{ childrenGap: 12 }}>
-        <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 16 }}>
-            <Toggle label='useCompactItem()' inlineLabel checked={isTracked} onChange={(_, checked) => { setIsTracked(!!checked); setFilters(FILTERS) }} />
-            <DefaultButton text='Bring the filters back' onClick={() => setFilters(FILTERS)} />
-        </Stack>
-        <div style={{ width: 420, padding: 8, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: 4 }}>
-            <WrapCompactProvider key={String(isTracked)} style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {filters.map(filter => <ChipComponent key={filter.key} label={filter.label} value={filter.value} onRemove={() => setFilters(rest => rest.filter(other => other.key !== filter.key))} />)}
-            </WrapCompactProvider>
-        </div>
-    </Stack>
+    return <WrapCompactProvider style={{ display: 'flex', flexWrap: 'wrap', gap: 6, width: 420 }}>
+        {filters.map(filter => <Chip key={filter.key} label={filter.label} value={filter.value} onRemove={() => setFilters(rest => rest.filter(other => other.key !== filter.key))} />)}
+    </WrapCompactProvider>
 }
 `
 
-const SECTION_TABS_CODE = `import { BreakpointCompactProvider, useCompact, useTheme } from '@talxis/base-controls'
+const SECTION_TABS_CODE = `import { BreakpointCompactProvider, useCompact } from '@talxis/base-controls'
 import { Dropdown, Pivot, PivotItem, Slider, Stack, Text } from '@fluentui/react'
 
 const SECTIONS = [
     { key: 'summary', text: 'Summary', content: 'Contoso renewal: $412,500, closing on 30 June.' },
     { key: 'contacts', text: 'Contacts', content: 'Anna Novak, account manager. Ben Carter, procurement.' },
     { key: 'activities', text: 'Activities', content: 'Call with procurement on Tuesday, proposal sent on Friday.' },
-    { key: 'documents', text: 'Documents', content: 'Proposal v3.pdf, Price list 2026.xlsx' },
 ]
 
 //tabs while there is room, a dropdown on a phone
@@ -114,17 +91,14 @@ const Sections = (props: { selectedKey: string; onChange: (key: string) => void 
 }
 
 const GridExample = () => {
-    const theme = useTheme()
     const [width, setWidth] = React.useState(640)
     const [selectedKey, setSelectedKey] = React.useState('summary')
     return <Stack tokens={{ childrenGap: 12 }}>
         <Slider label='Width (px)' min={280} max={800} step={20} value={width} onChange={setWidth} />
         {/* the slider sets the width the provider compares with 479px */}
         <BreakpointCompactProvider style={{ width }}>
-            <Stack tokens={{ childrenGap: 12 }} style={{ padding: 12, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: 4 }}>
-                <Sections selectedKey={selectedKey} onChange={setSelectedKey} />
-                <Text>{SECTIONS.find(section => section.key === selectedKey)!.content}</Text>
-            </Stack>
+            <Sections selectedKey={selectedKey} onChange={setSelectedKey} />
+            <Text>{SECTIONS.find(section => section.key === selectedKey)!.content}</Text>
         </BreakpointCompactProvider>
     </Stack>
 }

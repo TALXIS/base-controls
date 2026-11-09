@@ -3,7 +3,7 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
-const FLUENT_V9_CODE = `import { loadDeals, saveDealViewData } from './views'
+const FLUENT_V9_CODE = `import { loadDeals } from './views'
 import { DealsRibbon, failNextLoad } from './DealsRibbon'
 import { V9 } from './v9'
 import { RecordDataGrid } from './RecordDataGrid'
@@ -18,41 +18,39 @@ const onLoad = async () => {
     return loadDeals()
 }
 
-const GridExample = () => {
-    const modules = React.useMemo(() => [createLocalStorageUserQueriesModule({ storageKey: 'docs.fluentV9DealViews' })], [])
+const userViews = createLocalStorageUserQueriesModule({ storageKey: 'docs.fluentV9DealViews' })
 
-    return <DatasetControl modules={modules} onLoad={onLoad} onSetup={saveDealViewData} stateKey='fluentV9' height='560px' components={V9.control}>
-        <DatasetControl.Header>
-            <DatasetControl.Header.Start>
-                {/* save a view of your own, then open Manage views to see its drawer in v9 */}
-                <DatasetControl.ViewSwitcher components={V9.viewSwitcher}>
-                    <DatasetControl.UserQueries components={V9.userQueries} />
-                </DatasetControl.ViewSwitcher>
-                <DealsRibbon />
-            </DatasetControl.Header.Start>
-            <DatasetControl.Header.End>
-                <DatasetControl.EditColumns components={V9.editColumns} />
-                <DatasetControl.QuickFind components={V9.quickFind} />
-            </DatasetControl.Header.End>
-        </DatasetControl.Header>
-        {/* with Break the connection, both messages fold under a summary */}
-        <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} components={V9.notifications} />
-        <DatasetControl.Body>
-            {/* search for something no deal has to see the empty state */}
-            <DatasetControl.EmptyState components={V9.emptyState}>
-                <RecordDataGrid />
-            </DatasetControl.EmptyState>
-        </DatasetControl.Body>
-        <DatasetControl.Footer>
-            <DatasetControl.Footer.Start>
-                <DatasetControl.PageSizeSwitcher components={V9.pageSizeSwitcher} />
-            </DatasetControl.Footer.Start>
-            <DatasetControl.Footer.End>
-                <DatasetControl.Pagination components={V9.pagination} />
-            </DatasetControl.Footer.End>
-        </DatasetControl.Footer>
-    </DatasetControl>
-}
+const GridExample = () => <DatasetControl modules={[userViews]} onLoad={onLoad} height='560px' components={V9.control}>
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            {/* save a view of your own, then open Manage views to see its drawer in v9 */}
+            <DatasetControl.ViewSwitcher components={V9.viewSwitcher}>
+                <DatasetControl.UserQueries components={V9.userQueries} />
+            </DatasetControl.ViewSwitcher>
+            <DealsRibbon />
+        </DatasetControl.Header.Start>
+        <DatasetControl.Header.End>
+            <DatasetControl.EditColumns components={V9.editColumns} />
+            <DatasetControl.QuickFind components={V9.quickFind} />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    {/* with Break the connection, both messages fold under a summary */}
+    <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} components={V9.notifications} />
+    <DatasetControl.Body>
+        {/* search for something no deal has to see the empty state */}
+        <DatasetControl.EmptyState components={V9.emptyState}>
+            <RecordDataGrid />
+        </DatasetControl.EmptyState>
+    </DatasetControl.Body>
+    <DatasetControl.Footer>
+        <DatasetControl.Footer.Start>
+            <DatasetControl.PageSizeSwitcher components={V9.pageSizeSwitcher} />
+        </DatasetControl.Footer.Start>
+        <DatasetControl.Footer.End>
+            <DatasetControl.Pagination components={V9.pagination} />
+        </DatasetControl.Footer.End>
+    </DatasetControl.Footer>
+</DatasetControl>
 `
 
 const DEALS_RIBBON_FILE: IGridExampleFile = {
@@ -77,7 +75,6 @@ export const DealsRibbon = () => {
         if (selectedIds.length > 0) {
             //an unsaved change, which brings up Save and Discard changes
             commands.push({ id: 'markWon', label: \`Mark \${selectedIds.length} as won\`, iconName: 'Trophy2', onExecute: () => selectedIds.forEach(id => provider.getRecordsMap()[id].setValue('stage', WON_STAGE)) })
-            commands.push({ id: 'clearSelection', label: 'Clear selection', iconName: 'Clear', onExecute: () => provider.clearSelectedRecordIds() })
         }
         return commands
     }

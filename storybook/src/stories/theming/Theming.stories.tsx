@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { BrandExample, DerivedThemesExample, ReadableTagsExample, RedRowsExample } from './themingExamples'
 
 const DESCRIPTION = `
-A theme is the colours, fonts and effects everything is drawn in. You generate it from three colours, an accent, a background and a text colour, and set it once at the root: every control below draws in it, down to the menus and panels it opens. Try it below: pick a brand, then open **Share**.
+A theme is the colours, fonts and effects everything is drawn in. You generate it from three colours, an accent, a background and a text colour, and set it once at the root: every control below draws in it, down to the menus and panels it opens. Try it below: change a colour, then open **Share**.
 
 {{canvas: Brand colours}}
 
@@ -22,7 +22,7 @@ Without a \`theme\`, a provider takes the one above it, or Fluent's default colo
 
 ## Build a theme
 
-\`useThemeBuilder(source, options?)\` generates a theme in a component and keeps it between renders; \`createThemeBuilder(source?)\` returns the builder outside React. The source is three colours, an existing theme, or the Fluent design state a PCF host hands its controls. Colours are hex, \`rgb()\`, \`hsl()\` or names, not CSS variables.
+\`useThemeBuilder(source, parameters?)\` generates a theme in a component, tinted or edited by \`parameters\`, and keeps it between renders; \`createThemeBuilder(source?)\` returns the builder outside React. The source is three colours, an existing theme, or the Fluent design state a PCF host hands its controls. Colours are hex, \`rgb()\`, \`hsl()\` or names, not CSS variables.
 
 Tinting or changing a colour generates the theme again from its three colours, so a \`{ theme }\` source loses its fonts and earlier edits; add them back with \`edit\`.
 
@@ -96,7 +96,7 @@ export const RedRows: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Escalated tickets drawn red by a cell theme, which [**Appearance**](?path=/docs/controls-grid-appearance--overview) explains. Try: open the **Status** list of a red ticket.`,
+                story: `Escalated tickets drawn red by a cell theme, which [**Appearance**](?path=/docs/controls-grid-appearance--overview) explains. Try: open the **Status** list of a red ticket, which opens in the app theme.`,
             },
         },
     },

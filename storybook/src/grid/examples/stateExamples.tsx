@@ -9,13 +9,12 @@ export const REOPEN_QUEUE_CODE = `const createQueueProvider = () => {
 }
 
 const GridExample = () => {
-    const tickets = React.useMemo(createQueueProvider, [])
     const [mountCount, setMountCount] = React.useState(0)
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
         { id: 'reopen', label: 'Close and reopen', iconName: 'Refresh', onExecute: () => setMountCount(count => count + 1) },
     ]
 
-    return <DatasetControl onLoad={async () => ({ provider: tickets })}>
+    return <DatasetControl onLoad={async () => ({ provider: createQueueProvider() })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.Ribbon onLoad={loadCommands} />
@@ -42,18 +41,15 @@ const createPreviewModule = (onOpen: (recordId: string) => void): IGridModule =>
     onLoad: grid => {
         //a key of your own beside the grid's viewport and grouping
         const state = grid.services.get('state')
-        grid.services.observe('gridApi', gridApi => {
+        grid.services.observe('gridApi', () => {
             const recordId = state.get<IPreviewState>('preview')?.recordId
             if (recordId) {
                 onOpen(recordId)
             }
-            gridApi.addEventListener('rowClicked', event => {
-                const clickedId = event.data?.getRecordId()
-                state.set<IPreviewState>('preview', { recordId: clickedId })
-                if (clickedId) {
-                    onOpen(clickedId)
-                }
-            })
+        })
+        grid.services.get('rows').events.addEventListener('onRowClicked', ticket => {
+            state.set<IPreviewState>('preview', { recordId: ticket.getRecordId() })
+            onOpen(ticket.getRecordId())
         })
     },
 })
@@ -61,7 +57,6 @@ const createPreviewModule = (onOpen: (recordId: string) => void): IGridModule =>
 const GridExample = () => {
     const [previewId, setPreviewId] = React.useState<string>()
     const [mountCount, setMountCount] = React.useState(0)
-    const preview = React.useMemo(() => createPreviewModule(setPreviewId), [])
     const ticket = previewId ? provider.getRecordsMap()[previewId] : undefined
 
     const reopen = () => {
@@ -77,7 +72,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         {ticket && <MessageBar>Previewing {ticket.getFormattedValue('ticketnumber')}: {ticket.getFormattedValue('title')}</MessageBar>}
         <DatasetControl.Body>
-            <ClientSideGrid key={mountCount} modules={[preview]} stateKey='ticket-preview' height='360px' />
+            <ClientSideGrid key={mountCount} modules={[createPreviewModule(setPreviewId)]} stateKey='ticket-preview' height='360px' />
         </DatasetControl.Body>
     </DatasetControl>
 }

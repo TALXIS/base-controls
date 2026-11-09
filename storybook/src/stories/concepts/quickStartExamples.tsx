@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const FIRST_APP_CODE = `import { AppThemeProvider, ClientSideGrid, DatasetControl, Grid, PcfContextProvider, StateProvider } from '@talxis/base-controls'
+const FIRST_APP_CODE = `import { AppThemeProvider, ClientSideGrid, DatasetControl, PcfContextProvider } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
 //a data provider holds the records; this one keeps them in memory
@@ -20,18 +20,16 @@ const loadProducts = async () => ({
     }),
 })
 
-//the providers wrap the whole application once
+//the providers every control needs wrap the whole application once
 const GridExample = () => <PcfContextProvider>
-    <StateProvider>
-        <AppThemeProvider>
-            {/* the DatasetControl loads the provider, and the Grid inside it draws the records */}
-            <DatasetControl onLoad={loadProducts} height='240px'>
-                <DatasetControl.Body>
-                    <ClientSideGrid />
-                </DatasetControl.Body>
-            </DatasetControl>
-        </AppThemeProvider>
-    </StateProvider>
+    <AppThemeProvider>
+        {/* the DatasetControl loads the provider, and the ClientSideGrid inside it draws the records */}
+        <DatasetControl onLoad={loadProducts} height='240px'>
+            <DatasetControl.Body>
+                <ClientSideGrid />
+            </DatasetControl.Body>
+        </DatasetControl>
+    </AppThemeProvider>
 </PcfContextProvider>
 `
 

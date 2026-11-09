@@ -48,16 +48,17 @@ A function the \`observe\` effect returns is its cleanup. It runs before the eff
 
 ## Modules
 
-\`grid.modules\` finds the modules the grid was given by name, with the same \`get\`, \`find\` and \`observe\`. A module reaches the ones before it in \`modules\` with \`get\` or \`find\`, and later ones with \`observe\`. Every name is under *Reference* below.
+\`grid.modules\` finds the modules the grid was given by name, with the same \`get\`, \`find\` and \`observe\`. Modules load by \`priority\`, lowest first, and those of the same priority load together: in a module's \`onLoad\`, \`get\` and \`find\` reach only the modules of a lower priority, so reach the rest with \`observe\` (see [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview)). Every name is under *Reference* below.
 
 ## Inside what the grid draws
 
-A custom cell, a header part, an overlay or what a module draws inside the grid reads the grid through two hooks. Both work only inside the grid's own React tree, not in the component that renders \`<Grid />\`.
+A custom cell, a header part, an overlay or what a module draws inside the grid reads the grid through these React hooks. They work only inside the grid's own React tree, not in the component that renders the grid.
 
-| Hook | Returns |
+| React hook | Returns |
 |---|---|
 | \`useGridService(key)\` | The service. \`gridApi\` is \`undefined\` until AG Grid is ready, and the component renders again when it arrives. |
 | \`useGridModule(name)\` | The module's instance. Throws when the grid was not given the module. |
+| \`useGridServices()\` | \`grid.services\` itself, typed with your module's own service map when you pass one. |
 
 They return the service, not its state. To redraw when it changes, subscribe to it, as the bar on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview) does.
 
@@ -88,7 +89,7 @@ The grid runs the hooks when it draws, and nothing tells it that their result ch
 | A row's height | When AG Grid lays the row out | \`resetRowHeights()\` on the \`gridApi\` service |
 | The column definitions | When the grid is ready, then on every load | \`provider.refresh()\` |
 | AG Grid options | When AG Grid is ready, on every load, and on \`refreshAgGridOptions()\` | \`grid.refreshAgGridOptions()\` |
-| AG Grid's initial options, the AG Grid theme, root styles | Once, as the grid mounts | A new \`key\` on \`<Grid />\` |
+| AG Grid's initial options, the AG Grid theme, root styles | Once, as the grid mounts | A new \`key\` on the grid |
 
 \`cells.getCell\` finds only cells on screen; a cell that scrolls into view draws with the current results anyway.
 
@@ -121,7 +122,7 @@ What the hooks decide, and the order they run in, is on [**Hooks**](?path=/docs/
 
 | Name | Given | Members |
 |---|---|---|
-| \`rowModel\` | In every grid | \`type\`: \`'clientSide'\` or \`'serverSide'\`. |
+| \`rowModel\` | By \`ClientSideGrid\` and \`ServerSideGrid\`; on \`Grid\`, with a row model module | \`type\`: \`'clientSide'\` or \`'serverSide'\`. |
 | \`editing\` | With \`createEditingModule()\` | See *Reference* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
 | \`rowSelection\` | With \`createRowSelectionModule()\` | See *Reference* on [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview). |
 | \`cellSelection\`, \`clipboard\` | With \`createCellSelectionModule()\`, \`createClipboardModule()\` | None. |
@@ -144,7 +145,7 @@ const EXPLORE: IExploreCard[] = [
 
 const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The grid is set up', hook: 'onSetup', text: '`onSetup` gets each new `IGrid` before it loads, for code outside the grid to keep and subscribe to.' },
-    { title: 'The modules load', hook: 'onLoad', text: 'Each module\'s `onLoad` gets the `IGrid`, in the order of `modules`, before AG Grid exists; a promise it returns is awaited. A module that throws shows the error inside the grid with *Try again*.' },
+    { title: 'The modules load', hook: 'onLoad', text: 'Each module\'s `onLoad` gets the `IGrid` before AG Grid exists, lowest `priority` first, and a promise it returns is awaited. A module that throws shows the error inside the grid with *Try again*.' },
     { title: 'The grid loads', hook: 'onLoad', text: 'The `onLoad` prop is awaited, after the modules and before AG Grid renders.' },
     { title: 'The grid is ready', hook: 'onReady', text: '`grid.lifecycle.events` fires `onReady`, and AG Grid is created with the options the initial option hooks set.' },
     { title: 'AG Grid is ready', hook: "observe('gridApi')", text: 'The `gridApi` service is provided, so its observers run, and the grid draws the provider\'s data if it has loaded, firing `onDataLoaded`.' },

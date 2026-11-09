@@ -32,7 +32,7 @@ In \`'single'\` mode every click and every checkbox replaces the selection, and 
 
 The selection belongs to the provider, not to the grid: read and change it with the provider's selection methods, and the grid follows (see *Selection* on [**Data providers**](?path=/docs/concepts-data-providers--overview)). \`provider.getSelectedRecordIds()\` leaves group rows out unless you pass \`{ includeGroupRecordIds: true }\`, and \`provider.getRecordsMap()[id]\` returns the record, the records of loaded groups included.
 
-To follow the selection, listen to the provider's \`onRecordsSelected(selectedRecordIds)\` event, as the examples do, and remove the listener when your component unmounts. A grid that mounts over a provider that already has a selection shows those rows selected and scrolls to them. With the editing module, a row's save status is drawn in its checkbox cell.
+To follow the selection, listen to the provider's \`onRecordsSelected(selectedRecordIds)\` event, as *Pick one product* does, and remove the listener when your component unmounts. A grid that mounts over a provider that already has a selection shows those rows selected and scrolls to them. With the editing module, a row's save status is drawn in its checkbox cell.
 
 ## Refuse or change a selection
 
@@ -110,8 +110,8 @@ The row selection module is \`grid.modules.find('rowSelection')\`, or \`useGridM
 | \`getMode()\` | \`'single'\` or \`'multiple'\`. |
 | \`selectRecords(provider, ids)\` | Replaces that provider's selection with \`ids\`, through the hooks. In a grouped grid, each group's records have a provider of their own. |
 | \`toggleRecord(record)\` | What a row's checkbox does: adds the record or takes it out, through the hooks. In \`'single'\` mode it replaces the selection. |
-| \`hooks.selectRecords.add(hook, priority?)\` | See *Refuse or change a selection*. Returns its own unregister. |
-| \`hooks.selectionState.add(hook, priority?)\` | See *Refuse or change a selection*. Returns its own unregister. |
+| \`hooks.selectRecords.add(hook, priority?)\` | See *Refuse or change a selection*. Returns the function that removes the hook. |
+| \`hooks.selectionState.add(hook, priority?)\` | See *Refuse or change a selection*. Returns the function that removes the hook. |
 | \`getRecordSelectionState(node)\` | How a row's checkbox reads, after the selection state hooks. |
 | \`isRecordSelectionDisabled(record)\` | Whether the record's checkbox is disabled, such as a group row in \`'single'\` mode. |
 | \`isSelectionColumn(columnName)\` | Whether the column is the checkbox column. |
@@ -154,7 +154,7 @@ export const PickOneProduct: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`mode: 'single'\` picks the product to quote, and the provider's \`onRecordsSelected\` fills the card beside the grid. Try: click a few products.`,
+                story: `\`mode: 'single'\` picks the product to quote, and the provider's \`onRecordsSelected\` names it above the grid. Try: click a few products.`,
             },
         },
     },

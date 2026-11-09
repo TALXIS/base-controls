@@ -39,7 +39,7 @@ Every part on the page provides itself on the control under its own key, for as 
 |---|---|
 | \`get(key)\` | Returns the part; throws when it is not rendered. |
 | \`find(key)\` | Returns the part, or \`undefined\` when it is not rendered. |
-| \`observe(key, callback)\` | Calls back with the part each time it is rendered, and returns the function that stops observing. What the callback returns runs before the next call. |
+| \`observe(key, callback)\` | Calls back with the part each time it is rendered, and returns the function that stops observing. What the callback returns runs when that part goes. |
 
 ## Add a module
 
@@ -51,7 +51,7 @@ A module adds a feature to the control, such as the user's own views. Pass modul
 |---|---|
 | \`name\` | Unique within the control; two modules of one name throw "listed twice". What \`onLoad\` returns is provided under it. |
 | \`priority\` | Optional, \`0\` by default. Lower loads first, and modules of the same priority load at the same time. |
-| \`onLoad(control, { signal })\` | Can be async. \`signal\` is aborted when the mount goes. A throw fails the load, and the modules already loaded are destroyed. |
+| \`onLoad(control, { signal })\` | Can be async. \`signal\` is aborted when the mount goes or another module fails. A throw fails the load, and the modules already loaded are destroyed. |
 | \`onDestroy(instance)\` | Optional. Called as the mount goes, the last loaded first, before the provider is released. |
 
 Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed, as the example's \`types.ts\` does. The control a module's \`onLoad\` gets can also add views, with \`hooks.views\`, as the example does, and a module draws its own dialogs or panels with \`surfaces.hooks.surfaces.add\`.
@@ -91,9 +91,9 @@ Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed,
 | Member | Description |
 |---|---|
 | \`hooks.views.add(hook, priority?)\` | Adds to or changes the views \`onLoad\` returned: \`hook(views)\` changes them in place. |
-| \`getViewStateStore()\` | The open view's entry in the state store. |
+| \`getViewStateStore(viewId?)\` | Where the parts keep their state for the view, the open one unless \`viewId\` is given: see [**State**](?path=/docs/controls-datasetcontrol-state--overview). |
 
-Each \`register…\` returns its unregistration, and a higher \`priority\` runs later.
+Each \`add\` returns its remover, and a higher \`priority\` runs later.
 
 ## Where next
 
@@ -103,7 +103,7 @@ Each \`register…\` returns its unregistration, and a higher \`priority\` runs 
 const EXPLORE: IExploreCard[] = [
     { title: 'Loading data', iconName: 'CloudDownload', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'The steps each mount runs, and when its lifecycle events are raised.' },
     { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-parts-ribbon--overview', text: 'The first of the parts, and what your code can do with it.' },
-    { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Parts of your own, registered on the control like the built-in ones.' },
+    { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Parts of your own, provided on the control like the built-in ones.' },
 ]
 
 const meta = {

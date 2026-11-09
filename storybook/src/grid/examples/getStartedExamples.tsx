@@ -297,7 +297,7 @@ const DealForm = (props: { deal: IRecord }) => {
     </Form.Root>
 }
 
-const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel isOpen={!!props.deal} headerText={props.deal?.getValue('name')} type={PanelType.medium} isLightDismiss onDismiss={props.onDismiss} onRenderFooterContent={() => <DefaultButton text='Close' onClick={props.onDismiss} />}>
+const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel isOpen={!!props.deal} headerText={props.deal?.getValue('name')} type={PanelType.medium} isLightDismiss onDismiss={props.onDismiss}>
     {props.deal && <DealForm key={props.deal.getRecordId()} deal={props.deal} />}
 </Panel>
 
@@ -347,19 +347,6 @@ const SPREADSHEET = `import type { IFeature, IToasts } from './features'
 //a little roomier than Excel's 20 pixels
 const COMPACT_ROW_HEIGHT = 28
 
-const EXCEL_GREEN = '#217346'
-
-//Excel's green over the theme around it
-const getExcelTheme = (theme: ITheme) => {
-    const { bodyBackground, bodyText } = theme.semanticColors
-    //lifted toward the text on a dark background, where Excel's own green is too dark to read
-    const primary = theme.isInverted ? mixColors(EXCEL_GREEN, bodyText, 0.5) : EXCEL_GREEN
-    const builder = createThemeBuilder({ colors: { primary, background: bodyBackground, text: bodyText } })
-    //the grid draws its lines in the divider colour, firmer in a sheet
-    builder.edit('excelLines', excelTheme => { excelTheme.semanticColors.menuDivider = mixColors(bodyText, bodyBackground, 0.2) })
-    return builder.getTheme()
-}
-
 /** Recurring flips right in its cell. */
 const recurringSwitch: IGridModule = {
     name: 'recurringSwitch',
@@ -397,7 +384,6 @@ export const SPREADSHEET: { [feature: string]: IFeature } = {
     cellSelection: () => ({ modules: [createCellSelectionModule()] }),
     clipboard: () => ({ modules: [createClipboardModule()] }),
     compactRows: () => ({ rowHeight: COMPACT_ROW_HEIGHT }),
-    excelTheme: ({ theme }) => ({ frame: { theme: getExcelTheme(theme) } }),
 }
 `
 
@@ -445,33 +431,21 @@ import type { IFeature } from './features'
 //the field saves the deal while auto-save is on
 const closeDeal = async (grid: IGrid, deal: IRecord, stage: number) => {
     const result = await grid.services.get('fields').get(deal, 'stage').setValue(stage)
+    //a refused save leaves the deal as it was
     if (result && !result.success) {
         deal.clearChanges()
-        return false
     }
-    return true
 }
-
-//confetti bursts from the button that won the deal
-const celebrate = (origin: { x: number; y: number }) => confetti({ particleCount: 150, spread: 80, origin })
 
 /** Mark as won and Mark as lost in the actions column; on a selected deal they close every selected deal. */
 const dealCommands: IGridModule = {
     name: 'dealCommands',
     onLoad: grid => {
         const deals = grid.services.get('provider')
-        const closeDeals = async (deal: IRecord, stage: number, origin: { x: number; y: number }) => {
+        const closeDeals = async (deal: IRecord, stage: number) => {
             const selectedIds = deals.getSelectedRecordIds()
             const targets = selectedIds.includes(deal.getRecordId()) ? selectedIds.map(recordId => findDeal(deals, recordId)) : [deal]
-            const closed = await Promise.all(targets.filter(target => target && !isClosed(target)).map(target => closeDeal(grid, target, stage)))
-            if (stage === WON && closed.some(Boolean)) {
-                celebrate(origin)
-            }
-        }
-        //read during the click, since React reuses its events
-        const getOrigin = (button?: HTMLElement) => {
-            const rect = button?.getBoundingClientRect()
-            return rect ? { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight } : { x: 0.5, y: 0.5 }
+            await Promise.all(targets.filter(target => target && !isClosed(target)).map(target => closeDeal(grid, target, stage)))
         }
         grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
             columnDefs.push({ colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96 })
@@ -480,8 +454,8 @@ const dealCommands: IGridModule = {
             if (columnName !== 'actions' || isSummaryRow(record) || isClosed(record)) {
                 return
             }
-            result.items.push({ key: 'won', text: 'Mark as won', iconOnly: true, iconProps: { iconName: 'Trophy2' }, onClick: event => { closeDeals(record, WON, getOrigin(event?.currentTarget)) } })
-            result.items.push({ key: 'lost', text: 'Mark as lost', iconOnly: true, iconProps: { iconName: 'Cancel' }, onClick: event => { closeDeals(record, LOST, getOrigin(event?.currentTarget)) } })
+            result.items.push({ key: 'won', text: 'Mark as won', iconOnly: true, iconProps: { iconName: 'Trophy2' }, onClick: () => { closeDeals(record, WON) } })
+            result.items.push({ key: 'lost', text: 'Mark as lost', iconOnly: true, iconProps: { iconName: 'Cancel' }, onClick: () => { closeDeals(record, LOST) } })
         })
     },
 }
@@ -536,7 +510,6 @@ export interface IFeatureSwitches {
 
 /** What is drawn around the grid. */
 interface IFeatureFrameProps {
-    theme?: ITheme
     /** Drawn beside the grid, such as panels. */
     overlays?: JSX.Element[]
     children?: JSX.Element
@@ -551,11 +524,8 @@ export type IFeatureProps = Omit<Partial<IGridProps>, 'modules'> & { modules?: I
 
 /** What the feature code shares. */
 export interface IFeatureContext {
-    deals: IDataProvider
     switches: IFeatureSwitches
     toasts: IToasts
-    /** The theme around the grid. */
-    theme: ITheme
     /** The deal open in a form, if any. */
     openedDeal?: IRecord
     onOpenDeal: (deal?: IRecord) => void
@@ -593,16 +563,15 @@ const combine = (props: IFeatureProps, added: IFeatureProps): IFeatureProps => (
 
 export const useFeatures = (deals: IDataProvider, switches: IFeatureSwitches): IFeatureProps => {
     const toasts = useToastController(TOASTER_ID)
-    const theme = useTheme()
     const [openedDeal, setOpenedDeal] = React.useState<IRecord>()
     useStageGrouping(deals, switches)
-    const context: IFeatureContext = { deals, switches, toasts, theme, openedDeal, onOpenDeal: setOpenedDeal }
+    const context: IFeatureContext = { switches, toasts, openedDeal, onOpenDeal: setOpenedDeal }
     return Object.keys(FEATURES).filter(feature => switches[feature]).map(feature => FEATURES[feature](context)).reduce(combine, getBaseProps(deals))
 }
 
-/** Draws the grid in the theme a feature picks, with the toasts the features raise. */
+/** Draws the grid with the panels and the toasts the features raise. */
 export const FeatureFrame = (props: IFeatureFrameProps) => <>
-    {props.theme ? <ThemeProvider theme={props.theme}>{props.children}</ThemeProvider> : props.children}
+    {props.children}
     {props.overlays}
     <FluentProvider theme={webLightTheme}>
         <Toaster toasterId={TOASTER_ID} position='bottom-end' />
@@ -660,7 +629,7 @@ const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [
 const PRESETS: IShowcasePreset[] = [
     { key: 'glance', label: 'At a glance', iconName: 'Lightbulb', description: 'Icons, colours and hints on the deals that need attention.', features: ['editing', 'autoSave', 'rowSelection', 'cellSelection', 'clipboard', 'sorting', 'filtering', 'grouping', 'aggregation', 'optionSetColors', 'zebra', 'statusIcons', 'colourRules', 'headerExtras', 'overdueActions', 'quickViews', 'dealForm'] },
     { key: 'list', label: 'Read-only list', iconName: 'BulletedList', description: 'A list to browse: sort and filter it, with option sets in colour.', features: ['sorting', 'filtering', 'optionSetColors', 'zebra'] },
-    { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place, highlight ranges and copy them out.', features: ['editing', 'cellSelection', 'clipboard', 'sorting', 'compactRows', 'excelTheme'] },
+    { key: 'sheet', label: 'Spreadsheet', iconName: 'Table', description: 'Edit in place, highlight ranges and copy them out.', features: ['editing', 'cellSelection', 'clipboard', 'sorting', 'compactRows'] },
     { key: 'review', label: 'Pipeline review', iconName: 'Financial', description: 'Group by stage with totals, and select deals.', features: ['rowSelection', 'sorting', 'filtering', 'grouping', 'aggregation', 'groupByStage', 'optionSetColors'] },
 ]
 

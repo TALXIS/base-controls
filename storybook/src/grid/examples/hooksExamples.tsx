@@ -19,26 +19,18 @@ const closedDealsModule: IGridModule = {
     },
 }
 
-const LABELS = { 'grid.valueLocked': 'A closed deal keeps its numbers. Reopen it to change them.' }
-
-const GridExample = () => <LabelsProvider labels={LABELS}>
-    <DatasetControl onLoad={async () => ({ provider: provider })}>
-        <DatasetControl.Body>
-            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true }), closedDealsModule]}
-                enableOptionSetColors
-                height='420px' />
-        </DatasetControl.Body>
-    </DatasetControl>
-</LabelsProvider>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true }), closedDealsModule]}
+            height='420px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const DAY_UNDER_TEN_HOURS_CODE = `const MAX_HOURS_A_DAY = 10
-const DAY_COLUMNS = ['employee', 'date', 'hours']
-
-const isSameDay = (entry: IRecord, other: IRecord) => other.getValue('employee') === entry.getValue('employee') && dayjs(other.getValue('date')).isSame(entry.getValue('date'), 'day')
 
 const getHoursThatDay = (entry: IRecord) => entry.getDataProvider().getRecords()
-    .filter(other => isSameDay(entry, other))
+    .filter(other => other.getValue('employee') === entry.getValue('employee') && dayjs(other.getValue('date')).isSame(entry.getValue('date'), 'day'))
     .reduce((total, other) => total + Number(other.getValue('hours') ?? 0), 0)
 
 const dayLimitModule: IGridModule = {
@@ -52,15 +44,10 @@ const dayLimitModule: IGridModule = {
                 result.errorMessage = \`\${record.getValue('employee')} logged more than \${MAX_HOURS_A_DAY} hours on this day.\`
             }
         })
-        //one entry decides whether the other entries of its day are valid
-        const redrawDay = (_record: IRecord, columnName: string) => {
-            if (DAY_COLUMNS.includes(columnName)) {
-                cells.render()
-            }
-        }
         //the provider outlives the grid
         grid.services.observe('gridApi', () => {
-            return timesheets.addEventListener('onRecordColumnValueChanged', redrawDay)
+            //one entry decides whether the others of its day are valid
+            return timesheets.addEventListener('onRecordColumnValueChanged', () => cells.render())
         })
     },
 }
@@ -154,7 +141,6 @@ const urgentRowsModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true }), urgentRowsModule]}
-            enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -228,7 +214,6 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 `
 
 export const ASSIGN_TO_ME_CODE = `const ME = 'Eva Horák'
-const IN_PROGRESS = 2
 
 const assignToMeModule: IGridModule = {
     name: 'assignToMe',
@@ -243,7 +228,6 @@ const assignToMeModule: IGridModule = {
                 iconProps: { iconName: 'AddFriend' },
                 onClick: () => {
                     record.setValue('assignee', ME)
-                    record.setValue('status', IN_PROGRESS)
                     record.save()
                 },
             })
@@ -254,7 +238,6 @@ const assignToMeModule: IGridModule = {
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <ClientSideGrid modules={[assignToMeModule]}
-            enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -294,7 +277,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <ChoiceGroup label='Signed in as' selectedKey={role} options={ROLES} onChange={(_, option) => switchRole(option?.key as Role)} styles={{ flexContainer: { display: 'flex', gap: 16 } }} />
+                <ChoiceGroup label='Signed in as' selectedKey={role} options={ROLES} onChange={(_, option) => switchRole(option?.key as Role)} />
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>

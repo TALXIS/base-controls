@@ -13,19 +13,19 @@ When the built-in modules do not cover what you need, such as drawing critical t
 
 ## A module
 
-A Gantt module is an object with a \`name\`, an \`onLoad\` that may be async, and an optional \`onDestroy(instance)\`. What \`onLoad\` returns is the module's instance, which the rest of your code reaches by the module's name. To type a module as an \`IGanttModule\`, as the example does, add its name and instance to \`IGanttModuleMap\` by augmenting \`@talxis/base-controls/gantt\`.
+A Gantt module is an \`IGanttModule\` from \`@talxis/base-controls/gantt\`: an object with a \`name\`, an \`onLoad(gantt, { signal })\` that may be async, and an optional \`priority\` and \`onDestroy(instance)\`. What \`onLoad\` returns is the module's instance, which the rest of your code reaches by the module's name; \`signal\` aborts when the mount goes or another module fails. Add each module's name and instance to \`IGanttModuleMap\` by augmenting \`@talxis/base-controls/gantt\`, as the example's *types.ts* does, so \`IGanttModule\` takes the name.
 
 ## Lifecycle
 
 {{block: lifecycle}}
 
-When a module's \`onLoad\` throws, the error shows in place of the control's parts, with *Try again*.
+When a module's \`onLoad\` throws, the error shows in place of the whole control, with *Try again* to mount it again.
 
 ## What onLoad gets
 
 | Member | Description |
 |---|---|
-| \`services\` | The Gantt's parts by key, with \`get\`, \`find\` and \`observe\`. See below. |
+| \`services\` | The Gantt's services by key, with \`get\`, \`find\` and \`observe\`. See *Services* below. |
 | \`modules\` | The other modules, by name, with \`get\`, \`find\` and \`observe\`. |
 | \`events\` | \`onChartReady(chart)\`, \`onTasksParsed(isFirstLoad)\` and \`onDestroyed\`. |
 | \`surfaces.hooks.surfaces.add(hook)\` | Draws React content over the chart: \`surfaces => surfaces.push({ key, onRender })\`. |
@@ -39,11 +39,11 @@ Every \`hooks.<thing>.add\` returns the function that removes the hook, and take
 
 ## Services
 
-\`taskRuntime\`, \`schedule\`, \`theme\`, \`overlay\`, \`state\` and \`labels\` are there from the start. The rest come once the chart is drawn, so reach them with \`services.observe(key, callback)\`.
+\`taskRuntime\`, \`schedule\`, \`theme\`, \`overlay\`, \`state\` and \`labels\` are there from the start. The rest come once the chart is drawn, so reach them with \`services.observe(key, callback)\`. What the callback returns runs when the service goes, so return the hook's remover, as the example does.
 
 | Key | Hooks and members |
 |---|---|
-| \`tasks\` | \`hooks.task.add((task, { record }) => …)\` changes a bar, such as its \`color\`, \`type\` or \`readonly\`. \`hooks.taskClass\` and \`hooks.rowClass\` add class names to a bar or its row. |
+| \`tasks\` | \`hooks.task.add((task, { record }) => …)\` changes a bar, such as its \`color\`, \`type\` or \`readonly\`. \`hooks.taskClass\` and \`hooks.rowClass\` add class names to a bar or its row. \`parse()\` rebuilds every bar, such as after what a hook reads changed. |
 | \`zooming\` | \`hooks.scaleLabel.add((result, { date, unit, step, row }) => …)\` changes a scale cell's label. \`zoomToFit()\`, \`showTask(record)\`, \`getPixelsPerDay()\`. |
 | \`timeline\` | \`hooks.cellClass\` and \`hooks.scaleCellClass\` add class names to a day's column or scale cell, by \`date\`. \`jumpToToday()\`. |
 | \`schedule\` | \`hooks.duration.add((result, …) => …)\` changes how a duration is counted. \`hooks.snap.add((result, …) => …)\` changes where a dragged or drawn bar lands. |
@@ -66,11 +66,11 @@ Content you draw over the chart, a marker slot or a tooltip part reads the Gantt
 `
 
 const LIFECYCLE: ILifecycleStep[] = [
-    { title: 'The modules load', hook: 'onLoad', text: 'The modules load by `priority`, the library first; modules of the same priority load at the same time, and each is registered under its name.' },
+    { title: 'The modules load', hook: 'onLoad', text: 'The modules load by `priority`, the library first; modules of the same priority load at the same time, and each is provided under its name.' },
     { title: 'The chart is set up', hook: 'hooks.chartConfig', text: 'Once the task grid\'s AG Grid is ready, the chart config hooks run on DHTMLX\'s chart before it is drawn.' },
-    { title: 'The chart services arrive', hook: 'services.observe', text: '`chart`, `timeline`, `dragging`, `zooming`, `grid` and `tasks` register, so their observers run.' },
+    { title: 'The chart services arrive', hook: 'services.observe', text: '`chart`, `timeline`, `dragging`, `zooming`, `grid` and `tasks` are provided, so their observers run.' },
     { title: 'The tasks are drawn', hook: 'onTasksParsed', text: 'The chart draws the grid\'s rows as bars and fires `onTasksParsed(true)`, and `false` each time it redraws them.' },
-    { title: 'The chart is ready', hook: 'onChartReady', text: '`onChartReady` fires with the chart, and what the modules registered with `hooks.surfaces` is drawn over it.' },
+    { title: 'The chart is ready', hook: 'onChartReady', text: '`onChartReady` fires with the chart, and what the modules added with `surfaces.hooks.surfaces` is drawn over it.' },
     { title: 'The Gantt unmounts', hook: 'onDestroy', text: '`events` fires `onDestroyed`, then each module\'s `onDestroy`, the last loaded first, gets what its `onLoad` returned, and the chart is destroyed.' },
 ]
 

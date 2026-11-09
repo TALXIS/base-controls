@@ -6,8 +6,6 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { XrmOverviewExample } from '../../form/xrm-form/examples/overviewExamples'
 
 const DESCRIPTION = `
-> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
-
 A model-driven app in Dataverse keeps each form's layout as FormXml, and runs form scripts against the form's \`formContext\`. \`XrmForm\` draws a form from that FormXml with the parts of \`Form\` and hands your code the same \`formContext\`, so a Dataverse form and its scripts can move into a React application or a PCF control. Try it below: open \`formXml.ts\` in **Code** and move *Phone* into the *Status* section.
 
 {{canvas: Overview}}
@@ -28,17 +26,17 @@ Take a form's FormXml as Dataverse stores it, in the \`formxml\` of its \`system
 
 ## The record
 
-\`onLoad\` resolves the record together with the FormXml. The record has a column for every \`datafieldname\`, and its data is shaped as the Dataverse Web API returns it. \`createMemoryRecord\` holds one in memory, as \`account.ts\` does; loading, saving and the lifecycle are on [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview), and work the same here.
+\`onLoad\` resolves the record together with the FormXml. The record has a column for every \`datafieldname\`, and its data is shaped as the Dataverse Web API returns it. \`createMemoryRecord\` holds one in memory, as the example's \`onLoad\` does with the columns and data of \`account.ts\`; loading, saving and the lifecycle are on [**Loading and saving**](?path=/docs/controls-form-loading-and-saving--overview), and work the same here.
 
 ## Props
 
-| Prop | Description |
-|---|---|
-| \`onLoad\` | Resolves \`{ record, formXml }\`, at mount and on refresh. |
-| \`onFormReady\` | Called with \`{ formContext, api }\` after each load: see [**Form context**](?path=/docs/controls-form-xrm-form-context--overview). |
-| \`enableAutoSave\` | Saves each change as it reaches the record. At mount. |
-| \`components\` | Draws the controls, the tabs, the ribbon or the notifications your own way: see [**Your own UI**](?path=/docs/controls-form-xrm-your-own-ui--overview). |
-| \`onFieldValueChanged\`, \`onDirtyStateChanged\`, \`onValidationSummaryChanged\`, \`onBeforeSave\`, \`onAfterSave\`, \`onError\` | The events of \`Form.Root\`: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview). |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`onLoad\` | \`() => Promise<{ record, formXml }>\` | Required | At mount | Resolves the record and its FormXml; runs again on \`api.reload()\` and \`formContext.data.refresh()\`. |
+| \`onFormReady\` | \`(parameters: { formContext, api }) => void\` | None | At mount | Gets the form context and the api after each load: see [**Form context**](?path=/docs/controls-form-xrm-form-context--overview). |
+| \`enableAutoSave\` | \`boolean\` | \`false\` | At mount | Saves each change as it reaches the record. |
+| \`components\` | \`Partial<IXrmFormComponents>\` | None | Live | Draws the controls, the tabs, the ribbon or the notifications your own way: see [**Your own UI**](?path=/docs/controls-form-xrm-your-own-ui--overview). |
+| \`onFieldValueChanged\`, \`onDirtyStateChanged\`, \`onValidationSummaryChanged\`, \`onBeforeSave\`, \`onAfterSave\`, \`onError\` | | None | Live | The events of \`Form.Root\`: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview). |
 
 Like every control, \`XrmForm\` needs the root providers above it: see [**Quick start**](?path=/docs/concepts-quick-start--overview).
 

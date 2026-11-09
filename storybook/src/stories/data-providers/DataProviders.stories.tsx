@@ -103,7 +103,7 @@ Every change raises an event, so whatever shows the records can draw again. \`ad
 
 ## Lifetime
 
-Create a provider once and keep it while it is used, such as in \`React.useState\`; \`destroy()\` frees it for good. A DatasetControl destroys the provider \`onLoad\` returned when the control unmounts or reloads, or when the load fails. To keep a provider the rest of your page uses too, pass \`destroyProviderOnUnmount={false}\` and destroy it yourself, as the example under *Sort, filter, search and page* does.
+Create a provider once and keep it while it is used, such as in \`React.useState\`; \`destroy()\` frees it for good. A DatasetControl destroys the provider \`onLoad\` returned when the control unmounts or reloads, or when the load fails. To keep a provider the rest of your page uses too, return \`destroyProviderOnUnmount: false\` beside it from \`onLoad\` and destroy it yourself, as the example under *Sort, filter, search and page* does.
 
 ## Your own provider
 
@@ -217,7 +217,7 @@ export const WithoutADatasetControl: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Deals in a \`DataProviderScope\`, loaded by the page, with a selection count and load status drawn from \`useDataProviderEvents\`. Try: select a few rows and watch the count.`,
+                story: `Deals in a \`DataProviderScope\`, loaded by the page, with a selection count drawn from \`useDataProviderEvents\`. Try: select a few rows and watch the count.`,
             },
         },
     },

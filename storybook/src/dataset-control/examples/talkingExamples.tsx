@@ -9,21 +9,18 @@ const DRIVE_CODE = `import { loadDeals } from './views'
 const Shortcuts = () => {
     const control = useDatasetControl()
 
-    const searchFor = (query: string) => {
-        const quickFind = control.parts.get('quickFind')
-        quickFind.setQuery(query)
-        quickFind.search()
-    }
-
     return <Stack horizontal wrap tokens={{ childrenGap: 8 }}>
         <DefaultButton text='Won deals' onClick={() => { control.loadView('won') }} />
         <DefaultButton text='Reload' onClick={() => { control.reload() }} />
-        <DefaultButton text='Search Contoso' onClick={() => searchFor('Contoso')} />
+        <DefaultButton text='Search Contoso' onClick={() => {
+            control.parts.get('quickFind').setQuery('Contoso')
+            control.parts.get('quickFind').search()
+        }} />
         <DefaultButton text='Edit columns' onClick={() => control.parts.get('editColumns').open()} />
     </Stack>
 }
 
-const GridExample = () => <DatasetControl stateKey='talkingDrive' onLoad={loadDeals} height='480px'>
+const GridExample = () => <DatasetControl onLoad={loadDeals} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -34,7 +31,7 @@ const GridExample = () => <DatasetControl stateKey='talkingDrive' onLoad={loadDe
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <ClientSideGrid stateKey='grid' />
+        <ClientSideGrid />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>
@@ -46,17 +43,9 @@ const GridExample = () => <DatasetControl stateKey='talkingDrive' onLoad={loadDe
 
 const WATCH_CONTROL_CODE = `import { loadDeals } from './views'
 
-const getLogStyles = (theme: ITheme) => mergeStyleSets({
-    log: { padding: '8px 12px', minHeight: 176, border: \`1px solid \${theme.semanticColors.bodyDivider}\`, borderRadius: theme.effects.roundedCorner4, fontFamily: 'Consolas, monospace', fontSize: theme.fonts.medium.fontSize, lineHeight: '22px' },
-    line: { color: theme.semanticColors.bodySubtext },
-    latest: { color: theme.semanticColors.bodyText, fontWeight: 600 },
-})
-
 const GridExample = () => {
-    const theme = useTheme()
-    const styles = React.useMemo(() => getLogStyles(theme), [theme])
     const [log, setLog] = React.useState<string[]>([])
-    //the control of the latest mount, for the buttons outside it
+    //the control of the latest mount, for the button outside it
     const controlRef = React.useRef<IDatasetControl>()
     const write = (line: string) => setLog(log => [line, ...log].slice(0, 8))
 
@@ -71,23 +60,20 @@ const GridExample = () => {
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <Stack horizontal tokens={{ childrenGap: 8 }}>
-            <DefaultButton text='Show won deals' onClick={() => { controlRef.current?.loadView('won') }} />
+        <Stack horizontal>
             <DefaultButton text='Reload' onClick={() => { controlRef.current?.reload() }} />
         </Stack>
-        <DatasetControl stateKey='talkingWatch' onLoad={loadDeals} onSetup={onSetup} height='380px'>
+        <DatasetControl onLoad={loadDeals} onSetup={onSetup} height='380px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher />
                 </DatasetControl.Header.Start>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <ClientSideGrid stateKey='grid' />
+                <ClientSideGrid />
             </DatasetControl.Body>
         </DatasetControl>
-        <div className={styles.log}>
-            {log.map((line, index) => <div key={index} className={index === 0 ? styles.latest : styles.line}>{line}</div>)}
-        </div>
+        {log.map((line, index) => <Text key={index}>{line}</Text>)}
     </Stack>
 }
 `
@@ -115,14 +101,14 @@ const closingSoonModule: IDatasetControlModule = {
     },
 }
 
-const GridExample = () => <DatasetControl modules={[closingSoonModule]} stateKey='talkingModule' onLoad={loadDeals} height='420px'>
+const GridExample = () => <DatasetControl modules={[closingSoonModule]} onLoad={loadDeals} height='420px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <ClientSideGrid stateKey='grid' />
+        <ClientSideGrid />
     </DatasetControl.Body>
 </DatasetControl>
 `

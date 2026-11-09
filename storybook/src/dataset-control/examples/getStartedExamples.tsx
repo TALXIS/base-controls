@@ -1,55 +1,39 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
+import { VIEWS_FILE, withFiles } from './shared'
 
-const SHOWCASE_CODE = `import { loadDeals, saveDealViewData } from './views'
-import { DealsRibbon } from './DealsRibbon'
+const SHOWCASE_CODE = `import { loadDeals } from './views'
 
-const GridExample = () => {
-    //the user's own views, kept in localStorage and listed under My views
-    const controlModules = React.useMemo(() => [createLocalStorageUserQueriesModule({ storageKey: 'get-started.deals.views' })], [])
-    //every grid module, so the grid edits, selects, copies, sorts, filters, groups and totals
-    const gridModules = React.useMemo(() => [
-        createEditingModule(),
-        createRowSelectionModule({ mode: 'multiple' }),
-        createCellSelectionModule(),
-        createClipboardModule(),
-        createSortingModule(),
-        createFilteringModule(),
-        createGroupingModule(),
-        createAggregationModule(),
-    ], [])
+//the user's own views, kept in localStorage and listed under My views
+const userViews = createLocalStorageUserQueriesModule({ storageKey: 'get-started.deals.views' })
 
-    //saveDealViewData keeps the sorting, filters and search with every saved view
-    return <DatasetControl modules={controlModules} stateKey='deals-get-started' onLoad={loadDeals} onSetup={saveDealViewData} height='560px'>
-        {/* every part inside works on the provider onLoad returned */}
-        <DatasetControl.Header>
-            <DatasetControl.Header.Start>
-                <DatasetControl.ViewSwitcher>
-                    <DatasetControl.UserQueries />
-                </DatasetControl.ViewSwitcher>
-            </DatasetControl.Header.Start>
-            <DatasetControl.Header.End>
-                <DealsRibbon enableSave enableDiscard enableRefresh />
-                <DatasetControl.EditColumns />
-                <DatasetControl.QuickFind />
-            </DatasetControl.Header.End>
-        </DatasetControl.Header>
-        <DatasetControl.Notifications />
-        <DatasetControl.Body>
-            {/* takes no provider of its own: it draws the control's */}
-            <ClientSideGrid stateKey='grid' modules={gridModules} enableOptionSetColors />
-        </DatasetControl.Body>
-        <DatasetControl.Footer>
-            <DatasetControl.Footer.Start>
-                <DatasetControl.PageSizeSwitcher />
-            </DatasetControl.Footer.Start>
-            <DatasetControl.Footer.End>
-                <DatasetControl.Pagination />
-            </DatasetControl.Footer.End>
-        </DatasetControl.Footer>
-    </DatasetControl>
-}
+const GridExample = () => <DatasetControl modules={[userViews]} onLoad={loadDeals} height='560px'>
+    {/* every part inside works on the provider onLoad returned */}
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            <DatasetControl.ViewSwitcher>
+                <DatasetControl.UserQueries />
+            </DatasetControl.ViewSwitcher>
+        </DatasetControl.Header.Start>
+        <DatasetControl.Header.End>
+            <DatasetControl.Ribbon enableSave enableDiscard enableRefresh />
+            <DatasetControl.EditColumns />
+            <DatasetControl.QuickFind />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        {/* takes no provider of its own: it draws the control's */}
+        <ClientSideGrid modules={[createEditingModule(), createSortingModule(), createGroupingModule()]} />
+    </DatasetControl.Body>
+    <DatasetControl.Footer>
+        <DatasetControl.Footer.Start>
+            <DatasetControl.PageSizeSwitcher />
+        </DatasetControl.Footer.Start>
+        <DatasetControl.Footer.End>
+            <DatasetControl.Pagination />
+        </DatasetControl.Footer.End>
+    </DatasetControl.Footer>
+</DatasetControl>
 `
 
 const BASIC_USAGE_CODE = `//your own records, usually fetched from your API
@@ -83,7 +67,7 @@ const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
     return { provider, views: VIEWS }
 }
 
-const GridExample = () => <DatasetControl onLoad={loadDeals} stateKey='deals-basic-usage' height='320px'>
+const GridExample = () => <DatasetControl onLoad={loadDeals} height='320px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -94,16 +78,11 @@ const GridExample = () => <DatasetControl onLoad={loadDeals} stateKey='deals-bas
     </DatasetControl.Header>
     <DatasetControl.Body>
         {/* takes no provider of its own: it draws the control's */}
-        <ClientSideGrid stateKey='grid' />
+        <ClientSideGrid />
     </DatasetControl.Body>
-    <DatasetControl.Footer>
-        <DatasetControl.Footer.End>
-            <DatasetControl.Pagination />
-        </DatasetControl.Footer.End>
-    </DatasetControl.Footer>
 </DatasetControl>
 `
 
 export const BasicUsageExample = () => <GridExampleRunner seedCode={BASIC_USAGE_CODE} tabs={['preview', 'code']} />
 
-export const ShowcaseExample = () => <GridExampleRunner seedCode={withFiles(SHOWCASE_CODE, VIEWS_FILE, RIBBON_FILE)} tabs={['preview', 'code']} />
+export const ShowcaseExample = () => <GridExampleRunner seedCode={withFiles(SHOWCASE_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />

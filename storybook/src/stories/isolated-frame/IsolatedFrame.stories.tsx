@@ -7,7 +7,7 @@ import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. Control isolation runs the control in its own iframe, where the page's styles do not reach it and its own do not leak out. Try it below: open **Edit columns** on both sides, and the framed panel stays inside its frame.
+A control shares its page with everything else on it, so another app's global CSS can restyle it, and the global styles it adds reach the rest of the page. An isolated component runs the control in its own iframe, where the page's styles do not reach it and its own do not leak out. Try it below: open **Edit columns** on both sides, and the framed panel stays inside its frame.
 
 {{canvas: Overview}}
 
@@ -17,9 +17,9 @@ A frame cannot be handed children: they belong to the page's copy of your code, 
 
 | Function | Called | Holds |
 |---|---|---|
-| \`createIsolatedHost<TProps>(key, options)\` | In the page's code | The key, the props type and the frame's \`scripts\` |
+| \`createIsolatedHost<TProps>(key, parameters)\` | In the page's code | The key, the props type and the frame's \`scripts\` |
 | \`defineIsolatedContent(key, Content)\` | In the frame's script | The component the frame renders |
-| \`createIsolatedComponent(key, Content, options)\` | Once, when the page and the frame share one bundle | Both |
+| \`createIsolatedComponent(key, Content, parameters)\` | Once, when the page and the frame share one bundle | Both |
 
 The key is any string unique within your app. With the two sides in separate bundles, as in the example, pass \`scripts\`: the page then never loads the content. The frame starts empty, so the content brings the root providers it needs, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and sets up anything a library needs once per window, such as icons.
 
@@ -29,11 +29,11 @@ The key is any string unique within your app. With the two sides in separate bun
 
 If the frame fails to load, the error shows in its place, with **Try again**, which starts over with a fresh iframe.
 
-## Options
+## Parameters
 
-The host takes these in \`createIsolatedHost\`, or as the third argument of \`createIsolatedComponent\`, and reads them as the frame loads.
+The host takes these, typed \`IIsolatedComponentParameters\`, in \`createIsolatedHost\` or as the third argument of \`createIsolatedComponent\`, and reads them as the frame loads.
 
-| Option | Type | Default | Description |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
 | \`scripts\` | \`IsolatedFrameScript[]\` | The script the library was loaded from | What the frame loads, in order, each a URL or \`{ src, type: 'module' }\`. |
 | \`prepareWindow\` | \`(frameWindow: Window) => void\` | None | Called before the frame's scripts load, so what it puts on the window is there while the frame's code evaluates. |

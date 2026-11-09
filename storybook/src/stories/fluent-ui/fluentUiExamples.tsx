@@ -17,12 +17,7 @@ const ITEMS: ICommandBarItemProps[] = [
         },
     },
     { key: 'export', text: 'Export to Excel', iconProps: { iconName: 'ExcelDocument' } },
-    { key: 'assign', text: 'Assign', iconProps: { iconName: 'Contact' } },
     { key: 'delete', text: 'Delete', iconProps: { iconName: 'Delete' } },
-]
-
-const FAR_ITEMS: ICommandBarItemProps[] = [
-    { key: 'filter', text: 'Filter', iconOnly: true, iconProps: { iconName: 'Filter' } },
 ]
 
 //each bar sits on a green strip with a theme of its own
@@ -47,13 +42,13 @@ const GridExample = () => {
                 <Bar title="Fluent's CommandBar">
                     {/* folds its commands only when the window resizes */}
                     {/* its menus and tooltips open in the strip's theme */}
-                    <FluentCommandBar items={ITEMS} farItems={FAR_ITEMS} />
+                    <FluentCommandBar items={ITEMS} />
                 </Bar>
                 <Bar title="Base Controls' CommandBar">
                     {/* folds its commands whenever its own box resizes */}
                     {/* its menus, submenus and tooltips open in the app theme */}
                     {/* no side padding, so it lines up with what holds it */}
-                    <CommandBar items={ITEMS} farItems={FAR_ITEMS} />
+                    <CommandBar items={ITEMS} />
                 </Bar>
             </Stack>
         </div>

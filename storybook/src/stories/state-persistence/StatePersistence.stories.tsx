@@ -26,8 +26,8 @@ Do not \`set\` or \`delete\` an id you use as a scope: the scope keeps writing t
 
 | Hook | Returns |
 |---|---|
-| \`useStateStore()\` | The nearest store; scope it yourself with \`scope(id)\`. |
-| \`useControlStateStore(stateKey)\` | \`useStateStore().scope(stateKey)\`, kept per view inside a DatasetControl. Without a \`stateKey\`, a throwaway store, so nothing survives a remount. |
+| \`useStateStore()\` | The nearest store, which inside a DatasetControl is the store of the view it shows; scope it yourself with \`scope(id)\`. |
+| \`useControlStateStore(stateKey)\` | \`useStateStore().scope(stateKey)\`, so it too keeps per view inside a DatasetControl. Without a \`stateKey\`, a throwaway store, so nothing survives a remount. |
 
 A \`stateKey\` is the id of a component's scope, read once at mount. Every control in the library that takes a \`stateKey\` keeps its state this way.
 
@@ -41,7 +41,7 @@ Take your scope with \`useControlStateStore\`, so it also keeps per view inside 
 
 A child's \`stateKey\` scopes from the nearest store, not from its parent's scope. For children to land inside a component's own entry, the component hands its scope down in a \`StateProvider\`, as the planner in the example above does.
 
-Inside a DatasetControl, \`useControlStateStore\` scopes under the view the part is shown in, so each view keeps its own. The DatasetControl in the example at the top keeps \`{ deals: { viewId, views: { [viewId]: { provider, parts: { grid } } } } }\`. The DatasetControl's [**State**](?path=/docs/controls-datasetcontrol-state--overview) and the grid's [**State**](?path=/docs/controls-grid-state--overview) list what each keeps.
+A DatasetControl hands down the store of the view it shows, as a \`StateProvider\` would, so each view keeps its own. The DatasetControl in the example at the top keeps \`{ deals: { viewId, views: { [viewId]: { provider, parts: { grid } } } } }\`. The DatasetControl's [**State**](?path=/docs/controls-datasetcontrol-state--overview) and the grid's [**State**](?path=/docs/controls-grid-state--overview) list what each keeps.
 
 ## Save state for later
 

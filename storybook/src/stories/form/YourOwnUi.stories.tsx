@@ -7,8 +7,6 @@ import { OwnControlExample, RibbonAndNotificationsExample, StepTabsExample } fro
 import { FluentV9Example } from '../../form/react-form/fluentV9Examples'
 
 const DESCRIPTION = `
-> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
-
 The form draws each field with the Base Controls field for its data type, and its tabs, ribbon and notifications in Fluent UI; you can draw any of the four your own way. The form underneath stays the same, so binding, validation and saving keep working. Try it below: rate the account and watch *Unsaved changes* appear.
 
 {{canvas: Your own control}}
@@ -29,7 +27,7 @@ A \`Form.Cell\` outside a \`Form.Field\` holds content of your own beside its \`
 
 \`onRenderCommandBar\` of \`Form.Ribbon\` gets the props of Fluent's \`CommandBar\`: \`items\` holds **Save**, and \`farItems\` holds *Unsaved changes* while there are any, so spread them and add commands of your own. \`onRenderNotifications\` of \`Form.Notifications\` gets the \`messages\`, the validation summary included; the default draws them with the exported \`NotificationMessageBar\`.
 
-A slot is called as its part renders, so a slot that needs hooks returns a component of your own, as both slots in the example do. The ribbon's wording comes from \`FORM_LABELS\`: see [**Localization**](?path=/docs/concepts-localization--overview).
+The ribbon's slot in the example returns a component of your own, so it can call \`useForm()\`. To change the ribbon's wording, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 {{story: Commands and messages of your own}}
 
@@ -41,7 +39,7 @@ Every slot gets the props its default would, so another design system can draw t
 
 ## Form UI without a record
 
-\`FormUi\` holds \`Tabs\`, \`Tab\`, \`Section\`, \`Column\`, \`Cell\` and \`Skeleton\` as plain UI with no record behind them, for a screen of your own that looks like a form.
+\`FormUi\`, also reached as \`Form.Ui\`, holds \`Tabs\`, \`Tab\`, \`Section\`, \`Column\`, \`Cell\` and \`Skeleton\` as plain UI with no record behind them, for a screen of your own that looks like a form.
 
 ## Changing how it looks
 

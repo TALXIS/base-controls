@@ -4,7 +4,10 @@ import type { IGridExampleFile } from '../../grid/GridLivePreview'
 /** The sample tasks, their views and a memory loader, imported by the Task Grid examples. */
 export const TASKS_FILE: IGridExampleFile = {
     name: 'tasks.ts',
-    code: `export const fieldMapping: IFieldMapping = {
+    code: `import { IFieldMapping, ITaskGridLoadResult, ITaskGridView, ITaskRuntime, MemoryTaskDatabase, MemoryTaskStore } from '@talxis/base-controls'
+
+//TASKS, TASK_METADATA, TASK_COLUMNS and getTaskColumns are the sample tasks of these docs
+export const fieldMapping: IFieldMapping = {
     parentId: 'parentid',
     subject: 'subject',
     stackRank: 'stackrank',
@@ -31,11 +34,11 @@ export const TASK_VIEWS: ITaskGridView[] = [
 //one database for the whole example, so changes survive a view switch
 export const createTaskDatabase = () => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA })
 
-export const createLoadTasks = (database: MemoryTaskDatabase) => async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
+export const createLoadTasks = (database: MemoryTaskDatabase, views = TASK_VIEWS) => async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
     return {
         store: new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }),
         fieldMapping,
-        views: TASK_VIEWS,
+        views,
     }
 }
 `,

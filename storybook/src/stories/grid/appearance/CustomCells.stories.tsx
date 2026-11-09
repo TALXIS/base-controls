@@ -52,7 +52,7 @@ To lay out the cell yourself, compose it from \`Grid.Cell\`'s parts. Each brings
 | \`LockIcon\` | The lock of a locked cell, with the editing module; inside \`Loading\`, before \`Control\` |
 | \`Control\` | The room the value is drawn in; the commands, error icon and lock keep to its edge |
 | \`ColumnControl\` | The value: \`GridValueRenderer\`, a PCF control the column names, or your \`onRenderControl\`; inside \`Control\` |
-| \`Commands\` | The column's commands, while the row is hovered |
+| \`Commands\` | The column's commands, while the row is hovered, focused or selected |
 | \`FieldError\` | The validation outline and its message |
 
 To draw a value of your own, put it inside \`Control\` in place of \`ColumnControl\`, and every other part keeps its place.
@@ -63,10 +63,10 @@ To draw a value of your own, put it inside \`Control\` in place of \`ColumnContr
 
 Call these React hooks in a component inside the cell, so it redraws when a value changes:
 
-| Hook | Returns |
+| React hook | Returns |
 |---|---|
 | \`useGridCell()\` | The cell: its record, column, context, theme, \`isLocked()\`, \`isLoading()\`, \`isBeingEdited()\` and \`render()\` |
-| \`useGridField()\` | The field: its value, formatted value, \`isValid()\` and \`setValue(value)\`, which saves with the editing module's \`autoSave\` |
+| \`useGridField()\` | The field: its value, formatted value, \`isValid()\` and \`setValue(value)\`, which also saves while the editing module's \`enableAutoSave\` is on |
 
 ## Where next
 

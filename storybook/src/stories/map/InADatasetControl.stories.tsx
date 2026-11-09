@@ -18,11 +18,11 @@ The map shows no loading state of its own while the provider loads. To show one,
 
 ## The placeholder
 
-Until its first load, a \`DatasetControl\` shows a placeholder shaped like a grid. \`Map.Ui.Skeleton\` draws a map in place of the grid's rows and footer, under the same header, so nothing jumps when the map arrives. Hand it to \`components.skeleton.onRenderSkeleton\`, as \`GridExample.tsx\` does; it takes the control's \`height\` and \`showHeader\`.
+While a \`DatasetControl\` loads, such as on a view switch, it shows a placeholder shaped like a grid. \`Map.Ui.Skeleton\` draws a map in place of the grid's rows and footer, under the same header, so nothing jumps when the map arrives. Hand it to \`components.skeleton.onRenderSkeleton\` with the props the slot gets, as \`GridExample.tsx\` does.
 
 ## Views
 
-Each view in \`views.ts\` sets the provider up in \`resolve\`, such as *Wishlist* filtering on the trip status, and returns its columns. List the latitude and longitude columns in every view with \`isHidden: true\`, as \`READ_BY_THE_MAP\` does, so they are loaded for the pins without being shown or listed in Edit columns. How views work: [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+Each view in \`views.ts\` sets the provider up in \`resolve\`, such as *Wishlist* filtering on the trip status, and returns its columns. List the latitude and longitude columns in every view with \`isHidden: true\`, as \`READ_BY_THE_MAP\` does with them and the trip status, so they are loaded for the pins and the popup without being shown or listed in Edit columns. How views work: [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
 ## Quick find
 

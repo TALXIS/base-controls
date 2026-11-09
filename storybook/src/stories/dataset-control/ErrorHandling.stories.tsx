@@ -30,7 +30,7 @@ The error's \`message\` is the title, and **Details** opens the error dialog wit
 
 The error dialog shows the error's \`message\` and its stack as the details. It is the PCF context's \`navigation.openErrorDialog\`, so in a PCF control it is the host's own dialog: see [**PCF context**](?path=/docs/concepts-pcf-context--overview).
 
-A user view fails when the store throws, when a \`saveWithView\` getter throws, or when a delete in *Manage views* returns \`success: false\`. A failed delete without a message of its own shows the \`userQueries.deleteFailed\` label.
+A user view fails when the store throws, when a \`saveWithView\` getter throws, or when a delete in *Manage views* returns \`success: false\`. A failed delete without an \`errorMessage\` shows a default one: to change it, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 {{story: Take the server down}}
 

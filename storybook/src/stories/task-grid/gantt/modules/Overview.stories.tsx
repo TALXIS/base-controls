@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../../../grid/showcase/ExploreCar
 import { GanttModulesExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-The Gantt itself lines the tasks up on a timeline; dragging bars, drawing links, marking today and the rest come from modules, as on the task grid (see the task grid's [**Modules**](?path=/docs/controls-taskgrid-modules--overview)). You pass them to \`TaskGantt\`'s \`modules\`, and it loads them in that order on every mount. Try it below: delete \`createLinksModule()\` in **Code**.
+The Gantt itself lines the tasks up on a timeline; dragging bars, drawing links, marking today and the rest come from modules, as on the task grid (see the task grid's [**Modules**](?path=/docs/controls-taskgrid-modules--overview)). You pass them to \`TaskGantt\`'s \`modules\`, and it loads them on every mount, the library first. Try it below: delete \`createLinksModule()\` in **Code**.
 
 {{canvas: Pick the features}}
 
@@ -16,15 +16,17 @@ The Gantt itself lines the tasks up on a timeline; dragging bars, drawing links,
 |---|---|---|---|
 | Library | \`createLibraryModule()\`, \`createProLibraryModule({ Gantt })\` | | DHTMLX Gantt itself. Required. See *The library* below. |
 | [**Editing on the timeline**](?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview) | \`createBarDraggingModule()\` | \`enableEditing\` | Moving and resizing bars. |
-| | \`createTaskDrawingModule()\` | \`enableCreation\` | Drawing a new task with Ctrl+drag. |
-| | \`createTaskSelectionModule()\` | | Selecting tasks from the chart. |
+| | \`createTaskDrawingModule()\` | \`enableCreation\`, \`enableEditing\` | Drawing a new task with Ctrl+drag, and the dates of a task that has none. |
+| | \`createTaskSelectionModule()\` | | Selecting tasks from the chart, in the grid's selection. |
 | [**Markers**](?path=/docs/controls-taskgrid-gantt-modules-markers--overview) | \`createMarkersModule()\`, \`createMemoryMarkersModule()\` | The [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module, for the project's markers | Today, the project's start and end, and dates of your own. |
 | [**Non-working days**](?path=/docs/controls-taskgrid-gantt-modules-non-working-days--overview) | \`createNonWorkingDaysModule()\`, \`createMemoryNonWorkingDaysModule()\` | \`TaskDatasetControl.Settings\`, to hide them | Weekends and holidays, shaded and left out of durations. |
 | [**Tooltip**](?path=/docs/controls-taskgrid-gantt-modules-tooltip--overview) | \`createTaskTooltipModule()\` | | What a bar says when the pointer is on it. |
 | [**Links**](?path=/docs/controls-taskgrid-gantt-modules-links--overview) | \`createLinksModule()\` | The [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) module | Dependencies drawn between the bars, and drawn by the user. |
 | Your own | An \`IGanttModule\` | | See [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview). |
 
-\`createMarkersModule\` and \`createNonWorkingDaysModule\` take an \`createStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on the task grid's [**Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take the data itself.
+Every factory above comes from \`@talxis/base-controls/gantt\`. The task modules some of them need, such as Project and Dependencies, come from \`@talxis/base-controls\` and go in \`TaskDatasetControl\`'s \`modules\`, as in the example.
+
+\`createMarkersModule\` and \`createNonWorkingDaysModule\` take a \`createStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on the task grid's [**Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take the data itself.
 
 ## The library
 

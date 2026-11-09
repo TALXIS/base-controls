@@ -20,7 +20,7 @@ A lookup-many column holds many related records per task, such as the people ass
 | \`{ type: 'colorful', colorPropertyName? }\` | Tinted with the colour in each record's \`color\` field, or the one you name. |
 | \`{ type: 'people', imageUrlPropertyName? }\` | An avatar from each record's \`imageurl\` field, or the one you name, with the name in a tooltip. |
 
-Clicking a pill opens its record through the store. Editing needs \`enableEditing\` and \`createTaskEditingModule()\`, and a column whose store offers nothing to pick from stays read-only. For quick find to search a column, pass it to \`setQuickFindColumns\` in the view's \`resolve\`.
+Clicking a pill opens its record through the task store's \`openRelatedRecord\` (see [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview)). Editing needs \`enableEditing\` and \`createTaskEditingModule()\`, and a column whose store offers nothing to pick from stays read-only. For quick find to search a column, pass it to \`setQuickFindColumns\` in the view's \`resolve\`.
 
 ## Where the values are kept
 

@@ -20,7 +20,7 @@ const GridExample = () => {
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <ClientSideGrid stateKey='grid' modules={[createSortingModule(), createRowSelectionModule({ mode: 'multiple' })]} />
+                <ClientSideGrid stateKey='grid' modules={[createSortingModule()]} />
             </DatasetControl.Body>
         </DatasetControl>}
     </Stack>
@@ -30,28 +30,24 @@ const GridExample = () => {
 const INSIDE_THE_STORE_CODE = `import { loadDeals } from './views'
 
 const styles = mergeStyleSets({
-    store: { flex: '0 0 340px', height: 440, margin: 0, padding: 12, overflow: 'auto', boxSizing: 'border-box', fontSize: 12, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4 },
+    store: { flex: '0 0 340px', height: 440, margin: 0, overflow: 'auto', fontSize: 12 },
 })
 
-//shortened to read: each shown column by its name, and the client-side page size as 'all'
-const describe = (state: IStateDictionary) => JSON.stringify(state, (key, value) => {
-    if (key === 'columns') {
-        return value.filter((column: IColumn) => !column.isHidden).map((column: IColumn) => column.name)
-    }
-    return key === 'pageSize' && value === Number.MAX_SAFE_INTEGER ? 'all' : value
-}, 2)
+//shortened to read: each column by its name
+const describe = (state: IStateDictionary) => JSON.stringify(state, (key, value) => key === 'columns' ? value.map((column: IColumn) => column.name) : value, 2)
+
+//the dictionary the store writes into, as a PCF control's state would be
+const state: IStateDictionary = {}
+const store = new StateStore({ state })
 
 const GridExample = () => {
-    //the dictionary the store writes into, as a PCF control's state would be
-    const state = React.useMemo<IStateDictionary>(() => ({}), [])
-    const store = React.useMemo(() => new StateStore({ state }), [state])
     const [text, setText] = React.useState('{}')
 
     //the store raises no events, so the dictionary is read on a timer
     React.useEffect(() => {
         const interval = setInterval(() => setText(describe(state)), 500)
         return () => clearInterval(interval)
-    }, [state])
+    }, [])
 
     return <Stack horizontal tokens={{ childrenGap: 16 }}>
         <Stack.Item grow styles={{ root: { minWidth: 0 } }}>

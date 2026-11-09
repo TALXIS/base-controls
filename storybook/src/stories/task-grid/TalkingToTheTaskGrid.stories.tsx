@@ -12,7 +12,7 @@ Your code can create, open, move and delete tasks as the user's commands do, fro
 
 ## Get the task runtime
 
-The task runtime is a module of the DatasetControl, named \`taskRuntime\` and loaded before every other module. Every load mounts the control anew, with a new task runtime, so keep the latest one. Outside the control, \`onSetup\` and \`onLoad\` on \`TaskDatasetControl\` hand you the control, as on a DatasetControl: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview) for its own members. \`onSetup\` runs before the modules load, so get the task runtime there with \`control.modules.observe('taskRuntime', taskRuntime => ...)\`, as the example does. In \`onLoad\`, and from then on, \`control.modules.get('taskRuntime')\` returns it. Its \`lifecycle\` holds the mount's status and its events, such as \`onReady\` once the tasks have loaded: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
+The task runtime is a module of the DatasetControl, named \`taskRuntime\` and loaded before every other module. Every load mounts the control anew, with a new task runtime, so keep the latest one. \`onLoad\` on \`TaskDatasetControl\` gets it on every mount. \`onSetup\` hands you the DatasetControl of each mount before its modules load, as on a DatasetControl (see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)), so get the task runtime there with \`control.modules.observe('taskRuntime', taskRuntime => ...)\`, as the example does. Its \`lifecycle\` holds the mount's status and its events, such as \`onReady\` once the tasks have loaded: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
 Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns it. A module gets it with \`datasetControl.modules.get('taskRuntime')\`.
 
@@ -22,7 +22,7 @@ Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns 
 
 | Member | Description |
 |---|---|
-| \`create(parentId?, { position?, data? })\` | Creates a task under \`parentId\`, or at the top level, starting with the column values in \`data\`. Returns the task once the store has created it, or \`null\`, such as while \`enableCreation\` is off. |
+| \`create(parentId?, { position?, data? })\` | Creates a task under \`parentId\`, or at the top level, as *New* does, starting with the column values in \`data\`. Returns the task once the store has created it, or \`null\`, such as while \`enableCreation\` is off. |
 | \`open(taskIds)\` | Opens the tasks outside the grid, such as in their form. |
 | \`delete(taskIds)\` | Asks the user, then deletes the tasks with their subtasks. Does nothing while \`enableDeletion\` is off. |
 | \`move(taskId, targetTaskId, position)\` | Moves a task \`'above'\`, \`'below'\` or as a \`'child'\` of another, and saves it. Returns \`true\`, or \`null\` when it cannot go there. |
@@ -33,9 +33,9 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 
 ## Run your own work
 
-\`execute(operation, options?)\` runs an async operation as the task actions run: with the loading overlay, and its failure shown once in a dialog. *Complete the selected* uses it.
+\`execute(operation, parameters?)\` runs an async operation as the task actions run: with the loading overlay, and its failure shown once in a dialog. *Complete the selected* uses it.
 
-| Option | Default | Description |
+| Parameter | Default | Description |
 |---|---|---|
 | \`loading.show\` | \`true\` | \`false\` runs it without the overlay. |
 | \`loading.message\` | None | Shown in the overlay. |
@@ -48,7 +48,7 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 
 ## The grid
 
-\`TaskGrid\` is a Grid, so \`onSetup\` on \`TaskGrid\` passes you its \`IGrid\`. See [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). A cell of your own also reads \`useTaskGridService('taskExpansion')\`, to open and close tasks: \`isExpanded(taskId)\`, \`setExpanded(taskId, isExpanded)\`, \`toggle(taskId)\`, \`expandLevel()\` and \`collapseLevel()\`.
+\`TaskGrid\` is a Grid, so \`onSetup\` on \`TaskGrid\` passes you its \`IGrid\`. See [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). A cell of your own also reads \`useTaskGridService('taskExpansion')\`, to open and close tasks: \`isExpanded(taskId)\`, \`setExpanded(taskId, expanded)\`, \`toggle(taskId)\`, \`expandLevel()\` and \`collapseLevel()\`.
 
 ## Reference
 
@@ -62,9 +62,9 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 | \`getLabels(set)\` | A label set as the control translates it: see [**Localization**](?path=/docs/concepts-localization--overview). |
 | \`isFlatList()\`, \`setFlatList(isFlatList)\` | The flat list. See [**Views and the tree**](?path=/docs/controls-taskgrid-views-and-the-tree--overview). |
 | \`isCreationEnabled()\`, \`isEditingEnabled()\`, \`isDeletionEnabled()\` | The control's \`enable…\` props. |
-| \`getHoursPerDay()\` | The control's \`hoursPerDay\`. |
+| \`getHoursPerDay()\` | The \`hoursPerDay\` \`onLoad\` returned, \`24\` when it returned none. |
 | \`lifecycle\` | The mount's status and lifecycle events. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
-| \`hooks.ribbonCommandUi.add(hook, priority?)\` | Changes every item \`TaskDatasetControl.Ribbon\` draws, those in its menus too, such as \`item => item.disabled = true\`. Returns its unregistration. |
+| \`hooks.ribbonCommandUi.add(hook, priority?)\` | Changes every item \`TaskDatasetControl.Ribbon\` draws, those in its menus too, such as \`item => item.disabled = true\`. Returns its remover. |
 | \`getRibbonCommandItems(items)\` | Copies of \`items\` with every ribbon command UI hook applied, menus included. |
 | \`services\` | \`get\`, \`find\` and \`observe\`, by key: \`datasetControl\`, \`pcfContext\`, \`provider\`, \`taskTree\` (the grid's tree, while it is drawn). |
 

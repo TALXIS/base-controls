@@ -175,7 +175,7 @@ export const OfferOnlyTheFiltersThatMakeSense: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`SupportedFilterConditionOperators\` narrows each column's operators, and \`hooks.filterControlParameters\` puts a hint in the text boxes. Try: filter *Subject*.`,
+                story: `\`SupportedFilterConditionOperators\` narrows the operators of four columns, and \`hooks.filterControlParameters\` puts a hint in *Subject*'s text box. Try: filter *Subject*.`,
             },
         },
     },

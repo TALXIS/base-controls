@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { LayoutExample } from './mapExamples'
 
 const DESCRIPTION = `
-A map has no height of its own to grow to, the way a list grows with its rows, so it takes the space its parent gives it: the free space of a flex layout, or the height of a parent that has one. Give its parent a height, or put it in a flex layout, and it fills that space; when the space changes, the map redraws to fit. Try it below: drag **Container height**, then switch the library and drag it again.
+A map has no height of its own to grow to, the way a list grows with its rows, so it takes the space its parent gives it: the free space of a flex layout, or the height of a parent that has one. Give its parent a height, or put it in a flex layout, and it fills that space; when the space changes, the map redraws to fit. Try it below: drag **Container height**.
 
 {{canvas: Fill a flex layout}}
 
@@ -27,7 +27,6 @@ The example's panel is a flex column whose height the slider sets, and the map i
 
 ## Good to know
 
-- Leaflet measures its box only when it is drawn, so the map watches its box and has Leaflet measure again whenever it changes size; Google Maps does that itself. Either way, a map that grows from a narrow sidebar into a full page keeps its tiles whole.
 - In a \`DatasetControl\` with a \`height\`, the map in its body takes the height the header and the footer leave, as a grid does: see [**In a DatasetControl**](?path=/docs/controls-map-in-a-datasetcontrol--overview).
 - \`className\` adds a class to the map's box, such as a border or a margin; its size is better left to \`height\` and to the parent.
 

@@ -30,13 +30,7 @@ const onSetup = (grid: IGrid) => {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <ClientSideGrid
-            modules={[
-                createSortingModule(),
-            ]}
-            onSetup={onSetup}
-            enableOptionSetColors
-            height='440px' />
+        <ClientSideGrid modules={[createSortingModule()]} onSetup={onSetup} height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -46,6 +40,7 @@ export const ESCALATED_TICKETS_CODE = `const ESCALATED = '#d13438'
 const escalatedTicketsModule: IGridModule = {
     name: 'escalatedTickets',
     onLoad: grid => {
+        //after grouping, so the tint holds while the rows are grouped
         grid.services.get('cells').hooks.theme.add((builder, { record }) => {
             //a two-options value reads as '1' or '0'
             if (record.getValue('escalated') === '1') {
@@ -64,14 +59,7 @@ const onSetup = (grid: IGrid) => {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <ClientSideGrid
-            modules={[
-                createEditingModule(),
-                createGroupingModule(),
-                escalatedTicketsModule,
-            ]}
-            onSetup={onSetup}
-            height='440px' />
+        <ClientSideGrid modules={[createEditingModule(), escalatedTicketsModule]} onSetup={onSetup} height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -105,10 +93,6 @@ export const DENSITY_CODE = `const DENSITIES = [
     { key: '52', text: 'Comfortable' },
 ]
 
-const styles = mergeStyleSets({
-    densities: { display: 'flex', columnGap: 16 },
-})
-
 const GridExample = () => {
     const [rowHeight, setRowHeight] = React.useState(42)
     const [isZebra, setIsZebra] = React.useState(true)
@@ -116,7 +100,7 @@ const GridExample = () => {
 
     return <Stack tokens={{ childrenGap: 12 }}>
         <Stack horizontal wrap verticalAlign='end' tokens={{ childrenGap: 32 }}>
-            <ChoiceGroup label='Density' selectedKey={String(rowHeight)} options={DENSITIES} onChange={(_, option) => option && setRowHeight(Number(option.key))} styles={{ flexContainer: styles.densities }} />
+            <ChoiceGroup label='Density' selectedKey={String(rowHeight)} options={DENSITIES} onChange={(_, option) => option && setRowHeight(Number(option.key))} />
             <Toggle inlineLabel label='Zebra rows' checked={isZebra} onChange={(_, checked) => setIsZebra(!!checked)} />
             <Toggle inlineLabel label='Option set colours' checked={hasOptionSetColors} onChange={(_, checked) => setHasOptionSetColors(!!checked)} />
         </Stack>
@@ -177,17 +161,16 @@ const getHeaderColour = (columnName: string) => {
     return undefined
 }
 
-const validateHours: GridValidationHook = (result, { record, columnName }) => {
-    const hours = Number(record.getValue('hours') ?? 0)
-    if (columnName === 'hours' && (hours < 0.25 || hours > 12)) {
-        result.error = true
-        result.errorMessage = 'Log between 0.25 and 12 hours.'
-    }
-}
-
 const reviewModule: IGridModule = {
     name: 'review',
     onLoad: grid => {
+        grid.services.get('validation').hooks.validation.add((result, { record, columnName }) => {
+            const hours = Number(record.getValue('hours') ?? 0)
+            if (columnName === 'hours' && (hours < 0.25 || hours > 12)) {
+                result.error = true
+                result.errorMessage = 'Log between 0.25 and 12 hours.'
+            }
+        })
         const headers = grid.services.get('columns').headers
         headers.hooks.theme.add((builder, header) => {
             const column = header.getColumn()
@@ -197,45 +180,16 @@ const reviewModule: IGridModule = {
             }
         })
         //a header draws again after a load, not when a value changes
-        const redraw = () => headers.render()
-        const unsubscribes = [
-            provider.addEventListener('onRecordColumnValueChanged', redraw),
-            provider.addEventListener('onAfterSaved', redraw),
-        ]
-        grid.lifecycle.events.addEventListener('onDestroyed', () => unsubscribes.forEach(unsubscribe => unsubscribe()))
+        const unsubscribe = provider.addEventListener('onRecordColumnValueChanged', () => headers.render())
+        grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
     },
 }
 
-const GridExample = () => {
-    const gridRef = React.useRef<IGrid>()
-
-    const discard = () => {
-        provider.clearChanges()
-        gridRef.current?.services.get('columns').headers.render()
-    }
-
-    const onSetup = (grid: IGrid) => {
-        gridRef.current = grid
-        grid.services.get('validation').hooks.validation.add(validateHours)
-    }
-
-    const loadCommands = async (): Promise<IRibbonCommand[]> => [
-        { id: 'discard', label: 'Discard', iconName: 'Undo', onExecute: discard },
-    ]
-
-    return <DatasetControl onLoad={async () => ({ provider: provider })}>
-        <DatasetControl.Header>
-            <DatasetControl.Header.Start>
-                <DatasetControl.Ribbon enableSave onLoad={loadCommands} />
-            </DatasetControl.Header.Start>
-        </DatasetControl.Header>
-        <DatasetControl.Body>
-            <ClientSideGrid modules={[createEditingModule(), reviewModule]}
-                onSetup={onSetup}
-                height='420px' />
-        </DatasetControl.Body>
-    </DatasetControl>
-}
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+    <DatasetControl.Body>
+        <ClientSideGrid modules={[createEditingModule(), reviewModule]} height='420px' />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
 export const INVOICE_LINES_CODE = `const CATALOGUE = [
@@ -243,10 +197,6 @@ export const INVOICE_LINES_CODE = `const CATALOGUE = [
     { item: 'Ergonomic chair', unitprice: 410 },
     { item: 'Monitor arm', unitprice: 85 },
     { item: 'Desk lamp', unitprice: 45 },
-    { item: 'Filing cabinet', unitprice: 230 },
-    { item: 'Footrest', unitprice: 35 },
-    { item: 'Whiteboard', unitprice: 140 },
-    { item: 'Cable tray', unitprice: 25 },
 ]
 
 const toLine = (index: number): IRawRecord => ({ lineid: 'line-' + (index + 1), ...CATALOGUE[index % CATALOGUE.length], quantity: (index % 3) + 1 })
@@ -255,45 +205,33 @@ const createInvoiceLines = () => new MemoryDataProvider({
     dataSource: [0, 1, 2].map(toLine),
     metadata: { PrimaryIdAttribute: 'lineid', PrimaryNameAttribute: 'item', LogicalName: 'invoiceline' },
     columns: [
-        { name: 'item', displayName: 'Item', dataType: DataTypes.SingleLineText, visualSizeFactor: 280 },
-        { name: 'quantity', displayName: 'Quantity', dataType: DataTypes.WholeNone, visualSizeFactor: 100 },
-        { name: 'unitprice', displayName: 'Unit price', dataType: DataTypes.Currency, visualSizeFactor: 120 },
+        { name: 'item', displayName: 'Item', dataType: DataTypes.SingleLineText },
+        { name: 'quantity', displayName: 'Quantity', dataType: DataTypes.WholeNone },
+        { name: 'unitprice', displayName: 'Unit price', dataType: DataTypes.Currency },
     ],
 })
 
 const GridExample = () => {
     const lines = React.useMemo(createInvoiceLines, [])
-    const lineCount = React.useRef(3)
-    const control = React.useRef<IDatasetControl>()
-    const [maxVisibleRows, setMaxVisibleRows] = React.useState(6)
 
-    const showLines = async (count: number) => {
-        lines.setDataSource(Array.from({ length: count }, (_, index) => toLine(index)))
-        lineCount.current = count
+    const addLine = async () => {
+        lines.setDataSource([...lines.getDataSource(), toLine(lines.getDataSource().length)])
         await lines.refresh()
-        //the ribbon reloads on its own only when the selection changes
-        control.current?.parts.find('ribbon')?.reload()
     }
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
-        { id: 'add', label: 'Add line', iconName: 'Add', onExecute: () => showLines(lineCount.current + 1) },
-        { id: 'remove', label: 'Remove last line', iconName: 'Remove', disabled: lineCount.current === 0, onExecute: () => showLines(lineCount.current - 1) },
+        { id: 'add', label: 'Add line', iconName: 'Add', onExecute: addLine },
     ]
 
-    return <DatasetControl onLoad={async () => ({ provider: lines })} onSetup={datasetControl => control.current = datasetControl}>
+    return <DatasetControl onLoad={async () => ({ provider: lines })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <DatasetControl.Ribbon onLoad={loadCommands} />
             </DatasetControl.Header.Start>
-            <DatasetControl.Header.End>
-                <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 12 }}>
-                    <Text>Rows before it scrolls</Text>
-                    <Slider min={3} max={15} value={maxVisibleRows} onChange={setMaxVisibleRows} showValue styles={{ root: { width: 200 } }} />
-                </Stack>
-            </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <ClientSideGrid maxVisibleRows={maxVisibleRows} />
+            {/* no height: the grid grows with its rows, up to six of them */}
+            <ClientSideGrid maxVisibleRows={6} />
         </DatasetControl.Body>
     </DatasetControl>
 }

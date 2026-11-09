@@ -6,8 +6,6 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { ResponsiveExample } from '../../form/react-form/layoutExamples'
 
 const DESCRIPTION = `
-> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
-
 A form lays its fields out in tabs; each tab holds columns, each column holds sections, and each section holds cells. A tab and a section each measure their own width and draw as many columns in a row as it allows, so one form fits a wide screen and a phone. Try it below: drag *Width of the form* down to 320px.
 
 {{canvas: Narrow the form}}

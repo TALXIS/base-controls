@@ -12,18 +12,14 @@ A map shows records as pins, each at the latitude and longitude two of its colum
 
 ## Set it up
 
-Use \`LeafletMap\`, which needs nothing more, or \`GoogleMap\` with an \`apiKey\` of yours; each is the map with its library built in. Like every control, the map needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview). It takes no provider prop: it shows the provider around it, a \`DataProviderScope\` as in the example, or a \`DatasetControl\` it is the body of, as [**In a DatasetControl**](?path=/docs/controls-map-in-a-datasetcontrol--overview) shows. How providers load: [**Data providers**](?path=/docs/concepts-data-providers--overview).
+Use \`LeafletMap\`, which needs only Leaflet's stylesheet, or \`GoogleMap\` with an \`apiKey\` of yours; each is the map with its library built in, as [**Map libraries**](?path=/docs/controls-map-map-libraries--overview) describes. Like every control, the map needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview). It takes no provider prop: it shows the provider around it, a \`DataProviderScope\` as in the example, or a \`DatasetControl\` it is the body of, as [**In a DatasetControl**](?path=/docs/controls-map-in-a-datasetcontrol--overview) shows. How providers load: [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 | Prop | Holds |
 |---|---|
 | \`fieldMapping\` | The columns that hold each record's position, as \`{ latitude, longitude }\`, in decimal degrees. |
 | \`children\` | Components of yours, drawn in the map's box under the library's map: see [**Talking to the map**](?path=/docs/controls-map-talking-to-the-map--overview). |
 
-The map fills its parent and is at least 200 pixels tall. A record whose latitude or longitude is not a number gets no pin, and the pins follow each load of the provider, so a search, a filter or a refresh moves them.
-
-## The library picker
-
-Every example in these pages has the same picker above it, from the example's \`LibraryPicker.tsx\`, so you can watch each one work with either library. Leaflet needs nothing; Google Maps needs an API key of yours, kept for the browser tab, and how to get one is on [**Map libraries**](?path=/docs/controls-map-map-libraries--overview).
+The map fills its parent: see [**Layout**](?path=/docs/controls-map-layout--overview). A record whose latitude or longitude is not a number gets no pin, and the pins follow each load of the provider, so a search, a filter or a refresh moves them.
 
 ## Where the map looks
 

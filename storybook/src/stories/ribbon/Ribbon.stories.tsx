@@ -79,6 +79,8 @@ When the first load throws, the error shows in place of the commands, with **Det
 | \`shimmer\` | \`onRenderShimmer\` | \`RibbonUiShimmerComponents\` | The shimmer before the first load |
 | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed first load |
 
+The same UI is exported as plain components that take only props, for a bar with no \`onLoad\` behind it: \`Ribbon.Ui.CommandBar\`, given Fluent's command bar \`items\`, and \`Ribbon.Ui.Shimmer\`.
+
 The commands carry your own labels. To change the wording of **Try again** and **Details**, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
@@ -119,7 +121,7 @@ export const ASlowLoad: Story = {
     parameters: {
         docs: {
             description: {
-                story: `An \`onLoad\` that takes two seconds and fails on each mount's first try. Try: press **Try again**.`,
+                story: `An \`onLoad\` that takes two seconds and fails the first time it runs. Try: press **Try again**.`,
             },
         },
     },

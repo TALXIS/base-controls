@@ -1,20 +1,10 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const BRAND_CODE = `import { AppThemeProvider, ClientSideGrid, createSortingModule, DatasetControl, IRibbonCommand, useTheme, useThemeBuilder } from '@talxis/base-controls'
-import { Dropdown, Label, Stack } from '@fluentui/react'
-
-const BRANDS = [
-    { key: 'light', text: 'Light', colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } },
-    { key: 'dark', text: 'Dark', colors: { primary: '#7f85f5', background: '#292929', text: '#ffffff' } },
-    { key: 'ocean', text: 'Ocean', colors: { primary: '#0f7b8a', background: '#f4fafb', text: '#12313a' } },
-    { key: 'rose', text: 'Rose', colors: { primary: '#c2185b', background: '#fff7fa', text: '#3a1424' } },
-    { key: 'midnight', text: 'Midnight', colors: { primary: '#4cc2ff', background: '#0f1b2d', text: '#e6edf7' } },
-    { key: 'amber', text: 'Amber', colors: { primary: '#f5a623', background: '#1e1e1e', text: '#f2f2f2' } },
-]
+const BRAND_CODE = `import { AppThemeProvider, ClientSideGrid, DatasetControl, IRibbonCommand, useThemeBuilder } from '@talxis/base-controls'
+import { Label, Stack } from '@fluentui/react'
 
 const loadCommands = async (): Promise<IRibbonCommand[]> => [
-    { id: 'new', label: 'New deal', iconName: 'Add', onExecute: () => {} },
     {
         id: 'share', label: 'Share', iconName: 'Share', commands: [
             { id: 'email', label: 'Email a link', iconName: 'Mail', onExecute: () => {} },
@@ -23,25 +13,19 @@ const loadCommands = async (): Promise<IRibbonCommand[]> => [
     },
 ]
 
-const modules = [createSortingModule()]
-
 const GridExample = () => {
-    const isLightPage = !useTheme().isInverted
-    const [colors, setColors] = React.useState(BRANDS[isLightPage ? 0 : 1].colors)
+    const [colors, setColors] = React.useState({ primary: '#0f7b8a', background: '#f4fafb', text: '#12313a' })
     //a new theme whenever a colour changes
     const theme = useThemeBuilder({ colors })
 
-    const setColor = (name: keyof typeof colors, value: string) => setColors({ ...colors, [name]: value })
-
     return <Stack tokens={{ childrenGap: 12 }}>
-        <Stack horizontal wrap verticalAlign='end' tokens={{ childrenGap: 16 }}>
-            <Dropdown label='Brand' placeholder='Your own' options={BRANDS} selectedKey={BRANDS.find(brand => brand.colors === colors)?.key ?? null} onChange={(_, option) => setColors(BRANDS.find(brand => brand.key === option?.key)!.colors)} styles={{ root: { width: 160 } }} />
+        <Stack horizontal tokens={{ childrenGap: 16 }}>
             {(['primary', 'background', 'text'] as const).map(name => <Stack key={name}>
                 <Label>{name}</Label>
-                <input type='color' value={colors[name]} onChange={event => setColor(name, event.target.value)} />
+                <input type='color' value={colors[name]} onChange={event => setColors({ ...colors, [name]: event.target.value })} />
             </Stack>)}
         </Stack>
-        <AppThemeProvider theme={theme} style={{ padding: 12 }}>
+        <AppThemeProvider theme={theme}>
             {/* a control reads the theme only as it mounts */}
             <DatasetControl key={theme.id} onLoad={async () => ({ provider })} height='400px'>
                 <DatasetControl.Header>
@@ -50,7 +34,7 @@ const GridExample = () => {
                     </DatasetControl.Header.Start>
                 </DatasetControl.Header>
                 <DatasetControl.Body>
-                    <ClientSideGrid modules={modules} />
+                    <ClientSideGrid />
                 </DatasetControl.Body>
             </DatasetControl>
         </AppThemeProvider>
@@ -77,8 +61,8 @@ const StageTag = (props: { name: string; hue: string; strength?: ITintStrength }
 
 //takes its colours from whatever theme it is drawn in
 const Total = (props: { label: string; value: string }) => {
-    const { palette, semanticColors } = useTheme()
-    return <Stack tokens={{ childrenGap: 8 }} style={{ padding: 12, borderLeft: \`4px solid \${palette.themePrimary}\`, background: semanticColors.bodyStandoutBackground }}>
+    const { semanticColors } = useTheme()
+    return <Stack tokens={{ childrenGap: 8 }} style={{ padding: 12, background: semanticColors.bodyStandoutBackground }}>
         <Text style={{ color: semanticColors.bodySubtext }}>{props.label}</Text>
         <Text variant='xLarge' style={{ color: semanticColors.bodyText }}>{props.value}</Text>
         <Stack horizontal tokens={{ childrenGap: 4 }}>{STAGES.map(stage => <StageTag key={stage.name} {...stage} />)}</Stack>

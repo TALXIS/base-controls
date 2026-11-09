@@ -2,16 +2,14 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { withRecord } from './shared'
 
-const RESPONSIVE_CODE = `import { createAccount } from './record'
-
-const account = createAccount()
+const RESPONSIVE_CODE = `import { account } from './record'
 
 const GridExample = () => {
     const [tab, setTab] = React.useState('summary')
     const [width, setWidth] = React.useState(1100)
     const [columnsPerRow, setColumnsPerRow] = React.useState(0)
 
-    return <Stack tokens={{ childrenGap: 12 }}>
+    return <>
         <Slider label='Width of the form' min={320} max={1100} step={10} value={width} onChange={setWidth} valueFormat={value => \`\${value}px\`} />
         <Text>{\`The tab draws \${columnsPerRow} columns in a row.\`}</Text>
         <div style={{ width, maxWidth: '100%' }}>
@@ -24,19 +22,16 @@ const GridExample = () => {
                             <Form.Section label='Contact' layout={{ lg: 1 }}>
                                 <Form.Field name='name'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                                 <Form.Field name='telephone1'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
-                                <Form.Field name='emailaddress1'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                             </Form.Section>
                         </Form.Column>
                         <Form.Column>
-                            <Form.Section label='Company' layout={{ lg: 1 }}>
+                            <Form.Section label='Company'>
                                 <Form.Field name='industrycode'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
-                                <Form.Field name='numberofemployees'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                             </Form.Section>
                         </Form.Column>
                         <Form.Column>
-                            <Form.Section label='Terms' layout={{ lg: 1 }}>
+                            <Form.Section label='Terms'>
                                 <Form.Field name='creditlimit'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
-                                <Form.Field name='customersince'><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                             </Form.Section>
                         </Form.Column>
                         {/* as wide as the columns the tab draws */}
@@ -60,8 +55,8 @@ const GridExample = () => {
                 </Form.Tabs>
             </Form.Root>
         </div>
-    </Stack>
+    </>
 }
 `
 
-export const ResponsiveExample = () => <GridExampleRunner seedCode={withRecord(RESPONSIVE_CODE)} tabs={['preview', 'code']} />
+export const ResponsiveExample = () => <GridExampleRunner seedCode={withRecord(RESPONSIVE_CODE, ['name', 'telephone1', 'industrycode', 'creditlimit', 'websiteurl', 'description', 'rating', 'active'])} tabs={['preview', 'code']} />

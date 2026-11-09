@@ -52,7 +52,7 @@ const CONTROLS: IExploreCard[] = [
     { title: 'Map', iconName: 'MapPin', href: '?path=/docs/controls-map-get-started--overview', text: 'Records with a latitude and a longitude as pins on a map.' },
     { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-ribbon-get-started--overview', text: 'A bar of commands and menus, loaded again when what they act on changes.' },
     { title: 'RuntimeHost', iconName: 'Processing', href: '?path=/docs/controls-runtimehost-get-started--overview', text: 'Run a control of your own as the others run: loading, a failed load with a retry, and a remount.' },
-    { title: 'IsolatedFrame', iconName: 'Package', href: '?path=/docs/controls-isolatedframe-get-started--overview', text: 'Run a control in its own frame, kept apart from the styles and scripts of the page around it.' },
+    { title: 'IsolatedFrame', iconName: 'Package', href: '?path=/docs/controls-isolatedframe-get-started--overview', text: 'Run a control in its own frame, kept apart from the global styles and globals of the page around it.' },
 ]
 
 const meta = {

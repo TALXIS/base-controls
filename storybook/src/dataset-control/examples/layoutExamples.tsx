@@ -1,33 +1,20 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { VIEWS_FILE, withFiles } from './shared'
 
-//enough commands that narrowing the control folds some into the overflow menu
-const LAYOUT_RIBBON_FILE: IGridExampleFile = {
-    name: 'DealsRibbon.tsx',
-    code: `//stands in for a server call, during which the button is disabled
-const serverCall = () => new Promise<void>(resolve => setTimeout(resolve, 1000))
-
-export const DealsRibbon = () => {
-    const onLoad = async (): Promise<IRibbonCommand[]> => [
-        { id: 'newDeal', label: 'New deal', iconName: 'Add', onExecute: serverCall },
-        { id: 'assign', label: 'Assign', iconName: 'Contact', onExecute: serverCall },
-        { id: 'share', label: 'Share', iconName: 'Share', onExecute: serverCall },
-        { id: 'follow', label: 'Follow', iconName: 'FavoriteStar', onExecute: serverCall },
-        { id: 'email', label: 'Email a link', iconName: 'Mail', onExecute: serverCall },
-        { id: 'flow', label: 'Run flow', iconName: 'Flow', onExecute: serverCall },
-    ]
-
-    return <DatasetControl.Ribbon enableRefresh onLoad={onLoad} />
-}
-`,
-}
-
 const PICK_PARTS_CODE = `import { loadDeals } from './views'
-import { DealsRibbon } from './DealsRibbon'
 
 const PARTS = ['View switcher', 'Ribbon', 'Edit columns', 'Quick find', 'Your own button', 'Notifications', 'Page size', 'Pagination']
+
+//enough commands that narrowing the control folds some into the overflow menu
+const COMMANDS: IRibbonCommand[] = [
+    { id: 'newDeal', label: 'New deal', iconName: 'Add', onExecute: () => { } },
+    { id: 'assign', label: 'Assign', iconName: 'Contact', onExecute: () => { } },
+    { id: 'share', label: 'Share', iconName: 'Share', onExecute: () => { } },
+    { id: 'follow', label: 'Follow', iconName: 'FavoriteStar', onExecute: () => { } },
+    { id: 'email', label: 'Email a link', iconName: 'Mail', onExecute: () => { } },
+    { id: 'flow', label: 'Run flow', iconName: 'Flow', onExecute: () => { } },
+]
 
 //only its icon while the header is compact, like the built-in parts
 const ExportButton = () => {
@@ -52,14 +39,13 @@ const GridExample = () => {
         </Stack>
         <Slider label='Width (%)' min={30} max={100} value={width} onChange={setWidth} />
         <div style={{ width: \`\${width}%\` }}>
-            <DatasetControl stateKey='layoutParts' onLoad={loadDeals} height='420px'>
+            <DatasetControl onLoad={loadDeals} height='420px'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
                         {has('View switcher') && <DatasetControl.ViewSwitcher />}
-                        {has('Ribbon') && !has('View switcher') && <DealsRibbon />}
                     </DatasetControl.Header.Start>
                     <DatasetControl.Header.End>
-                        {has('Ribbon') && has('View switcher') && <DealsRibbon />}
+                        {has('Ribbon') && <DatasetControl.Ribbon onLoad={async () => COMMANDS} />}
                         {has('Edit columns') && <DatasetControl.EditColumns />}
                         {has('Quick find') && <DatasetControl.QuickFind />}
                         {has('Your own button') && <ExportButton />}
@@ -67,7 +53,7 @@ const GridExample = () => {
                 </DatasetControl.Header>
                 {has('Notifications') && <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />}
                 <DatasetControl.Body>
-                    <ClientSideGrid stateKey='grid' modules={[createRowSelectionModule({ mode: 'multiple' })]} />
+                    <ClientSideGrid />
                 </DatasetControl.Body>
                 <DatasetControl.Footer>
                     <DatasetControl.Footer.Start>
@@ -83,46 +69,29 @@ const GridExample = () => {
 }
 `
 
-export const PickPartsExample = () => <GridExampleRunner seedCode={withFiles(PICK_PARTS_CODE, VIEWS_FILE, LAYOUT_RIBBON_FILE)} tabs={['preview', 'code']} />
+export const PickPartsExample = () => <GridExampleRunner seedCode={withFiles(PICK_PARTS_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />
 
 const FULL_PAGE_CODE = `import { loadDeals } from './views'
 
-const getPageStyles = (theme: ITheme) => mergeStyleSets({
-    //stands in for the window the page fills
-    window: { height: 480, border: \`1px solid \${theme.semanticColors.bodyDivider}\` },
-})
-
-const GridExample = () => {
-    const theme = useTheme()
-    const styles = React.useMemo(() => getPageStyles(theme), [theme])
-
-    //height='100%' fills the parent, which needs a height of its own
-    return <div className={styles.window}>
-        <DatasetControl stateKey='layoutFullPage' onLoad={loadDeals} height='100%'>
-            <DatasetControl.Header>
-                <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher />
-                </DatasetControl.Header.Start>
-                <DatasetControl.Header.End>
-                    <DatasetControl.EditColumns />
-                    <DatasetControl.QuickFind />
-                </DatasetControl.Header.End>
-            </DatasetControl.Header>
-            {/* takes what the header and the footer leave */}
-            <DatasetControl.Body>
-                <ClientSideGrid stateKey='grid' modules={[createSortingModule()]} />
-            </DatasetControl.Body>
-            <DatasetControl.Footer>
-                <DatasetControl.Footer.Start>
-                    <DatasetControl.PageSizeSwitcher />
-                </DatasetControl.Footer.Start>
-                <DatasetControl.Footer.End>
-                    <DatasetControl.Pagination />
-                </DatasetControl.Footer.End>
-            </DatasetControl.Footer>
-        </DatasetControl>
-    </div>
-}
+//height='100%' fills the parent, which needs a height of its own
+const GridExample = () => <div style={{ height: 480 }}>
+    <DatasetControl onLoad={loadDeals} height='100%'>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.ViewSwitcher />
+            </DatasetControl.Header.Start>
+        </DatasetControl.Header>
+        {/* takes what the header and the footer leave */}
+        <DatasetControl.Body>
+            <ClientSideGrid />
+        </DatasetControl.Body>
+        <DatasetControl.Footer>
+            <DatasetControl.Footer.End>
+                <DatasetControl.Pagination />
+            </DatasetControl.Footer.End>
+        </DatasetControl.Footer>
+    </DatasetControl>
+</div>
 `
 
 export const FullPageExample = () => <GridExampleRunner seedCode={withFiles(FULL_PAGE_CODE, VIEWS_FILE)} tabs={['preview', 'code']} />

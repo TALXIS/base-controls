@@ -17,11 +17,12 @@ A module packages a feature of your own: it registers hooks, follows events, sha
 | \`name\` | Unique within the grid. What \`onLoad\` returns is registered under it. |
 | \`onLoad(grid)\` | Called once as the grid loads, before AG Grid exists. Register your hooks and listeners here. It may return a promise, which the grid awaits; if it throws, the grid shows the error with *Try again*. |
 | \`onDestroy(instance)\` | Called as the grid unmounts, with what \`onLoad\` returned. |
+| \`priority\` | When the module loads: lower first, and modules of one priority at the same time. Defaults to \`0\`, which every built-in module keeps. |
 | \`agGridModules\` | AG Grid modules the feature needs. See *AG Grid modules* on [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
 
 Build a module once, as a constant or in \`useMemo\`, since \`modules\` is read at mount. A module that needs options is a function that builds one, such as \`createCopyColumnModule(onCopied)\` on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview), and reads state that changes through a getter or a ref. Take what the module works on from \`grid.services\`, such as \`grid.services.get('provider')\`, and it works in any grid.
 
-Modules load by \`priority\`, lowest first, and modules of the same priority load at the same time: in your \`onLoad\`, the ones of a lower priority are there for \`grid.modules.find\`, and the rest are reached with \`grid.modules.observe\`. \`onLoad\` also gets \`{ signal }\`, aborted when the mount goes, and \`onDestroy\` runs in the reverse order. AG Grid's api arrives later too, through \`grid.services.observe('gridApi', ...)\`; when each step runs is under *From mount to unmount* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+In your \`onLoad\`, only the modules of a lower \`priority\` are there for \`grid.modules.find\`. Reach the rest, the built-in modules included, with \`grid.modules.observe\`, or give your module \`priority: 1\` so it loads after them, as the module under *Narrow what a filter offers* on [**Sorting and filtering**](?path=/docs/controls-grid-modules-sorting-and-filtering--overview) does. \`onLoad\` also gets \`{ signal }\`, aborted when the mount goes, and \`onDestroy\` runs in the reverse order. AG Grid's api arrives later too, through \`grid.services.observe('gridApi', ...)\`; when each step runs is under *From mount to unmount* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
 ## Clean up
 

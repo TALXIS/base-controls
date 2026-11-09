@@ -15,7 +15,7 @@ The tooltip module shows what a bar is about when the pointer rests on it: by de
 | Option | Description |
 |---|---|
 | \`statusColumnName\` | An option set column, shown in the header as a pill in its option's colour. |
-| \`components\` | \`onRender\`, the whole tooltip composed from \`TaskTooltip\`'s parts (see below), or the default tooltip's slots, not read with \`onRender\` (see *Changing how it looks*). |
+| \`components\` | \`onRender\`, the whole tooltip composed from \`TaskTooltip\`'s parts (see *Parts* below), or the default tooltip's slots (see *Changing how it looks*), which \`onRender\` leaves unused. |
 
 ## Parts
 
@@ -32,7 +32,7 @@ The tooltip module shows what a bar is about when the pointer rests on it: by de
 | \`TaskTooltip.FieldRow\` | Any column of the task, by \`columnName\`, with an optional \`iconName\`. Nothing while the value is empty. |
 | \`TaskTooltip.Renderer\` | The default tooltip, to use as a part. |
 
-The date rows show the dates as the timeline draws them, so they follow a bar while it is dragged.
+The date rows show the dates as the timeline draws them, so they follow a bar while it is dragged. A part of your own reads the task with \`useTaskTooltip()\`: its \`record\`, its \`span\` and \`duration\` as the timeline draws them, and its bar's \`color\`.
 
 ## Changing how it looks
 
@@ -41,7 +41,7 @@ The date rows show the dates as the timeline draws them, so they follow a bar wh
 | Part | Key | Slots | Default | Draws |
 |---|---|---|---|---|
 | \`TaskTooltip.Callout\` | \`callout\` | \`onRenderCallout\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the bar |
-| \`TaskTooltip.Header\` | \`header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRenderContainer\`; \`status\`: the tag's slots | \`RecordCardHeaderComponents\`, \`RecordCardHeaderStartComponents\`, \`RecordCardHeaderEndComponents\`, \`RecordCardTitleComponents\`, \`OptionTagComponents\` | The name and the status pill |
+| \`TaskTooltip.Header\` | \`header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRenderContainer\`; \`status\`: \`onRenderContainer\`, \`onRenderLabel\` | \`RecordCardHeaderComponents\`, \`RecordCardHeaderStartComponents\`, \`RecordCardHeaderEndComponents\`, \`RecordCardTitleComponents\`, \`OptionTagComponents\` | The name and the status pill |
 | \`TaskTooltip.ProgressRow\` | \`progress\` | \`onRenderContainer\`, \`onRenderTrack\`, \`onRenderFill\`, \`onRenderText\` | \`RecordCardProgressComponents\` | The progress bar |
 | \`TaskTooltip.DateRangeRow\` | \`dateRange\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`RecordCardDateRangeComponents\` | The dates and the duration |
 | \`TaskTooltip.FieldRows\` | | \`onRenderContainer\` | \`RecordCardFieldRowsComponents\` | The box the field rows sit in |

@@ -4,40 +4,21 @@ import { VIEWS_FILE, withFiles } from './shared'
 
 const YOUR_OWN_PIECES_CODE = `import { loadDeals } from './views'
 
-const copyLink = async (viewId: string) => {
-    const url = new URL(window.location.href)
-    url.searchParams.set('view', viewId)
-    await navigator.clipboard.writeText(url.toString())
-}
-
-//menu items and commands go through the parts, not slots
-const addCommands = (control: IDatasetControl) => {
-    control.parts.observe('viewSwitcher', viewSwitcher => viewSwitcher.hooks.items.add(items => {
-        items.push(
-            { key: 'copyLinkDivider', itemType: ContextualMenuItemType.Divider },
-            { key: 'copyLink', text: 'Copy a link to this view', iconProps: { iconName: 'Link' }, onClick: () => { copyLink(control.getViewId()!) } },
-        )
-    }))
-    control.parts.observe('editColumns', editColumns => editColumns.hooks.columnCommands.add((commands, column, session) => {
-        //the draggable column list runs commands on mouse up
-        commands.push({ key: 'moveToTop', iconProps: { iconName: 'Up' }, title: 'Move to the top', onMouseUp: () => session.moveColumn(column.name, session.getColumns()[0].name) })
-    }))
-}
-
-const GridExample = () => <DatasetControl stateKey='yourOwnPieces' onLoad={loadDeals} onSetup={addCommands} height='480px'>
+const GridExample = () => <DatasetControl onLoad={loadDeals} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
+            {/* wraps the default button */}
             <DatasetControl.ViewSwitcher components={{
                 onRenderButton: props => <TooltipHost content='Switch between views of the deals'>{DatasetControlUiViewSwitcherComponents.onRenderButton(props)}</TooltipHost>,
             }} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
-            <DatasetControl.EditColumns />
+            {/* replaces how the callout draws each column it searches */}
             <DatasetControl.QuickFind components={{ callout: { onRenderColumn: ({ column }) => <Text>{column.displayName} ({column.name})</Text> } }} />
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <ClientSideGrid stateKey='grid' />
+        <ClientSideGrid />
     </DatasetControl.Body>
 </DatasetControl>
 `

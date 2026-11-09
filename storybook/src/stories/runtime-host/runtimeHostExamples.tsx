@@ -2,13 +2,9 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
 const DEAL_SUMMARY_CODE = `import { IRuntime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
-import { DefaultButton, Stack, Text, Toggle, mergeStyleSets } from '@fluentui/react'
+import { DefaultButton, Text, Toggle } from '@fluentui/react'
 
 const OPEN_DEALS = [4000, 21500, 9000]
-
-const styles = mergeStyleSets({
-    log: { margin: 0, padding: 12, fontSize: 12, minHeight: 160, background: 'color-mix(in srgb, currentColor 4%, transparent)', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)', borderRadius: 4 },
-})
 
 //stands in for a server call
 const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
@@ -40,11 +36,11 @@ class DealSummaryRuntime implements IRuntime {
 //drawn once the runtime is ready, so it reads what the runtime loaded
 const DealSummary = () => {
     const runtime = useRuntime<DealSummaryRuntime>()
-    return <Stack horizontal tokens={{ childrenGap: 12 }} verticalAlign='center'>
-        <Text variant='large'>Open deals: {runtime.getTotal().toLocaleString()} USD</Text>
+    return <>
+        <Text>Open deals: {runtime.getTotal().toLocaleString()} USD </Text>
         {/* a new runtime, which loads again */}
         <DefaultButton text='Reload' onClick={() => runtime.lifecycle.remount()} />
-    </Stack>
+    </>
 }
 
 const GridExample = () => {
@@ -60,18 +56,18 @@ const GridExample = () => {
         runtime.lifecycle.events.addEventListener('onDestroyed', () => log('onDestroyed'))
     }
 
-    return <Stack tokens={{ childrenGap: 16 }}>
+    return <>
         <Toggle label='Service unavailable' inlineLabel onChange={(_, checked) => { isServiceDown.current = !!checked }} />
         <RuntimeHost createRuntime={() => new DealSummaryRuntime(() => isServiceDown.current)} onSetup={onSetup}>
             <DealSummary />
         </RuntimeHost>
-        <pre className={styles.log}>{entries.join('\\n')}</pre>
-    </Stack>
+        <pre>{entries.join('\\n')}</pre>
+    </>
 }
 `
 
 const KEEP_STATE_CODE = `import { IRuntime, IStateStore, RuntimeHost, RuntimeLifecycle, Spinner, useControlStateStore, useRuntime } from '@talxis/base-controls'
-import { Dropdown, Stack, Text } from '@fluentui/react'
+import { Dropdown, Text } from '@fluentui/react'
 
 const DEALS = [
     { owner: 'Anna Novak', value: 4000 },
@@ -120,10 +116,10 @@ const LoadingDeals = () => {
 //drawn once the runtime is ready, so it reads what the runtime loaded
 const DealSummary = () => {
     const runtime = useRuntime<DealSummaryRuntime>()
-    return <Stack horizontal tokens={{ childrenGap: 16 }} verticalAlign='end'>
-        <Dropdown label='Account manager' selectedKey={runtime.getOwner()} options={OWNERS.map(owner => ({ key: owner, text: owner }))} onChange={(_, option) => runtime.setOwner(String(option!.key))} styles={{ root: { width: 200 } }} />
-        <Text variant='large'>Open deals: {runtime.getTotal().toLocaleString()} USD</Text>
-    </Stack>
+    return <>
+        <Dropdown label='Account manager' selectedKey={runtime.getOwner()} options={OWNERS.map(owner => ({ key: owner, text: owner }))} onChange={(_, option) => runtime.setOwner(String(option!.key))} />
+        <Text>Open deals: {runtime.getTotal().toLocaleString()} USD</Text>
+    </>
 }
 
 const GridExample = () => {

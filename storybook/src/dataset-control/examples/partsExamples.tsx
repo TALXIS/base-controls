@@ -1,48 +1,64 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import { RIBBON_FILE, VIEWS_FILE, withFiles } from './shared'
+import type { IGridExampleFile } from '../../grid/GridLivePreview'
+import { VIEWS_FILE, withFiles } from './shared'
 
 const RIBBON_CODE = `import { DealsRibbon } from './DealsRibbon'
 
 const NEGOTIATE_STAGE = 3
-const WON_STAGE = 4
 
-//a new selection loads the ribbon again, with the commands for it
-const selectStage = (control: IDatasetControl, stage: number) => {
-    const provider = control.getProvider()!
-    provider.setSelectedRecordIds(provider.getRecords().filter(deal => Number(deal.getValue('stage')) === stage).map(deal => deal.getRecordId()))
-}
-
-//adds a menu to whatever ribbon the control draws
-const addSelectMenu = (control: IDatasetControl) => {
+//adds a command to whatever ribbon the control draws
+const addSelectCommand = (control: IDatasetControl) => {
     control.parts.observe('ribbon', ribbon => ribbon.hooks.commands.add(commands => {
-        commands.push({ id: 'select', label: 'Select', iconName: 'MultiSelect', commands: [
-            { id: 'selectNegotiating', label: 'Deals in negotiation', onExecute: () => selectStage(control, NEGOTIATE_STAGE) },
-            { id: 'selectWon', label: 'Won deals', onExecute: () => selectStage(control, WON_STAGE) },
-        ] })
+        commands.push({ id: 'selectNegotiating', label: 'Select deals in negotiation', iconName: 'MultiSelect', onExecute: () => {
+            const provider = control.getProvider()!
+            provider.setSelectedRecordIds(provider.getRecords().filter(deal => Number(deal.getValue('stage')) === NEGOTIATE_STAGE).map(deal => deal.getRecordId()))
+        } })
     }))
 }
 
-const GridExample = () => <DatasetControl stateKey='ribbonDeals' onLoad={async () => ({ provider: createDealsProvider() })} onSetup={addSelectMenu} height='440px'>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: createDealsProvider() })} onSetup={addSelectCommand} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
-            {/* the built-in commands, each off unless asked for */}
-            <DealsRibbon enableSave enableDiscard enableRefresh />
+            <DealsRibbon />
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <ClientSideGrid stateKey='grid' modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
+        <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
     </DatasetControl.Body>
 </DatasetControl>
 `
 
-const QUICK_FIND_CODE = `const loadSearchableDeals = async () => {
-    const provider = createDealsProvider()
-    provider.setMetadata({ ...provider.getMetadata(), QuickFindColumns: ['name', 'owner'] })
-    return { provider }
+const RIBBON_FILE: IGridExampleFile = {
+    name: 'DealsRibbon.tsx',
+    code: `const WON_STAGE = 4
+
+//DatasetControl.Ribbon calls onLoad again on every selection
+export const DealsRibbon = () => {
+    const provider = useDataProvider()
+    const control = useDatasetControl()
+
+    //saved at once, so it leaves no unsaved changes behind
+    const markWon = async (recordIds: string[]) => {
+        const records = recordIds.map(id => provider.getRecordsMap()[id])
+        records.forEach(record => record.setValue('stage', WON_STAGE))
+        await provider.save(records)
+        //the selection is the same, but which commands apply to it is not
+        await control.parts.get('ribbon').reload()
+    }
+
+    const onLoad = async (): Promise<IRibbonCommand[]> => {
+        const openIds = provider.getSelectedRecordIds().filter(id => Number(provider.getRecordsMap()[id].getValue('stage')) !== WON_STAGE)
+        return openIds.length > 0 ? [{ id: 'markWon', label: \`Mark \${openIds.length} as won\`, iconName: 'Trophy2', onExecute: () => markWon(openIds) }] : []
+    }
+
+    //the built-in commands, each off unless asked for
+    return <DatasetControl.Ribbon enableSave enableDiscard enableRefresh onLoad={onLoad} />
+}
+`,
 }
 
-const GridExample = () => {
+const QUICK_FIND_CODE = `const GridExample = () => {
     const [draft, setDraft] = React.useState('')
 
     //follows the query as it is typed, before it is searched
@@ -51,14 +67,14 @@ const GridExample = () => {
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <DatasetControl stateKey='quickFindDeals' onLoad={loadSearchableDeals} onSetup={onSetup} height='440px'>
+        <DatasetControl onLoad={async () => ({ provider: createDealsProvider() })} onSetup={onSetup} height='440px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.End>
                     <DatasetControl.QuickFind />
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <ClientSideGrid stateKey='grid' />
+                <ClientSideGrid />
             </DatasetControl.Body>
         </DatasetControl>
         <Text>Typed: {draft}</Text>
@@ -71,8 +87,9 @@ const EDIT_COLUMNS_CODE = `import { loadDeals } from './views'
 //adds a command above the column pickers
 const addCommands = (control: IDatasetControl) => {
     control.parts.observe('editColumns', editColumns => editColumns.hooks.commands.add((commands, session) => {
-        const keepOnlyTheDeal = () => session.getColumns().filter(column => column.name !== 'name').forEach(column => session.removeColumn(column.name))
-        commands.push({ key: 'keepOnlyTheDeal', text: 'Keep only the deal', iconProps: { iconName: 'ClearFilter' }, onClick: keepOnlyTheDeal })
+        commands.push({ key: 'keepOnlyTheDeal', text: 'Keep only the deal', iconProps: { iconName: 'ClearFilter' }, onClick: () => {
+            session.getColumns().filter(column => column.name !== 'name').forEach(column => session.removeColumn(column.name))
+        } })
     }))
 }
 
@@ -82,7 +99,7 @@ const ColumnsButton = () => {
     return <DefaultButton text='Columns' iconProps={{ iconName: 'ColumnOptions' }} onClick={() => control.parts.get('editColumns').open()} />
 }
 
-const GridExample = () => <DatasetControl stateKey='editColumnsDeals' onLoad={loadDeals} onSetup={addCommands} height='440px'>
+const GridExample = () => <DatasetControl onLoad={loadDeals} onSetup={addCommands} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -92,7 +109,7 @@ const GridExample = () => <DatasetControl stateKey='editColumnsDeals' onLoad={lo
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <ClientSideGrid stateKey='grid' />
+        <ClientSideGrid />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>
@@ -108,7 +125,7 @@ const BreakTheConnection = () => {
     return <DefaultButton text='Break the connection' onClick={() => provider.setError(true, 'The deals service is not reachable.')} />
 }
 
-const GridExample = () => <DatasetControl stateKey='notificationsDeals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <BreakTheConnection />
@@ -116,39 +133,20 @@ const GridExample = () => <DatasetControl stateKey='notificationsDeals' onLoad={
     </DatasetControl.Header>
     <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
     <DatasetControl.Body>
-        <ClientSideGrid stateKey='grid' />
+        <ClientSideGrid />
     </DatasetControl.Body>
 </DatasetControl>
 `
 
-const EMPTY_STATE_CODE = `const getDealListStyles = (theme: ITheme) => mergeStyleSets({
-    list: { height: '100%', overflow: 'auto', padding: '0 12px' },
-    row: { padding: '8px 0', borderBottom: \`1px solid \${theme.semanticColors.bodyDivider}\` },
-    owner: { color: theme.semanticColors.bodySubtext },
-})
-
+const EMPTY_STATE_CODE = `//a list of your own, which has no empty state of its own
 const DealList = () => {
     const provider = useDataProviderEvents(['onNewDataLoaded'])
-    const theme = useTheme()
-    const styles = React.useMemo(() => getDealListStyles(theme), [theme])
-    return <div className={styles.list}>
-        {provider.getRecords().map(deal => <Stack key={deal.getRecordId()} horizontal horizontalAlign='space-between' className={styles.row}>
-            <Stack>
-                <Text>{deal.getFormattedValue('name')}</Text>
-                <Text variant='small' className={styles.owner}>{deal.getFormattedValue('owner')}</Text>
-            </Stack>
-            <Text>{deal.getFormattedValue('value')}</Text>
-        </Stack>)}
+    return <div style={{ height: '100%', overflow: 'auto' }}>
+        {provider.getRecords().map(deal => <Text key={deal.getRecordId()} block>{deal.getFormattedValue('name')}</Text>)}
     </div>
 }
 
-const loadSearchableDeals = async () => {
-    const provider = createDealsProvider()
-    provider.setMetadata({ ...provider.getMetadata(), QuickFindColumns: ['name'] })
-    return { provider }
-}
-
-const GridExample = () => <DatasetControl stateKey='emptyStateDeals' onLoad={loadSearchableDeals} height='360px'>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: createDealsProvider() })} height='360px'>
     <DatasetControl.Header>
         <DatasetControl.Header.End>
             <DatasetControl.QuickFind />
@@ -171,14 +169,14 @@ const PagingShortcuts = () => {
     </Stack>
 }
 
-const GridExample = () => <DatasetControl stateKey='pagingDeals' onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: createDealsProvider() })} height='440px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <PagingShortcuts />
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <ClientSideGrid stateKey='grid' />
+        <ClientSideGrid />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>

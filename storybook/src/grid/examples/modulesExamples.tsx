@@ -29,7 +29,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: tickets })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <ChoiceGroup label='Row model' selectedKey={rowModel} options={ROW_MODELS} onChange={(_, option) => option && switchRowModel(option.key as IGridRowModelType)} styles={{ flexContainer: { display: 'flex', columnGap: 24 } }} />
+                <ChoiceGroup label='Row model' selectedKey={rowModel} options={ROW_MODELS} onChange={(_, option) => option && switchRowModel(option.key as IGridRowModelType)} />
             </DatasetControl.Header.Start>
             <DatasetControl.Header.End>
                 <Text>{groupFetches === 1 ? '1 customer fetched' : groupFetches + ' customers fetched'}</Text>
@@ -37,8 +37,6 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <RowModelGrid
-                //the modules are read at mount
-                key={rowModel}
                 modules={[
                     //the module requires a key
                     ...(AG_GRID_LICENSE_KEY ? [createLicenseModule({ key: AG_GRID_LICENSE_KEY })] : []),
@@ -77,21 +75,19 @@ export const createRemoteTickets = (onGroupFetch: () => void) => {
 }
 
 export const PICK_MODULES_CODE = `interface IModuleSwitches {
-    selection: boolean
     sorting: boolean
     filtering: boolean
     grouping: boolean
 }
 
 const LABELS: { [name in keyof IModuleSwitches]: string } = {
-    selection: 'Row selection',
     sorting: 'Sorting',
     filtering: 'Filtering',
     grouping: 'Grouping (Enterprise)',
 }
 
 const GridExample = () => {
-    const [switches, setSwitches] = React.useState<IModuleSwitches>({ selection: true, sorting: true, filtering: true, grouping: false })
+    const [switches, setSwitches] = React.useState<IModuleSwitches>({ sorting: true, filtering: true, grouping: false })
 
     const toggle = (name: keyof IModuleSwitches, isOn: boolean) => {
         //a module switched off leaves its state on the provider
@@ -105,22 +101,18 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <Stack horizontal wrap tokens={{ childrenGap: 16 }}>
-                    {(Object.keys(LABELS) as (keyof IModuleSwitches)[]).map(name => <Toggle key={name} inlineLabel label={LABELS[name]} checked={switches[name]} onChange={(_, checked) => toggle(name, !!checked)} />)}
-                </Stack>
+                {(Object.keys(LABELS) as (keyof IModuleSwitches)[]).map(name => <Toggle key={name} inlineLabel label={LABELS[name]} checked={switches[name]} onChange={(_, checked) => toggle(name, !!checked)} />)}
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
             <ClientSideGrid
-                //the row model and modules are read at mount
+                //the modules are read at mount
                 key={JSON.stringify(switches)}
                 modules={[
-                    ...(switches.selection ? [createRowSelectionModule({ mode: 'multiple' })] : []),
                     ...(switches.sorting ? [createSortingModule()] : []),
                     ...(switches.filtering ? [createFilteringModule()] : []),
                     ...(switches.grouping ? [createGroupingModule()] : []),
                 ]}
-                enableOptionSetColors
                 height='400px' />
         </DatasetControl.Body>
     </DatasetControl>

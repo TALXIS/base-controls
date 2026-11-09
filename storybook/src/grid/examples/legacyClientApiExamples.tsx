@@ -30,7 +30,6 @@ const getRecommendations = (record: IRecord): IAddControlNotificationOptions[] =
             actions: [
                 { message: 'Assign to me', iconName: 'AddFriend', actions: [() => assignToMe(record)] },
                 { message: 'Escalate', iconName: 'Up', actions: [() => update(record, { escalated: true })] },
-                { message: 'Extend to tomorrow', iconName: 'Calendar', actions: [() => update(record, { duedate: dayjs().add(1, 'day').toISOString() })] },
             ],
         })
     }
@@ -63,10 +62,11 @@ const getRecommendations = (record: IRecord): IAddControlNotificationOptions[] =
 const supportDeskScript: IGridModule = {
     name: 'supportDeskScript',
     onLoad: grid => {
+        const tickets = grid.services.get('provider')
         const addRecommendations = (record: IRecord) => record.expressions.ui.setNotificationsExpression('title', () => getRecommendations(record))
-        provider.getRecords().forEach(addRecommendations)
+        tickets.getRecords().forEach(addRecommendations)
         //a reload or a save clears a record's expressions
-        const unsubscribe = provider.addEventListener('onRecordLoaded', addRecommendations)
+        const unsubscribe = tickets.addEventListener('onRecordLoaded', addRecommendations)
         //the provider outlives the grid
         grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
     },
@@ -87,7 +87,6 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                 supportDeskScript,
             ]}
             onSetup={onSetup}
-            enableOptionSetColors
             height='420px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -121,8 +120,9 @@ const addStockScript = (record: IRecord) => {
 const stockScript: IGridModule = {
     name: 'stockScript',
     onLoad: grid => {
-        provider.getRecords().forEach(addStockScript)
-        const unsubscribe = provider.addEventListener('onRecordLoaded', addStockScript)
+        const products = grid.services.get('provider')
+        products.getRecords().forEach(addStockScript)
+        const unsubscribe = products.addEventListener('onRecordLoaded', addStockScript)
         grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
     },
 }
@@ -136,13 +136,6 @@ const syncStock = async () => {
     await waitForWarehouse()
     isSyncingStock = false
     provider.requestRender()
-}
-
-const onSetup = (grid: IGrid) => {
-    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-        const discontinued = columnDefs.find(colDef => colDef.colId === 'discontinued')!
-        discontinued.context = { ...discontinued.context, cell: { ...discontinued.context?.cell, enableOneClickEdit: true } }
-    })
 }
 
 const GridExample = () => {
@@ -162,7 +155,6 @@ const GridExample = () => {
                     createLegacyClientApiCompatibilityModule(),
                     stockScript,
                 ]}
-                onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -179,8 +171,9 @@ const addAssigneePlaceholder = (record: IRecord) => record.expressions.ui.setCon
 const triageScript: IGridModule = {
     name: 'triageScript',
     onLoad: grid => {
-        provider.getRecords().forEach(addAssigneePlaceholder)
-        const unsubscribe = provider.addEventListener('onRecordLoaded', addAssigneePlaceholder)
+        const tickets = grid.services.get('provider')
+        tickets.getRecords().forEach(addAssigneePlaceholder)
+        const unsubscribe = tickets.addEventListener('onRecordLoaded', addAssigneePlaceholder)
         grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
     },
 }
@@ -193,7 +186,6 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                 createLegacyClientApiCompatibilityModule(),
                 triageScript,
             ]}
-            enableOptionSetColors
             height='400px' />
     </DatasetControl.Body>
 </DatasetControl>

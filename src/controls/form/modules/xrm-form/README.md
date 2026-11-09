@@ -28,7 +28,7 @@ Lookup fields currently only work in environments where `window.Xrm` is availabl
 ```tsx
 import { XrmForm, createMemoryRecord } from "@talxis/base-controls";
 
-//runs once on mount and on refresh; remount with a `key` to load another record
+//runs on mount and on `reload()`; remount with a `key` to load another record
 const onLoad = async () => ({
   record: createMemoryRecord({
     data,

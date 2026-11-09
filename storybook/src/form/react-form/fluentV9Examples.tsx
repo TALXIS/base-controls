@@ -1,11 +1,10 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import { withRecord } from './shared'
+import { accountRecord } from './shared'
 
-const FLUENT_V9_CODE = `import { createAccount } from './record'
-import { V9, V9Provider } from './v9'
+const FLUENT_V9_CODE = `import { V9, V9Provider } from './v9'
 
-const account = createAccount()
+const account = ${accountRecord(['name', 'telephone1', 'industrycode', 'description'])}
 
 const V9Field = (props: { name: string }) => <Form.Field name={props.name}>
     <Form.Cell>
@@ -24,16 +23,10 @@ const GridExample = () => {
             <Form.Tabs expandedTab={tab} onTabChange={setTab} components={V9.tabs}>
                 <Form.Tab id='general' label='General'>
                     <Form.Column>
-                        <Form.Section label='Contact' layout={{ lg: 1 }}>
+                        <Form.Section label='Account'>
                             <V9Field name='name' />
                             <V9Field name='telephone1' />
-                            <V9Field name='emailaddress1' />
-                        </Form.Section>
-                    </Form.Column>
-                    <Form.Column>
-                        <Form.Section label='Company' layout={{ lg: 1 }}>
                             <V9Field name='industrycode' />
-                            <V9Field name='websiteurl' />
                         </Form.Section>
                     </Form.Column>
                 </Form.Tab>
@@ -50,16 +43,13 @@ const GridExample = () => {
 }
 `
 
-const V9_FILE = `import { Dropdown, FluentProvider, Input, MessageBar, MessageBarBody, MessageBarGroup, Option, Spinner, Tab, TabList, Text as V9Text, Textarea, Toolbar, ToolbarButton, tokens, webDarkTheme, webLightTheme } from '@fluentui/react-components'
+const V9_FILE = `import { Dropdown, FluentProvider, Input, MessageBar, MessageBarBody, MessageBarGroup, Option, Tab, TabList, Textarea, Toolbar, ToolbarButton, webDarkTheme, webLightTheme } from '@fluentui/react-components'
 import { SaveRegular, WarningRegular } from '@fluentui/react-icons'
 
 //v9 components need a FluentProvider, light or dark to match the Fluent v8 theme
-export const V9Provider = (props: { children: React.ReactNode }) => {
-    const isLight = !useTheme().isInverted
-    return <FluentProvider theme={isLight ? webLightTheme : webDarkTheme} style={{ background: 'transparent' }}>
-        {props.children}
-    </FluentProvider>
-}
+export const V9Provider = (props: { children: React.ReactNode }) => <FluentProvider theme={useTheme().isInverted ? webDarkTheme : webLightTheme} style={{ background: 'transparent' }}>
+    {props.children}
+</FluentProvider>
 
 //an input for the field it sits in, picked by the column's data type
 const V9Control = (props: { disabled?: boolean }) => {
@@ -75,34 +65,18 @@ const V9Control = (props: { disabled?: boolean }) => {
             </Dropdown>
         }
         case DataTypes.Multiple:
-            return <Textarea value={value ?? ''} disabled={props.disabled} resize='vertical' onChange={(_, data) => field.setValue(data.value || null)} />
+            return <Textarea value={value ?? ''} disabled={props.disabled} onChange={(_, data) => field.setValue(data.value || null)} />
         default:
             return <Input value={value ?? ''} disabled={props.disabled} onChange={(_, data) => field.setValue(data.value || null)} />
     }
 }
 
-//draws its own Save in place of the Fluent v8 one in props.items
+//its own Save in place of the Fluent v8 one in props.items, and Unsaved changes from props.farItems
 const V9Ribbon = (props: ICommandBarProps) => {
     const form = useForm()
-    const [isSaving, setIsSaving] = React.useState(false)
-
-    React.useEffect(() => {
-        const removeBefore = form.events.addEventListener('onBeforeSave', () => setIsSaving(true))
-        const removeAfter = form.events.addEventListener('onAfterSave', () => setIsSaving(false))
-        return () => {
-            removeBefore()
-            removeAfter()
-        }
-    }, [form])
-
-    return <Toolbar style={{ justifyContent: 'space-between' }}>
-        <ToolbarButton icon={isSaving ? <Spinner size='tiny' /> : <SaveRegular />} disabled={isSaving} onClick={() => form.save()}>
-            {isSaving ? 'Saving' : 'Save'}
-        </ToolbarButton>
-        {/* Unsaved changes, while there are any */}
-        {props.farItems?.map(item => <V9Text key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 4, color: tokens.colorStatusWarningForeground1 }}>
-            <WarningRegular /> {item.text}
-        </V9Text>)}
+    return <Toolbar>
+        <ToolbarButton icon={<SaveRegular />} onClick={() => form.save()}>Save</ToolbarButton>
+        {props.farItems?.map(item => <ToolbarButton key={item.key} icon={<WarningRegular />} disabled>{item.text}</ToolbarButton>)}
     </Toolbar>
 }
 
@@ -118,22 +92,20 @@ const V9Tabs = (props: ITabsComponentProps) => {
 
 const INTENTS = { ERROR: 'error', WARNING: 'warning', INFO: 'info' } as const
 
-//a field's message names the field in <strong>
-const V9Notifications = (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[] }) => <MessageBarGroup>
-    {props.messages?.map((message, index) => <MessageBar key={index} intent={INTENTS[message.level]}>
-        <MessageBarBody>
-            <span dangerouslySetInnerHTML={{ __html: message.text }} />
-        </MessageBarBody>
-    </MessageBar>)}
-</MessageBarGroup>
-
 /** The components of each part, drawn with Fluent UI v9. */
 export const V9 = {
     control: { onRenderControl: (props: { disabled?: boolean }) => <V9Control disabled={props.disabled} /> },
     ribbon: { onRenderCommandBar: (props: ICommandBarProps) => <V9Ribbon {...props} /> },
     tabs: { onRenderTabs: (props: ITabsComponentProps) => <V9Tabs {...props} /> },
-    notifications: { onRenderNotifications: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[] }) => <V9Notifications messages={props.messages} /> },
+    //a field's message names the field in <strong>
+    notifications: { onRenderNotifications: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[] }) => <MessageBarGroup>
+        {props.messages?.map((message, index) => <MessageBar key={index} intent={INTENTS[message.level]}>
+            <MessageBarBody>
+                <span dangerouslySetInnerHTML={{ __html: message.text }} />
+            </MessageBarBody>
+        </MessageBar>)}
+    </MessageBarGroup> },
 }
 `
 
-export const FluentV9Example = () => <GridExampleRunner seedCode={withRecord(FLUENT_V9_CODE, { name: 'v9.tsx', code: V9_FILE })} tabs={['preview', 'code']} />
+export const FluentV9Example = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: FLUENT_V9_CODE }, { name: 'v9.tsx', code: V9_FILE }]} tabs={['preview', 'code']} />

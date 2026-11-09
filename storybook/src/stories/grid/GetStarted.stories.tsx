@@ -14,7 +14,7 @@ Grid shows the records of a data provider as rows and columns, on top of <a href
 
 Like every control, the grid needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview). It takes no provider prop: it shows the provider of the DatasetControl around it, as the example does; to show one without a DatasetControl, see *Hand it to controls* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
-\`modules\` lists the features the grid has, and a row model is the one every grid needs. Every prop and event, and when each is read, is on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
+Pick the component by how the grid gets its rows. \`ClientSideGrid\` holds every row at once and suits most grids; \`ServerSideGrid\` fetches a group's records only when the user opens it, and needs AG Grid Enterprise (see *Row models* on [**Modules**](?path=/docs/controls-grid-modules--overview)). Both take the features you switch on in \`modules\`. Every prop and event, and when each is read, is on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
 
 ## Switch on modules
 

@@ -18,7 +18,7 @@ Custom columns are columns users add to the tasks themselves, from *Edit columns
 | \`enableEditing\` | \`false\` | An edit command on each custom column in *Edit columns*. Not on the IndexedDB module. |
 | \`enableDeletion\` | \`false\` | A delete command on each custom column in *Edit columns*, which deletes its values in every task too, after the user confirms. |
 
-The values are edited in the grid, with \`createTaskEditingModule()\`, and saved one by one.
+The values are edited in the grid, with \`enableEditing\` and \`createTaskEditingModule()\`, and saved one by one.
 
 ## Where the columns are kept
 
@@ -28,7 +28,7 @@ The values are edited in the grid, with \`createTaskEditingModule()\`, and saved
 | \`createTalxisCustomColumnsModule\` | In TALXIS attribute definitions and attribute values. A new or edited column opens the definition's form in a side dialog. |
 | \`createCustomColumnsModule\` | In a store of yours: \`createStore\` returns an \`ICustomColumnsStore\`. |
 
-Each of the IndexedDB \`columns\` is a \`displayName\`, a \`dataType\`, and \`isRequired\`, \`precision\` or \`options\` where they apply. A column the user adds is a text column named *Custom column 1*, and so on. The example's *talxis.ts* keeps the project's columns in TALXIS.
+Each of the IndexedDB \`columns\` is a \`displayName\`, a \`dataType\`, and \`isRequired\`, \`precision\` or \`options\` where they apply. A column the user adds is a text column named *Custom column* and the next number. The example's *talxis.ts* keeps the project's columns in TALXIS.
 
 ## Reference
 

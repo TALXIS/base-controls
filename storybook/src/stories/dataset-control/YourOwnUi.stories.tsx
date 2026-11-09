@@ -41,7 +41,7 @@ A part of your own is any component you put inside the control: a total in the f
 
 ## Your own collection view
 
-The parts work on the provider, not on the grid, so anything that shows records can go in \`Body\`: a list, cards, a calendar or a chart. To draw views differently, let each view say which UI it uses in its \`data\` (see [**Views**](?path=/docs/controls-datasetcontrol-views--overview)), and pick it in your body component, as the example's \`ProductsBody.tsx\` does.
+The parts work on the provider, not on the grid, so anything that shows records can go in \`Body\`: a list, cards, a calendar or a chart. To draw views differently, let each view say which UI it uses in its \`data\` (see [**Views**](?path=/docs/controls-datasetcontrol-views--overview)), and pick it in your body component, as \`ProductsBody\` in the example does.
 
 {{story: A different UI per view}}
 
@@ -98,7 +98,7 @@ Your view reads the records, columns and selection from the provider (see [**Dat
 | \`useDatasetControlRegion()\` | \`'start'\` or \`'end'\`, the side of the header or footer the component is in; \`undefined\` outside both. |
 | \`useDatasetControlHeader()\` | Inside the header, \`showOnly()\` hides everything in it but the calling part, and \`showAll()\` brings the rest back; \`undefined\` outside the header. |
 | \`useCompact()\` | Whether the header is compact: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). |
-| \`useProvideDatasetControlPart(key, create)\` | Nothing; creates an object once and provides it under \`key\` for \`control.parts\`, while the component is mounted. |
+| \`useProvideDatasetControlPart(key, create)\` | The part \`create\` makes, once; it is provided under \`key\` for \`control.parts\` while the component is mounted. |
 
 ## Where next
 
@@ -162,7 +162,7 @@ export const ADifferentUiPerView: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Four views of the products, drawn as the grid, Fluent UI v9's \`DataGrid\` or a gallery. Try: switch to *Seating*.`,
+                story: `Two views of the products, one drawn as the grid and one as a gallery of photo cards. Try: switch to *Seating* and select a card.`,
             },
         },
     },

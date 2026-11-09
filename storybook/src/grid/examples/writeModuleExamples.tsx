@@ -4,8 +4,6 @@ import type { IGridExampleFile } from '../GridLivePreview'
 
 export const UNSAVED_CHANGES_BAR_CODE = `import type { IUnsavedChanges } from './types'
 
-const describeChanges = (count: number) => count === 1 ? '1 product has unsaved changes.' : \`\${count} products have unsaved changes.\`
-
 const UnsavedChangesBar = () => {
     //registered by the module that draws this bar
     const unsavedChanges = useGridModule('unsavedChanges')
@@ -17,14 +15,8 @@ const UnsavedChangesBar = () => {
     if (count === 0) {
         return null
     }
-    return <MessageBar
-        messageBarType={MessageBarType.warning}
-        isMultiline={false}
-        actions={<Stack horizontal tokens={{ childrenGap: 8 }}>
-            <PrimaryButton text='Save all' onClick={() => { provider.save() }} />
-            <DefaultButton text='Discard' onClick={() => provider.clearChanges()} />
-        </Stack>}>
-        {describeChanges(count)}
+    return <MessageBar actions={<PrimaryButton text='Save all' onClick={() => { provider.save() }} />}>
+        {count === 1 ? '1 product has unsaved changes.' : count + ' products have unsaved changes.'}
     </MessageBar>
 }
 
@@ -51,7 +43,6 @@ const unsavedChangesModule: IGridModule = {
             const unsubscribes = [
                 provider.addEventListener('onRecordColumnValueChanged', notify),
                 provider.addEventListener('onAfterRecordSaved', notify),
-                provider.addEventListener('onNewDataLoaded', notify),
             ]
             return () => unsubscribes.forEach(unsubscribe => unsubscribe())
         })

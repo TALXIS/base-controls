@@ -1,40 +1,34 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const APPLICATION_CODE = `import { AppThemeProvider, ClientSideGrid, DatasetControl, Form, IGrid, Panel, PcfContextProvider, StateProvider, useThemeBuilder } from '@talxis/base-controls'
+const APPLICATION_CODE = `import { AppThemeProvider, ClientSideGrid, DatasetControl, Form, IGrid, Panel, PcfContextProvider, useThemeBuilder } from '@talxis/base-controls'
 import { IRecord } from '@talxis/client-libraries'
-import { Dropdown } from '@fluentui/react'
+import { Toggle } from '@fluentui/react'
 
-const BRANDS = [
-    { key: 'light', text: 'Light', colors: { primary: '#5B5FC7', background: '#ffffff', text: '#242424' } },
-    { key: 'dark', text: 'Dark', colors: { primary: '#7f85f5', background: '#292929', text: '#ffffff' } },
-    { key: 'ocean', text: 'Ocean', colors: { primary: '#0f7b8a', background: '#f4fafb', text: '#12313a' } },
-    { key: 'rose', text: 'Rose', colors: { primary: '#c2185b', background: '#fff7fa', text: '#3a1424' } },
-    { key: 'midnight', text: 'Midnight', colors: { primary: '#4cc2ff', background: '#0f1b2d', text: '#e6edf7' } },
-]
+const LIGHT = { primary: '#5B5FC7', background: '#ffffff', text: '#242424' }
+const DARK = { primary: '#7f85f5', background: '#292929', text: '#ffffff' }
 
-//the Base Controls form edits the grid's own record of the opened deal
-const DealForm = (props: { deal: IRecord }) => {
-    return <Form.Root key={props.deal.getRecordId()} onLoad={async () => ({ record: props.deal })}>
-        <Form.Section label='Deal' layout={{ lg: 1 }} cellLabelPosition='Top'>
-            {['name', 'owner', 'stage', 'value', 'probability', 'closedate'].map(name => <Form.Field key={name} name={name}>
-                <Form.Cell>
-                    <Form.Control />
-                </Form.Cell>
-            </Form.Field>)}
-        </Form.Section>
-    </Form.Root>
+const loadDeals = async () => {
+    const provider = createDealsProvider()
+    //the primary column draws each deal's name as a link that opens it
+    provider.setColumns(provider.getColumns().map(column => column.name === 'name' ? { ...column, isPrimary: true } : column))
+    return { provider }
 }
 
+//the Base Controls form edits the grid's own record of the opened deal
+const DealForm = (props: { deal: IRecord }) => <Form.Root key={props.deal.getRecordId()} onLoad={async () => ({ record: props.deal })}>
+    <Form.Section label='Deal' layout={{ lg: 1 }} cellLabelPosition='Top'>
+        {['name', 'stage', 'value', 'closedate'].map(name => <Form.Field key={name} name={name}>
+            <Form.Cell>
+                <Form.Control />
+            </Form.Cell>
+        </Form.Field>)}
+    </Form.Section>
+</Form.Root>
+
 const GridExample = () => {
-    const [brand, setBrand] = React.useState(BRANDS[0])
-    const theme = useThemeBuilder({ colors: brand.colors })
-    const deals = React.useMemo(() => {
-        const provider = createDealsProvider()
-        //the primary column draws each deal's name as a link that opens it
-        provider.setColumns(provider.getColumns().map(column => column.name === 'name' ? { ...column, isPrimary: true } : column))
-        return provider
-    }, [])
+    const [isDark, setIsDark] = React.useState(false)
+    const theme = useThemeBuilder({ colors: isDark ? DARK : LIGHT })
     const [openedDeal, setOpenedDeal] = React.useState<IRecord>()
 
     const onSetup = (grid: IGrid) => {
@@ -45,135 +39,92 @@ const GridExample = () => {
         })
     }
 
-    //the root: one host, one place for state and one theme for everything below
+    //the root: one host and one theme for everything below
     return <PcfContextProvider>
-        <StateProvider>
-            <AppThemeProvider theme={theme} style={{ padding: 12 }}>
-                {/* a control reads the theme as it mounts */}
-                <DatasetControl key={theme.id} onLoad={async () => ({ provider: deals })} height='400px'>
-                    <DatasetControl.Header>
-                        <DatasetControl.Header.Start>
-                            <Dropdown ariaLabel='Theme' options={BRANDS} selectedKey={brand.key} onChange={(_, option) => setBrand(BRANDS.find(other => other.key === option?.key)!)} styles={{ root: { width: 140 } }} />
-                        </DatasetControl.Header.Start>
-                        <DatasetControl.Header.End>
-                            <DatasetControl.QuickFind />
-                        </DatasetControl.Header.End>
-                    </DatasetControl.Header>
-                    <DatasetControl.Body>
-                        {/* click a deal's name to open it */}
-                        <ClientSideGrid onSetup={onSetup} />
-                    </DatasetControl.Body>
-                </DatasetControl>
-                {/* drawn in the same theme as the grid */}
-                <Panel isOpen={!!openedDeal} isLightDismiss headerText={openedDeal?.getFormattedValue('name') ?? ''} onDismiss={() => setOpenedDeal(undefined)}>
-                    {openedDeal && <DealForm deal={openedDeal} />}
-                </Panel>
-            </AppThemeProvider>
-        </StateProvider>
+        <AppThemeProvider theme={theme}>
+            {/* a control reads the theme as it mounts */}
+            <DatasetControl key={theme.id} onLoad={loadDeals} height='400px'>
+                <DatasetControl.Header>
+                    <DatasetControl.Header.Start>
+                        {/* a part of your own beside the built-in ones */}
+                        <Toggle label='Dark theme' inlineLabel checked={isDark} onChange={(_, checked) => setIsDark(!!checked)} />
+                    </DatasetControl.Header.Start>
+                    <DatasetControl.Header.End>
+                        <DatasetControl.QuickFind />
+                    </DatasetControl.Header.End>
+                </DatasetControl.Header>
+                <DatasetControl.Body>
+                    <ClientSideGrid onSetup={onSetup} />
+                </DatasetControl.Body>
+            </DatasetControl>
+            {/* drawn in the same theme as the grid */}
+            <Panel isOpen={!!openedDeal} isLightDismiss headerText={openedDeal?.getFormattedValue('name') ?? ''} onDismiss={() => setOpenedDeal(undefined)}>
+                {openedDeal && <DealForm deal={openedDeal} />}
+            </Panel>
+        </AppThemeProvider>
     </PcfContextProvider>
 }
 `
 
-const PURE_UI_CODE = `import { BaseControls, DatasetControl, FormUi, NestedControlRenderer, usePcfContext } from '@talxis/base-controls'
-import { IColumn } from '@talxis/client-libraries'
+const PURE_UI_CODE = `import { DatasetControl, FormUi } from '@talxis/base-controls'
+import { Dropdown, Text } from '@fluentui/react'
 
-//the deals' columns: the stage is an option set, the value a currency
-const DEAL_FIELDS = createDealsProvider().getColumns()
-const SEARCHED_COLUMNS = DEAL_FIELDS.filter(column => column.name === 'name')
-const PAGE_SIZE = 3
+const STAGES = [
+    { key: 1, text: 'Qualify' },
+    { key: 2, text: 'Propose' },
+    { key: 3, text: 'Won' },
+]
 
 interface IDeal {
     id: string
     name: string
     stage: number
-    value: number
+    value: string
 }
 
 const VIEWS = [
     { key: 'all', text: 'All deals', matches: (deal: IDeal) => true },
-    { key: 'won', text: 'Won deals', matches: (deal: IDeal) => deal.stage === 4 },
+    { key: 'won', text: 'Won deals', matches: (deal: IDeal) => deal.stage === 3 },
 ]
 
 //plain data in your own state: no provider, no runtime
 const DEALS: IDeal[] = [
-    { id: 'contoso', name: 'Contoso: CRM rollout', stage: 1, value: 4000 },
-    { id: 'fabrikam', name: 'Fabrikam: Support renewal', stage: 2, value: 21500 },
-    { id: 'northwind', name: 'Northwind: Data migration', stage: 3, value: 9000 },
-    { id: 'adventure', name: 'Adventure Works: Licences', stage: 4, value: 26500 },
-    { id: 'litware', name: 'Litware: Onboarding', stage: 1, value: 14000 },
+    { id: 'contoso', name: 'Contoso: CRM rollout', stage: 1, value: '$4,000' },
+    { id: 'fabrikam', name: 'Fabrikam: Support renewal', stage: 2, value: '$21,500' },
+    { id: 'adventure', name: 'Adventure Works: Licences', stage: 3, value: '$26,500' },
 ]
 
-//the Base Controls field for a column's data type
-const ColumnControl = (props: { column: IColumn, value: unknown, onChange: (value: unknown) => void }) => {
-    const context = usePcfContext()
-    return <NestedControlRenderer
-        context={context}
-        parameters={{
-            ControlName: BaseControls.GetControlNameForDataType(props.column.dataType),
-            Bindings: { value: { type: props.column.dataType, value: props.value, isStatic: false, metadata: { onOverrideMetadata: () => props.column.metadata } } },
-        }}
-        onNotifyOutputChanged={outputs => props.onChange(outputs.value)} />
-}
-
-//the form's section and cells as plain UI, each cell drawing its column's field
-const DealCard = (props: { deal: IDeal, onChange: (deal: IDeal) => void }) => <FormUi.Section label={props.deal.name} layout={{ lg: 2 }} cellLabelPosition='Top'>
-    {(['stage', 'value'] as const).map(name => {
-        const column = DEAL_FIELDS.find(other => other.name === name)!
-        return <FormUi.Cell key={name} label={column.displayName}>
-            <ColumnControl column={column} value={props.deal[name]} onChange={value => props.onChange({ ...props.deal, [name]: value })} />
-        </FormUi.Cell>
-    })}
+//the form's section and cells as plain UI
+const DealCard = (props: { deal: IDeal, onChange: (deal: IDeal) => void }) => <FormUi.Section label={props.deal.name} cellLabelPosition='Top'>
+    <FormUi.Cell label='Stage'>
+        <Dropdown options={STAGES} selectedKey={props.deal.stage} onChange={(_, option) => props.onChange({ ...props.deal, stage: Number(option!.key) })} />
+    </FormUi.Cell>
+    <FormUi.Cell label='Value'>
+        <Text>{props.deal.value}</Text>
+    </FormUi.Cell>
 </FormUi.Section>
 
 const GridExample = () => {
     const [deals, setDeals] = React.useState(DEALS)
     const [view, setView] = React.useState(VIEWS[0])
-    const [query, setQuery] = React.useState('')
-    const [page, setPage] = React.useState(0)
 
-    const shown = deals.filter(view.matches).filter(deal => deal.name.toLowerCase().startsWith(query.toLowerCase()))
-    const pageDeals = shown.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-    const find = (value: string) => { setQuery(value); setPage(0) }
-
-    //the DatasetControl's frame and parts, each drawn as plain UI from your own state
-    return <DatasetControl.Ui.Container height='420px'>
+    //the DatasetControl's frame and view switcher, drawn as plain UI from your own state
+    return <DatasetControl.Ui.Container>
         <DatasetControl.Ui.Header>
             <DatasetControl.Ui.HeaderStart>
                 <DatasetControl.Ui.ViewSwitcher
                     text={view.text}
                     selectedKey={view.key}
-                    items={VIEWS.map(option => ({ key: option.key, text: option.text, onClick: () => { setView(option); setPage(0) } }))} />
+                    items={VIEWS.map(option => ({ key: option.key, text: option.text, onClick: () => setView(option) }))} />
             </DatasetControl.Ui.HeaderStart>
-            <DatasetControl.Ui.HeaderEnd>
-                <DatasetControl.Ui.QuickFind
-                    value={query}
-                    placeholder='Search deals...'
-                    columns={SEARCHED_COLUMNS}
-                    isLikeQuery={false}
-                    labels={{ leadingWildcardWarning: 'Do not start with an asterisk (*)', columnsHintStart: 'Apply', columnsHintOperator: 'begins with', columnsHintEnd: 'filter on these columns:' }}
-                    onChange={find}
-                    onSearch={() => find(query)}
-                    onClear={() => find('')} />
-            </DatasetControl.Ui.HeaderEnd>
         </DatasetControl.Ui.Header>
         <DatasetControl.Ui.Body>
-            <FormUi.Tab id='board' layout={{ lg: 3, md: 3, sm: 2, xs: 1 }}>
-                {pageDeals.map(deal => <FormUi.Column key={deal.id}>
+            <FormUi.Tab id='board'>
+                {deals.filter(view.matches).map(deal => <FormUi.Column key={deal.id}>
                     <DealCard deal={deal} onChange={changed => setDeals(deals.map(other => other.id === changed.id ? changed : other))} />
                 </FormUi.Column>)}
             </FormUi.Tab>
         </DatasetControl.Ui.Body>
-        <DatasetControl.Ui.Footer>
-            <DatasetControl.Ui.FooterEnd>
-                <DatasetControl.Ui.Pagination
-                    canMovePrevious={page > 0}
-                    canMoveNext={(page + 1) * PAGE_SIZE < shown.length}
-                    labels={{ firstPageTooltip: 'First page', previousPageTooltip: 'Previous page', nextPageTooltip: 'Next page', currentPage: \`Page \${page + 1}\` }}
-                    onMoveFirst={() => setPage(0)}
-                    onMovePrevious={() => setPage(page - 1)}
-                    onMoveNext={() => setPage(page + 1)} />
-            </DatasetControl.Ui.FooterEnd>
-        </DatasetControl.Ui.Footer>
     </DatasetControl.Ui.Container>
 }
 `

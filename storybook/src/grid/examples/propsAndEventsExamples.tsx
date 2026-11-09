@@ -31,7 +31,7 @@ const GridExample = () => {
 
     const log = (event: string, detail = '') => {
         const entry = { id: ++lastEntryId.current, time: dayjs().format('HH:mm:ss.SSS'), event, detail }
-        setEntries(current => [entry, ...current].slice(0, 200))
+        setEntries(current => [entry, ...current])
     }
 
     const onSetup = (grid: IGrid) => {
@@ -64,7 +64,6 @@ const GridExample = () => {
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
         { id: 'remount', label: 'Remount', iconName: 'Sync', onExecute: () => setMountCount(count => count + 1) },
-        { id: 'clear', label: 'Clear log', iconName: 'Clear', onExecute: () => setEntries([]) },
     ]
 
     return <div className={styles.layout}>
@@ -98,35 +97,21 @@ const GridExample = () => {
 }
 `
 
-export const PREVIEW_PANE_CODE = `const SECTIONS = [
-    { label: 'Ticket', columnNames: ['ticketnumber', 'title', 'customer', 'channel'] },
-    { label: 'Handling', columnNames: ['priority', 'status', 'assignee', 'escalated'] },
-    { label: 'Timing', columnNames: ['createdon', 'duedate', 'timespent'] },
-]
+export const PREVIEW_PANE_CODE = `const FIELDS = ['ticketnumber', 'title', 'customer', 'priority', 'status', 'assignee', 'duedate']
 
 const styles = mergeStyleSets({
     layout: { display: 'flex', gap: 16 },
     grid: { flex: 1, minWidth: 0 },
-    pane: { width: 320, flexShrink: 0, maxHeight: 480, overflowY: 'auto', paddingLeft: 16, borderLeft: '1px solid #edebe9' },
+    pane: { width: 320, flexShrink: 0 },
 })
 
-interface ITicketFormProps {
-    ticket: IRecord
-    /** How many fields a section puts side by side. */
-    columnsPerSection?: number
-}
-
-const TicketForm = (props: ITicketFormProps) => {
-    return <Form.Root key={props.ticket.getRecordId()} onLoad={async () => ({ record: props.ticket })}>
-        {SECTIONS.map(section => <Form.Section key={section.label} label={section.label} layout={{ lg: props.columnsPerSection ?? 1 }} cellLabelPosition='Top'>
-            {section.columnNames.map(columnName => <Form.Field key={columnName} name={columnName}>
-                <Form.Cell>
-                    <Form.Control />
-                </Form.Cell>
-            </Form.Field>)}
-        </Form.Section>)}
-    </Form.Root>
-}
+const TicketForm = (props: { ticket: IRecord }) => <Form.Root key={props.ticket.getRecordId()} onLoad={async () => ({ record: props.ticket })}>
+    <Form.Section cellLabelPosition='Top'>
+        {FIELDS.map(columnName => <Form.Field key={columnName} name={columnName}>
+            <Form.Cell><Form.Control /></Form.Cell>
+        </Form.Field>)}
+    </Form.Section>
+</Form.Root>
 
 const GridExample = () => {
     const [ticket, setTicket] = React.useState<IRecord>()
@@ -142,7 +127,7 @@ const GridExample = () => {
         <div className={styles.grid}>
             <DatasetControl onLoad={async () => ({ provider: provider })}>
                 <DatasetControl.Body>
-                    <ClientSideGrid modules={[createSortingModule()]}
+                    <ClientSideGrid
                         //a double-click opens the ticket's panel
                         enableNavigation={false}
                         height='480px'
@@ -151,12 +136,10 @@ const GridExample = () => {
             </DatasetControl>
         </div>
         <div className={styles.pane}>
-            {ticket
-                ? <TicketForm key={ticket.getRecordId()} ticket={ticket} />
-                : <span>Click a ticket, or move through the queue with the arrow keys.</span>}
+            {ticket ? <TicketForm ticket={ticket} /> : 'Click a ticket, or move through the queue with the arrow keys.'}
         </div>
-        <Panel isOpen={!!openedTicket} headerText={openedTicket?.getValue('title')} type={PanelType.medium} isLightDismiss onDismiss={() => setOpenedTicket(undefined)} onRenderFooterContent={() => <DefaultButton text='Close' onClick={() => setOpenedTicket(undefined)} />}>
-            {openedTicket && <TicketForm ticket={openedTicket} columnsPerSection={2} />}
+        <Panel isOpen={!!openedTicket} headerText={openedTicket?.getFormattedValue('title') ?? ''} isLightDismiss onDismiss={() => setOpenedTicket(undefined)}>
+            {openedTicket && <TicketForm ticket={openedTicket} />}
         </Panel>
     </div>
 }

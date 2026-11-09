@@ -20,11 +20,11 @@ Each is off until its prop is set, and they come before the commands from \`onLo
 | \`enableDiscard\` | **Discard changes** | Undoes every unsaved change. Shows only while there are unsaved changes. |
 | \`enableRefresh\` | **Refresh** | Loads the records again, asking about unsaved changes first: see [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview). |
 
-**Strings:** the commands' labels are the keys \`ribbon.save\`, \`ribbon.discard\` and \`ribbon.refresh\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+To change the commands' labels, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## How it behaves
 
-- **Selection:** \`onLoad\` runs again whenever the selection changes, so return the commands that apply to it.
+- **Selection:** \`onLoad\` runs again whenever the selection changes, so return the commands that apply to it. With **Save** or **Discard changes** on, it also runs when unsaved changes appear or go.
 - **Loading:** every command is disabled while the provider loads.
 - **Alignment:** in an \`End\` region the commands line up against the right: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview).
 - **Compact header:** a command with an \`iconName\` shows only its icon, with its label as the tooltip, so give every command one.
@@ -38,7 +38,7 @@ Each is off until its prop is set, and they come before the commands from \`onLo
 
 \`control.parts.get('ribbon')\` returns the ribbon once it is drawn: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview). Its members are under *From your code* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview). When a command changes what applies without changing the selection, call \`reload()\`, as **Mark as won** does in the example's \`DealsRibbon.tsx\`.
 
-To add commands from outside \`onLoad\`, such as from a module, observe the ribbon and call \`hooks.commands\`, as \`addSelectMenu\` adds the example's **Select** menu: see *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
+To add commands from outside \`onLoad\`, such as from a module, observe the ribbon and call \`hooks.commands\`, as \`addSelectCommand\` adds the example's **Select deals in negotiation**: see *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
 
 ## Where next
 

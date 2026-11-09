@@ -2,9 +2,7 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { withRecord } from './shared'
 
-const VALIDATION_CODE = `import { createAccount } from './record'
-
-const account = createAccount()
+const VALIDATION_CODE = `import { account } from './record'
 
 const validatePhone = (phone: string | null) => phone && !phone.startsWith('+')
     ? { error: true, errorMessage: 'Start with the country code, such as +420.' }
@@ -39,4 +37,4 @@ const GridExample = () => {
 }
 `
 
-export const ValidationExample = () => <GridExampleRunner seedCode={withRecord(VALIDATION_CODE)} tabs={['preview', 'code']} />
+export const ValidationExample = () => <GridExampleRunner seedCode={withRecord(VALIDATION_CODE, ['name', 'telephone1', 'emailaddress1', 'websiteurl', 'customersince'])} tabs={['preview', 'code']} />

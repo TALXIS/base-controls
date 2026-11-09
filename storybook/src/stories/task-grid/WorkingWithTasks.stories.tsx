@@ -17,14 +17,14 @@ Three props turn on what the user may do with tasks, and two modules add editing
 | To | Turn on | The user |
 |---|---|---|
 | Create a task | \`enableCreation\` | clicks *New* in the ribbon for a top-level task, or the **+** at the start of an active task's row for a subtask |
-| Edit a task in its form | \`enableEditing\` | selects tasks and clicks *Edit*, or opens one from its subject |
+| Edit a task in its form | \`enableEditing\` | selects tasks and clicks *Edit*; a subject opens its task either way, its Dataverse form read-only without \`enableEditing\` |
 | Edit cells in place | \`enableEditing\` and \`createTaskEditingModule()\` in \`TaskGrid\` | double-clicks a cell; every edit saves straight away |
 | Delete tasks | \`enableDeletion\` | selects tasks and clicks *Delete*, then confirms |
 | Move a task | \`enableEditing\` and \`createTaskDraggingModule()\` in \`TaskDatasetControl\` | drags its row |
 
 *Edit* and *Delete* act on the selection, so add \`createRowSelectionModule()\` to \`TaskGrid\` (see [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview)). Without \`enableEditing\`, every task is locked.
 
-A new task shows straight away, its cells loading until the store has created it. It goes first among its siblings, or last with \`defaultCreatePosition='last'\`; under a root task, *New* puts it under the root. The [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) module adds *From template* next to both.
+A new task shows straight away, its cells loading until the store has created it. It is named *(No Name)* until the user names it, and when its cells can be edited in place, its subject opens for typing. It goes first among its siblings, or last with \`defaultCreatePosition='last'\`; under a root task, *New* puts it under the root. The [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) module adds *From template* to both.
 
 Deleting takes every subtask along. Tasks that could not be deleted are listed in a dialog and keep their ancestors; a store keeps a task from being deleted with \`canDeleteTask\`.
 
@@ -34,20 +34,21 @@ A task whose \`stateCode\` column is not \`0\` is inactive. It stays read-only, 
 
 ## Dragging
 
-A row dropped between two rows lands at the level its distance from the left suggests. Held over a task for a moment, it becomes a subtask, and held over a closed parent a little longer, the parent opens. The new parent and rank are saved through the store.
+A row dropped between two rows lands at the level its distance from the left suggests. Held over an active task for a moment, it becomes a subtask, and held over a closed parent a little longer, the parent opens. The new parent and rank are saved through the store.
 
 Rows can be dragged while the tree is shown, the tasks are sorted by nothing but their stack rank, and no cell is being edited. \`createTaskDraggingModule()\` takes no options; follow the moves with \`onTaskMoved\` under *Events*.
 
 ## Events
 
-The task provider's \`taskEvents\` follow every change, whichever way it was made. Subscribe on the provider your \`onLoad\` returns, as the example above does; a new provider comes with every mount.
+The task provider's \`taskEvents\` follow every change, whichever way it was made. Every mount builds a new provider, so subscribe in \`onLoad\` through \`taskRuntime.services.observe('provider', …)\`, as the example above does.
 
 | Event | Fires |
 |---|---|
-| \`onTasksCreated(records, parentId?)\` | After tasks are created, with the parent they went under. |
-| \`onTasksDeleted(taskIds)\` | After tasks are deleted. |
-| \`onTaskMoved({ movingRecord, targetRecord, position, parentRecord, stackRank })\` | After a task is moved, with \`position\` \`'above'\`, \`'below'\` or \`'child'\`. |
+| \`onTasksCreated(records, parentId?)\` | When new tasks join the tree, with the parent they went under; a task from *New* or **+** joins before the store has created it. |
+| \`onTasksDeleted(taskIds)\` | After tasks are deleted, and when the store drops or fails to create a new task. |
+| \`onTaskMoved({ movingRecord, targetRecord, position, parentRecord, stackRank })\` | When a task is moved, before it saves, with \`position\` \`'above'\`, \`'below'\` or \`'child'\`. |
 | \`onTasksUpdated(records)\` | After tasks take new values in place, such as what a form or the backend changed. |
+| \`onEditorClosed(taskIds)\` | After the form the tasks were opened in closes. |
 
 ## Where next
 
@@ -57,7 +58,7 @@ The task provider's \`taskEvents\` follow every change, whichever way it was mad
 const EXPLORE: IExploreCard[] = [
     { title: 'Talking to the task grid', iconName: 'Plug', href: '?path=/docs/controls-taskgrid-talking-to-the-task-grid--overview', text: 'Create, open, move and delete tasks from your code.' },
     { title: 'Templates', iconName: 'Copy', href: '?path=/docs/controls-taskgrid-modules-templates--overview', text: 'Create a task and its subtasks from a template in one go.' },
-    { title: 'Editing on the timeline', iconName: 'Timeline', href: '?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview', text: 'Move and resize bars, and draw new tasks on the Gantt.' },
+    { title: 'Editing on the timeline', iconName: 'Timeline', href: '?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview', text: 'Move and resize bars, draw new tasks and missing dates, and select tasks on the Gantt.' },
 ]
 
 const meta = {

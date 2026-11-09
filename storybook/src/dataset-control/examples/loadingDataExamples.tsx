@@ -5,7 +5,7 @@ import { VIEWS_FILE, withFiles } from './shared'
 const WAITING_CODE = `import { loadDeals } from './views'
 
 //loadDeals, in views.ts, runs on every load: the first mount and every view switch
-const GridExample = () => <DatasetControl stateKey='deals-loading-data' onLoad={loadDeals} height='420px'>
+const GridExample = () => <DatasetControl onLoad={loadDeals} height='420px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -13,7 +13,7 @@ const GridExample = () => <DatasetControl stateKey='deals-loading-data' onLoad={
     </DatasetControl.Header>
     {/* a placeholder stands in for the parts until onLoad's provider has its first page */}
     <DatasetControl.Body>
-        <ClientSideGrid stateKey='grid' />
+        <ClientSideGrid />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -41,14 +41,14 @@ const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
     return { provider: createDealsProvider(), views }
 }
 
-const GridExample = () => <DatasetControl onLoad={loadDeals} stateKey='deals-dependencies' height='420px'>
+const GridExample = () => <DatasetControl onLoad={loadDeals} height='420px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <ClientSideGrid stateKey='grid' />
+        <ClientSideGrid />
     </DatasetControl.Body>
 </DatasetControl>
 `

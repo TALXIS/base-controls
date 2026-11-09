@@ -6,8 +6,6 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { ValidationExample } from '../../form/react-form/fieldsAndValidationExamples'
 
 const DESCRIPTION = `
-> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
-
 Each field of a form is bound to one column of the record, and can be required or checked by rules of your own. A save checks every field first; when one fails, the save stops, the control shows its error and the notifications above the form list every failure. Try it below: type a phone number without a country code and press **Save**.
 
 {{canvas: Check the phone}}
@@ -44,15 +42,15 @@ Your code reads the summary with \`useValidationSummary()\` or \`onValidationSum
 
 ## Reference
 
-| Part | Prop | Description |
-|---|---|---|
-| \`Form.Field\` | \`name\` | The column the field binds to. |
-| \`Form.Field\` | \`requiredLevel\` | A \`RequiredLevelEnum\` value in place of the column's requirement. |
-| \`Form.Field\` | \`validation\` | \`{ error, errorMessage }\`, checked before the record's own checks. |
-| \`Form.Control\` | \`disabled\` | Draws the field read-only, with a lock by the label. |
-| \`Form.Notifications\` | \`messages\` | \`{ text, level }\` items, shown before the validation summary. |
+| Part | Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|---|
+| \`Form.Field\` | \`name\` | \`string\` | None | Live | The column the field binds to. |
+| \`Form.Field\` | \`requiredLevel\` | \`RequiredLevelEnum\` | The column's | Live | The requirement on this form, in place of the column's. |
+| \`Form.Field\` | \`validation\` | \`{ error, errorMessage }\` | None | Live | Checked before the record's own checks. |
+| \`Form.Control\` | \`disabled\` | \`boolean\` | \`false\` | Live | Draws the field read-only, with a lock by the label. |
+| \`Form.Notifications\` | \`messages\` | \`{ text, level }[]\` | \`[]\` | Live | Shown before the validation summary. |
 
-Every prop is live. \`components\` of \`Form.Control\` and \`Form.Notifications\` draws them your own way: see [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview).
+\`components\` of \`Form.Control\` and \`Form.Notifications\` draws them your own way: see [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview).
 
 ## Where next
 

@@ -26,9 +26,9 @@ The provider decides which columns are searched and what matches, and the field 
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| \`components\` | \`Partial<IDatasetControlUiQuickFindComponents>\` | Defaults | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`components\` | \`Partial<IDatasetControlUiQuickFindComponents>\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ## From your code
 
@@ -44,7 +44,7 @@ The provider decides which columns are searched and what matches, and the field 
 | \`isLikeQuery()\` | Whether the query starts with \`*\`. |
 | \`events\` | \`onQueryChanged\`, whenever the query is edited. |
 
-**Strings:** \`QUICK_FIND_LABELS\`, keys \`quickFind.*\`. See [**Localization**](?path=/docs/concepts-localization--overview).
+To change the placeholder or the callout's text, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 

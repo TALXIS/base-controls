@@ -3,9 +3,7 @@ import type { IGridExampleFile } from '../../grid/GridLivePreview'
 /** Three views of the deals, one of them a report, each setting the provider up as it opens. */
 export const VIEWS_FILE: IGridExampleFile = {
     name: 'views.ts',
-    code: `//the deal name is what quick find searches
-const DEALS = DEAL_COLUMNS.map(column => ({ ...column, isPrimary: column.name === 'name' }))
-const getDealColumn = (name: string) => DEALS.find(column => column.name === name)!
+    code: `const getDealColumn = (name: string) => DEAL_COLUMNS.find(column => column.name === name)!
 
 //the deal columns a view shows, in the order it shows them
 const columns = (...names: string[]) => names.map((name, order) => ({ ...getDealColumn(name), order }))
@@ -38,139 +36,20 @@ const VIEWS: IDatasetControlView[] = [
 //offers every deal column to Edit columns and user views, not only the ones a view shows
 class DealsProvider extends MemoryDataProvider {
     public async onGetAvailableColumns() {
-        return DEALS
+        return DEAL_COLUMNS
     }
 }
-
-const createDealsProvider = () => new DealsProvider({
-    dataSource: DEAL_ROWS.map(row => ({ ...row })),
-    metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
-})
 
 //the provider and the views to switch between; the control opens a view on the provider
 export const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
     //stands in for fetching the metadata from a server
     await new Promise(resolve => setTimeout(resolve, 800))
     //a new provider on every load: a view switch or reload mounts everything anew
-    return { provider: createDealsProvider(), views: VIEWS }
-}
-
-//the keys saveDealViewData saves, declared once in your project
-declare module '@talxis/base-controls' {
-    interface IUserQuerySavedValueMap {
-        sorting: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[]
-        filtering: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression | null
-        searchQuery: string
-    }
-}
-
-/** Saves the sorting, filter and search with every user view and puts them back as it opens. */
-export const saveDealViewData = (control: IDatasetControl) => {
-    const provider = () => control.getProvider()!
-    control.modules.observe('userQueries', userQueries => {
-        userQueries.saveWithView('sorting', () => provider().getSorting(), (sorting, provider) => provider.setSorting(sorting))
-        userQueries.saveWithView('filtering', () => provider().getFiltering(), (filtering, provider) => provider.setFiltering(filtering))
-        userQueries.saveWithView('searchQuery', () => provider().getSearchQuery(), (searchQuery, provider) => provider.setSearchQuery(searchQuery))
+    const provider = new DealsProvider({
+        dataSource: DEAL_ROWS.map(row => ({ ...row })),
+        metadata: { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', QuickFindColumns: ['name'], LogicalName: 'docs_deal', EntitySetName: 'docs_deals' },
     })
-}
-`,
-}
-
-/** The products as photo cards that select on click or from the keyboard, scrolled back where they were per view. */
-export const PRODUCT_GALLERY_FILE: IGridExampleFile = {
-    name: 'ProductGallery.tsx',
-    code: `const getGalleryStyles = (theme: ITheme) => mergeStyleSets({
-    gallery: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', alignContent: 'start', gap: 12, padding: '4px 4px 12px', height: '100%', overflow: 'auto', boxSizing: 'border-box' },
-    item: { cursor: 'pointer', ':focus-visible': { outline: \`2px solid \${theme.semanticColors.focusBorder}\`, outlineOffset: 2 } },
-    card: { maxWidth: 'none', minWidth: 0 },
-    selectedCard: { outline: \`2px solid \${theme.palette.themePrimary}\`, outlineOffset: -2 },
-})
-
-//the products as a gallery; a click, Enter or Space selects a card
-export const ProductGallery = () => {
-    const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged'])
-    const theme = useTheme()
-    const styles = React.useMemo(() => getGalleryStyles(theme), [theme])
-    //per view inside the DatasetControl, so each view comes back scrolled where it was
-    const store = useControlStateStore('gallery')
-    const galleryRef = React.useRef<HTMLDivElement>(null)
-
-    React.useLayoutEffect(() => {
-        galleryRef.current!.scrollTop = store.get<number>('scrollTop') ?? 0
-    }, [])
-
-    const selectedIds = provider.getSelectedRecordIds()
-    const toggle = (id: string) => provider.setSelectedRecordIds(selectedIds.includes(id) ? selectedIds.filter(selectedId => selectedId !== id) : [...selectedIds, id])
-
-    const onKeyDown = (event: { key: string, preventDefault: () => void }, id: string) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            toggle(id)
-        }
-    }
-
-    return <div ref={galleryRef} role='group' aria-label='Products' className={styles.gallery} onScroll={event => store.set('scrollTop', event.currentTarget.scrollTop)}>
-        {provider.getRecords().map(product => {
-            const id = product.getRecordId()
-            const isSelected = selectedIds.includes(id)
-            const photo = product.getValue('photo')
-            const inStock = product.getValue('instock')
-            return <div key={id} role='checkbox' aria-checked={isSelected} aria-label={product.getFormattedValue('name')} tabIndex={0} className={styles.item} onClick={() => toggle(id)} onKeyDown={event => onKeyDown(event, id)}>
-                <DocumentCard className={isSelected ? \`\${styles.card} \${styles.selectedCard}\` : styles.card}>
-                    <DocumentCardImage height={160} imageFit={ImageFit.cover} imageSrc={photo?.fileUrl ?? photo?.thumbnailUrl} />
-                    <DocumentCardDetails>
-                        <DocumentCardTitle title={product.getFormattedValue('name')} shouldTruncate />
-                        <DocumentCardTitle title={\`\${product.getFormattedValue('price')} · \${inStock > 0 ? \`\${inStock} in stock\` : 'Out of stock'}\`} showAsSecondaryTitle />
-                    </DocumentCardDetails>
-                </DocumentCard>
-            </div>
-        })}
-    </div>
-}
-`,
-}
-
-/** The commands of a sales pipeline, which change with what is selected. */
-export const RIBBON_FILE: IGridExampleFile = {
-    name: 'DealsRibbon.tsx',
-    code: `const WON_STAGE = 4
-
-//DatasetControl.Ribbon calls onLoad again on every selection
-export const DealsRibbon = (props: { enableSave?: boolean; enableDiscard?: boolean; enableRefresh?: boolean }) => {
-    const provider = useDataProvider()
-    const control = useDatasetControl()
-
-    //saved at once, so it leaves no unsaved changes behind
-    const setStage = async (recordIds: string[], stage: number) => {
-        const records = recordIds.map(id => provider.getRecordsMap()[id])
-        records.forEach(record => record.setValue('stage', stage))
-        await provider.save(records)
-        //the selection is the same, but which commands apply to it is not
-        await control.parts.get('ribbon').reload()
-    }
-
-    const onLoad = async (): Promise<IRibbonCommand[]> => {
-        const selectedIds = provider.getSelectedRecordIds()
-        const commands: IRibbonCommand[] = []
-        if (selectedIds.length === 0) {
-            return commands
-        }
-        const openIds = selectedIds.filter(id => Number(provider.getRecordsMap()[id].getValue('stage')) !== WON_STAGE)
-        if (openIds.length > 0) {
-            commands.push({ id: 'markWon', label: \`Mark \${openIds.length} as won\`, iconName: 'Trophy2', onExecute: () => setStage(openIds, WON_STAGE) })
-        }
-        if (openIds.length < selectedIds.length) {
-            commands.push({ id: 'reopen', label: 'Reopen', iconName: 'Undo', onExecute: () => setStage(selectedIds.filter(id => !openIds.includes(id)), 1) })
-        }
-        if (selectedIds.length === 1) {
-            const name = provider.getRecordsMap()[selectedIds[0]].getValue('name')
-            commands.push({ id: 'copyName', label: 'Copy name', iconName: 'Copy', tooltip: name, onExecute: () => navigator.clipboard.writeText(name) })
-        }
-        commands.push({ id: 'clearSelection', label: 'Clear selection', iconName: 'Clear', onExecute: () => provider.clearSelectedRecordIds() })
-        return commands
-    }
-
-    return <DatasetControl.Ribbon {...props} onLoad={onLoad} />
+    return { provider, views: VIEWS }
 }
 `,
 }

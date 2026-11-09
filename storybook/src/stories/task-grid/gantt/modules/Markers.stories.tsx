@@ -24,7 +24,7 @@ A marker is a date marked on the timeline with a line, and a chip on the scale t
 
 | Option | Default | Description |
 |---|---|---|
-| \`today\` | \`{ enableMarker: true }\`, in red | \`{ enableMarker?, color?, lineStyle? }\`, the marker of today. |
+| \`today\` | \`{ enableMarker: true }\`, in the theme's red | \`{ enableMarker?, color?, lineStyle? }\`, the marker of today. |
 | \`project\` | \`{ enableMarkers: true }\` | \`{ enableMarkers?, color?, lineStyle? }\`, the markers of the project's start and end, from the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module. |
 | \`components\` | Defaults | See *Changing how it looks* below. |
 
@@ -34,6 +34,8 @@ A marker is a date marked on the timeline with a line, and a chip on the scale t
 |---|---|
 | \`createMemoryMarkersModule\` | \`markers\`: the markers. |
 | \`createMarkersModule\` | Today and the project only, or a store of yours: \`createStore\` returns a store with \`loadMarkers()\`, which returns the markers. The chart does not wait for them. |
+
+The module's \`reload()\` reads the store again and redraws the markers: reach the module by its name, \`markers\`, as on [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview).
 
 ## Changing how it looks
 
@@ -45,7 +47,7 @@ A marker is a date marked on the timeline with a line, and a chip on the scale t
 | \`line\` | \`onRenderContainer\` | \`MarkerUiLineComponents\` | A marker's line over the chart |
 | \`scale\`, \`track\`, \`column\`, \`layer\` | \`onRenderContainer\` | \`MarkerUiScaleComponents\`, \`MarkerUiTrackComponents\`, \`MarkerUiColumnComponents\`, \`MarkerUiLayerComponents\` | The boxes the chips and lines sit in |
 
-Inside a slot, \`useMarker()\` returns the marker it draws, to change only some of them, as \`LaunchChip\` in the example does.
+Inside a slot, \`useMarker()\` returns the \`marker\` it draws and its \`left\` position, to change only some of them, as \`LaunchChip\` in the example does.
 
 ## Where next
 

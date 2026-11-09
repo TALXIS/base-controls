@@ -31,17 +31,18 @@ The grid starts from these, and its modules add their own. Change the others, an
 | \`animateRows: false\`, \`enableGroupEdit: true\` | The grid, at creation | Yes |
 | \`suppressDragLeaveHidesColumns\`, \`enterNavigatesVertically\`, \`enterNavigatesVerticallyAfterEdit\`, all \`true\` | The grid | Yes |
 | \`onGridReady\`, \`onGridPreDestroyed\` | The grid, at creation | No: observe the \`gridApi\` service, see *AG Grid's api* below |
-| \`rowModelType\`, \`getRowId\`, \`rowData\`, \`serverSideDatasource\`, \`treeData\`, \`getDataPath\` | The grid and the row model | No |
+| \`rowModelType\`, \`getRowId\`, \`rowData\`, \`serverSideDatasource\`, \`treeData\`, \`getDataPath\`, \`isGroupOpenByDefault\`, \`isServerSideGroupOpenByDefault\` | The grid and the row model | No |
 | \`columnDefs\`, \`rowHeight\`, \`getRowHeight\`, \`domLayout\`, \`rowClassRules\` | The grid | No: use the column definitions hook, the row height and row class hooks, and \`height\` |
 | \`loadingOverlayComponent\`, \`noRowsOverlayComponent\`, \`suppressOverlays\`, \`activeOverlay\`, \`loadingCellRenderer\` | The grid | No: use \`components\`, see [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview) |
 | \`readOnlyEdit\` | Editing | No |
 | \`rowSelection\`, \`cellSelection\` | Row selection, cell selection | No |
-| \`groupDisplayType\`, \`isGroupOpenByDefault\`, \`isServerSideGroupOpenByDefault\`, \`isFullWidthRow\`, \`fullWidthCellRenderer\`, \`pinnedBottomRowData\` | Grouping, totals | No |
+| \`groupDisplayType\` | Grouping | No |
+| \`isFullWidthRow\`, \`fullWidthCellRenderer\`, \`fullWidthCellRendererParams\`, \`pinnedBottomRowData\` | Totals | No |
 | \`theme\` | The grid | No: use \`hooks.theme\`, see *The AG Grid theme* below |
 
 ## AG Grid's api
 
-The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, provided once AG Grid is ready and unregistered as it is destroyed:
+The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, provided once AG Grid is ready and removed as it is destroyed:
 
 | From | Reach it with |
 |---|---|
@@ -49,7 +50,7 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, provided once AG Grid
 | Code outside the grid, such as a ribbon command | Keep the grid \`onSetup\` passes you, and call \`grid.services.find('gridApi')\` |
 | A component the grid draws | \`useGridService('gridApi')\`, which can be \`undefined\` on the first render |
 
-Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`. What you change through the api stays in AG Grid. Widths you autosize are not written to the provider and fire no \`onColumnsChanged\`, and a value written with \`node.setDataValue\` never reaches the record, so use \`record.setValue\`. An option a hook also sets is replaced by the hook's value, so set it through a hook rather than \`gridApi.setGridOption\`.
+Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`. What you change through the api stays in AG Grid. Widths you autosize are not written to the provider and fire no \`onColumnsChanged\`, and a value written with \`node.setDataValue\` never reaches the record, so use \`record.setValue\`. An option a hook also sets is overwritten the next time the hook's value changes, so set it through a hook rather than \`gridApi.setGridOption\`.
 
 To read AG Grid as it goes, return a cleanup from the observer: it runs while AG Grid still works (see *From mount to unmount* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview)).
 
@@ -122,7 +123,7 @@ export const JumpToTheNewestTicket: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Ribbon commands call \`gridApi\` to fit the columns, and to scroll to the newest ticket and flash it. Try: press *Jump to the newest ticket*.`,
+                story: `A ribbon command calls \`gridApi\` to scroll to the newest ticket and flash it. Try: press *Jump to the newest ticket*.`,
             },
         },
     },

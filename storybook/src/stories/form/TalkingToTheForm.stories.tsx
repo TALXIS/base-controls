@@ -6,8 +6,6 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { FromInsideExample, FromOutsideExample } from '../../form/react-form/talkingExamples'
 
 const DESCRIPTION = `
-> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
-
 Your own code often has to follow what the user does in a form, or fill in, read and save values itself. From outside, the form hands your code an api and raises events; from a component of yours placed inside it, hooks reach the form directly. Try it below: press **Set the phone**, then **Save**, and read the log under the form.
 
 {{canvas: Follow the form}}
@@ -33,7 +31,7 @@ Your own code often has to follow what the user does in a form, or fill in, read
 | \`onBeforeSave\` | None | A save starts, before the fields are checked. |
 | \`onAfterSave\` | \`{ success }\` | A save ends. \`success\` is false when a field failed, a save blocker stopped it or the record refused it. |
 | \`onValidationSummaryChanged\` | \`summary\` | A save made a new validation summary: see [**Fields and validation**](?path=/docs/controls-form-fields-and-validation--overview). |
-| \`onError\` | \`error\`, \`message\` | \`onLoad\` or a save blocker threw. |
+| \`onError\` | \`message\`, \`details\` | \`onLoad\` or a save blocker threw; \`details\` is what was thrown, and that save raises no \`onAfterSave\`. |
 
 ## From inside the form
 
@@ -47,7 +45,7 @@ A component of yours inside \`Form.Root\` reaches the form through hooks:
 
 {{story: A part inside the form}}
 
-\`useForm()\` does not draw the component again when the form changes, so follow its \`events\`, as \`SaveBar\` does with \`onDirtyStateChanged\`. What it returns:
+\`useForm()\` does not draw the component again when the form changes, so follow its \`events\`, as \`SaveBar\` does with \`onDirtyStateChanged\`. Its main members:
 
 | Member | Description |
 |---|---|

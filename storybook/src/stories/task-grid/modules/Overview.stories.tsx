@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { ModulesExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-A task grid has the tree and its commands built in; everything beyond them, such as dragging, assignees, checklists, dependencies or templates, is a module you add. Each module brings one feature and, when it keeps data, reads and writes it in the backend you choose: memory, Dataverse, TALXIS or a store of your own. Try it below: sort by *Checklist*.
+A task grid has the tree and its commands built in; everything beyond them, such as dragging, assignees, checklists, dependencies or templates, is a module you add. Each module brings one feature and, when it keeps data, reads and writes it in the backend you choose: memory, Dataverse, TALXIS or a store of your own. Try it below: drag a task onto another.
 
 {{canvas: Modules in both places}}
 
@@ -43,7 +43,7 @@ The base factory takes \`createStore\`, which the module calls with the task run
 
 ## Columns from modules
 
-Lookup many, Checklist, Dependencies and Custom columns add columns whose values are kept apart from the tasks. They show in *Edit columns*, and a view shows them by listing them by name. Their values load after the tasks, and their cells show a loading state until they arrive. A sort, filter or search on one of them waits for its values first.
+Lookup many, Checklist, Dependencies and Custom columns add columns whose values are kept apart from the tasks. They show in *Edit columns*, and a view shows them by listing them by name. Their values load after the tasks, and their cells show a loading state until they arrive. A sort, filter or search on one of them waits for its values first; the Checklist and Dependencies columns cannot be sorted or filtered.
 
 Modules that draw something take \`components\` to change it (see *Changing how it looks* on each module's page), and every module's strings are labels (see [**Localization**](?path=/docs/concepts-localization--overview)).
 
