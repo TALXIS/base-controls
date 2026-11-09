@@ -3,6 +3,7 @@ name: PR Build Validation
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    branches: [master, 'release/**']
 
 jobs:
   build:

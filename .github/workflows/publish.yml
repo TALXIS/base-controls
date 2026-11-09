@@ -1,4 +1,4 @@
-name: Build, Publish, and Deploy Storybook
+name: Publish Release
 
 on:
   release:
@@ -6,43 +6,104 @@ on:
 
 permissions:
   contents: read
-  id-token: write
-  pages: write
 
 jobs:
-  build_and_publish:
+  resolve:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      dist_tag: ${{ steps.resolve.outputs.dist_tag }}
+      npm_latest: ${{ steps.resolve.outputs.npm_latest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Read the version npm serves as latest
+        id: npm
+        run: echo "latest=$(npm view @talxis/base-controls dist-tags.latest 2>/dev/null)" >> "$GITHUB_OUTPUT"
+      - name: Resolve version and npm dist-tag
+        id: resolve
+        run: node ./scripts/resolve-release.mjs
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          IS_PRERELEASE: ${{ github.event.release.prerelease }}
+          NPM_LATEST: ${{ steps.npm.outputs.latest }}
+      - name: Check the release commit is on its branch
+        if: ${{ !github.event.release.prerelease }}
+        env:
+          DIST_TAG: ${{ steps.resolve.outputs.dist_tag }}
+          LINE: ${{ steps.resolve.outputs.line }}
+        run: |
+          on_branch() { git merge-base --is-ancestor "$GITHUB_SHA" "origin/$1" 2>/dev/null; }
+          if on_branch "release/$LINE"; then exit 0; fi
+          if [ "$DIST_TAG" = latest ] && on_branch master; then exit 0; fi
+          if [ "$DIST_TAG" = latest ]; then
+            echo "::error::A new latest release must come from master or release/$LINE."
+          else
+            echo "::error::A hotfix to $LINE must come from release/$LINE. Create it from the $LINE.0 tag first."
+          fi
+          exit 1
+
+  publish:
+    needs: resolve
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      VERSION: ${{ needs.resolve.outputs.version }}
+      DIST_TAG: ${{ needs.resolve.outputs.dist_tag }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
-      # Ensure npm 11.5.1 or later is installed - https://docs.npmjs.com/trusted-publishers#github-actions-configuration
+      # Trusted publishing needs npm 11.5.1 or later - https://docs.npmjs.com/trusted-publishers#github-actions-configuration
       - name: Update npm
         run: npm install -g npm@11
-      - name: Set package.json version from release tag
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          VERSION=${VERSION#v}
-          npm version --no-git-tag-version "$VERSION"
-        env:
-          GITHUB_REF: ${{ github.ref }}
+      - name: Set package.json version
+        run: npm version --no-git-tag-version "$VERSION"
       - run: npm install
       - run: npm run build
-      - run: npm publish
-      - run: npm --prefix ./storybook install
-      - run: npm run build-storybook
-      - uses: actions/upload-pages-artifact@v3
+      - run: npm publish --tag "$DIST_TAG"
+      - if: env.DIST_TAG == 'latest'
+        run: npm --prefix ./storybook install
+      - if: env.DIST_TAG == 'latest'
+        run: npm run build-storybook
+      - if: env.DIST_TAG == 'latest'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./storybook/storybook-static
 
   deploy_storybook:
-    needs: build_and_publish
+    needs: [resolve, publish]
+    if: needs.resolve.outputs.dist_tag == 'latest'
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  keep_latest_badge:
+    needs: [resolve, publish]
+    if: ${{ !github.event.release.prerelease && needs.resolve.outputs.dist_tag != 'latest' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Mark the npm latest version as the latest GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NPM_LATEST: ${{ needs.resolve.outputs.npm_latest }}
+        run: |
+          gh release edit "$NPM_LATEST" --latest --repo "$GITHUB_REPOSITORY" \
+            || gh release edit "v$NPM_LATEST" --latest --repo "$GITHUB_REPOSITORY"
