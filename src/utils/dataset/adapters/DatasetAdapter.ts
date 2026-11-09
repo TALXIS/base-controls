@@ -301,7 +301,7 @@ export class DatasetAdapter {
             else {
                 this._dataset.columns.map(col => {
                     stateColumnsMap.set(col.name, {
-                        ...stateColumnsMap.get(col.name),
+                        ...(stateColumnsMap.get(col.name) ?? col),
                         isHidden: col.isHidden
                     } as IColumn)
                 });
