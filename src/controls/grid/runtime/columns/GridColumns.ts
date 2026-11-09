@@ -1,7 +1,7 @@
 import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressHeaderKeyboardEventParams, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "ag-grid-community";
 import { DataProvider, DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
-import { HookRegistry, IAlignment, IHookPoint } from "@core";
+import { HookRegistry, IAlignment, IEventSubscriber, IHookPoint } from "@core";
 import { CellFieldRenderer } from "../../adapters/cells/field-cell-renderer/CellFieldRenderer";
 import { IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../adapters/column-header/ColumnHeaderRenderer";
@@ -39,6 +39,7 @@ export interface IGridColumnsHooks {
 
 /** The columns the grid gives AG Grid. */
 export interface IGridColumns {
+    readonly events: IEventSubscriber<IGridColumnsEvents>;
     /** What a column header offers, assembled from what the modules added. */
     readonly headers: IGridColumnHeaders;
     readonly hooks: IGridColumnsHooks;
@@ -63,8 +64,6 @@ export class GridColumns implements IGridColumnsInternal {
     constructor(parameters: IGridColumnsParameters) {
         this._services = parameters.services;
         this._headers = new GridColumnHeaders({ services: parameters.services });
-        //after every module's hook, so the caller sees the columns as the modules left them
-        this.hooks.columnDefinitions.add(this._applyColDefs, Number.MAX_SAFE_INTEGER);
     }
 
     public get headers(): IGridColumnHeadersInternal {
@@ -78,23 +77,6 @@ export class GridColumns implements IGridColumnsInternal {
         columnDefs.filter(columnDef => !own.has(columnDef)).forEach(columnDef => this._applyGridBehaviour(columnDef));
         return columnDefs;
     }
-
-    /** The caller's `colDefs`: merged over the column with the same id, else added. */
-    private _applyColDefs = (columnDefs: ColDef<IRecord>[]): void => {
-        for (const [colId, override] of Object.entries(this._settings.getColDefs())) {
-            const index = columnDefs.findIndex(columnDef => columnDef.colId === colId);
-            const existing = index === -1 ? null : columnDefs[index];
-            const changes = typeof override === 'function' ? override(existing) : override;
-            const base: ColDef<IRecord> = existing ?? { colId };
-            const merged = { ...base, ...changes, colId, context: this._mergeContext(base.context, changes.context) };
-            if (index === -1) {
-                columnDefs.push(merged);
-            }
-            else {
-                columnDefs[index] = merged;
-            }
-        }
-    };
 
     /** What a column a hook added takes from the grid, where it did not say otherwise. */
     private _applyGridBehaviour(columnDef: ColDef<IRecord>): void {
@@ -137,16 +119,6 @@ export class GridColumns implements IGridColumnsInternal {
             valueGetter: (params: ValueGetterParams<IRecord>) => this._getValue(params.data, column.name),
             valueFormatter: (params: ValueFormatterParams<IRecord>) => this._getFormattedValue(params.data, column.name),
             onCellDoubleClicked: (event: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(event),
-        };
-    }
-
-    //merged a level deep so an entry can change one setting, or one callback, and keep the rest
-    private _mergeContext(base: IGridColumnContext = {}, override: IGridColumnContext = {}): IGridColumnContext {
-        return {
-            ...base,
-            ...override,
-            cell: { ...base.cell, ...override.cell },
-            header: { ...base.header, ...override.header },
         };
     }
 

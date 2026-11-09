@@ -55,9 +55,6 @@ export class TaskRuntime implements ITaskRuntime {
         provider.hooks.availableColumns.add(this._addPathColumn);
         //modules waiting for it add columns a user view may keep
         this.services.provide('provider', provider);
-        provider.taskEvents.addEventListener('onTasksCreated', (records, parentId) => this._getProps().onTasksCreated?.(records, parentId));
-        provider.taskEvents.addEventListener('onTasksDeleted', taskIds => this._getProps().onTasksDeleted?.(taskIds));
-        provider.taskEvents.addEventListener('onTasksUpdated', records => this._getProps().onTasksUpdated?.(records));
         //a task view is only ever resolved with this task provider
         return { provider, views: views as IDatasetControlView<ITaskViewData>[] | undefined };
     }

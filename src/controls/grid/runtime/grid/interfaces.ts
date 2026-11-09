@@ -1,17 +1,22 @@
 import type { IEventSubscriber, IRuntime, IHookPoint } from "@core";
 import type { ILabels, ILabelSet, Labels } from "@labels";
-import type { IGridEventProps, IGridModuleLocator, IGridOpenRecordParameters } from "../../interfaces";
+import type { IGridModuleLocator, IGridOpenRecordParameters } from "../../interfaces";
 import type { IGridServiceRegistry, IGridServiceMap } from "../interfaces";
-import type { GridAgGridInitialOptionsHook, GridAgGridOptionsHook } from "./GridRuntime";
+import type { GridAgGridInitialOptionsHook, GridAgGridOptionsHook, GridOpenRecordHook } from "./GridRuntime";
 
 /** What the grid raises while it shows data; its mount's events are on `lifecycle`. */
-export interface IGridEvents extends Pick<IGridEventProps, 'onDataLoaded'> { }
+export interface IGridEvents {
+    /** Fires once new data is in the grid. */
+    onDataLoaded: () => void;
+}
 
 export interface IGridHooks {
     /** The options AG Grid reads only once, when it is created. */
     readonly agGridInitialOptions: IHookPoint<GridAgGridInitialOptionsHook>;
     /** Options re-applied whenever a value's reference changes. */
     readonly agGridOptions: IHookPoint<GridAgGridOptionsHook>;
+    /** How a record is opened; the provider opens it when no hook does. */
+    readonly openRecord: IHookPoint<GridOpenRecordHook>;
 }
 
 /** The running grid: what `onSetup` and `onLoad` hand you, and what a module's `onLoad` gets. */
@@ -27,7 +32,7 @@ export interface IGrid<TServices extends IGridServiceMap = IGridServiceMap> exte
     getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T>;
     /** Runs the option hooks again and hands AG Grid the ones that changed. */
     refreshAgGridOptions(): void;
-    /** Opens a record as the grid does, through `onOpenRecord` when the grid has one. */
+    /** Opens a record as the grid does, through `hooks.openRecord` and then the provider. */
     openRecord(parameters: IGridOpenRecordParameters): void;
 }
 

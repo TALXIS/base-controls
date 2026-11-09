@@ -1483,9 +1483,6 @@ interface IGridColDef {
     context?: IGridColumnContext;
 }
 
-/** New values for a column, or a function of the column as built. */
-type IGridColDefOverride = Partial<IGridColDef> | ((colDef: IGridColDef | null) => Partial<IGridColDef>);
-
 interface IGridCellLoading {
     isLoading: boolean;
 }
@@ -1644,9 +1641,10 @@ interface IGridColumnsEvents {
 }
 
 interface IGridColumns {
+    readonly events: IEventSubscriber<IGridColumnsEvents>;
     readonly headers: IGridColumnHeaders;
     readonly hooks: {
-        /** Runs on every column build, before the colDefs prop. */
+        /** Runs on every column build and on every load of the provider. */
         readonly columnDefinitions: IHookPoint<GridColumnDefinitionsHook>;
     };
 }
@@ -1813,14 +1811,8 @@ interface IGridRowHeight {
 
 type GridRowHeightHook = (result: IGridRowHeight, params: { record: IRecord; node: IRowNode<IRecord> }) => void;
 
-/** What the caller decides for each row, after the row-level hooks. */
-interface IGridRowSettings {
-    /** Locks a record as a whole, drawn as a dimmed row. */
-    lockHook?: (result: IGridLock, params: { record: IRecord }) => void;
-    heightHook?: GridRowHeightHook;
-}
-
 interface IGridRows {
+    readonly events: IEventSubscriber<IGridRowsEvents>;
     readonly hooks: {
         readonly height: IHookPoint<GridRowHeightHook>;
     };
@@ -1857,8 +1849,6 @@ interface IGridSettings {
     getMaxVisibleRows(): number;
     /** How tall the grid is, as a CSS length, or undefined while it grows with its rows. */
     getHeight(): string | undefined;
-    getColDefs(): { [colId: string]: IGridColDefOverride };
-    getRowSettings(): IGridRowSettings;
 }
 
 interface IGridKeyboard {
@@ -1964,10 +1954,12 @@ interface IGrid extends IRuntime {
         readonly agGridInitialOptions: IHookPoint<GridAgGridInitialOptionsHook>;
         /** AG Grid is handed an option again whenever its reference changes. */
         readonly agGridOptions: IHookPoint<GridAgGridOptionsHook>;
+        /** How a record is opened; the provider opens it when no hook does. */
+        readonly openRecord: IHookPoint<GridOpenRecordHook>;
     };
     /** Runs the option hooks again. */
     refreshAgGridOptions(): void;
-    /** Opens a record as the grid does, through onOpenRecord when the grid has one. */
+    /** Opens a record as the grid does, through hooks.openRecord and then the provider. */
     openRecord(params: IGridOpenRecordParameters): void;
     /** A label set's strings, as the LabelsProvider around the grid gives them. */
     getLabels(set: ILabelSet): ILabels;
@@ -1980,6 +1972,14 @@ interface IGridOpenRecordParameters {
     /** None for a double-click on the row. */
     columnName?: string;
 }
+
+/** A record the grid is about to open; a hook that opens it itself sets isHandled. */
+interface IGridOpenRecordRequest extends IGridOpenRecordParameters {
+    isHandled: boolean;
+}
+
+/** Opens a record in place of the provider, by setting isHandled. */
+type GridOpenRecordHook = (request: IGridOpenRecordRequest) => void;
 
 type IGridRowSelectionState = 'checked' | 'unchecked' | 'indeterminate';
 
@@ -3005,26 +3005,7 @@ interface IGridComponents {
     rows?: IGridRowComponents;
 }
 
-/** What happens inside the grid, for a consumer to react to. */
-interface IGridEventProps {
-    onDataLoaded: () => void;
-    onLoadingChanged: (isLoading: boolean) => void;
-    onRecordValueChanged: (record: IRecord, columnName: string, newValue: any) => void;
-    onBeforeRecordSave: (record: IRecord) => void;
-    /** Fired per record, auto-save included. */
-    onAfterRecordSave: (result: IRecordSaveOperationResult) => void;
-    /** Fired once provider.save() has saved every record. */
-    onAfterSave: (results: IRecordSaveOperationResult[]) => void;
-    onError: (message: string, details?: any) => void;
-    /** Fired whether or not the record then opens. */
-    onCellDoubleClicked: (record: IRecord, columnName: string) => void;
-    onRowClicked: (record: IRecord) => void;
-    onFocusedCellChanged: (record: IRecord | undefined, columnName: string | undefined) => void;
-    /** Fired when the user resizes or moves a column. */
-    onColumnsChanged: (columns: IColumn[]) => void;
-}
-
-interface IGridProps extends Partial<IGridEventProps> {
+interface IGridProps {
     /** What this grid is made of, in load order; read once, at mount, and must hold a row model. */
     modules: IGridModule[];
     /** True by default and read once, at mount. */
@@ -3041,15 +3022,8 @@ interface IGridProps extends Partial<IGridEventProps> {
     height?: string;
     className?: string;
     components?: IGridComponents;
-    /** Read once, at mount. */
-    /** Applied by id on every column build, after every module's hook. */
-    colDefs?: { [colId: string]: IGridColDefOverride };
-    /** Read whenever the grid asks. */
     /** The key the grid's state is kept under, per view inside a DatasetControl. */
     stateKey?: string;
-    rowSettings?: IGridRowSettings;
-    /** Replaces opening a record from the grid. */
-    onOpenRecord?: (params: IGridOpenRecordParameters) => void;
     /** Called with each new grid, before it loads; subscribe and keep refs here. */
     onSetup?: (grid: IGrid) => void;
     /** Awaited after the modules load and before AG Grid renders, on every mount. */
@@ -4156,8 +4130,21 @@ interface ITaskColumnMatcher {
 /** Holds the tasks back from the tree until it settles, such as values a filter on the module's column reads. */
 type TaskLoadWaiter = (params: { taskIds: string[] }) => Promise<void> | void;
 
+interface ITaskDataProviderEvents {
+    onTasksCreated: (records: IRecord[], parentId?: string) => void;
+    onTasksDeleted: (taskIds: string[]) => void;
+    onTaskMoved: (params: { movingRecord: IRecord; targetRecord: IRecord; position: string; parentRecord?: IRecord }) => void;
+    /** Tasks whose data changed in place, whatever changed it. */
+    onTasksUpdated: (records: IRecord[]) => void;
+    /** The editor the tasks were opened in outside the grid closed. */
+    onEditorClosed: (taskIds: string[]) => void;
+    /** The visible tree changed without new data. */
+    onTreeChanged: () => void;
+}
+
 /** The tasks of one view, loaded at once and shown as a tree. */
 interface ITaskDataProvider extends IDataProvider {
+    readonly taskEvents: IEventSubscriber<ITaskDataProviderEvents>;
     getFieldMapping(): IFieldMapping;
     /** The columns quick find searches, by name. */
     setQuickFindColumns(columnNames: string[]): void;
@@ -4303,12 +4290,6 @@ interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewDa
     enableEditing?: boolean;
     /** The Delete command. */
     enableDeletion?: boolean;
-    /** Called after tasks are created, with the parent they went under. */
-    onTasksCreated?: (records: IRecord[], parentId?: string) => void;
-    /** Called after tasks are deleted. */
-    onTasksDeleted?: (taskIds: string[]) => void;
-    /** Called after tasks change, from a form save or a move. */
-    onTasksUpdated?: (records: IRecord[]) => void;
 }
 
 interface ITaskGridProps extends Omit<IGridProps, 'modules'> {

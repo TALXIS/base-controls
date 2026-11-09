@@ -1,10 +1,8 @@
 import { Module } from "ag-grid-community";
-import { IColumn, IDataProvider, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import type { IGridColDefOverride } from "./runtime/columns/colDef";
+import { IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "./runtime/grid";
 import type { IRuntimeModule, IServiceLocator } from "@core";
 import type { IGridComponents } from "./components";
-import type { IGridRowSettings } from "./runtime/rows";
 
 /** What the grid's modules load, by module name; each module adds its own entry. */
 export interface IGridModuleMap { }
@@ -17,7 +15,7 @@ export interface IGridModule<TName extends keyof IGridModuleMap = keyof IGridMod
 /** Where the grid's loaded modules are found, by name. */
 export type IGridModuleLocator = IServiceLocator<IGridModuleMap>;
 
-/** What happens inside the grid, for a consumer to react to without reaching into its services. */
+/** A record the grid is asked to open. */
 export interface IGridOpenRecordParameters {
     record: IRecord;
     /** The record to open: the row's own, or the one a lookup link points to. */
@@ -26,33 +24,8 @@ export interface IGridOpenRecordParameters {
     columnName?: string;
 }
 
-export interface IGridEventProps {
-    /** Fires once new data is in the grid. */
-    onDataLoaded: () => void;
-    /** Fires when the grid starts or stops loading. */
-    onLoadingChanged: (isLoading: boolean) => void;
-    /** Fires when a value in a record changes. */
-    onRecordValueChanged: (record: IRecord, columnName: string, newValue: any) => void;
-    /** Fires when a record starts saving. */
-    onBeforeRecordSave: (record: IRecord) => void;
-    /** Fires when a record has finished saving, with how it went. */
-    onAfterRecordSave: (result: IRecordSaveOperationResult) => void;
-    /** Fires when the provider has finished saving its records, with how each went. */
-    onAfterSave: (results: IRecordSaveOperationResult[]) => void;
-    /** Fires when the provider reports an error. */
-    onError: (message: string, details?: any) => void;
-    /** Fires when a record's cell is double-clicked, whether or not the record then opens. */
-    onCellDoubleClicked: (record: IRecord, columnName: string) => void;
-    /** Fires when a row with a record is clicked. */
-    onRowClicked: (record: IRecord) => void;
-    /** Fires when the focus moves to another cell, or out of the rows. */
-    onFocusedCellChanged: (record: IRecord | undefined, columnName: string | undefined) => void;
-    /** Fires when the user resizes or moves a column, with the provider's columns after it. */
-    onColumnsChanged: (columns: IColumn[]) => void;
-}
-
 /** The grid reads its provider from `DataProviderContext`, once, at mount. */
-export interface IGridProps extends Partial<IGridEventProps> {
+export interface IGridProps {
     /** What this grid is made of, in load order; read once, at mount, and must hold a row model. */
     modules: IGridModule[];
     /** Whether a double click on a row opens its record; read once, at mount. */
@@ -72,14 +45,8 @@ export interface IGridProps extends Partial<IGridEventProps> {
     /** Overrides for the parts of what the grid draws itself, by piece. */
     components?: IGridComponents;
 
-    /** Changes or adds columns by id, after every module's hook has run. */
-    colDefs?: { [colId: string]: IGridColDefOverride };
     /** The key the grid's state is kept under, per view inside a DatasetControl. */
     stateKey?: string;
-    /** Callbacks the grid runs for each row, read whenever it asks. */
-    rowSettings?: IGridRowSettings;
-    /** Replaces opening a record from the grid. */
-    onOpenRecord?: (parameters: IGridOpenRecordParameters) => void;
     /** Called with each new grid, before it loads; subscribe and keep refs here. */
     onSetup?: (grid: IGrid) => void;
     /** Awaited after the modules load and before AG Grid renders, on every mount. */

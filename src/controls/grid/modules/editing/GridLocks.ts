@@ -17,13 +17,6 @@ declare module "../../runtime/columns/colDef" {
     }
 }
 
-declare module "../../runtime/rows/GridRows" {
-    interface IGridRowSettings {
-        /** Locks a record as a whole, after the record-level `locks.hooks.lock` hooks. */
-        lockHook?: (result: IGridLock, parameters: { record: IRecord }) => void;
-    }
-}
-
 /** The level that locks something. */
 export type IGridLockLevel = 'column' | 'record' | 'cell';
 
@@ -95,7 +88,6 @@ export class GridLocks implements IGridLocks {
     private _isRecordLocked(record: IRecord): boolean {
         const result: IGridLock = { isLocked: !record.isActive() };
         this.hooks.lock.apply(result, { record });
-        this._services.get('settings').getRowSettings().lockHook?.(result, { record });
         return result.isLocked;
     }
 

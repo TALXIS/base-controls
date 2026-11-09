@@ -1,6 +1,6 @@
 import { CellFocusedEvent, CellMouseOutEvent, CellMouseOverEvent, GridApi, IRowNode, RowClassParams, RowClassRules, RowClickedEvent, RowHeightParams } from "ag-grid-community";
 import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
-import { HookRegistry, IHookPoint } from "@core";
+import { HookRegistry, IEventSubscriber, IHookPoint } from "@core";
 import { IGridServiceRegistryInternal } from "..";
 import { getRowNode } from "./getRowNode";
 import { listenToGridApi } from "../grid/listenToGridApi";
@@ -23,12 +23,6 @@ export type GridRowHeightHook = (result: IGridRowHeight, parameters: { record: I
 /** Whether a row with a record takes a class. */
 export type GridRowClassRule = (parameters: { record: IRecord; node: IRowNode<IRecord> }) => boolean;
 
-/** What the caller decides for each row, after the row-level hooks. */
-export interface IGridRowSettings {
-    /** How tall a row is, after `hooks.height`. */
-    heightHook?: GridRowHeightHook;
-}
-
 export interface IGridRowsParameters {
     services: IGridServiceRegistryInternal;
 }
@@ -40,6 +34,7 @@ export interface IGridRowsHooks {
 
 /** What is true of a row as a whole. */
 export interface IGridRows {
+    readonly events: IEventSubscriber<IGridRowsEvents>;
     readonly hooks: IGridRowsHooks;
     /** Puts the class on every row with a record the rule holds for; pinned rows never take it. */
     addRowClass(className: string, rule: GridRowClassRule): () => void;
@@ -132,7 +127,6 @@ export class GridRows implements IGridRowsInternal {
         }
         const result: IGridRowHeight = {};
         this.hooks.height.apply(result, { record: params.data, node: params.node });
-        this._services.get('settings').getRowSettings().heightHook?.(result, { record: params.data, node: params.node });
         return this._setHeights.get(params.data.getRecordId()) ?? result.height;
     };
 

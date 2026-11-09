@@ -59,8 +59,6 @@ export type IGridColDef = Omit<ColDef<IRecord>, 'context'> & {
     context?: IGridColumnContext;
 };
 
-/** A change to a column: its new values, or a function of the column as built, `null` for a column it adds. */
-export type IGridColDefOverride = Partial<IGridColDef> | ((colDef: IGridColDef | null) => Partial<IGridColDef>);
 
 /** What a column definition carries in its `context`. */
 export const getColumnContext = (colDef: ColDef | null | undefined): IGridColumnContext => colDef?.context ?? {};

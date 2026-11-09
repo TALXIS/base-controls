@@ -19,10 +19,11 @@ Outside the grid, such as in the ribbon above, keep the grid \`onSetup\` passes 
 |---|---|
 | \`services\` | The grid's services, by key. See *Services* below. |
 | \`modules\` | The modules the grid was given, by name. See *Modules* below. |
-| \`events\` | \`onDataLoaded\`. See *Events* below. |
+| \`events\` | \`onDataLoaded\`. See *Events* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). |
 | \`lifecycle\` | The mount's status and events, such as \`onReady\` and \`onDestroyed\`. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`hooks.agGridOptions\`, \`hooks.agGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
-| \`openRecord(params)\` | Opens a record as a double-click does: through \`onOpenRecord\` when the grid has one. |
+| \`hooks.openRecord\` | What opening a record does. See *Open records your way* on [**Columns**](?path=/docs/controls-grid-columns--overview). |
+| \`openRecord(params)\` | Opens a record as a double-click does: through \`hooks.openRecord\`, then the provider. |
 | \`getLabels(set)\` | A set of labels as the grid resolves them. See [**Localization**](?path=/docs/concepts-localization--overview). |
 
 ## From mount to unmount
@@ -66,14 +67,13 @@ They return the service, not its state. To redraw when it changes, subscribe to 
 
 | Emitter | Event | Arguments | When it fires |
 |---|---|---|---|
-| \`grid.events\` | \`onDataLoaded\` | None | After every load of the provider, once the grid has its new columns and rows. |
 | \`grid.lifecycle.events\` | \`onReady\`, \`onInitFailed\`, \`onDestroyed\` | See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) | The mount is ready, failed to load, or ends. |
 | \`editing.events\` | \`onEditedCellChanged\` | \`previous?\`, \`next?\` | See *Options* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
 | \`rowSelection.events\` | \`onSelectionChanged\` | \`selectedRecordIds\` | The selection changes. |
 | \`filtering.events\` | \`onFilterOpened\` | \`columnName\` | A column's filter callout opens. |
 | \`filtering.events\` | \`onFilterClosed\` | None | The filter callout closes. |
 
-The grid's events also reach \`<Grid />\` as props, and a module's through its options: see [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). No event fires when sorting, filters, grouping or totals change; they reload the provider, so follow \`onDataLoaded\` and read the provider, as the summary above the example's grid does. The provider has events of its own, such as \`onRecordColumnValueChanged\`: see *React to changes* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+The events of the grid itself, its provider and its \`columns\`, \`rows\` and \`cells\` are under *Events* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). No event fires when sorting, filters, grouping or totals change; they reload the provider, so follow \`onDataLoaded\` and read the provider, as the summary above the example's grid does.
 
 ## Redrawing
 
@@ -101,9 +101,9 @@ The grid runs the hooks and the column callbacks when it draws, and nothing tell
 |---|---|
 | \`provider\` | The provider the grid shows. |
 | \`fields\` | \`get(record, columnName)\` returns an \`IGridField\` with \`getValue()\`, \`getFormattedValue()\`, \`isValid()\` and \`setValue(value)\`, which saves as a cell would. |
-| \`cells\` | The cells on screen: \`render()\`, \`getCells()\`, \`getCell(record, columnName)\`, and the cell hooks. |
-| \`columns\` | The column definitions hook, and \`headers\`: \`render()\` and the header hooks. |
-| \`rows\` | \`hooks.height\`, \`addRowClass(className, rule)\` and \`refreshRowClasses(records)\`. |
+| \`cells\` | The cells on screen: \`render()\`, \`getCells()\`, \`getCell(record, columnName)\`, \`events\` and the cell hooks. |
+| \`columns\` | The column definitions hook, \`events\`, and \`headers\`: \`render()\` and the header hooks. |
+| \`rows\` | \`events\`, \`hooks.height\`, \`addRowClass(className, rule)\` and \`refreshRowClasses(records)\`. |
 | \`validation\` | The validation hook. |
 | \`surfaces\` | \`hooks.surfaces\`, for what a module draws inside the grid. See [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). |
 | \`gridTheme\` | The AG Grid theme and the root element's styles: \`hooks.theme\`, \`hooks.styles\`. |

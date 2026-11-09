@@ -1,7 +1,7 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
-import { GridCellCommandsHook, GridCellLoadingHook, GridLockHook, GridSelectionStateHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
+import { GridCellCommandsHook, GridCellLoadingHook, GridLockHook, GridSelectionStateHook, GridOpenRecordHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { IStateStore } from "@core";
 import type { ITaskDataProvider, ITaskMoveParameters } from "../provider";
@@ -63,6 +63,7 @@ export class TaskTree implements ITaskGridTree {
 
         this._grid.hooks.agGridInitialOptions.add(this._onAgGridInitialOptions, TASK_GRID_PRIORITY.tree);
         this._grid.hooks.agGridOptions.add(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
+        this._grid.hooks.openRecord.add(this._onOpenRecord, TASK_GRID_PRIORITY.tree);
         services.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree);
         services.get('cells').hooks.theme.add(this._onCellTheme, TASK_GRID_PRIORITY.tree);
         services.get('cells').hooks.loading.add(this._onCellLoading, TASK_GRID_PRIORITY.tree);
@@ -168,6 +169,11 @@ export class TaskTree implements ITaskGridTree {
         }
         const label = this._runtime.getLabels(TASK_GRID_LABELS).get('taskGrid.addChild');
         result.items.push({ key: 'addChild', iconProps: { iconName: 'Add' }, iconOnly: true, title: label, ariaLabel: label, onClick: () => { runQuietly(() => this._runtime.tasks.create(recordId)); } });
+    };
+
+    private _onOpenRecord: GridOpenRecordHook = request => {
+        request.isHandled = true;
+        runQuietly(() => this._runtime.tasks.openRecord(request.reference, request.columnName));
     };
 
     private _onLock: GridLockHook = (result, context) => {

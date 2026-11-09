@@ -14,7 +14,6 @@ import { useDataProvider } from "@data";
 import { defineBaseControl } from "@fields";
 import { IGridProps } from "./interfaces";
 import { GridRuntime } from "./runtime/grid";
-import { useGridEventHandlers } from "./useGridEventHandlers";
 import { getGridStyles } from "./styles";
 import { GridComponentsContext, GridServicesContext } from "./context";
 import { IGridComponents } from "./components";
@@ -67,8 +66,6 @@ const GridMount = (props: IGridProps) => {
     const styles = useMemo(() => getGridStyles(runtime.services.get('gridTheme').getStyles(), height, rowHeight, maxVisibleRows), [height, rowHeight, maxVisibleRows]);
 
     const components = props.components ?? NO_COMPONENTS;
-
-    useGridEventHandlers(runtime, props);
 
     //parts listening ahead of AG Grid need this element once it is mounted
     const onGridRootRef = useCallback((gridRoot: HTMLDivElement | null) => {

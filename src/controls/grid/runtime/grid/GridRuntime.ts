@@ -9,7 +9,7 @@ import { RowLoading } from "../../adapters/rows/loading";
 import { LoadingOverlay } from "../../adapters/overlays/loading";
 import { EmptyStateOverlay } from "../../adapters/overlays/empty-state";
 import type { IDatasetControlInternal } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import { IGridProps, IGridEventProps, IGridModuleLocator, IGridModuleMap, IGridOpenRecordParameters } from "../../interfaces";
+import { IGridProps, IGridModuleLocator, IGridModuleMap, IGridOpenRecordParameters } from "../../interfaces";
 import { IGridServiceRegistryInternal, IGridServiceMapInternal } from "../interfaces";
 import { IGrid, IGridEvents } from "./interfaces";
 import { GridSettings } from "../settings";
@@ -45,6 +45,14 @@ export type GridAgGridInitialOptionsHook = (result: IGridAgGridInitialOptions) =
 /** A hook over the options AG Grid can be handed at any time. */
 export type GridAgGridOptionsHook = (result: IGridAgGridOptions) => void;
 
+/** A record the grid is about to open; a hook that opens it itself sets `isHandled`. */
+export interface IGridOpenRecordRequest extends IGridOpenRecordParameters {
+    isHandled: boolean;
+}
+
+/** Opens a record in place of the provider, by setting `isHandled`. */
+export type GridOpenRecordHook = (request: IGridOpenRecordRequest) => void;
+
 export interface IGridRuntimeParameters {
     /** The current props, read on demand so the grid follows them. */
     getProps: () => IGridProps;
@@ -73,6 +81,7 @@ export class GridRuntime implements IGrid {
     public readonly hooks = {
         agGridInitialOptions: new HookRegistry<GridAgGridInitialOptionsHook>(),
         agGridOptions: new HookRegistry<GridAgGridOptionsHook>(),
+        openRecord: new HookRegistry<GridOpenRecordHook>(),
     };
     private _agGridProps?: IGridAgGridInitialOptions['options'];
     /** What AG Grid was last handed. */
@@ -157,9 +166,9 @@ export class GridRuntime implements IGrid {
     }
 
     public openRecord(parameters: IGridOpenRecordParameters): void {
-        const onOpenRecord = this._getProps().onOpenRecord;
-        if (onOpenRecord) {
-            onOpenRecord(parameters);
+        const request: IGridOpenRecordRequest = { ...parameters, isHandled: false };
+        this.hooks.openRecord.apply(request);
+        if (request.isHandled) {
             return;
         }
         //a grouped row's provider has none of the root's interceptors

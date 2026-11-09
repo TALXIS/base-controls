@@ -25,10 +25,6 @@ export interface IGridSettings {
     getMaxVisibleRows(): number;
     /** How tall the grid is, as a CSS length, or `undefined` while it grows with its rows. */
     getHeight(): string | undefined;
-    /** The caller's changes to the columns, by id, read on every build. */
-    getColDefs(): NonNullable<IGridProps['colDefs']>;
-    /** The caller's per-row callbacks, read on every ask. */
-    getRowSettings(): NonNullable<IGridProps['rowSettings']>;
 }
 
 export class GridSettings implements IGridSettings {
@@ -69,13 +65,5 @@ export class GridSettings implements IGridSettings {
             return '100%';
         }
         return this._getProps().height ?? undefined;
-    }
-
-    public getColDefs(): NonNullable<IGridProps['colDefs']> {
-        return this._getProps().colDefs ?? {};
-    }
-
-    public getRowSettings(): NonNullable<IGridProps['rowSettings']> {
-        return this._getProps().rowSettings ?? {};
     }
 }

@@ -41,7 +41,24 @@ const GridExample = () => {
             log('gridApi', 'AG Grid is ready')
             return () => log('gridApi cleanup', 'AG Grid still answers')
         })
-        grid.lifecycle.events.addEventListener('onDestroyed', () => log('lifecycle onDestroyed'))
+        grid.events.addEventListener('onDataLoaded', () => log('onDataLoaded', provider.getRecords().length + ' tickets'))
+        grid.services.get('columns').events.addEventListener('onCellDoubleClicked', (record, columnName) => log('onCellDoubleClicked', ticketOf(record) + ' ' + columnName))
+        grid.services.get('columns').events.addEventListener('onColumnsChanged', columns => log('onColumnsChanged', columns.length + ' columns written back'))
+        grid.services.get('rows').events.addEventListener('onRowClicked', record => log('onRowClicked', ticketOf(record)))
+        grid.services.get('cells').events.addEventListener('onFocusedCellChanged', (record, columnName) => log('onFocusedCellChanged', record ? ticketOf(record) + ' ' + columnName : 'none'))
+        const removeProviderListeners = [
+            provider.addEventListener('onLoading', isLoading => log('onLoading', String(isLoading))),
+            provider.addEventListener('onRecordColumnValueChanged', (record, columnName) => log('onRecordColumnValueChanged', ticketOf(record) + ' ' + columnName + ' = ' + (record.getFormattedValue(columnName) ?? 'empty'))),
+            provider.addEventListener('onBeforeRecordSaved', record => log('onBeforeRecordSaved', ticketOf(record))),
+            provider.addEventListener('onAfterRecordSaved', result => log('onAfterRecordSaved', describeSave(result))),
+            provider.addEventListener('onAfterSaved', results => log('onAfterSaved', results.length + ' record(s)')),
+            provider.addEventListener('onError', message => log('onError', message)),
+        ]
+        grid.lifecycle.events.addEventListener('onDestroyed', () => {
+            //the provider outlives the grid, so its listeners are removed by hand
+            removeProviderListeners.forEach(remove => remove())
+            log('lifecycle onDestroyed')
+        })
     }
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
@@ -65,18 +82,7 @@ const GridExample = () => {
                         modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), createSortingModule()]}
                         height='440px'
                         onSetup={onSetup}
-                        onLoad={() => log('onLoad')}
-                        onDataLoaded={() => log('onDataLoaded', provider.getRecords().length + ' tickets')}
-                        onLoadingChanged={isLoading => log('onLoadingChanged', String(isLoading))}
-                        onRecordValueChanged={(record, columnName) => log('onRecordValueChanged', ticketOf(record) + ' ' + columnName + ' = ' + (record.getFormattedValue(columnName) ?? 'empty'))}
-                        onBeforeRecordSave={record => log('onBeforeRecordSave', ticketOf(record))}
-                        onAfterRecordSave={result => log('onAfterRecordSave', describeSave(result))}
-                        onAfterSave={results => log('onAfterSave', results.length + ' record(s)')}
-                        onError={message => log('onError', message)}
-                        onCellDoubleClicked={(record, columnName) => log('onCellDoubleClicked', ticketOf(record) + ' ' + columnName)}
-                        onRowClicked={record => log('onRowClicked', ticketOf(record))}
-                        onFocusedCellChanged={(record, columnName) => log('onFocusedCellChanged', record ? ticketOf(record) + ' ' + columnName : 'none')}
-                        onColumnsChanged={columns => log('onColumnsChanged', columns.length + ' columns written back')} />
+                        onLoad={() => log('onLoad')} />
                 </DatasetControl.Body>
             </DatasetControl>
         </div>
@@ -126,6 +132,12 @@ const GridExample = () => {
     const [ticket, setTicket] = React.useState<IRecord>()
     const [openedTicket, setOpenedTicket] = React.useState<IRecord>()
 
+    const onSetup = (grid: IGrid) => {
+        grid.services.get('rows').events.addEventListener('onRowClicked', setTicket)
+        grid.services.get('cells').events.addEventListener('onFocusedCellChanged', record => record && setTicket(record))
+        grid.services.get('columns').events.addEventListener('onCellDoubleClicked', record => setOpenedTicket(record))
+    }
+
     return <div className={styles.layout}>
         <div className={styles.grid}>
             <DatasetControl onLoad={async () => ({ provider: provider })}>
@@ -135,9 +147,7 @@ const GridExample = () => {
                         //a double-click opens the ticket's panel
                         enableNavigation={false}
                         height='480px'
-                        onRowClicked={setTicket}
-                        onFocusedCellChanged={record => record && setTicket(record)}
-                        onCellDoubleClicked={record => setOpenedTicket(record)} />
+                        onSetup={onSetup} />
                 </DatasetControl.Body>
             </DatasetControl>
         </div>

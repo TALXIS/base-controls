@@ -1,4 +1,3 @@
-import type { IRecord } from "@talxis/client-libraries";
 import { useLatest } from "@core";
 import { usePcfContext } from "@pcf";
 import { DatasetControl, useDatasetControl } from "@controls/dataset-control";
@@ -23,12 +22,6 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
     modules?: IDatasetControlModule[];
     /** Returns the provider, field mapping and views on every mount; `control.modules.get('taskRuntime')` is the task runtime. */
     onLoad: (control: IDatasetControl<ITaskViewData>) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
-    /** Called after tasks are created, with the parent they went under. */
-    onTasksCreated?: (records: IRecord[], parentId?: string) => void;
-    /** Called after tasks are deleted. */
-    onTasksDeleted?: (taskIds: string[]) => void;
-    /** Called after tasks take new values from the store. */
-    onTasksUpdated?: (records: IRecord[]) => void;
 }
 
 /** A DatasetControl of tasks with a `TaskGrid` in its body. */
@@ -46,7 +39,7 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
     //the task runtime sets up the provider your onLoad returns
     const onLoad = (datasetControl: IDatasetControl<ITaskViewData>) => datasetControl.modules.get('taskRuntime').load();
 
-    const { onLoad: _onLoad, modules = [], enableCreation, defaultCreatePosition, enableEditing, enableDeletion, hoursPerDay, onTasksCreated, onTasksDeleted, onTasksUpdated, children, ...datasetControlProps } = props;
+    const { onLoad: _onLoad, modules = [], enableCreation, defaultCreatePosition, enableEditing, enableDeletion, hoursPerDay, children, ...datasetControlProps } = props;
 
     return <DatasetControl {...datasetControlProps} modules={[taskRuntimeModule, ...modules]} onLoad={onLoad}>
         <TaskRuntimeProvider>{children}</TaskRuntimeProvider>
