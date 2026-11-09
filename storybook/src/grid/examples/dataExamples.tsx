@@ -131,10 +131,18 @@ const GridExample = () => {
     const [opened, setOpened] = React.useState('')
     const directory = React.useMemo(createDirectory, [])
 
+    const onSetup = (grid: IGrid) => {
+        grid.hooks.openRecord.add(request => {
+            request.isHandled = true
+            //reference is the record a lookup points to, or the row's own
+            setOpened('Opening ' + request.reference.etn + ' ' + request.reference.name)
+        })
+    }
+
     return <DatasetControl onLoad={async () => ({ provider: directory })}>
         {opened && <MessageBar onDismiss={() => setOpened('')}>{opened}</MessageBar>}
         <DatasetControl.Body>
-            <Grid modules={[createClientSideRowModelModule(), createEditingModule()]} enableOptionSetColors onOpenRecord={({ reference }) => setOpened('Opening ' + reference.etn + ' ' + reference.name)} height='360px' />
+            <Grid modules={[createClientSideRowModelModule(), createEditingModule()]} enableOptionSetColors onSetup={onSetup} height='360px' />
         </DatasetControl.Body>
     </DatasetControl>
 }

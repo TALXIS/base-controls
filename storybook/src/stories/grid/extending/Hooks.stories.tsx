@@ -12,9 +12,9 @@ A hook lets your code change a decision the grid makes as it draws: a cell's col
 
 ## How hooks run
 
-Register a hook on a service in a module's \`onLoad\`, and change the result it receives. What it returns is ignored. How to write a module is on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview).
+Add a hook on a service in a module's \`onLoad\`, or in the grid's \`onSetup\` from outside it, and change the result it receives. What it returns is ignored. How to write a module is on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview).
 
-The grid runs the hooks each time it draws, so keep a hook fast and free of side effects. When something a hook reads changes, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). Every \`register…\` call takes an optional \`priority\` and returns a function that removes the hook.
+The grid runs the hooks each time it draws, so keep a hook fast and free of side effects. When something a hook reads changes, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). Every \`add\` call takes an optional \`priority\` and returns a function that removes the hook.
 
 Hooks of one kind run in ascending priority. Within one priority they run in the order they were registered, which follows the order of the \`modules\` array. The default priority is \`0\`: the legacy client API module shares it, and every other built-in module runs later, so where both set the same thing, the module wins. To run after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`:
 
@@ -29,7 +29,7 @@ Hooks of one kind run in ascending priority. Within one priority they run in the
 | \`grouping\`, \`aggregation\` | \`60\`, \`70\` |
 | \`clipboard\` | \`80\` |
 
-The column's and the row's own callbacks, set through \`colDefs\` and \`rowSettings\`, run after every hook of their kind, and \`colDefs\` runs after every column definitions hook. Hooks run for group rows and the totals row too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+A column's own callbacks in its \`context\` run after every hook of their kind. Hooks run for group rows and the totals row too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 ## Locks
 
@@ -71,7 +71,7 @@ The hook runs for every column of every record, so check \`columnName\` first. A
 
 {{story: Make urgent tickets taller}}
 
-\`rowSettings.heightHook\` runs after the hooks, and a height the user drags on a row's resize grip wins over both. AG Grid asks for a row's height when it lays the row out, so after a change that should resize rows, call \`resetRowHeights()\` on the \`gridApi\` service.
+A height the user drags on a row's resize grip wins over the hooks. AG Grid asks for a row's height when it lays the row out, so after a change that should resize rows, call \`resetRowHeights()\` on the \`gridApi\` service.
 
 \`addRowClass(className, rule)\` puts a class on every row whose record the rule holds for, such as the editing module's \`LOCKED_RECORD_ROW_CLASS\` on a locked record. Pinned rows never take it. AG Grid runs the rules when it updates a row, so call \`rows.refreshRowClasses(records)\` after a change.
 
@@ -117,11 +117,11 @@ Every header hook receives an \`IGridColumnHeader\`:
 | \`hooks.commands\` | \`cells\` | \`result.items\`, \`result.overflowItems\` | \`context.cell.commandsHook\` |
 | \`hooks.control\` | \`cells\` | \`result.control\`: the control that draws a cell, and its \`bindings\` | None |
 | \`hooks.controlParameters\` | \`cells\` | The parameters a cell's control receives | \`context.cell.controlParametersHook\` |
-| \`hooks.height\` | \`rows\` | \`result.height\`, in pixels | \`rowSettings.heightHook\` |
+| \`hooks.height\` | \`rows\` | \`result.height\`, in pixels | None |
 | \`addRowClass(className, rule)\` | \`rows\` | Whether a row takes the class; no priority | None |
-| \`hooks.lock\` | \`editing.locks\` | \`result.isLocked\` for a column, a row or a cell | \`rowSettings.lockHook\`, \`context.cell.lockHook\` |
+| \`hooks.lock\` | \`editing.locks\` | \`result.isLocked\` for a column, a row or a cell | \`context.cell.lockHook\` |
 | \`hooks.validation\` | \`validation\` | \`result.error\`, \`result.errorMessage\` | \`context.cell.validationHook\` |
-| \`hooks.columnDefinitions\` | \`columns\` | The column definitions AG Grid receives | \`colDefs\` |
+| \`hooks.columnDefinitions\` | \`columns\` | The column definitions AG Grid receives: see *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview) | None |
 | \`hooks.menuSections\` | \`columns.headers\` | A menu's sections | \`context.header.menuSectionsHook\` |
 | \`hooks.menuItems\` | \`columns.headers\` | A menu's final items | \`context.header.menuItemsHook\` |
 | \`hooks.adornments\` | \`columns.headers\` | What a header draws beside the name | \`context.header.adornmentsHook\` |
@@ -131,6 +131,7 @@ Every header hook receives an \`IGridColumnHeader\`:
 | \`hooks.selectRecords\` | \`rowSelection\` | \`selection.recordIds\` or \`selection.isCancelled\`; may be async | None |
 | \`hooks.selectionState\` | \`rowSelection\` | \`result.state\` of a row's checkbox | None |
 | \`onKeyDown(handler)\` | \`keyboard\` | Runs for every key pressed inside the grid; no priority | None |
+| \`hooks.openRecord\` | The grid | \`request.isHandled\`: whether a hook opened the record in place of the provider. See *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview) | None |
 | \`hooks.agGridOptions\`, \`hooks.agGridInitialOptions\` | The grid | AG Grid's options: see [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview) | None |
 | \`hooks.theme\`, \`hooks.styles\` | \`gridTheme\` | The AG Grid theme and the root element's styles | None |
 

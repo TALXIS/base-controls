@@ -18,6 +18,22 @@ const getUrgency = (ticket: IRecord) => {
     return hoursLeft < AT_RISK_HOURS ? AT_RISK : undefined
 }
 
+const colourByUrgency: IGridColumnCellContext['themeHook'] = (builder, { record }) => {
+    const urgency = getUrgency(record)
+    if (urgency) {
+        //tint keeps the hue readable in light and dark themes
+        builder.tint(urgency)
+    }
+}
+
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        const dueDate = columnDefs.find(colDef => colDef.colId === 'duedate')!
+        //spread, so the cell keeps the rest of what the grid set
+        dueDate.context = { ...dueDate.context, cell: { ...dueDate.context?.cell, themeHook: colourByUrgency } }
+    })
+}
+
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
@@ -25,21 +41,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                 createClientSideRowModelModule(),
                 createSortingModule(),
             ]}
-            colDefs={{
-                duedate: {
-                    context: {
-                        cell: {
-                            themeHook: (builder, { record }) => {
-                                const urgency = getUrgency(record)
-                                if (urgency) {
-                                    //tint keeps the hue readable in light and dark themes
-                                    builder.tint(urgency)
-                                }
-                            },
-                        },
-                    },
-                },
-            }}
+            onSetup={onSetup}
             enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
@@ -60,6 +62,13 @@ const escalatedTicketsModule: IGridModule = {
     },
 }
 
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        const escalated = columnDefs.find(colDef => colDef.colId === 'escalated')!
+        escalated.context = { ...escalated.context, cell: { ...escalated.context?.cell, enableOneClickEdit: true } }
+    })
+}
+
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
@@ -69,9 +78,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                 createGroupingModule(),
                 escalatedTicketsModule,
             ]}
-            colDefs={{
-                escalated: { context: { cell: { enableOneClickEdit: true } } },
-            }}
+            onSetup={onSetup}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -83,13 +90,18 @@ const toMonospace = (theme: ITheme) => {
     theme.fonts.medium = { ...theme.fonts.medium, fontFamily: MONOSPACE }
 }
 
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        const ticketNumber = columnDefs.find(colDef => colDef.colId === 'ticketnumber')!
+        ticketNumber.context = { ...ticketNumber.context, cell: { ...ticketNumber.context?.cell, themeHook: builder => builder.edit('monospace', toMonospace) } }
+    })
+}
+
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
             modules={[createClientSideRowModelModule(), createEditingModule()]}
-            colDefs={{
-                ticketnumber: { context: { cell: { themeHook: builder => builder.edit('monospace', toMonospace) } } },
-            }}
+            onSetup={onSetup}
             height='420px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -212,6 +224,14 @@ const GridExample = () => {
         gridRef.current?.services.get('columns').headers.render()
     }
 
+    const onSetup = (grid: IGrid) => {
+        gridRef.current = grid
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            const hours = columnDefs.find(colDef => colDef.colId === 'hours')!
+            hours.context = { ...hours.context, cell: { ...hours.context?.cell, validationHook: validateHours } }
+        })
+    }
+
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
         { id: 'discard', label: 'Discard', iconName: 'Undo', onExecute: discard },
     ]
@@ -225,8 +245,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule(), reviewModule]}
-                colDefs={{ hours: { context: { cell: { validationHook: validateHours } } } }}
-                onSetup={grid => gridRef.current = grid}
+                onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>

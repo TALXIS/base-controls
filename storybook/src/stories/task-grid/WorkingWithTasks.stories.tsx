@@ -40,13 +40,13 @@ Rows can be dragged while the tree is shown, the tasks are sorted by nothing but
 
 ## Events
 
-These props of \`TaskDatasetControl\` follow every change, whichever way it was made:
+The task provider's \`taskEvents\` follow every change, whichever way it was made. Subscribe on the provider your \`onLoad\` returns, as the example above does; a new provider comes with every mount.
 
-| Prop | Called |
+| Event | Fires |
 |---|---|
 | \`onTasksCreated(records, parentId?)\` | After tasks are created, with the parent they went under. |
 | \`onTasksDeleted(taskIds)\` | After tasks are deleted. |
-| \`onTasksUpdated(records)\` | After tasks take new values from the store, such as what a form or the backend changed. |
+| \`onTasksUpdated(records)\` | After tasks take new values in place, such as what a form or the backend changed. |
 
 ## Where next
 

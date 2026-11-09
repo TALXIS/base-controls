@@ -71,43 +71,44 @@ const GridExample = () => {
         gridRef.current!.services.get('cells').render()
     }
 
+    const winChanceCell: IGridColumnCellContext = {
+        loadingHook: (result, { record }) => {
+            result.isLoading = forecasting.has(record.getRecordId())
+        },
+        lockHook: (result, { record }) => {
+            result.isLocked = isClosed(record)
+        },
+        validationHook: (result, { record }) => {
+            const chance = Number(record.getValue('probability') ?? 0)
+            if (chance < 0 || chance > 100) {
+                result.error = true
+                result.errorMessage = 'A win chance is between 0 and 100 %.'
+            }
+        },
+        commandsHook: (result, { record }) => {
+            if (!isClosed(record)) {
+                result.items.push({ key: 'forecast', text: 'Forecast', iconOnly: true, iconProps: { iconName: 'Lightbulb' }, onClick: () => { forecast(record) } })
+            }
+        },
+    }
+
+    const onSetup = (grid: IGrid) => {
+        gridRef.current = grid
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            columnDefs.find(colDef => colDef.colId === 'products')!.hide = true
+            const probability = columnDefs.find(colDef => colDef.colId === 'probability')!
+            Object.assign(probability, { headerName: 'Win chance', cellRenderer: WinChanceCell, initialWidth: 220 })
+            //spread, so the column keeps the rest of what the grid set
+            probability.context = { ...probability.context, alignment: 'left', cell: { ...probability.context?.cell, ...winChanceCell } }
+        })
+    }
+
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
                 enableOptionSetColors
-                colDefs={{
-                    products: { hide: true },
-                    probability: {
-                        headerName: 'Win chance',
-                        cellRenderer: WinChanceCell,
-                        initialWidth: 220,
-                        context: {
-                            alignment: 'left',
-                            cell: {
-                                loadingHook: (result, { record }) => {
-                                    result.isLoading = forecasting.has(record.getRecordId())
-                                },
-                                lockHook: (result, { record }) => {
-                                    result.isLocked = isClosed(record)
-                                },
-                                validationHook: (result, { record }) => {
-                                    const chance = Number(record.getValue('probability') ?? 0)
-                                    if (chance < 0 || chance > 100) {
-                                        result.error = true
-                                        result.errorMessage = 'A win chance is between 0 and 100 %.'
-                                    }
-                                },
-                                commandsHook: (result, { record }) => {
-                                    if (!isClosed(record)) {
-                                        result.items.push({ key: 'forecast', text: 'Forecast', iconOnly: true, iconProps: { iconName: 'Lightbulb' }, onClick: () => { forecast(record) } })
-                                    }
-                                },
-                            },
-                        },
-                    },
-                }}
-                onSetup={grid => { gridRef.current = grid }}
+                onSetup={onSetup}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -138,6 +139,14 @@ const CAPTIONED_HEADER: IColumnHeaderRendererComponents = {
     label: { onRenderText: props => <CaptionedLabel {...props} /> },
 }
 
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        for (const colDef of columnDefs.filter(colDef => CAPTIONS[colDef.colId!])) {
+            colDef.headerComponentParams = { ...colDef.headerComponentParams, components: CAPTIONED_HEADER }
+        }
+    })
+}
+
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
@@ -145,11 +154,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                 createClientSideRowModelModule(),
                 createSortingModule(),
             ]}
-            colDefs={{
-                price: { headerComponentParams: { components: CAPTIONED_HEADER } },
-                instock: { headerComponentParams: { components: CAPTIONED_HEADER } },
-                reorderlevel: { headerComponentParams: { components: CAPTIONED_HEADER } },
-            }}
+            onSetup={onSetup}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -208,15 +213,20 @@ const GridExample = () => {
         }
     }), [])
 
+    const onSetup = (grid: IGrid) => {
+        gridRef.current = grid
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            for (const colDef of columnDefs.filter(colDef => colDef.colId === 'value' || colDef.colId === 'probability')) {
+                colDef.headerComponent = SummaryHeader
+            }
+        })
+    }
+
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createSortingModule()]}
-                colDefs={{
-                    value: { headerComponent: SummaryHeader },
-                    probability: { headerComponent: SummaryHeader },
-                }}
-                onSetup={grid => { gridRef.current = grid }}
+                onSetup={onSetup}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -492,20 +502,24 @@ const HTML_EDITOR: IEditingCellEditorComponents = {
     columnControl: { onRenderControl: () => <RichTextInput /> },
 }
 
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        Object.assign(columnDefs.find(colDef => colDef.colId === 'description')!, {
+            cellRendererParams: { components: HTML_RENDERER },
+            cellEditorParams: { components: HTML_EDITOR },
+            cellEditorPopup: true,
+            autoHeight: true,
+            //Enter starts a new line in the editor rather than closing it
+            suppressKeyboardEvent: (params: SuppressKeyboardEventParams) => params.editing && params.event.key === 'Enter',
+        })
+    })
+}
+
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
             modules={[createClientSideRowModelModule(), createEditingModule()]}
-            colDefs={{
-                description: {
-                    cellRendererParams: { components: HTML_RENDERER },
-                    cellEditorParams: { components: HTML_EDITOR },
-                    cellEditorPopup: true,
-                    autoHeight: true,
-                    //Enter starts a new line in the editor rather than closing it
-                    suppressKeyboardEvent: params => params.editing && params.event.key === 'Enter',
-                },
-            }}
+            onSetup={onSetup}
             height='520px' />
     </DatasetControl.Body>
 </DatasetControl>

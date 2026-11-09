@@ -61,7 +61,6 @@ Every DatasetControl part works inside a \`TaskDatasetControl\`. Three are its o
 | \`components\` | Defaults | The Grid's pieces, plus the task grid's own cells. See *Changing how it looks* above. |
 | \`enableZebra\` | \`false\` | Shades every other row. At mount. |
 | \`enableOptionSetColors\` | \`true\` | Draws options that have a colour as tags. At mount. |
-| \`onOpenRecord\` | Opens the task, or the record a lookup points to, through the store | Replaces opening a record. Live. |
 
 ## Where next
 

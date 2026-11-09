@@ -32,7 +32,7 @@ The grid starts from these, and its modules add their own. Change the others, an
 | \`suppressDragLeaveHidesColumns\`, \`enterNavigatesVertically\`, \`enterNavigatesVerticallyAfterEdit\`, all \`true\` | The grid | Yes |
 | \`onGridReady\`, \`onGridPreDestroyed\` | The grid, at creation | No: observe the \`gridApi\` service, see *AG Grid's api* below |
 | \`rowModelType\`, \`getRowId\`, \`rowData\`, \`serverSideDatasource\`, \`treeData\`, \`getDataPath\` | The grid and the row model | No |
-| \`columnDefs\`, \`rowHeight\`, \`getRowHeight\`, \`domLayout\`, \`rowClassRules\` | The grid | No: use the column definitions hooks, \`colDefs\`, the row height and row class hooks, and \`height\` |
+| \`columnDefs\`, \`rowHeight\`, \`getRowHeight\`, \`domLayout\`, \`rowClassRules\` | The grid | No: use the column definitions hook, the row height and row class hooks, and \`height\` |
 | \`loadingOverlayComponent\`, \`noRowsOverlayComponent\`, \`suppressOverlays\`, \`activeOverlay\`, \`loadingCellRenderer\` | The grid | No: use \`components\`, see [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview) |
 | \`readOnlyEdit\` | Editing | No |
 | \`rowSelection\`, \`cellSelection\` | Row selection, cell selection | No |

@@ -172,6 +172,9 @@ export class TaskTree implements ITaskGridTree {
     };
 
     private _onOpenRecord: GridOpenRecordHook = request => {
+        if (request.isHandled) {
+            return;
+        }
         request.isHandled = true;
         runQuietly(() => this._runtime.tasks.openRecord(request.reference, request.columnName));
     };

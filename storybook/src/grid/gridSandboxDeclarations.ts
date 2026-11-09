@@ -1766,6 +1766,7 @@ interface IGridCell {
 }
 
 interface IGridCells {
+    readonly events: IEventSubscriber<IGridCellsEvents>;
     /** Redraws every cell, for state their records do not hold. */
     render(): void;
     getCells(): IGridCell[];

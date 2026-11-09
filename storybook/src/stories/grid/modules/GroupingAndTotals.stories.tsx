@@ -47,7 +47,7 @@ The totals cover the whole list as filtered and searched, not just the page on s
 
 ## Summary rows
 
-Group rows and the totals row are summary rows: records (\`IRecord\`) like any other, and the grid runs everything for them it runs for a record, from the \`rowSettings\` callbacks and every \`context.cell\` callback to the lock, validation and command hooks, legacy client API expressions and events such as \`onRowClicked\`. Tell them apart by \`record.getDataProvider().getSummarizationType()\`:
+Group rows and the totals row are summary rows: records (\`IRecord\`) like any other, and the grid runs everything for them it runs for a record, from every \`context.cell\` callback to the row height, lock, validation and command hooks, legacy client API expressions and events such as \`onRowClicked\`. Tell them apart by \`record.getDataProvider().getSummarizationType()\`:
 
 | \`getSummarizationType()\` | Row |
 |---|---|
@@ -101,7 +101,7 @@ Both modules take \`components\` (see *Options*). How slots work: [**Pieces and 
 
 {{story: Show group sizes as badges}}
 
-The cells are \`GroupCell\`, \`TotalCell\` and \`AggregateCell\`, and a key in their own \`components\` prop replaces the module's for that key. To draw one column's group rows or totals your own way, set its \`cellRendererSelector\` in \`colDefs\`, as the totals example below does. It replaces the module's for that column, so return \`undefined\` for the rows it should leave to \`cellRenderer\`, and draw a grouped column's records empty.
+The cells are \`GroupCell\`, \`TotalCell\` and \`AggregateCell\`, and a key in their own \`components\` prop replaces the module's for that key. To draw one column's group rows or totals your own way, set its \`cellRendererSelector\` on its definition, as the totals example below does. It replaces the module's for that column, so return \`undefined\` for the rows it should leave to \`cellRenderer\`, and draw a grouped column's records empty.
 
 The expansion column's header is \`GroupExpansionHeader\`: pass \`headerComponentParams: { components: { expandCollapse } }\` on \`GROUP_EXPANSION_COLUMN_KEY\`, with the slots \`onRenderContainer\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\` (default \`GroupingUiExpandCollapseComponents\`). To change one column's grouping icon, replace the header adornment keyed \`'grouping'\` in its \`context.header.adornmentsHook\`. The alert for a refused selection is the host's own dialog and has no slots.
 
@@ -238,7 +238,7 @@ export const LockSubmittedEntriesOnly: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`rowSettings.lockHook\` locks every entry past *Draft* or *Rejected*, and skips summary rows by \`getSummarizationType()\`. Try: turn off *Skip summary rows*.`,
+                story: `A lock hook locks every entry past *Draft* or *Rejected*, and skips summary rows by \`getSummarizationType()\`. Try: turn off *Skip summary rows*.`,
             },
         },
     },

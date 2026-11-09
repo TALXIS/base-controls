@@ -15,6 +15,14 @@ const STAR: ISelectionCellComponents = {
     },
 }
 
+const onSetup = (grid: IGrid) => {
+    //runs after the row selection module has added its checkbox column
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        const checkbox = columnDefs.find(colDef => colDef.colId === SELECTION_COLUMN_KEY)!
+        checkbox.cellRendererParams = { ...checkbox.cellRendererParams, components: STAR }
+    }, GRID_MODULE_PRIORITY.rowSelection + 1)
+}
+
 const GridExample = () => {
     const [starred, setStarred] = React.useState<string[]>([])
 
@@ -26,7 +34,7 @@ const GridExample = () => {
                     createClientSideRowModelModule(),
                     createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
                 ]}
-                colDefs={{ [SELECTION_COLUMN_KEY]: { cellRendererParams: { components: STAR } } }}
+                onSetup={onSetup}
                 height='400px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -170,6 +178,14 @@ const createStockTotals = () => {
     return products
 }
 
+const onSetup = (grid: IGrid) => {
+    //runs after the aggregation module has set the column's own selector
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        //only the pinned totals row draws StockTotalCell
+        columnDefs.find(colDef => colDef.colId === 'instock')!.cellRendererSelector = params => params.node.rowPinned ? { component: StockTotalCell } : undefined
+    }, GRID_MODULE_PRIORITY.aggregation + 1)
+}
+
 const GridExample = () => {
     const products = React.useMemo(createStockTotals, [])
 
@@ -177,10 +193,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createAggregationModule({ components: COMPONENTS })]}
-                colDefs={{
-                    //only the pinned totals row draws StockTotalCell
-                    instock: { cellRendererSelector: params => params.node.rowPinned ? { component: StockTotalCell } : undefined },
-                }}
+                onSetup={onSetup}
                 height='460px' />
         </DatasetControl.Body>
     </DatasetControl>

@@ -45,6 +45,12 @@ export const ScratchCheckList = () => {
     const onSetup = React.useCallback((grid: IGrid) => {
         Object.assign(window, { checkListProvider: provider, checkListGrid: grid })
         log('onSetup', `${provider.getRecords().length} items`)
+        const removeListeners = [
+            provider.addEventListener('onRecordColumnValueChanged', (record, columnName, newValue) => log('onRecordColumnValueChanged', `${record.getRecordId()} · ${columnName} = ${newValue}`)),
+            provider.addEventListener('onAfterRecordSaved', result => log('onAfterRecordSaved', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)),
+            provider.addEventListener('onError', message => log('onError', message)),
+        ]
+        grid.lifecycle.events.addEventListener('onDestroyed', () => removeListeners.forEach(remove => remove()))
     }, [])
 
     return (
@@ -81,10 +87,7 @@ export const ScratchCheckList = () => {
                     <DatasetControl.Body>
                         <Checklist
                             fieldMapping={FIELD_MAPPING}
-                            onSetup={onSetup}
-                            onRecordValueChanged={(record, columnName, newValue) => log('onRecordValueChanged', `${record.getRecordId()} · ${columnName} = ${newValue}`)}
-                            onAfterRecordSave={result => log('onAfterRecordSave', `${result.recordId} · ${result.success ? 'success' : 'failed'}`)}
-                            onError={message => log('onError', message)} />
+                            onSetup={onSetup} />
                     </DatasetControl.Body>
                 </DatasetControl>
             </Stack>

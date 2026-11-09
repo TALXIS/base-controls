@@ -12,7 +12,7 @@ A cell draws its value with the control for its column's data type, and that typ
 
 ## Changing how it looks
 
-Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound to the record's value, and edits them with \`EditingCell.Editor\` while the editing module is on. To change what a column's cells look like, hand those cells new slots through \`cellRendererParams\` and \`cellEditorParams\` in \`colDefs\`, as the example above does; to lay a cell out yourself, give the column a \`cellRenderer\` of your own.
+Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound to the record's value, and edits them with \`EditingCell.Editor\` while the editing module is on. To change what a column's cells look like, hand those cells new slots through \`cellRendererParams\` and \`cellEditorParams\` on the column's definition (see *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview)), as the example above does; to lay a cell out yourself, give the column a \`cellRenderer\` of your own.
 
 \`cellRendererParams\` and \`cellEditorParams\` take \`components\`, a map of the cell's pieces and their slots, and \`theme\`, a Fluent theme the cell's colours are generated from in place of the grid's own. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
@@ -35,7 +35,7 @@ The editor takes \`container\`, \`loading\`, \`control\`, \`columnControl\` and 
 
 A \`cellRenderer\` of your own is any component that gets AG Grid's cell params, \`IGridCellParams\`. Wrap it in \`Grid.Cell.Field\` to bind it to its column's value, formatting and validation. Inside, render \`Grid.Cell.Renderer\` with \`components\` of its own, or compose the parts as below.
 
-A column you add in \`colDefs\` holds no value of the provider's: draw it with \`Grid.Cell.Renderer\` and no \`Field\`, or with \`Grid.Cell.EmptyRenderer\` for an empty cell. An editor of your own renders \`EditingCell.Editor\` the same way.
+A column you add holds no value of the provider's: draw it with \`Grid.Cell.Renderer\` and no \`Field\`, or with \`Grid.Cell.EmptyRenderer\` for an empty cell. An editor of your own renders \`EditingCell.Editor\` the same way.
 
 ## Compose it from the parts
 

@@ -1,6 +1,7 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
-import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, IGridProps, DatasetControl } from '@talxis/base-controls'
+import type { ColDef } from 'ag-grid-community'
+import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, DatasetControl } from '@talxis/base-controls'
 import { DataTypes, IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -343,13 +344,24 @@ const validateEstimate = (result: IFieldValidationResult, { record }: { record: 
 }
 
 /** The columns the story adds or changes, beyond what the provider holds. */
-const SCRATCH_COL_DEFS: NonNullable<IGridProps['colDefs']> = {
-    //a grouped status stays where grouping pins it
-    status: colDef => ({ pinned: colDef?.pinned ?? 'right', context: { ...colDef?.context, alignment: 'right' } }),
-    //a value the record refuses, so a cell can be seen saying so: an estimate this team would not plan in
-    estimate: { context: { cell: { validationHook: validateEstimate } } },
-    [PAYLOAD_COLUMN]: { cellRenderer: PayloadCell, headerComponent: PayloadHeader },
-    [SUMMARY_COLUMN]: { ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader },
+const changeScratchColumns = (columnDefs: ColDef<IRecord>[]) => {
+    for (const colDef of columnDefs) {
+        switch (colDef.colId) {
+            case 'status':
+                //a grouped status stays where grouping pins it
+                colDef.pinned = colDef.pinned ?? 'right'
+                colDef.context = { ...colDef.context, alignment: 'right' }
+                break
+            case 'estimate':
+                //an estimate this team would not plan in, so a refused value can be seen
+                colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, validationHook: validateEstimate } }
+                break
+            case PAYLOAD_COLUMN:
+                Object.assign(colDef, { cellRenderer: PayloadCell, headerComponent: PayloadHeader })
+                break
+        }
+    }
+    columnDefs.push({ ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader })
 }
 
 export interface IScratchGridProps {
@@ -471,7 +483,6 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                 <Grid
                     key={key}
                     modules={modules}
-                    colDefs={SCRATCH_COL_DEFS}
                     height='100%'
                     enableNavigation={props.enableNavigation}
                     enableZebra={props.enableZebra}
@@ -480,6 +491,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                     stateKey='scratch-grid'
                     onSetup={grid => {
                         (window as any).__scratchGrid = grid
+                        grid.services.get('columns').hooks.columnDefinitions.add(changeScratchColumns, GRID_MODULE_PRIORITY.clipboard + 1)
                         grid.services.observe('gridApi', gridApi => { (window as any).__scratchGridApi = gridApi })
                     }} />
             </DatasetControl.Body>

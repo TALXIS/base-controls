@@ -12,7 +12,7 @@ The grid draws whatever its data provider holds: the provider's columns become t
 
 ## Describe a column
 
-Each of the provider's columns is an \`IColumn\`. Its \`name\` is the column's id: the record property that holds its value, and its key in \`colDefs\`. Its \`dataType\` decides how the value is drawn and edited, and \`displayName\` is the header's text. Every key the grid reads is under *Reference* below.
+Each of the provider's columns is an \`IColumn\`. Its \`name\` is the column's id: the record property that holds its value, and its column definition's \`colId\`. Its \`dataType\` decides how the value is drawn and edited, and \`displayName\` is the header's text. Every key the grid reads is under *Reference* below.
 
 Creating and loading the provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview); changing a column on top of it, without touching the provider, is on [**Columns**](?path=/docs/controls-grid-columns--overview).
 
@@ -49,7 +49,7 @@ The grid shows the records of the provider's current page, so the page size deci
 
 | Key | Default | Description |
 |---|---|---|
-| \`name\` | Required | The column's id, its key in \`colDefs\`, and the record property that holds its value. |
+| \`name\` | Required | The column's id, its column definition's \`colId\`, and the record property that holds its value. |
 | \`dataType\` | Required | How values are formatted, drawn and edited. |
 | \`displayName\` | Empty | The header's text. |
 | \`visualSizeFactor\` | \`200\` | The width in pixels; columns share spare space by it. A resize is written back here. |
@@ -97,7 +97,7 @@ The grid shows the records of the provider's current page, so the page size deci
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Columns', iconName: 'TripleColumn', href: '?path=/docs/controls-grid-columns--overview', text: 'Change the provider\'s columns, or add your own, with colDefs.' },
+    { title: 'Columns', iconName: 'TripleColumn', href: '?path=/docs/controls-grid-columns--overview', text: 'Change the provider\'s columns, or add your own, with a hook.' },
     { title: 'Editing', iconName: 'Edit', href: '?path=/docs/controls-grid-modules-editing--overview', text: 'Edit values in place, check them and save them.' },
     { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Create, load, sort and save the records the grid shows.' },
 ]

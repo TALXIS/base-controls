@@ -32,6 +32,11 @@ const GridExample = () => {
         gridRef.current?.refreshAgGridOptions()
     }
 
+    const onSetup = (grid: IGrid) => {
+        gridRef.current = grid
+        grid.services.get('columns').events.addEventListener('onColumnsChanged', columns => setOrder(describeOrder(columns)))
+    }
+
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
@@ -42,8 +47,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), columnOrderLock]}
-                onSetup={grid => { gridRef.current = grid }}
-                onColumnsChanged={columns => setOrder(describeOrder(columns))}
+                onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>

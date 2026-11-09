@@ -26,7 +26,7 @@ A column's callout sets one condition, and the conditions of all filtered column
 
 | Feature | A column offers it when | To take it off one column |
 |---|---|---|
-| Sorting | \`disableSorting\` is not set; the provider sets it on multi-select option sets | \`colDefs={{ title: { sortable: false } }}\`, or \`disableSorting: true\` on the column |
+| Sorting | \`disableSorting\` is not set; the provider sets it on multi-select option sets | \`sortable: false\` on the column's definition at \`GRID_MODULE_PRIORITY.sorting + 1\`, or \`disableSorting: true\` on the column |
 | Filtering | \`metadata.SupportedFilterConditionOperators\` holds at least one operator | \`SupportedFilterConditionOperators: []\` on the column |
 
 The provider's defaults are on [**Data**](?path=/docs/controls-grid-data--overview). To drop a whole section from one column's menu, remove its \`'sorting'\` or \`'filtering'\` section in \`context.header.menuSectionsHook\`: see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview).
@@ -95,7 +95,7 @@ The modules are \`grid.modules.find('sorting')\` and \`grid.modules.find('filter
 | \`sortColumn(columnName, descending?, appendToExisting?)\` | Sorts by the column and reloads. \`appendToExisting: true\` adds a sort level, as Shift+click does. |
 | \`clearColumnSorting(columnName)\` | Takes the column out of the sort and reloads. |
 | \`isSorted(column)\`, \`isSortedDescending(column)\` | Whether the provider sorts by the column, and in which direction. |
-| \`isColumnSortable(column)\` | Whether the column does not set \`disableSorting\`. It does not look at \`colDefs\`. |
+| \`isColumnSortable(column)\` | Whether the column does not set \`disableSorting\`. It does not look at the column definitions. |
 | \`getSortingLabel(columnName, descending?)\` | The text of the column's sort item, such as *Sort older to newer*. |
 | \`getSorting()\` | The \`Sorting\` helper from \`@talxis/client-libraries\` the module writes the provider's sort through. |
 | \`components\` | The \`components\` the module was given. |

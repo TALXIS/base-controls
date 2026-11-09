@@ -6,37 +6,37 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { AutoHeightExample, HeaderExample, KeyColumnsExample, LongNotesExample, ProductLinkExample, RememberLayoutExample, RowCommandsExample, StockValueExample } from '../../grid/examples/columnsExamples'
 
 const DESCRIPTION = `
-The grid builds a column for each of the provider's columns, with its header text, width and data type. \`colDefs\` changes those columns, or adds columns of your own, without touching the provider: key columns that stay in view, a link to the record, a calculated value or a button on every row. Try it below: turn off *Show every column*.
+The grid builds a column for each of the provider's columns, with its header text, width and data type. A hook on the grid's columns changes those columns, or adds columns of your own, without touching the provider: key columns that stay in view, a link to the record, a calculated value or a button on every row. Try it below: turn off *Show every column*.
 
 {{canvas: Keep key columns in view}}
 
 ## Change a column
 
-\`colDefs\` is keyed by column id. An entry takes any AG Grid column definition key, plus \`context\` for what the grid itself reads (see *The column context* below), and is merged over the column as built, \`context.cell\` and \`context.header\` included, so you change only what you set. A function entry receives the column as built, \`null\` for one you add, and returns what to change. \`colDefs\` applies after every module, so it overrides what they set.
+In \`onSetup\`, add a hook to \`grid.services.get('columns').hooks.columnDefinitions\`. It receives the column definitions each time the grid builds its columns: find one by its \`colId\` and change it, or push one of your own. A definition takes any AG Grid column definition key, plus \`context\` for what the grid itself reads (see *The column context* below). Spread the existing \`context\`, and its \`cell\` or \`header\`, so the grid's own keys stay. At the default priority the modules run after your hook and can overwrite what it sets: see *Columns* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
-| Key | Column |
+| \`colId\` | Column |
 |---|---|
 | A provider column's \`name\` | That column. What the grid reads from the provider's columns is on [**Data**](?path=/docs/controls-grid-data--overview) |
 | \`RECORD_SAVE_COLUMN_KEY\`, \`RECORD_LOCK_COLUMN_KEY\` | The editing module's save status and lock columns |
 | \`SELECTION_COLUMN_KEY\` | The row selection module's checkbox column |
 | \`GROUP_EXPANSION_COLUMN_KEY\` | The grouping module's expansion column |
-| Any other key | A column of your own, added at the end: see *Add a calculated column* |
+| Any other | A column of your own: see *Add a calculated column* |
 
 Keys of your own in \`context\` sit beside the grid's, and \`getColumnContext(colDef)\` reads them back, such as in a cell of your own.
 
 ## Pin and size columns
 
-\`pinned: 'left'\` or \`'right'\` keeps a column at that edge, as in the example above. A column's width comes from its provider column's \`visualSizeFactor\`, or \`initialWidth\` in \`colDefs\`; columns stretch to fill the grid, and \`maxWidth\` caps one.
+\`pinned: 'left'\` or \`'right'\` keeps a column at that edge, as in the example above. A column's width comes from its provider column's \`visualSizeFactor\`, or the definition's \`initialWidth\`; columns stretch to fill the grid, and \`maxWidth\` caps one.
 
 ## Link to the record
 
-\`context.isPrimary: true\` draws the value as a link to its record. Clicking it, or double-clicking a row in a grid without the editing module, opens the record; pass \`onOpenRecord\` to \`<Grid />\` to do something else. \`enableNavigation={false}\` turns links and opening off.
+\`context.isPrimary: true\` draws the value as a link to its record. Clicking it, or double-clicking a row in a grid without the editing module, opens the record. To do something else, add a hook to \`grid.hooks.openRecord\` that sets \`request.isHandled\`; the request also holds \`record\`, \`reference\` (the record a lookup link points to, or the row's own) and \`columnName\`. When no hook handles it, the provider opens the record. \`enableNavigation={false}\` turns links and opening off.
 
 {{story: Open a product from its name}}
 
 ## Add a calculated column
 
-Give \`colDefs\` a key that is not a provider column. \`valueGetter\` returns the value, which copying uses too, and \`cellRenderer\` draws the cell (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)); without a \`cellRenderer\` the cell is empty. Read the record with \`useGridCell()\` inside the cell, so the value follows the record.
+Push a definition whose \`colId\` is not a provider column's name. \`valueGetter\` returns the value, which copying uses too, and \`cellRenderer\` draws the cell (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)); without a \`cellRenderer\` the cell is empty. Read the record with \`useGridCell()\` inside the cell, so the value follows the record.
 
 The column takes the grid's header and keeps its \`initialWidth\`. It has no editor, the modules add nothing to its menu, and the column layout does not keep it. Group rows and the totals row draw it too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
@@ -79,7 +79,7 @@ The widths, order and visibility of the columns live on the provider's columns. 
 
 {{story: Remember the layout}}
 
-Columns added through \`colDefs\` are not kept. A grid outside a DatasetControl keeps nothing: save each column's \`name\`, \`visualSizeFactor\` and \`order\` in \`onColumnsChanged(columns)\`, and apply them with \`setColumns()\` before the provider loads.
+Columns you push are not kept. A grid outside a DatasetControl keeps nothing: save each column's \`name\`, \`visualSizeFactor\` and \`order\` when the columns' \`onColumnsChanged(columns)\` fires (see *Events* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview)), and apply them with \`setColumns()\` before the provider loads.
 
 ## Reference
 
@@ -158,7 +158,7 @@ export const OpenAProductFromItsName: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`context.isPrimary\` makes *Product* a link, and \`onOpenRecord\` opens the product in a form in a panel. Try: click a product's name.`,
+                story: `\`context.isPrimary\` makes *Product* a link, and a \`hooks.openRecord\` hook opens the product in a form in a panel. Try: click a product's name.`,
             },
         },
     },
@@ -218,7 +218,7 @@ export const FitRowsToTheirNotes: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`autoHeight: true\` on *Notes* makes every row as tall as its note, up to six lines. Try: open **Code** and remove \`autoHeight\`.`,
+                story: `\`autoHeight: true\` on *Notes* makes every row as tall as its note, up to six lines. Try: open **Code** and set \`autoHeight\` to \`false\`.`,
             },
         },
     },

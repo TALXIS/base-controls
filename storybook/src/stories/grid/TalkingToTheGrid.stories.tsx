@@ -22,7 +22,7 @@ Outside the grid, such as in the ribbon above, keep the grid \`onSetup\` passes 
 | \`events\` | \`onDataLoaded\`. See *Events* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). |
 | \`lifecycle\` | The mount's status and events, such as \`onReady\` and \`onDestroyed\`. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`hooks.agGridOptions\`, \`hooks.agGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
-| \`hooks.openRecord\` | What opening a record does. See *Open records your way* on [**Columns**](?path=/docs/controls-grid-columns--overview). |
+| \`hooks.openRecord\` | What opening a record does. See *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview). |
 | \`openRecord(params)\` | Opens a record as a double-click does: through \`hooks.openRecord\`, then the provider. |
 | \`getLabels(set)\` | A set of labels as the grid resolves them. See [**Localization**](?path=/docs/concepts-localization--overview). |
 

@@ -72,6 +72,13 @@ const supportDeskScript: IGridModule = {
     },
 }
 
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        //room for the notifications beside the title
+        columnDefs.find(colDef => colDef.colId === 'title')!.initialWidth = 380
+    })
+}
+
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
@@ -80,7 +87,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
                 createLegacyClientApiCompatibilityModule(),
                 supportDeskScript,
             ]}
-            colDefs={{ title: { initialWidth: 380 } }}
+            onSetup={onSetup}
             enableOptionSetColors
             height='420px' />
     </DatasetControl.Body>
@@ -132,6 +139,13 @@ const syncStock = async () => {
     provider.requestRender()
 }
 
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        const discontinued = columnDefs.find(colDef => colDef.colId === 'discontinued')!
+        discontinued.context = { ...discontinued.context, cell: { ...discontinued.context?.cell, enableOneClickEdit: true } }
+    })
+}
+
 const GridExample = () => {
     //the ribbon disables a command while it runs
     const loadCommands = async (): Promise<IRibbonCommand[]> => [{ id: 'sync', label: 'Sync stock', iconName: 'Sync', onExecute: syncStock }]
@@ -150,7 +164,7 @@ const GridExample = () => {
                     createLegacyClientApiCompatibilityModule(),
                     stockScript,
                 ]}
-                colDefs={{ discontinued: { context: { cell: { enableOneClickEdit: true } } } }}
+                onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>

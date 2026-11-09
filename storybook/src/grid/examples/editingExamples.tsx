@@ -7,13 +7,21 @@ export const LOG_HOURS_CODE = `const getWorkDone = (recordId: string) => provide
 const GridExample = () => {
     const [status, setStatus] = React.useState('Change the hours of an entry: it saves as soon as you leave the cell.')
 
+    //the provider raises the save events
+    React.useEffect(() => {
+        const removeBefore = provider.addEventListener('onBeforeRecordSaved', record => setStatus(\`Saving '\${record.getValue('description')}'...\`))
+        const removeAfter = provider.addEventListener('onAfterRecordSaved', result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`))
+        return () => {
+            removeBefore()
+            removeAfter()
+        }
+    }, [])
+
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
-                onBeforeRecordSaved={record => setStatus(\`Saving '\${record.getValue('description')}'...\`)}
-                onAfterRecordSaved={result => setStatus(result.success ? \`Saved '\${getWorkDone(result.recordId)}'.\` : \`'\${getWorkDone(result.recordId)}' was not saved.\`)}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -30,6 +38,9 @@ const GridExample = () => {
         setMessage(refused > 0 ? \`\${refused} of \${entries(results.length)} refused: see the red icons on their rows.\` : \`Saved \${entries(results.length)}.\`)
     }
 
+    //fires once provider.save() has saved every record
+    React.useEffect(() => provider.addEventListener('onAfterSaved', onAfterSaved), [])
+
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
@@ -40,7 +51,6 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule()]}
-                onAfterSaved={onAfterSaved}
                 height='400px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -71,6 +81,23 @@ const validateComment = (result: IFieldValidationResult, { record }: { record: I
     }
 }
 
+const VALIDATION_HOOKS: { [colId: string]: IGridColumnCellContext['validationHook'] } = {
+    hours: validateHours,
+    comment: validateComment,
+}
+
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        for (const colDef of columnDefs) {
+            const validationHook = VALIDATION_HOOKS[colDef.colId!]
+            if (validationHook) {
+                //spread, so the cell keeps the rest of what the grid set
+                colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, validationHook } }
+            }
+        }
+    })
+}
+
 const GridExample = () => {
     const timesheets = React.useMemo(createTimesheets, [])
 
@@ -78,10 +105,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
-                colDefs={{
-                    hours: { context: { cell: { validationHook: validateHours } } },
-                    comment: { context: { cell: { validationHook: validateComment } } },
-                }}
+                onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -99,6 +123,23 @@ const LOCK_LABELS = {
 //a two-options value reads as '1' or '0'
 const isBillable = (record: IRecord) => record.getValue('billable') === '1'
 
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        const employee = columnDefs.find(colDef => colDef.colId === 'employee')!
+        employee.context = { ...employee.context, isLocked: true }
+    })
+    //the locks belong to the editing module, which the grid has only while the week is open
+    grid.modules.observe('editing', editing => editing.locks.hooks.lock.add((result, { record, columnName }) => {
+        //a record without a columnName asks about the whole row
+        if (record && !columnName && Number(record.getValue('status')) === APPROVED) {
+            result.isLocked = true
+        }
+        if (record && columnName === 'rate' && !isBillable(record)) {
+            result.isLocked = true
+        }
+    }))
+}
+
 const GridExample = () => {
     const [isWeekClosed, setIsWeekClosed] = React.useState(false)
 
@@ -113,27 +154,7 @@ const GridExample = () => {
                 <Grid
                     key={isWeekClosed ? 'closed' : 'open'}
                     modules={[createClientSideRowModelModule(), ...(isWeekClosed ? [] : [createEditingModule({ enableAutoSave: true })])]}
-                    rowSettings={{
-                        lockHook: (result, { record }) => {
-                            if (Number(record.getValue('status')) === APPROVED) {
-                                result.isLocked = true
-                            }
-                        },
-                    }}
-                    colDefs={{
-                        employee: { context: { isLocked: true } },
-                        rate: {
-                            context: {
-                                cell: {
-                                    lockHook: (result, { record }) => {
-                                        if (!isBillable(record)) {
-                                            result.isLocked = true
-                                        }
-                                    },
-                                },
-                            },
-                        },
-                    }}
+                    onSetup={onSetup}
                     height='440px' />
             </DatasetControl.Body>
         </DatasetControl>
@@ -188,16 +209,24 @@ const getAmountToInvoice = () => provider.getRecords()
     .filter(isBillable)
     .reduce((total, record) => total + Number(record.getValue('hours') ?? 0) * Number(record.getValue('rate') ?? 0), 0)
 
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        const billable = columnDefs.find(colDef => colDef.colId === 'billable')!
+        billable.context = { ...billable.context, cell: { ...billable.context?.cell, enableOneClickEdit: true } }
+    })
+}
+
 const GridExample = () => {
     const [amountToInvoice, setAmountToInvoice] = React.useState(getAmountToInvoice)
+
+    React.useEffect(() => provider.addEventListener('onRecordColumnValueChanged', () => setAmountToInvoice(getAmountToInvoice())), [])
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>To invoice for last week: {amountToInvoice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</MessageBar>
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
-                colDefs={{ billable: { context: { cell: { enableOneClickEdit: true } } } }}
-                onRecordValueChanged={() => setAmountToInvoice(getAmountToInvoice())}
+                onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -234,6 +263,16 @@ const SAVE_STATUS: IRecordSaveUiComponents = {
     },
 }
 
+const onSetup = (grid: IGrid) => {
+    //runs after the editing module has added its save status column
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        const saveStatus = columnDefs.find(colDef => colDef.colId === RECORD_SAVE_COLUMN_KEY)!
+        //wide enough for the button's text
+        saveStatus.width = 112
+        saveStatus.cellRendererParams = { components: SAVE_STATUS }
+    }, GRID_MODULE_PRIORITY.editing + 1)
+}
+
 const GridExample = () => {
     const products = React.useMemo(createPriceList, [])
 
@@ -241,10 +280,7 @@ const GridExample = () => {
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
-                colDefs={{
-                    //wide enough for the button's text
-                    [RECORD_SAVE_COLUMN_KEY]: { width: 112, cellRendererParams: { components: SAVE_STATUS } },
-                }}
+                onSetup={onSetup}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>

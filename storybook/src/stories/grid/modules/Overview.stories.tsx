@@ -33,7 +33,7 @@ What the provider holds survives the remount: its records, sorting, filters, gro
 
 ## Text and looks
 
-Modules take no text of their own: to change their labels, see [**Localization**](?path=/docs/concepts-localization--overview). Sorting, filtering, grouping and aggregation take a \`components\` option for what they draw, and the editing and row selection modules draw columns of their own, which you restyle through \`colDefs\`. Each module's page lists what it draws under *Changing how it looks*.
+Modules take no text of their own: to change their labels, see [**Localization**](?path=/docs/concepts-localization--overview). Sorting, filtering, grouping and aggregation take a \`components\` option for what they draw, and the editing and row selection modules draw columns of their own, which you restyle on their column definitions. Each module's page lists what it draws under *Changing how it looks*.
 
 ## Enterprise features and the licence
 

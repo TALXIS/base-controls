@@ -302,8 +302,8 @@ const DealPanel = (props: { deal?: IRecord; onDismiss: () => void }) => <Panel i
     {props.deal && <DealForm key={props.deal.getRecordId()} deal={props.deal} />}
 </Panel>
 
-/** An Open in a form command beside every deal's name. */
-const openInForm: IGridModule = {
+/** An Open in a form command beside every deal's name; it and the Deal link open the deal in a panel. */
+const createOpenInForm = (onOpenDeal: (deal: IRecord) => void): IGridModule => ({
     name: 'openInForm',
     onLoad: grid => {
         grid.services.get('cells').hooks.commands.add((result, { record, columnName }) => {
@@ -312,8 +312,13 @@ const openInForm: IGridModule = {
             }
             result.items.push({ key: 'openInForm', text: 'Open in a form', iconOnly: true, iconProps: { iconName: 'OpenPane' }, onClick: () => grid.openRecord({ record, reference: record.getNamedReference(), columnName }) })
         })
+        //a handled request is not passed on to the provider
+        grid.hooks.openRecord.add(request => {
+            request.isHandled = true
+            onOpenDeal(request.record)
+        })
     },
-}
+})
 
 export const AT_A_GLANCE: { [feature: string]: IFeature } = {
     statusIcons: () => ({ modules: [statusIcons] }),
@@ -321,10 +326,8 @@ export const AT_A_GLANCE: { [feature: string]: IFeature } = {
     headerExtras: () => ({ modules: [headerExtras] }),
     overdueActions: () => ({ modules: [overdueActions] }),
     quickViews: () => ({ modules: [quickViews] }),
-    //the command and the Deal link both open the deal through onOpenRecord
     dealForm: ({ openedDeal, onOpenDeal }) => ({
-        modules: [openInForm],
-        onOpenRecord: ({ record }) => onOpenDeal(record),
+        modules: [createOpenInForm(onOpenDeal)],
         frame: { overlays: [<DealPanel key='dealPanel' deal={openedDeal} onDismiss={() => onOpenDeal(undefined)} />] },
     }),
 }
@@ -340,7 +343,7 @@ export const READ_ONLY_LIST: { [feature: string]: IFeature } = {
 }
 `
 
-const SPREADSHEET = `import type { IFeature } from './features'
+const SPREADSHEET = `import type { IFeature, IToasts } from './features'
 
 //a little roomier than Excel's 20 pixels
 const COMPACT_ROW_HEIGHT = 28
@@ -358,23 +361,40 @@ const getExcelTheme = (theme: ITheme) => {
     return builder.getTheme()
 }
 
-export const SPREADSHEET: { [feature: string]: IFeature } = {
-    //Recurring flips right in its cell
-    editing: ({ switches }) => ({
-        modules: [createEditingModule({ enableAutoSave: !!switches.autoSave })],
-        colDefs: { recurring: { context: { cell: { enableOneClickEdit: true } } } },
-    }),
-    //saving itself is the editing module's enableAutoSave option, read above
-    autoSave: ({ toasts }) => ({
-        onAfterRecordSaved: result => {
+/** Recurring flips right in its cell. */
+const recurringSwitch: IGridModule = {
+    name: 'recurringSwitch',
+    onLoad: grid => {
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            const recurring = columnDefs.find(colDef => colDef.colId === 'recurring')!
+            recurring.context = { ...recurring.context, cell: { ...recurring.context?.cell, enableOneClickEdit: true } }
+        })
+    },
+}
+
+/** A toast for every save the server refuses. */
+const createSaveErrorToasts = (toasts: IToasts): IGridModule => ({
+    name: 'saveErrorToasts',
+    onLoad: grid => {
+        const showError = (result: IRecordSaveOperationResult) => {
             if (!result.success) {
                 toasts.dispatchToast(<Toast>
                     <ToastTitle>Not saved</ToastTitle>
                     <ToastBody>{result.errors?.map(error => error.message).join(' ')}</ToastBody>
                 </Toast>, { intent: 'error', timeout: 6000 })
             }
-        },
+        }
+        //removed as AG Grid goes, since the provider outlives the grid
+        grid.services.observe('gridApi', () => grid.services.get('provider').addEventListener('onAfterRecordSaved', showError))
+    },
+})
+
+export const SPREADSHEET: { [feature: string]: IFeature } = {
+    editing: ({ switches }) => ({
+        modules: [createEditingModule({ enableAutoSave: !!switches.autoSave }), recurringSwitch],
     }),
+    //saving itself is the editing module's enableAutoSave option, read above
+    autoSave: ({ toasts }) => ({ modules: [createSaveErrorToasts(toasts)] }),
     cellSelection: () => ({ modules: [createCellSelectionModule()] }),
     clipboard: () => ({ modules: [createClipboardModule()] }),
     compactRows: () => ({ rowHeight: COMPACT_ROW_HEIGHT }),
@@ -454,6 +474,9 @@ const dealCommands: IGridModule = {
             const rect = button?.getBoundingClientRect()
             return rect ? { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight } : { x: 0.5, y: 0.5 }
         }
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            columnDefs.push({ colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96 })
+        })
         grid.services.get('cells').hooks.commands.add((result, { record, columnName }) => {
             if (columnName !== 'actions' || isSummaryRow(record) || isClosed(record)) {
                 return
@@ -478,16 +501,23 @@ const closedDealColours: IGridModule = {
     },
 }
 
-const lockClosedDeals = (result: IGridLock, { record }: { record: IRecord }) => {
-    if (!isSummaryRow(record) && isClosed(record)) {
-        result.isLocked = true
-    }
+/** Locks won and lost deals as a whole. */
+const lockClosedDeals: IGridModule = {
+    name: 'lockClosedDeals',
+    onLoad: grid => {
+        grid.modules.observe('editing', editing => editing.locks.hooks.lock.add((result, { record, columnName }) => {
+            //a record without a columnName asks about the whole row
+            if (record && !columnName && !isSummaryRow(record) && isClosed(record)) {
+                result.isLocked = true
+            }
+        }))
+    },
 }
 
 export const CLOSING_DEALS: { [feature: string]: IFeature } = {
-    rowActions: () => ({ modules: [dealCommands], colDefs: { actions: { headerName: '', pinned: 'right', initialWidth: 96 } } }),
+    rowActions: () => ({ modules: [dealCommands] }),
     closedDealColours: () => ({ modules: [closedDealColours] }),
-    lockClosedDeals: () => ({ rowSettings: { lockHook: lockClosedDeals } }),
+    lockClosedDeals: () => ({ modules: [lockClosedDeals] }),
 }
 `
 
@@ -536,20 +566,29 @@ export type IFeature = (context: IFeatureContext) => IFeatureProps
 
 const FEATURES: { [feature: string]: IFeature } = { ...AT_A_GLANCE, ...READ_ONLY_LIST, ...SPREADSHEET, ...PIPELINE_REVIEW, ...CLOSING_DEALS }
 
+/** The deal's name stays in view while nothing is grouped. */
+const createPinnedName = (deals: IDataProvider): IGridModule => ({
+    name: 'pinnedName',
+    onLoad: grid => {
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            if (deals.grouping.getGroupBys().length === 0) {
+                columnDefs.find(colDef => colDef.colId === 'name')!.pinned = 'left'
+            }
+        })
+    },
+})
+
 const getBaseProps = (deals: IDataProvider): IFeatureProps => ({
     //the grid shades every other row unless told not to
     enableZebra: false,
-    //the deal's name stays in view while nothing is grouped
-    colDefs: { name: () => deals.grouping.getGroupBys().length > 0 ? {} : { pinned: 'left' } },
+    modules: [createPinnedName(deals)],
 })
 
-//modules, columns, row settings and overlays add up across the features
+//modules and overlays add up across the features
 const combine = (props: IFeatureProps, added: IFeatureProps): IFeatureProps => ({
     ...props,
     ...added,
     modules: [...props.modules ?? [], ...added.modules ?? []],
-    colDefs: { ...props.colDefs, ...added.colDefs },
-    rowSettings: { ...props.rowSettings, ...added.rowSettings },
     frame: { ...props.frame, ...added.frame, overlays: [...props.frame?.overlays ?? [], ...added.frame?.overlays ?? []] },
 })
 

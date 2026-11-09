@@ -77,39 +77,43 @@ const GridExample = () => {
         gridRef.current?.services.get('fields').get(record, 'owner').setValue(CURRENT_USER)
     }
 
+    //what each column's cells decide, by column name
+    const cells: { [colId: string]: IGridColumnCellContext } = {
+        name: { lockHook: lockWhenDone },
+        owner: {
+            commandsHook: (result, { record }) => {
+                if (checkList()?.isItem(record) && !isDone(record) && !record.getValue('owner')) {
+                    result.items.push({ key: 'assign', text: 'Assign to me', iconProps: { iconName: 'AddFriend' }, onClick: () => assignToMe(record) })
+                }
+            },
+        },
+        duedate: {
+            lockHook: lockWhenDone,
+            themeHook: (builder, { record }) => {
+                if (isOverdue(record)) {
+                    builder.tint(OVERDUE)
+                }
+            },
+        },
+    }
+
+    const onSetup = (grid: IGrid) => {
+        gridRef.current = grid
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            for (const colDef of columnDefs.filter(colDef => cells[colDef.colId!])) {
+                //spread, so each cell keeps the rest of what the grid set
+                colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, ...cells[colDef.colId!] } }
+            }
+        })
+    }
+
     return <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>
         <DatasetControl.Body>
             <Checklist
                 fieldMapping={FIELD_MAPPING}
                 //the default editing, plus totals for the estimates
                 modules={[createEditingModule({ enableAutoSave: true }), createAggregationModule()]}
-                colDefs={{
-                    name: { context: { cell: { lockHook: lockWhenDone } } },
-                    owner: {
-                        context: {
-                            cell: {
-                                commandsHook: (result, { record }) => {
-                                    if (checkList()?.isItem(record) && !isDone(record) && !record.getValue('owner')) {
-                                        result.items.push({ key: 'assign', text: 'Assign to me', iconProps: { iconName: 'AddFriend' }, onClick: () => assignToMe(record) })
-                                    }
-                                },
-                            },
-                        },
-                    },
-                    duedate: {
-                        context: {
-                            cell: {
-                                lockHook: lockWhenDone,
-                                themeHook: (builder, { record }) => {
-                                    if (isOverdue(record)) {
-                                        builder.tint(OVERDUE)
-                                    }
-                                },
-                            },
-                        },
-                    },
-                }}
-                onSetup={grid => gridRef.current = grid} />
+                onSetup={onSetup} />
         </DatasetControl.Body>
     </DatasetControl>
 }
@@ -126,14 +130,21 @@ const StarCheck = (props: ICheckProps) => {
         styles={{ root: { fontSize: 18, color: props.checked ? theme.palette.yellowDark : theme.palette.neutralSecondary } }} />
 }
 
+const STAR: ICompletionCellComponents = {
+    checkbox: { onRenderCheck: props => <StarCheck {...props} /> },
+}
+
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        const completed = columnDefs.find(colDef => colDef.colId === FIELD_MAPPING.completed)!
+        //only the check is replaced: ticking and saving work as before
+        completed.cellRendererParams = { ...completed.cellRendererParams, components: STAR }
+    })
+}
+
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>
     <DatasetControl.Body>
-        <Checklist
-            fieldMapping={FIELD_MAPPING}
-            colDefs={{
-                //only the check is replaced: ticking and saving work as before
-                completed: { cellRendererParams: { components: { checkbox: { onRenderCheck: props => <StarCheck {...props} /> } } } },
-            }} />
+        <Checklist fieldMapping={FIELD_MAPPING} onSetup={onSetup} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -206,14 +217,22 @@ const GridExample = () => {
     const [openedItem, setOpenedItem] = React.useState<IRecord>()
     const close = () => setOpenedItem(undefined)
 
+    const onSetup = (grid: IGrid) => {
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            const name = columnDefs.find(colDef => colDef.colId === FIELD_MAPPING.name)!
+            //draws the names as links
+            name.context = { ...name.context, isPrimary: true }
+        })
+        grid.hooks.openRecord.add(request => {
+            request.isHandled = true
+            setOpenedItem(request.record)
+        })
+    }
+
     return <>
         <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>
             <DatasetControl.Body>
-                <Checklist
-                    fieldMapping={FIELD_MAPPING}
-                    //draws the names as links
-                    colDefs={{ name: { context: { isPrimary: true } } }}
-                    onOpenRecord={({ record }) => setOpenedItem(record)} />
+                <Checklist fieldMapping={FIELD_MAPPING} onSetup={onSetup} />
             </DatasetControl.Body>
         </DatasetControl>
         <Panel isOpen={!!openedItem} headerText={openedItem?.getValue('name')} type={PanelType.medium} isLightDismiss onDismiss={close} onRenderFooterContent={() => <DefaultButton text='Close' onClick={close} />}>

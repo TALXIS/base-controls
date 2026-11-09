@@ -12,7 +12,7 @@ Apart from its three columns, a checklist is a grid, so you customise it the way
 
 ## Add grid features
 
-The checklist's columns take everything a grid column does through \`colDefs\`, as on [**Columns**](?path=/docs/controls-grid-columns--overview). The release board above colours overdue dates, locks finished items, adds *Assign to me* as a cell command and totals the estimates.
+The checklist's columns take everything a grid column does, through a column definitions hook in \`onSetup\`, as *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview) describes. The release board above colours overdue dates, locks finished items, adds *Assign to me* as a cell command and totals the estimates.
 
 \`modules\` replaces the default editing module. Add \`createLicenseModule\`, \`createEditingModule\`, \`createRowSelectionModule\`, \`createClipboardModule\`, \`createAggregationModule\`, \`createLegacyClientApiCompatibilityModule\` or a module of your own. Leave out sorting, filtering and grouping, which change the order, and cell selection, which turns dragging off.
 
@@ -24,7 +24,7 @@ Without the editing module, \`modules={[]}\`, nothing can be ticked, renamed, ad
 
 ## Open an item
 
-Make the name column primary to draw names as links, and handle \`onOpenRecord\` to decide what opening one does, as *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview) describes. Here it opens the item in a [**Form**](?path=/docs/controls-form-get-started--overview) in a panel.
+Make the name column primary to draw names as links, and add a \`grid.hooks.openRecord\` hook to decide what opening one does, as *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview) describes. Here it opens the item in a [**Form**](?path=/docs/controls-form-get-started--overview) in a panel.
 
 {{story: Open an item in a panel}}
 
@@ -34,7 +34,7 @@ The checklist adds a module to the grid: \`useGridModule('checkList')\` returns 
 
 ## Changing how it looks
 
-The checkbox and name columns are drawn by the checklist's own cells. Through \`colDefs\`, their \`cellRendererParams.components\` take the grid cell's keys from [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview), plus a key of their own. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+The checkbox and name columns are drawn by the checklist's own cells. On their column definitions, \`cellRendererParams.components\` take the grid cell's keys from [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview), plus a key of their own. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Column | Key | Slots | Default | Draws |
 |---|---|---|---|---|
@@ -52,7 +52,7 @@ Replacing a slot keeps the cell's behaviour, so ticking and saving work as befor
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Saving changes', iconName: 'Save', href: '?path=/docs/controls-checklist-saving-changes--overview', text: 'What every tick, drag, new item and delete writes, and sending it to your API.' },
-    { title: 'Columns', iconName: 'TripleColumn', href: '?path=/docs/controls-grid-columns--overview', text: 'Everything colDefs can do to a column.' },
+    { title: 'Columns', iconName: 'TripleColumn', href: '?path=/docs/controls-grid-columns--overview', text: 'Everything a column definitions hook can do to a column.' },
     { title: 'Custom cells', iconName: 'Edit', href: '?path=/docs/controls-grid-appearance-custom-cells--overview', text: 'The grid cell\'s pieces and slots, which the checklist\'s cells take too.' },
 ]
 
@@ -95,7 +95,7 @@ export const TickItemsOffWithAStar: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`colDefs\` hands the completion cell a star through \`components.checkbox.onRenderCheck\`. Try: tick an item off.`,
+                story: `The column definitions hook hands the completion cell a star through \`components.checkbox.onRenderCheck\`. Try: tick an item off.`,
             },
         },
     },
@@ -107,7 +107,7 @@ export const OpenAnItemInAPanel: Story = {
     parameters: {
         docs: {
             description: {
-                story: `The names are links, and \`onOpenRecord\` opens the item in a form. Try: click an item's name.`,
+                story: `The names are links, and an \`openRecord\` hook opens the item in a form. Try: click an item's name.`,
             },
         },
     },

@@ -4,8 +4,30 @@ import { createDealsProvider, DEAL_COLUMNS, DEAL_DETAIL_COLUMNS } from '../data'
 
 export const KEY_COLUMNS_CODE = `const DETAIL_COLUMNS = ['sku', 'reorderlevel', 'supplier', 'lastrestocked', 'discontinued', 'producturl']
 
+//keyed by the provider column's name, which is the definition's colId
+const CHANGES: { [colId: string]: Partial<IGridColDef> } = {
+    name: { pinned: 'left' },
+    category: { pinned: 'right' },
+    photo: { maxWidth: 80 },
+}
+
 const GridExample = () => {
     const [showEveryColumn, setShowEveryColumn] = React.useState(true)
+
+    const onSetup = (grid: IGrid) => {
+        //runs each time the grid builds its columns
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            for (const colDef of columnDefs) {
+                Object.assign(colDef, CHANGES[colDef.colId!])
+                if (DETAIL_COLUMNS.includes(colDef.colId!)) {
+                    colDef.hide = !showEveryColumn
+                }
+                if (colDef.colId === 'price') {
+                    colDef.headerName += ' (excl. VAT)'
+                }
+            }
+        })
+    }
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Header>
@@ -18,15 +40,7 @@ const GridExample = () => {
                 //a new key makes the grid build its columns again
                 key={String(showEveryColumn)}
                 modules={[createClientSideRowModelModule()]}
-                //keyed by the provider column's name; an entry is merged over the column
-                colDefs={{
-                    ...Object.fromEntries(DETAIL_COLUMNS.map(name => [name, { hide: !showEveryColumn }])),
-                    name: { pinned: 'left' },
-                    category: { pinned: 'right' },
-                    photo: { maxWidth: 80 },
-                    //a function entry receives the column as built
-                    price: colDef => ({ headerName: colDef?.headerName + ' (excl. VAT)' }),
-                }}
+                onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -82,15 +96,26 @@ const ProductPanel = (props: IProductPanelProps) => <Panel isOpen={!!props.produ
 const GridExample = () => {
     const [productId, setProductId] = React.useState<string>()
 
+    const onSetup = (grid: IGrid) => {
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            const name = columnDefs.find(colDef => colDef.colId === 'name')!
+            name.pinned = 'left'
+            //spread, so the grid's own context keys stay
+            name.context = { ...name.context, isPrimary: true }
+        })
+        grid.hooks.openRecord.add(request => {
+            //a handled request is not passed on to the provider
+            request.isHandled = true
+            setProductId(request.record.getRecordId())
+        })
+    }
+
     return <>
         <DatasetControl onLoad={async () => ({ provider: provider })}>
             <DatasetControl.Body>
                 <Grid
                     modules={[createClientSideRowModelModule()]}
-                    colDefs={{
-                        name: { pinned: 'left', context: { isPrimary: true } },
-                    }}
-                    onOpenRecord={({ record }) => setProductId(record.getRecordId())}
+                    onSetup={onSetup}
                     height='420px' />
             </DatasetControl.Body>
         </DatasetControl>
@@ -122,20 +147,26 @@ const StockValueCell = (props: IGridCellParams) => <Grid.Cell.Root {...props}>
     </Grid.Cell.Theme>
 </Grid.Cell.Root>
 
+const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        //a colId that is not a provider column's name adds a column
+        columnDefs.push({
+            colId: 'stockvalue',
+            headerName: 'Stock value',
+            pinned: 'right',
+            initialWidth: 130,
+            cellRenderer: StockValueCell,
+            valueGetter: params => params.data ? getStockValue(params.data) : null,
+            context: { alignment: 'right' },
+        })
+    })
+}
+
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
             modules={[createClientSideRowModelModule(), createEditingModule()]}
-            colDefs={{
-                stockvalue: {
-                    headerName: 'Stock value',
-                    pinned: 'right',
-                    initialWidth: 130,
-                    cellRenderer: StockValueCell,
-                    valueGetter: params => params.data ? getStockValue(params.data) : null,
-                    context: { alignment: 'right' },
-                },
-            }}
+            onSetup={onSetup}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -163,32 +194,29 @@ const GridExample = () => {
         setStatus(product.getFormattedValue('name') + ' is discontinued.')
     }
 
+    const addCommands: IGridColumnCellContext['commandsHook'] = (result, { record }) => {
+        if (isLowStock(record) && !isDiscontinued(record)) {
+            result.items.push({ key: 'reorder', text: 'Reorder', iconOnly: true, iconProps: { iconName: 'ShoppingCart' }, onClick: () => reorder(record) })
+        }
+        result.overflowItems.push({ key: 'copySku', text: 'Copy SKU', iconProps: { iconName: 'Copy' }, onClick: () => { copySku(record) } })
+        if (!isDiscontinued(record)) {
+            result.overflowItems.push({ key: 'discontinue', text: 'Discontinue', iconProps: { iconName: 'Blocked' }, onClick: () => discontinue(record) })
+        }
+    }
+
+    const onSetup = (grid: IGrid) => {
+        gridRef.current = grid
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            columnDefs.push({ colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96, context: { cell: { commandsHook: addCommands } } })
+        })
+    }
+
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
-                colDefs={{
-                    actions: {
-                        headerName: '',
-                        pinned: 'right',
-                        initialWidth: 96,
-                        context: {
-                            cell: {
-                                commandsHook: (result, { record }) => {
-                                    if (isLowStock(record) && !isDiscontinued(record)) {
-                                        result.items.push({ key: 'reorder', text: 'Reorder', iconOnly: true, iconProps: { iconName: 'ShoppingCart' }, onClick: () => reorder(record) })
-                                    }
-                                    result.overflowItems.push({ key: 'copySku', text: 'Copy SKU', iconProps: { iconName: 'Copy' }, onClick: () => { copySku(record) } })
-                                    if (!isDiscontinued(record)) {
-                                        result.overflowItems.push({ key: 'discontinue', text: 'Discontinue', iconProps: { iconName: 'Blocked' }, onClick: () => discontinue(record) })
-                                    }
-                                },
-                            },
-                        },
-                    },
-                }}
-                onSetup={grid => gridRef.current = grid}
+                onSetup={onSetup}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -207,7 +235,6 @@ const styles = mergeStyleSets({
 })
 
 const GridExample = () => {
-    const gridRef = React.useRef<IGrid>()
     const activeFilter = React.useRef<string>()
 
     const applyQuickFilter = (key?: string) => {
@@ -217,64 +244,74 @@ const GridExample = () => {
         provider.refresh()
     }
 
-    //a header does not watch the values of the records
-    const redrawHeaders = () => gridRef.current?.services.get('columns').headers.render()
+    const header: IGridColumnHeaderContext = {
+        adornmentsHook: adornments => {
+            const lowStock = provider.getRecords().filter(isLowStock).length
+            if (lowStock > 0) {
+                adornments.push({ key: 'lowStock', placement: 'suffix', title: lowStock + ' below reorder level', onRender: () => <span className={styles.badge}>{lowStock}</span> })
+            }
+        },
+        menuSectionsHook: sections => {
+            sections.push({
+                key: 'quickFilters',
+                title: 'Quick filters',
+                items: [
+                    ...QUICK_FILTERS.map(filter => ({ key: filter.key, text: filter.text, iconProps: { iconName: filter.iconName }, canCheck: true, checked: activeFilter.current === filter.key, onClick: () => applyQuickFilter(filter.key) })),
+                    { key: 'showAll', text: 'Show all products', iconProps: { iconName: 'ClearFilter' }, disabled: !activeFilter.current, onClick: () => applyQuickFilter() },
+                ],
+            })
+        },
+    }
+
+    const onSetup = (grid: IGrid) => {
+        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+            const inStock = columnDefs.find(colDef => colDef.colId === 'instock')!
+            inStock.context = { ...inStock.context, header: { ...inStock.context?.header, ...header } }
+        })
+        //a header does not watch the values of the records
+        grid.services.observe('gridApi', () => provider.addEventListener('onRecordColumnValueChanged', () => grid.services.get('columns').headers.render()))
+    }
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
             <Grid
                 modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), createSortingModule()]}
-                colDefs={{
-                    instock: {
-                        context: {
-                            header: {
-                                adornmentsHook: adornments => {
-                                    const lowStock = provider.getRecords().filter(isLowStock).length
-                                    if (lowStock > 0) {
-                                        adornments.push({ key: 'lowStock', placement: 'suffix', title: lowStock + ' below reorder level', onRender: () => <span className={styles.badge}>{lowStock}</span> })
-                                    }
-                                },
-                                menuSectionsHook: sections => {
-                                    sections.push({
-                                        key: 'quickFilters',
-                                        title: 'Quick filters',
-                                        items: [
-                                            ...QUICK_FILTERS.map(filter => ({ key: filter.key, text: filter.text, iconProps: { iconName: filter.iconName }, canCheck: true, checked: activeFilter.current === filter.key, onClick: () => applyQuickFilter(filter.key) })),
-                                            { key: 'showAll', text: 'Show all products', iconProps: { iconName: 'ClearFilter' }, disabled: !activeFilter.current, onClick: () => applyQuickFilter() },
-                                        ],
-                                    })
-                                },
-                            },
-                        },
-                    },
-                }}
-                onSetup={grid => { gridRef.current = grid }}
-                onRecordValueChanged={redrawHeaders}
+                onSetup={onSetup}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
 }
 `
 
-export const LONG_NOTES_CODE = `const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+export const LONG_NOTES_CODE = `const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        const nextStep = columnDefs.find(colDef => colDef.colId === 'nextstep')!
+        //spread, so the cell keeps the rest of what the grid set
+        nextStep.context = { ...nextStep.context, cell: { ...nextStep.context?.cell, isRowResizable: false } }
+    })
+}
+
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
             modules={[createClientSideRowModelModule()]}
-            colDefs={{
-                nextstep: { context: { cell: { isRowResizable: false } } },
-            }}
+            onSetup={onSetup}
             height='480px' />
     </DatasetControl.Body>
 </DatasetControl>
 `
 
-export const AUTO_HEIGHT_CODE = `const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+export const AUTO_HEIGHT_CODE = `const onSetup = (grid: IGrid) => {
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        columnDefs.find(colDef => colDef.colId === 'notes')!.autoHeight = true
+    })
+}
+
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
         <Grid
             modules={[createClientSideRowModelModule()]}
-            colDefs={{
-                notes: { autoHeight: true },
-            }}
+            onSetup={onSetup}
             height='480px' />
     </DatasetControl.Body>
 </DatasetControl>

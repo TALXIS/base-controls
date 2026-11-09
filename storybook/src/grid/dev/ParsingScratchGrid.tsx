@@ -1,6 +1,7 @@
 import React from 'react'
 import { Dropdown, IDropdownOption, Stack, Text } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, Grid, IGridProps, IGridCellParams, IGridModule, PcfContextProvider, DatasetControl } from '@talxis/base-controls'
+import type { ColDef } from 'ag-grid-community'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, Grid, GRID_MODULE_PRIORITY, IGrid, IGridCellParams, IGridModule, PcfContextProvider, DatasetControl } from '@talxis/base-controls'
 import { getFormatting, getLocaleFromLanguageId, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATE_COLUMN_NAMES, getDataSource, PRIMARY_ID } from './parsingScratchData'
 import { mockTimeZone } from './mockTimeZone'
@@ -91,17 +92,22 @@ const StoredCell = (props: IGridCellParams) => {
     </Grid.Cell.Root>
 }
 
-const COL_DEFS: NonNullable<IGridProps['colDefs']> = {
-    name: { pinned: 'left' },
-    [STORED_COLUMN]: {
+const addParsingColumns = (columnDefs: ColDef<IRecord>[]) => {
+    const name = columnDefs.find(colDef => colDef.colId === 'name')
+    if (name) {
+        name.pinned = 'left'
+    }
+    columnDefs.push({
         colId: STORED_COLUMN,
         headerName: 'Stored (what a save sends)',
         initialWidth: 900,
         autoHeight: true,
-        valueGetter: params => params.data ? JSON.stringify(getStoredValues(params.data as IRecord)) : null,
+        valueGetter: params => params.data ? JSON.stringify(getStoredValues(params.data)) : null,
         cellRenderer: StoredCell,
-    },
+    })
 }
+
+const onSetup = (grid: IGrid) => grid.services.get('columns').hooks.columnDefinitions.add(addParsingColumns, GRID_MODULE_PRIORITY.clipboard + 1)
 
 const createModules = (autoSave: boolean): IGridModule[] => [
     createClientSideRowModelModule(),
@@ -168,7 +174,7 @@ const ParsingGrid = (props: IParsingScratchGridProps & { culture: string, langua
             <DatasetControl.Body>
                 <Grid
                     modules={createModules(props.enableAutoSave)}
-                    colDefs={COL_DEFS}
+                    onSetup={onSetup}
                     height='100%'
                     enableNavigation />
             </DatasetControl.Body>

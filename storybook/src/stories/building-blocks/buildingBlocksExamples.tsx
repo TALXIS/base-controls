@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const APPLICATION_CODE = `import { AppThemeProvider, createClientSideRowModelModule, DatasetControl, Form, Grid, Panel, PcfContextProvider, StateProvider, useThemeBuilder } from '@talxis/base-controls'
+const APPLICATION_CODE = `import { AppThemeProvider, createClientSideRowModelModule, DatasetControl, Form, Grid, IGrid, Panel, PcfContextProvider, StateProvider, useThemeBuilder } from '@talxis/base-controls'
 import { IRecord } from '@talxis/client-libraries'
 import { Dropdown } from '@fluentui/react'
 
@@ -37,6 +37,14 @@ const GridExample = () => {
     }, [])
     const [openedDeal, setOpenedDeal] = React.useState<IRecord>()
 
+    const onSetup = (grid: IGrid) => {
+        grid.hooks.openRecord.add(request => {
+            //a handled request is not passed on to the provider
+            request.isHandled = true
+            setOpenedDeal(request.record)
+        })
+    }
+
     //the root: one host, one place for state and one theme for everything below
     return <PcfContextProvider>
         <StateProvider>
@@ -53,7 +61,7 @@ const GridExample = () => {
                     </DatasetControl.Header>
                     <DatasetControl.Body>
                         {/* click a deal's name to open it */}
-                        <Grid modules={[createClientSideRowModelModule()]} onOpenRecord={({ record }) => setOpenedDeal(record)} />
+                        <Grid modules={[createClientSideRowModelModule()]} onSetup={onSetup} />
                     </DatasetControl.Body>
                 </DatasetControl>
                 {/* drawn in the same theme as the grid */}

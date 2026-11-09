@@ -256,6 +256,14 @@ const GridExample = () => {
         createTaskDraggingModule({ onTaskMoved: ({ movingRecord, position, targetRecord }) => setMessage('Moved ' + movingRecord.getValue('subject') + ' ' + position + ' ' + targetRecord.getValue('subject')) }),
     ], [])
 
+    const onLoad = async (control: IDatasetControl<ITaskViewData>) => {
+        const result = await loadTasks(control)
+        //a new provider on every mount, so its listeners go with it
+        result.provider.taskEvents.addEventListener('onTasksCreated', records => setMessage('Created ' + subjects(records)))
+        result.provider.taskEvents.addEventListener('onTasksDeleted', taskIds => setMessage('Deleted ' + taskIds.length + ' tasks'))
+        return result
+    }
+
     return <Stack tokens={{ childrenGap: 8 }}>
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}
         <TaskDatasetControl
@@ -263,9 +271,7 @@ const GridExample = () => {
             enableCreation
             enableEditing
             enableDeletion
-            onLoad={loadTasks}
-            onTasksCreated={records => setMessage('Created ' + subjects(records))}
-            onTasksDeleted={taskIds => setMessage('Deleted ' + taskIds.length + ' tasks')}
+            onLoad={onLoad}
             height='480px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
