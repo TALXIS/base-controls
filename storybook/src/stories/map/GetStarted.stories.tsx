@@ -6,18 +6,18 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { GetStartedExample } from './mapExamples'
 
 const DESCRIPTION = `
-Map shows records as pins on a map, each at the latitude and longitude two of its columns hold, such as offices, customers or the capitals of the EU below. It reads the records from a data provider and works out where to look, while a *map library*, Leaflet or Google Maps, draws the map and the pins. Try it below: open **Code** and add Oslo, at 59.9139, 10.7522, to \`CAPITALS\` in \`data.ts\`.
+A map shows records as pins, each at the latitude and longitude two of its columns hold, such as offices, customers or the capitals of the EU below. It reads the records from a data provider and works out where to look, while a *map library* draws the map and the pins: \`LeafletMap\` draws with Leaflet and \`GoogleMap\` with Google Maps. Try it below: open **Code** and add Oslo, at 59.9139, 10.7522, to \`CAPITALS\` in \`data.ts\`.
 
 {{canvas: Pins from a data provider}}
 
 ## Set it up
 
-Like every control, the map needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview). It takes no provider prop: it shows the provider around it, a \`DataProviderScope\` as in the example, or a \`DatasetControl\` it is the body of, as [**In a DatasetControl**](?path=/docs/controls-map-in-a-datasetcontrol--overview) shows. How providers load: [**Data providers**](?path=/docs/concepts-data-providers--overview).
+Use \`LeafletMap\`, which needs nothing more, or \`GoogleMap\` with an \`apiKey\` of yours; each is the map with its library built in. Like every control, the map needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview). It takes no provider prop: it shows the provider around it, a \`DataProviderScope\` as in the example, or a \`DatasetControl\` it is the body of, as [**In a DatasetControl**](?path=/docs/controls-map-in-a-datasetcontrol--overview) shows. How providers load: [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 | Prop | Holds |
 |---|---|
 | \`fieldMapping\` | The columns that hold each record's position, as \`{ latitude, longitude }\`, in decimal degrees. |
-| \`modules\` | The map's modules, one of which is the map library, such as \`createLeafletModule()\`. Without one, the map shows an error. |
+| \`children\` | Components of yours, drawn in the map's box under the library's map: see [**Talking to the map**](?path=/docs/controls-map-talking-to-the-map--overview). |
 
 The map fills its parent and is at least 200 pixels tall. A record whose latitude or longitude is not a number gets no pin, and the pins follow each load of the provider, so a search, a filter or a refresh moves them.
 
@@ -42,12 +42,15 @@ It moves again each time the provider loads new data; in between, the user pans 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
 | \`fieldMapping\` | \`IMapFieldMapping\` | Required | Live | The latitude and longitude columns. |
-| \`modules\` | \`IMapModule[]\` | Required | At mount | The map's modules, with one named \`library\`. To change them, mount the map again with a new \`key\`. |
+| \`children\` | \`ReactNode\` | None | Live | Drawn in the map's box under the library's map, once the modules have loaded. |
+| \`modules\` | \`IMapModule[]\` | None; required on \`Map\` | At mount | Further modules, loaded after the library. On \`Map\`, every module, with one named \`library\`: see *A library of your own* on [**Map libraries**](?path=/docs/controls-map-map-libraries--overview). |
 | \`onSetup\` | \`(map: IMap) => void\` | None | At mount | Called with each new map, before it loads: see [**Talking to the map**](?path=/docs/controls-map-talking-to-the-map--overview). |
 | \`onLoad\` | \`(map: IMap) => void \\| Promise<void>\` | None | At mount | Called once the modules have loaded; the map waits for a promise it returns. |
 | \`height\` | \`string\` | Fills its parent | Live | A length such as \`'480px'\`; left out, the map fills its parent: see [**Layout**](?path=/docs/controls-map-layout--overview). |
 | \`className\` | \`string\` | None | Live | A class for the map's box. |
-| \`components\` | \`IMapComponents\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview). |
+| \`components\` | \`IMapComponents\` and \`ILeafletComponents\` or \`IGoogleMapsComponents\` | Defaults | Live | The map's slots and the library's; the library's, under \`map\` and \`marker\`, are read at mount. See [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview). |
+
+\`LeafletMap\` and \`GoogleMap\` also take their library's own props, such as \`tileUrl\` and \`apiKey\`: see [**Map libraries**](?path=/docs/controls-map-map-libraries--overview). To change anything read at mount, mount the map again with a new \`key\`.
 
 ## Where next
 

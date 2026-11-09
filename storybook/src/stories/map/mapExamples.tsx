@@ -93,7 +93,7 @@ export const createCities = () => {
 
 const LIBRARY_PICKER_FILE: IGridExampleFile = {
     name: 'LibraryPicker.tsx',
-    code: `import { createGoogleMapsModule, createLeafletModule, IGoogleMapsComponents, ILeafletComponents, IMapModule } from '@talxis/base-controls'
+    code: `import { GoogleMap, IGoogleMapsComponents, ILeafletComponents, IMapProps, LeafletMap } from '@talxis/base-controls'
 import { mergeStyleSets, Pivot, PivotItem, Stack, TextField } from '@fluentui/react'
 
 export type MapLibrary = 'leaflet' | 'googleMaps'
@@ -119,10 +119,10 @@ export const useLibraryPicker = (parameters: ILibraryPickerParameters = {}) => {
     const [apiKey, setApiKey] = React.useState(() => sessionStorage.getItem(API_KEY_ITEM) ?? '')
     const [name, setName] = React.useState<MapLibrary>(() => apiKey && sessionStorage.getItem(LIBRARY_ITEM) === 'googleMaps' ? 'googleMaps' : 'leaflet')
 
-    //the library is a module of the map; Google Maps reads the key when it is picked
-    const modules: IMapModule[] = React.useMemo(() => name === 'googleMaps'
-        ? [createGoogleMapsModule({ apiKey, components: parameters.components })]
-        : [createLeafletModule({ tileUrl: parameters.tileUrl, attribution: parameters.attribution, components: parameters.components })], [name, parameters.tileUrl])
+    //a new component for each library or tiles, so the map mounts anew; Google Maps reads the key when it is picked
+    const Map = React.useMemo(() => (props: Omit<IMapProps, 'modules'>) => name === 'googleMaps'
+        ? <GoogleMap {...props} apiKey={apiKey} components={{ ...props.components, ...parameters.components }} />
+        : <LeafletMap {...props} tileUrl={parameters.tileUrl} attribution={parameters.attribution} components={{ ...props.components, ...parameters.components }} />, [name, parameters.tileUrl])
 
     const onNameChange = (next: MapLibrary) => {
         setName(next)
@@ -142,15 +142,14 @@ export const useLibraryPicker = (parameters: ILibraryPickerParameters = {}) => {
         <TextField className={styles.key} type='password' canRevealPassword autoComplete='off' data-bwignore data-1p-ignore data-lpignore='true' placeholder='Paste a Google Maps API key' ariaLabel='Google Maps API key' value={apiKey} onChange={(_, value) => onApiKeyChange(value ?? '')} />
     </Stack>
 
-    //the map reads its modules as it mounts, so new modules need a new key
-    return { name, modules, mountKey: name + (parameters.tileUrl ?? ''), picker }
+    return { name, Map, picker }
 }
 `,
 }
 
 const run = (code: string, ...files: IGridExampleFile[]) => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code }, ...files, LIBRARY_PICKER_FILE, CITIES_FILE]} tabs={['preview', 'code']} />
 
-const GET_STARTED_CODE = `import { DataProviderScope, Map } from '@talxis/base-controls'
+const GET_STARTED_CODE = `import { DataProviderScope } from '@talxis/base-controls'
 import { mergeStyleSets, Stack } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 import { useLibraryPicker } from './LibraryPicker'
@@ -162,7 +161,7 @@ const styles = mergeStyleSets({
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
-    //the modules: createLeafletModule(), or createGoogleMapsModule({ apiKey }) under your key
+    //draws a LeafletMap, or a GoogleMap under your key
     const library = useLibraryPicker()
 
     return <Stack tokens={{ childrenGap: 12 }}>
@@ -170,7 +169,7 @@ const GridExample = () => {
         <div className={styles.map}>
             {/* the map shows the records of the provider around it */}
             <DataProviderScope provider={provider}>
-                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+                <library.Map fieldMapping={FIELD_MAPPING} />
             </DataProviderScope>
         </div>
     </Stack>
@@ -179,7 +178,7 @@ const GridExample = () => {
 
 export const GetStartedExample = () => run(GET_STARTED_CODE)
 
-const LAYOUT_CODE = `import { DataProviderScope, Map } from '@talxis/base-controls'
+const LAYOUT_CODE = `import { DataProviderScope } from '@talxis/base-controls'
 import { mergeStyleSets, Slider, Stack } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 import { useLibraryPicker } from './LibraryPicker'
@@ -200,7 +199,7 @@ const GridExample = () => {
         <div className={styles.panel} style={{ height: containerHeight }}>
             <DataProviderScope provider={provider}>
                 {/* no height: the map takes the space its parent gives it */}
-                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+                <library.Map fieldMapping={FIELD_MAPPING} />
             </DataProviderScope>
         </div>
     </Stack>
@@ -209,7 +208,7 @@ const GridExample = () => {
 
 export const LayoutExample = () => run(LAYOUT_CODE)
 
-const TILES_CODE = `import { DataProviderScope, Map } from '@talxis/base-controls'
+const TILES_CODE = `import { DataProviderScope } from '@talxis/base-controls'
 import { Dropdown, mergeStyleSets, Stack } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 import { useLibraryPicker } from './LibraryPicker'
@@ -233,7 +232,7 @@ const TILES = [
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
     const [tiles, setTiles] = React.useState(TILES[1])
-    //createLeafletModule({ tileUrl, attribution }); Google Maps draws its own tiles
+    //<LeafletMap tileUrl attribution />; Google Maps draws its own tiles
     const library = useLibraryPicker({ tileUrl: tiles.tileUrl, attribution: tiles.attribution })
 
     return <Stack tokens={{ childrenGap: 12 }}>
@@ -241,8 +240,8 @@ const GridExample = () => {
         <Dropdown label='Leaflet tiles' className={styles.tiles} options={TILES} selectedKey={tiles.key} disabled={library.name !== 'leaflet'} onChange={(_, option) => setTiles(option as typeof tiles)} />
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                {/* the key changes with the tiles too, so the map mounts again with them */}
-                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+                {/* new tiles bring a new component, so the map mounts again with them */}
+                <library.Map fieldMapping={FIELD_MAPPING} />
             </DataProviderScope>
         </div>
     </Stack>
@@ -251,7 +250,7 @@ const GridExample = () => {
 
 export const TilesExample = () => run(TILES_CODE)
 
-const ENLARGEMENT_CODE = `import { DataProviderScope, IMap, Map, useMapRecords } from '@talxis/base-controls'
+const ENLARGEMENT_CODE = `import { DataProviderScope, useMapRecords } from '@talxis/base-controls'
 import { Operators, Type } from '@talxis/client-libraries'
 import { mergeStyleSets, Slider, Stack, Text } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
@@ -264,14 +263,6 @@ const styles = mergeStyleSets({
 
 //useMapRecords() draws it again each time the provider loads new data
 const MemberCount = () => <Text className={styles.count}>{useMapRecords().length} member states</Text>
-
-//called with each new map, before it loads
-const onSetup = (map: IMap) => {
-    //a surface: a component of yours in the map's box, under the map
-    map.surfaces.hooks.surfaces.add(surfaces => {
-        surfaces.push({ key: 'memberCount', onRender: () => <MemberCount /> })
-    })
-}
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
@@ -290,7 +281,10 @@ const GridExample = () => {
         <Slider label='The EU in' min={1958} max={2013} value={year} onChange={onYearChange} />
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} onSetup={onSetup} />
+                {/* a child is drawn in the map's box, under the map */}
+                <library.Map fieldMapping={FIELD_MAPPING}>
+                    <MemberCount />
+                </library.Map>
             </DataProviderScope>
         </div>
     </Stack>
@@ -299,7 +293,7 @@ const GridExample = () => {
 
 export const EnlargementExample = () => run(ENLARGEMENT_CODE)
 
-const TOUR_CODE = `import { DataProviderScope, IGoogleMaps, ILeaflet, IMap, IMapPoint, Map, useMap, useMapRecords } from '@talxis/base-controls'
+const TOUR_CODE = `import { DataProviderScope, IGoogleMaps, ILeaflet, IMap, IMapPoint, useMap, useMapRecords } from '@talxis/base-controls'
 import { DefaultButton, mergeStyleSets, PrimaryButton, Stack, Text } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 import { MapLibrary, useLibraryPicker } from './LibraryPicker'
@@ -349,18 +343,14 @@ const GridExample = () => {
     const provider = React.useMemo(createCities, [])
     const library = useLibraryPicker()
 
-    //the tour sits under the map, told which library draws it
-    const onSetup = (map: IMap) => {
-        map.surfaces.hooks.surfaces.add(surfaces => {
-            surfaces.push({ key: 'tour', onRender: () => <Tour library={library.name} /> })
-        })
-    }
-
     return <Stack tokens={{ childrenGap: 12 }}>
         {library.picker}
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} onSetup={onSetup} />
+                {/* the tour sits under the map, told which library draws it */}
+                <library.Map fieldMapping={FIELD_MAPPING}>
+                    <Tour library={library.name} />
+                </library.Map>
             </DataProviderScope>
         </div>
     </Stack>
@@ -407,14 +397,14 @@ const COMPONENTS: ILeafletComponents & IGoogleMapsComponents = {
 
 const GridExample = () => {
     const provider = React.useMemo(createCities, [])
-    //the library module takes the slots: createLeafletModule({ components })
+    //the library takes the slots: <LeafletMap components={…} />
     const library = useLibraryPicker({ components: COMPONENTS })
 
     return <Stack tokens={{ childrenGap: 12 }}>
         {library.picker}
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+                <library.Map fieldMapping={FIELD_MAPPING} />
             </DataProviderScope>
         </div>
     </Stack>
@@ -467,7 +457,7 @@ const GridExample = () => {
         {library.picker}
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+                <library.Map fieldMapping={FIELD_MAPPING} />
             </DataProviderScope>
         </div>
     </Stack>
@@ -476,7 +466,7 @@ const GridExample = () => {
 
 export const PostcardExample = () => run(POSTCARD_CODE)
 
-const BOARDING_PASS_CODE = `import { DataProviderScope, IGoogleMapsComponents, ILeafletComponents, IMapPoint, Map, useMap, useMapRecord, useMapRecords, useTheme } from '@talxis/base-controls'
+const BOARDING_PASS_CODE = `import { DataProviderScope, IGoogleMapsComponents, ILeafletComponents, IMapPoint, useMap, useMapRecord, useMapRecords, useTheme } from '@talxis/base-controls'
 import { FontWeights, Icon, ITheme, mergeStyleSets, Stack, Text } from '@fluentui/react'
 import { createCities, FIELD_MAPPING } from './data'
 import { useLibraryPicker } from './LibraryPicker'
@@ -595,7 +585,7 @@ const GridExample = () => {
         {library.picker}
         <div className={pageStyles.map}>
             <DataProviderScope provider={provider}>
-                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+                <library.Map fieldMapping={FIELD_MAPPING} />
             </DataProviderScope>
         </div>
     </Stack>
@@ -632,7 +622,7 @@ const GridExample = () => {
             </DatasetControl.Header>
             <DatasetControl.Body>
                 {/* takes no provider of its own: it shows the control's */}
-                <Map key={library.mountKey} fieldMapping={FIELD_MAPPING} modules={library.modules} />
+                <library.Map fieldMapping={FIELD_MAPPING} />
             </DatasetControl.Body>
         </DatasetControl>
     </Stack>

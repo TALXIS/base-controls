@@ -6,28 +6,30 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { BoardingPassExample, PostcardExample, RegionPinsExample } from './mapExamples'
 
 const DESCRIPTION = `
-The pins and the popups they open are drawn through slots you can replace, so a pin can take its record's colour, or a popup can show what matters about the record. Both Leaflet and Google Maps draw the same Fluent pin and the same popup card, so the slots you hand the library module look the same in either. Try it below: open a pin with a star, one of the capitals of two million or more.
+The pins and the popups they open are drawn through slots you can replace, so a pin can take its record's colour, or a popup can show what matters about the record. Both Leaflet and Google Maps draw the same Fluent pin and the same popup card, so the slots you hand either component look the same in both. Try it below: open a pin with a star, one of the capitals of two million or more.
 
 {{canvas: Pins in their region's colour}}
 
 ## Changing how it looks
 
-\`Map\` takes \`components\` for its own slots, and each library module takes \`components\` for the map under \`map\`, and for each pin under \`marker\`. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+\`LeafletMap\` and \`GoogleMap\` take one \`components\`: the map's own slots, the library's map under \`map\`, and each pin under \`marker\`. \`Map\` takes only the map's own. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`Map\` | None | \`onRenderContainer\` | \`MapUiContainerComponents\` | The box the library draws in. |
-| \`Map\` | \`loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the map has loaded. |
-| \`Map\` | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, such as a map without a library. |
-| \`Map\` | \`loadingOverlay\` | \`onRenderOverlay\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the map while its provider loads. |
-| \`createLeafletModule\` | \`map\` | \`onRenderMap\`, \`onRenderTileLayer\` | \`LeafletUiComponents\` | The react-leaflet map and its tiles. |
-| \`createGoogleMapsModule\` | \`map\` | \`onRenderMap\` | \`GoogleMapsUiComponents\` | The vis.gl map. |
+| All three | None | \`onRenderContainer\` | \`MapUiContainerComponents\` | The box the library draws in. |
+| All three | \`loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the map has loaded. |
+| All three | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, such as a map without a library. |
+| All three | \`loadingOverlay\` | \`onRenderOverlay\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the map while its provider loads. |
+| \`LeafletMap\` | \`map\` | \`onRenderMap\`, \`onRenderTileLayer\` | \`LeafletUiComponents\` | The react-leaflet map and its tiles. |
+| \`GoogleMap\` | \`map\` | \`onRenderMap\` | \`GoogleMapsUiComponents\` | The vis.gl map. |
 | Both | \`marker.pin\` | \`onRenderContainer\`, \`onRenderPin\`, \`onRenderDot\` | \`MapUiMarkerComponents\` | Each pin, \`Map.Ui.Marker\`: its box, the teardrop, and the white dot in it. \`onRenderPin\` gets \`{ color }\`. |
 | Both | \`marker.popup\` | \`onRender\`, with no props | \`Map.Popup.Renderer\` | The whole content of the popup a pin opens: see *Your own popup*. |
 | Both | \`marker.popup.card\` | \`onRenderContainer\` | \`RecordCardComponents\` | The default popup's card. |
 | Both | \`marker.popup.header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRenderContainer\`; \`status\`: the tag's slots | \`RecordCardHeaderComponents\` and the parts' own | The default popup's header, with the record's name. |
-| \`createLeafletModule\` | \`marker.popup.container\` | \`onRenderContainer\`, with react-leaflet's \`Popup\` props | \`LeafletUiPopupComponents\` | Leaflet's popup, drawn as a Fluent callout. |
-| \`createGoogleMapsModule\` | \`marker.popup.container\` | \`onRenderContainer\`, with vis.gl's \`InfoWindow\` props | \`GoogleMapsUiPopupComponents\` | Google's info window, drawn as a Fluent callout. |
+| \`LeafletMap\` | \`marker.popup.container\` | \`onRenderContainer\`, with react-leaflet's \`Popup\` props | \`LeafletUiPopupComponents\` | Leaflet's popup, drawn as a Fluent callout. |
+| \`GoogleMap\` | \`marker.popup.container\` | \`onRenderContainer\`, with vis.gl's \`InfoWindow\` props | \`GoogleMapsUiPopupComponents\` | Google's info window, drawn as a Fluent callout. |
+
+The slots under \`map\` and \`marker\` are read as the map mounts, so a change to them shows on the next mount.
 
 To change the wording of the loading state and the error, see [**Localization**](?path=/docs/concepts-localization--overview).
 

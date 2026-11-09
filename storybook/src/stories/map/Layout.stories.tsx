@@ -19,7 +19,7 @@ A map has no height of its own to grow to, the way a list grows with its rows, s
 | Left out | Fills its parent: the free space of a flex parent, along its direction, or the height of any other parent that has one. Never shorter than 200px, so a parent without a height still shows a map. |
 | A length, such as \`'480px'\` | Exactly that tall, whatever its parent. |
 
-Whatever draws in the map's box beside the map, such as a surface of yours, stacks under it and the map takes the height that is left.
+Children you put in the map stack under the library's map, which takes the height they leave.
 
 ## Fill a flex layout
 

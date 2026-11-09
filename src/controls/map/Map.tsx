@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import { useLatest } from "@core";
 import { useDataProvider } from "@data";
 import { RuntimeHost, useRuntime } from "@controls/runtime-host";
@@ -25,7 +24,7 @@ const MapMount = (props: IMapProps) => {
 
     return <MapContext.Provider value={runtime}>
         <MapUiContainer height={props.height} className={props.className} components={containerComponents}>
-            {runtime.surfaces.getSurfaces().map(surface => <Fragment key={surface.key}>{surface.onRender()}</Fragment>)}
+            {props.children}
             <LoadingOverlay components={loadingOverlay} />
         </MapUiContainer>
     </MapContext.Provider>;

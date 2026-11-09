@@ -18,7 +18,7 @@ The map draws a pin for each of its provider's records that has a position, so t
 
 | Prop | Called | Use it to |
 |---|---|---|
-| \`onSetup(map)\` | With each new map, before it loads | Add surfaces and subscribe to what the map offers. |
+| \`onSetup(map)\` | With each new map, before it loads | Subscribe to what the map offers. |
 | \`onLoad(map)\` | Once the modules have loaded; the map waits for a promise it returns | Read the modules, or load what you need first. |
 
 A new \`key\` mounts a new map and calls both again; how mounts work is on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
@@ -27,13 +27,12 @@ A new \`key\` mounts a new map and calls both again; how mounts work is on [**Ru
 |---|---|
 | \`getPoint(record)\` | Where the record's pin goes, as \`{ latitude, longitude }\`; \`undefined\` when its position is not a number. |
 | \`modules\` | The loaded modules: \`modules.get('library')\` is the map library. |
-| \`surfaces\` | What is drawn in the map's box: the library's map, and anything you add. |
 | \`services\` | \`get('provider')\`, the records' provider, and \`get('viewport')\`, which moves the view. |
 | \`lifecycle\` | The mount's status and events: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 
 ## From inside the map
 
-A component of yours is drawn in the map's box, under the map, as a *surface*: in \`onSetup\`, call \`map.surfaces.hooks.surfaces.add(hook)\` and push \`{ key, onRender }\`, as the example does for \`MemberCount\`. Inside it, and inside a pin or a popup, these hooks reach the map:
+A component of yours goes in the map as a child and is drawn in the map's box, under the library's map, once the modules have loaded, as the example does for \`MemberCount\`. Inside it, and inside a pin or a popup, these hooks reach the map:
 
 | Hook | Returns |
 |---|---|
@@ -90,7 +89,7 @@ export const ATourFromWestToEast: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A surface under the map flies the library's own map from capital to capital, and **Show all** asks the viewport to fit every pin. Try: press **Next capital** a few times, then **Show all**.`,
+                story: `A component under the map flies the library's own map from capital to capital, and **Show all** asks the viewport to fit every pin. Try: press **Next capital** a few times, then **Show all**.`,
             },
         },
     },

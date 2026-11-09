@@ -12,7 +12,7 @@ A map can be the body of a [**DatasetControl**](?path=/docs/controls-datasetcont
 
 ## Put the map in the body
 
-\`Map\` goes in \`DatasetControl.Body\` with no provider of its own, as in the example's \`GridExample.tsx\`, and the parts go in the header as for any body: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). The control mounts its body again for each load, such as a view switch or saving the columns, and the map with it, so its view fits the new pins each time.
+\`LeafletMap\` or \`GoogleMap\` goes in \`DatasetControl.Body\` with no provider of its own, as in the example's \`GridExample.tsx\`, and the parts go in the header as for any body: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). The control mounts its body again for each load, such as a view switch or saving the columns, and the map with it, so its view fits the new pins each time.
 
 ## The placeholder
 
