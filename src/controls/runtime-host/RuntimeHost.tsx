@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo, useState } from "react";
-import { IRuntime, IRuntimeEvents, RuntimeLifecycle, useEventEmitter, useLatest, useRerender } from "@core";
+import { IRuntime, IRuntimeEvents, IStateStore, RuntimeLifecycle, StateContext, useEventEmitter, useLatest, useRerender, useStateStore } from "@core";
 import { useOpenErrorDialog } from "@pcf";
 import { ErrorMessageBoundary } from "@ui/error-message-bar";
 import { LoadingBoundary } from "@ui/loading-boundary";
@@ -10,6 +10,8 @@ import { IRuntimeHostComponents } from "./components";
 export interface IHostedRuntime extends IRuntime {
     /** This mount's lifecycle, which the host drives. */
     readonly lifecycle: RuntimeLifecycle;
+    /** Where the controls inside this runtime keep their state. */
+    getStateStore?(): IStateStore;
 }
 
 export interface IRuntimeHostProps<TRuntime extends IHostedRuntime> {
@@ -37,6 +39,7 @@ const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<
     const { lifecycle } = runtime;
     const { rerender } = useRerender();
     const openErrorDialog = useOpenErrorDialog();
+    const parentStateStore = useStateStore();
 
     //subscribed in the commit, before the init below starts
     useEventEmitter<IRuntimeEvents>(lifecycle.events, STATUS_EVENTS, rerender);
@@ -59,7 +62,9 @@ const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<
                 onOpenDetails={openErrorDialog}
                 components={props.components?.errorMessage}>
                 <LoadingBoundary isLoading={status === 'initializing'} components={props.components?.loading}>
-                    {props.children}
+                    <StateContext.Provider value={runtime.getStateStore?.() ?? parentStateStore}>
+                        {props.children}
+                    </StateContext.Provider>
                 </LoadingBoundary>
             </ErrorMessageBoundary>
         </RuntimeStatusContext.Provider>

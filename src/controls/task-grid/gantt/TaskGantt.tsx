@@ -2,9 +2,9 @@ import { useTheme } from "@theme";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 import type { Dayjs } from "dayjs";
-import { useEventEmitter, useLatest, useRerender } from "@core";
+import { useControlStateStore, useEventEmitter, useLatest, useRerender } from "@core";
 import { useLabelsService } from "@labels";
-import { useControlStateStore, useProvideDatasetControlPart } from "@controls/dataset-control/adapters/root";
+import { useProvideDatasetControlPart } from "@controls/dataset-control/adapters/root";
 import { useTaskRuntime } from "../adapters/root/context";
 import { GanttRuntime } from "./runtime";
 import { GanttContext } from "./context";

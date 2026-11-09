@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { ILoadingBoundaryComponents } from "@ui/loading-boundary";
-import { StateStore, useLatest, useStateStore } from "@core";
+import { useControlStateStore, useLatest } from "@core";
 import { useLabelsService } from "@labels";
 import { useTheme } from "@theme";
 import { RuntimeHost } from "@controls/runtime-host";
@@ -34,9 +34,9 @@ export interface IDatasetControlProps<TData = unknown> {
 
 /** Loads the provider and holds every part of the control; every load mounts it anew. */
 export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
-    const stateStore = useStateStore();
+    const store = useControlStateStore(props.stateKey);
     //outlives every runtime: the next mount opens the view and state this one leaves
-    const state = useMemo(() => new DatasetControlState({ store: props.stateKey ? stateStore.scope(props.stateKey) : new StateStore() }), []);
+    const state = useMemo(() => new DatasetControlState({ store }), []);
     const propsRef = useLatest(props as IDatasetControlProps);
     const labelsServiceRef = useLatest(useLabelsService());
     const theme = useTheme();

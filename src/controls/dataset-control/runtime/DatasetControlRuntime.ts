@@ -108,6 +108,10 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
         return this._state.getViewStore(viewId);
     }
 
+    public getStateStore(): IStateStore {
+        return this.getViewStateStore();
+    }
+
     public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
         return this._services.get('labels').getLabels(set);
     }
