@@ -16,10 +16,9 @@ export const DatasetControlMount = (props: IDatasetControlProps) => {
     return <DatasetControlContext.Provider value={runtime}>
         <DataProviderContext.Provider value={runtime.getProvider() ?? null}>
             <DatasetControlUi.Container height={props.height} className={props.className} components={container}>
-                <LoadingOverlay components={loadingOverlay}>
-                    {props.children}
-                    <Surfaces />
-                </LoadingOverlay>
+                {props.children}
+                <Surfaces />
+                <LoadingOverlay components={loadingOverlay} />
             </DatasetControlUi.Container>
         </DataProviderContext.Provider>
     </DatasetControlContext.Provider>;
