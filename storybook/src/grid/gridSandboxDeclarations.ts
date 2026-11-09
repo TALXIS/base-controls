@@ -3413,7 +3413,7 @@ declare function createAggregationModule(options?: IAggregationModuleParameters)
 /** Carries what legacy scripts set on records' fields into the cells. */
 declare function createLegacyClientApiCompatibilityModule(): IGridModule;
 /** Which of the provider's columns carry the label, the order and the completion state. */
-/** What makes the grid a checklist: grid.modules.find('checkList'). */
+/** What makes the grid a checklist: grid.modules.find('checklist'). */
 interface IGridChecklist {
     /** The columns the checklist works with. */
     getFieldMapping(): IChecklistFieldMapping;

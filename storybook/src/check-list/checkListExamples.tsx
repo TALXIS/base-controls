@@ -61,7 +61,7 @@ const CURRENT_USER = 'Anna Novak'
 const GridExample = () => {
     const gridRef = React.useRef<IGrid>()
     //the checklist tells its items from the row that adds one
-    const checkList = () => gridRef.current?.modules.find('checkList')
+    const checkList = () => gridRef.current?.modules.find('checklist')
     const isDone = (record: IRecord) => !!checkList()?.isCompleted(record)
     const isOverdue = (record: IRecord) => !isDone(record) && !!record.getValue('duedate') && dayjs(record.getValue('duedate')).isBefore(dayjs(), 'day')
 
