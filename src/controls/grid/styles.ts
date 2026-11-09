@@ -1,6 +1,9 @@
 import { IStyle, mergeStyleSets } from "@fluentui/react";
 import { FIELD_ERROR_OUTLINE_CLASS, FIELD_ERROR_OUTLINE_WIDTH_VARIABLE } from "./ui/cells/field-error/styles";
 
+export const COLUMNS_HIDDEN_LEFT_ATTRIBUTE = 'data-columns-hidden-left';
+export const COLUMNS_HIDDEN_RIGHT_ATTRIBUTE = 'data-columns-hidden-right';
+
 /** How tall the rows area stays when there is nothing in it. */
 const EMPTY_ROWS_AREA_HEIGHT = 135;
 
@@ -27,6 +30,10 @@ export const getGridStyles = (moduleStyles: IStyle[], height?: string | null, ro
             //AG Grid's row states are drawn over the cells, which paint their own backgrounds
             '.ag-grid-pinned-left-cells::before, .ag-grid-scrolling-cells::before, .ag-grid-pinned-right-cells::before': {
                 zIndex: 1,
+            },
+            //the pinned columns' border shows only while columns scroll under them
+            [`&:not([${COLUMNS_HIDDEN_LEFT_ATTRIBUTE}]) .ag-grid-pinned-left-cells, &:not([${COLUMNS_HIDDEN_RIGHT_ATTRIBUTE}]) .ag-grid-pinned-right-cells`]: {
+                '--ag-pinned-column-border': 'solid 1px transparent',
             },
             //the overlay below stops short of the cell's border
             '.ag-cell-range-selected:not(.ag-cell-focus)': {

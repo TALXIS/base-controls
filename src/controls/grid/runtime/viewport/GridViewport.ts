@@ -3,6 +3,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceRegistryInternal } from "../interfaces";
 import { getRowNode } from "../rows/getRowNode";
 import { listenToGridApi } from "../grid/listenToGridApi";
+import { COLUMNS_HIDDEN_LEFT_ATTRIBUTE, COLUMNS_HIDDEN_RIGHT_ATTRIBUTE } from "../../styles";
 
 const VIEWPORT_STATE_KEY = 'viewport';
 
@@ -61,7 +62,14 @@ export class GridViewport implements IGridViewport {
     }
 
     private _onGridApiAvailable = (gridApi: GridApi<IRecord>): () => void => {
-        const stop = listenToGridApi(gridApi, { bodyScrollEnd: this._onBodyScrollEnd, cellFocused: this._onCellFocused });
+        const stop = listenToGridApi(gridApi, {
+            bodyScrollEnd: this._onBodyScrollEnd,
+            cellFocused: this._onCellFocused,
+            bodyScroll: this._markHiddenColumns,
+            gridSizeChanged: this._markHiddenColumns,
+            displayedColumnsChanged: this._markHiddenColumns,
+            columnResized: this._markHiddenColumns,
+        });
         //viewportChanged fires once rows are drawn; rows inside groups only exist once their groups have loaded
         const stopRestoring = this._pending ? listenToGridApi(gridApi, { gridSizeChanged: this._restore, viewportChanged: this._restore }) : undefined;
         return () => {
@@ -95,6 +103,19 @@ export class GridViewport implements IGridViewport {
         //the user scrolling before the row arrives is the end of putting them back
         this._stopRestoring();
         this._save();
+    };
+
+    private _markHiddenColumns = (): void => {
+        const gridApi = this._services.find('gridApi');
+        const gridRoot = this._services.find('gridRoot');
+        if (!gridApi || !gridRoot || gridApi.isDestroyed()) {
+            return;
+        }
+        const { left, right } = gridApi.getHorizontalPixelRange();
+        const scrollingWidth = gridApi.getDisplayedCenterColumns().reduce((width, column) => width + column.getActualWidth(), 0);
+        gridRoot.toggleAttribute(COLUMNS_HIDDEN_LEFT_ATTRIBUTE, left > 0);
+        //a fraction of a pixel is left over at zoom levels other than 100%
+        gridRoot.toggleAttribute(COLUMNS_HIDDEN_RIGHT_ATTRIBUTE, scrollingWidth - right > 1);
     };
 
     private _onCellFocused = (): void => {
