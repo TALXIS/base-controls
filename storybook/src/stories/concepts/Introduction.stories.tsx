@@ -2,11 +2,11 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
-import { ShowcaseExample } from '../../grid/examples/getStartedExamples'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
+import { StoreOpeningsExample } from './introductionExamples'
 
 const DESCRIPTION = `
-Base Controls is a React library of controls for business applications: grids, task grids with a Gantt chart, checklists, forms and maps, which show your data, edit it and save it. They are built on Fluent UI v8, run in your own React 16.8 or 17 application, and plug into Power Apps as PCF controls. Try it below: pick a preset, then open **Code** to see how it is built.
+Base Controls is a React library of controls for business applications: grids, task grids with a Gantt chart, checklists, forms and maps, which show your data, edit it and save it. They are built on Fluent UI v8, run in your own React 16.8 or 17 application, and plug into Power Apps as PCF controls. Try it below: switch the view to *On the map* and open a store from its pin.
 
 {{canvas: Overview}}
 
@@ -73,5 +73,5 @@ type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
     name: 'Overview',
-    render: () => renderStory(<ShowcaseExample />),
+    render: () => renderStory(<StoreOpeningsExample />),
 }
