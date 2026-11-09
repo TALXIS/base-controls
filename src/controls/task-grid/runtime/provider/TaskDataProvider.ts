@@ -2,13 +2,7 @@ import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IFormatting, IAvai
 import { HookRegistry } from "@core";
 import { StackRank } from "@core/stack-rank";
 import { IRecordTree, RecordTree } from "./record-tree";
-import { ITaskDataProviderConfigureParameters, INewTaskParameters, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskCreateParameters, ITaskCreateResult, ITasksCreateResult, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParameters, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
-
-export interface ITaskDataProviderParameters {
-    store: ITaskStore;
-    /** The formatting values are written and read with; the app user's when left out. */
-    formatting?: IFormatting;
-}
+import { ITaskDataProviderParameters, INewTaskParameters, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskCreateParameters, ITaskCreateResult, ITasksCreateResult, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParameters, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
 
 const ACTIVE_STATE_CODE = 0;
 
@@ -19,10 +13,10 @@ const copyColumn = (column: IColumn): IColumn => ({ ...column, metadata: { ...co
 /** Every task of a view, loaded at once through a store and shown as a tree. */
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
     private _store: ITaskStore;
-    private _fieldMapping?: IFieldMapping;
+    private _fieldMapping: IFieldMapping;
     private _quickFindColumnNames: string[] = [];
     private _rootTaskId?: string;
-    private _defaultCreatePosition: TaskCreatePosition = 'first';
+    private _defaultCreatePosition: TaskCreatePosition;
     private _tree: RecordTree;
     private _hasLoaded = false;
     private _newTaskPositions = new Map<string, TaskCreatePosition>();
@@ -47,15 +41,12 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     constructor(parameters: ITaskDataProviderParameters) {
         super({ dataSource: [], metadata: { PrimaryIdAttribute: 'id' }, formatting: parameters.formatting });
         this._store = parameters.store;
-        this._tree = new RecordTree(this, columnName => this._columnMatchers.find(matcher => matcher.isHandledColumn(columnName)));
-        this.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
-    }
-
-    public configure(parameters: ITaskDataProviderConfigureParameters): void {
         this._fieldMapping = { ...parameters.fieldMapping, stateCode: parameters.fieldMapping.stateCode ?? 'statecode' };
         this._rootTaskId = parameters.rootTaskId;
         this._defaultCreatePosition = parameters.defaultCreatePosition ?? 'first';
         this._hoursPerDay = parameters.hoursPerDay;
+        this._tree = new RecordTree(this, columnName => this._columnMatchers.find(matcher => matcher.isHandledColumn(columnName)));
+        this.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
     }
 
     public getHoursPerDay(): number | undefined {
@@ -63,9 +54,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public getFieldMapping(): IFieldMapping {
-        if (!this._fieldMapping) {
-            throw new Error('The task provider has no field mapping until the task runtime configures it.');
-        }
         return this._fieldMapping;
     }
 
@@ -584,7 +572,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     private _withHoursPerDay = (column: IColumn): IColumn => {
-        if (this._hoursPerDay === undefined || column.name !== this._fieldMapping?.duration) {
+        if (this._hoursPerDay === undefined || column.name !== this._fieldMapping.duration) {
             return column;
         }
         return { ...column, metadata: { HoursPerDay: this._hoursPerDay, ...column.metadata } };

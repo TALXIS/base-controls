@@ -175,8 +175,10 @@ export interface ITaskDataProviderEvents {
     onTreeChanged: () => void;
 }
 
-/** What the task runtime hands a task provider before it loads. */
-export interface ITaskDataProviderConfigureParameters {
+export interface ITaskDataProviderParameters {
+    store: ITaskStore;
+    /** The formatting values are written and read with; the app user's when left out. */
+    formatting?: IFormatting;
     /** `stateCode` defaults to `statecode`. */
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & Partial<Pick<IFieldMapping, 'stateCode'>>;
     /** Scopes the tree to the subtree under this task. */
@@ -219,11 +221,8 @@ export interface ITaskDataProviderHooks {
 /** A provider of tasks, every task loaded at once and shown as a tree. */
 export interface ITaskDataProvider extends IDataProvider {
     readonly taskEvents: IEventSubscriber<ITaskDataProviderEvents>;
-    /** Takes the control's field mapping and root task before the provider loads. */
-    configure(parameters: ITaskDataProviderConfigureParameters): void;
-    /** @throws Before `configure`. */
     getFieldMapping(): IFieldMapping;
-    /** How many hours a day of the duration column holds, as `configure` set it. */
+    /** How many hours a day of the duration column holds, unless its metadata says otherwise. */
     getHoursPerDay(): number | undefined;
     getStore(): ITaskStore;
     /** Every loaded task, whatever the view shows. */
