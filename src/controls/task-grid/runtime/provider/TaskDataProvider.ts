@@ -58,6 +58,10 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this._hoursPerDay = parameters.hoursPerDay;
     }
 
+    public getHoursPerDay(): number | undefined {
+        return this._hoursPerDay;
+    }
+
     public getFieldMapping(): IFieldMapping {
         if (!this._fieldMapping) {
             throw new Error('The task provider has no field mapping until the task runtime configures it.');

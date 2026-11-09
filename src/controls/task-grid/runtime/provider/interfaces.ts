@@ -223,6 +223,8 @@ export interface ITaskDataProvider extends IDataProvider {
     configure(parameters: ITaskDataProviderConfigureParameters): void;
     /** @throws Before `configure`. */
     getFieldMapping(): IFieldMapping;
+    /** How many hours a day of the duration column holds, as `configure` set it. */
+    getHoursPerDay(): number | undefined;
     getStore(): ITaskStore;
     /** Every loaded task, whatever the view shows. */
     getAllRecords(): IRecord[];

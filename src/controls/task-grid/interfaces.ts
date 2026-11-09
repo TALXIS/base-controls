@@ -1,6 +1,6 @@
 import type { IGridComponents, IGridModule, IGridModuleMap, IGridProps } from "@controls/grid";
 import type { ITaskRuntime } from "./runtime";
-import type { IDatasetControlView } from "@controls/dataset-control";
+import type { IDatasetControlLoadResult, IDatasetControlView } from "@controls/dataset-control";
 import type { ITaskDataProvider, ITaskDataProviderConfigureParameters, ITaskViewData } from "./runtime/provider";
 import type { ITreeCellComponents, IExpansionHeaderComponents, IPercentCompleteCellComponents, ITaskCommandsCellComponents } from "./adapters";
 
@@ -14,7 +14,7 @@ export type ITaskGridGridModule = IGridModule<Exclude<keyof IGridModuleMap, 'row
 export type ITaskGridView = IDatasetControlView<ITaskViewData, ITaskDataProvider>;
 
 /** What a `TaskDatasetControl`'s `onLoad` returns. */
-export interface ITaskGridLoadResult extends Omit<ITaskDataProviderConfigureParameters, 'defaultCreatePosition'> {
+export interface ITaskGridLoadResult extends Omit<ITaskDataProviderConfigureParameters, 'defaultCreatePosition'>, Pick<IDatasetControlLoadResult, 'destroyProviderOnUnmount'> {
     provider: ITaskDataProvider;
     /** The views to switch between; leave out for a task grid with one view. */
     views?: ITaskGridView[];

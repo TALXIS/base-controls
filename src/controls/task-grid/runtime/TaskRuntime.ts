@@ -50,13 +50,13 @@ export class TaskRuntime implements ITaskRuntime {
     }
 
     public async load(): Promise<IDatasetControlLoadResult<ITaskViewData>> {
-        const { provider, fieldMapping, rootTaskId, views } = await this._getProps().onLoad(this.services.get('datasetControl'));
-        provider.configure({ fieldMapping, rootTaskId, defaultCreatePosition: this._getProps().defaultCreatePosition, hoursPerDay: this._getProps().hoursPerDay });
+        const { provider, fieldMapping, rootTaskId, hoursPerDay, views, destroyProviderOnUnmount } = await this._getProps().onLoad(this.services.get('datasetControl'));
+        provider.configure({ fieldMapping, rootTaskId, defaultCreatePosition: this._getProps().defaultCreatePosition, hoursPerDay });
         provider.hooks.availableColumns.add(this._addPathColumn);
         //modules waiting for it add columns a user view may keep
         this.services.provide('provider', provider);
         //a task view is only ever resolved with this task provider
-        return { provider, views: views as IDatasetControlView<ITaskViewData>[] | undefined };
+        return { provider, views: views as IDatasetControlView<ITaskViewData>[] | undefined, destroyProviderOnUnmount };
     }
 
     public get lifecycle(): IRuntimeLifecycle {
@@ -100,7 +100,7 @@ export class TaskRuntime implements ITaskRuntime {
     }
 
     public getHoursPerDay(): number {
-        return this._getProps().hoursPerDay ?? 24;
+        return this.getProvider().getHoursPerDay() ?? 24;
     }
 
     public getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[] {

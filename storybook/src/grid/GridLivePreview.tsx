@@ -29,7 +29,7 @@ const createScope = (onProviderRendered: (provider: IDataProvider) => void): ISa
         return <TaskGridBase {...props} />
     }
     //an edit remounts the snippet, and the provider the runner hands it outlives that
-    const SandboxDatasetControl = (props: IDatasetControlProps) => <DatasetControl destroyProviderOnUnmount={false} {...props} />
+    const SandboxDatasetControl = (props: IDatasetControlProps) => <DatasetControl {...props} onLoad={async control => ({ destroyProviderOnUnmount: false, ...await props.onLoad(control) })} />
     return {
         ...GRID_SANDBOX_SCOPE,
         Grid: Object.assign(ReportingGrid, { Cell: Grid.Cell, ColumnHeader: Grid.ColumnHeader, Overlay: Grid.Overlay, Row: Grid.Row }),

@@ -16,11 +16,9 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
     enableEditing?: boolean;
     /** The Delete command. */
     enableDeletion?: boolean;
-    /** How many hours a day of a task's duration holds, 24 by default. */
-    hoursPerDay?: number;
     /** The control's modules, read on every mount. */
     modules?: IDatasetControlModule[];
-    /** Returns the provider, field mapping and views on every mount; `control.modules.get('taskRuntime')` is the task runtime. */
+    /** Returns the provider, field mapping, hours per day and views on every mount; `control.modules.get('taskRuntime')` is the task runtime. */
     onLoad: (control: IDatasetControl<ITaskViewData>) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
 }
 
@@ -39,7 +37,7 @@ export const TaskDatasetControlRoot = (props: ITaskDatasetControlProps) => {
     //the task runtime sets up the provider your onLoad returns
     const onLoad = (datasetControl: IDatasetControl<ITaskViewData>) => datasetControl.modules.get('taskRuntime').load();
 
-    const { onLoad: _onLoad, modules = [], enableCreation, defaultCreatePosition, enableEditing, enableDeletion, hoursPerDay, children, ...datasetControlProps } = props;
+    const { onLoad: _onLoad, modules = [], enableCreation, defaultCreatePosition, enableEditing, enableDeletion, children, ...datasetControlProps } = props;
 
     return <DatasetControl {...datasetControlProps} modules={[taskRuntimeModule, ...modules]} onLoad={onLoad}>
         <TaskRuntimeProvider>{children}</TaskRuntimeProvider>

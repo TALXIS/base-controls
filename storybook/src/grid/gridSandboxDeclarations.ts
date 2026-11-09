@@ -3511,6 +3511,8 @@ interface IDatasetControlLoadResult<TData = unknown> {
     provider: IDataProvider;
     /** The views to switch between; leave out for a control with one view. */
     views?: IDatasetControlView<TData>[];
+    /** Whether the control destroys the provider when it lets it go, on unmount and reload; defaults to true. */
+    destroyProviderOnUnmount?: boolean;
 }
 
 
@@ -3949,8 +3951,6 @@ interface IDatasetControlProps<TData = unknown> {
     className?: string;
     /** The key the control's state is kept under in the state store. */
     stateKey?: string;
-    /** Whether the control destroys the providers it lets go of, on unmount and reload; defaults to true. */
-    destroyProviderOnUnmount?: boolean;
     components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null } };
     /** Called with the control of each mount, before its init; subscribe to its events here. */
     onSetup?: (control: IDatasetControl<TData>) => void;
@@ -4202,8 +4202,12 @@ interface ITaskGridLoadResult {
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & { stateCode?: string };
     /** Scopes the tree to the subtree under this task. */
     rootTaskId?: string;
+    /** Hours in a day of a task's duration; 24 when left out. */
+    hoursPerDay?: number;
     /** The views to switch between; leave out for a task grid with one view. */
     views?: ITaskGridView[];
+    /** Whether the control destroys the provider when it lets it go, on unmount and reload; defaults to true. */
+    destroyProviderOnUnmount?: boolean;
 }
 
 /** The project the tasks belong to, as its store loads it. */
@@ -4247,8 +4251,6 @@ declare const createMemoryProjectModule: <TData>(parameters: { project: IProject
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'scope' | 'modules'> {
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
-    /** Hours in a day of a task's duration; 24 when left out. */
-    hoursPerDay?: number;
     /** Returns the provider, field mapping and views on every mount; control.modules.get('taskRuntime') is the task runtime. */
     onLoad: (control: IDatasetControl<ITaskViewData>) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
     /** The New command and the add-subtask buttons. */

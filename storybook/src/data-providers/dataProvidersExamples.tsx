@@ -130,7 +130,7 @@ const GridExample = () => {
             <DefaultButton text='Next page' onClick={nextPage} />
             <DefaultButton text='Reset' onClick={reset} />
         </Stack>
-        <DatasetControl onLoad={async () => ({ provider: tickets })} destroyProviderOnUnmount={false} height='340px'>
+        <DatasetControl onLoad={async () => ({ provider: tickets, destroyProviderOnUnmount: false })} height='340px'>
             <DatasetControl.Body>
                 <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} enableOptionSetColors />
             </DatasetControl.Body>
@@ -286,7 +286,7 @@ const GridExample = () => {
             <DefaultButton text='Toggle deal 3' onClick={() => deals.toggleSelectedRecordId('deal-3')} />
             <DefaultButton text='Clear the selection' onClick={() => deals.clearSelectedRecordIds()} />
         </Stack>
-        <DatasetControl onLoad={async () => ({ provider: deals })} destroyProviderOnUnmount={false} height='300px'>
+        <DatasetControl onLoad={async () => ({ provider: deals, destroyProviderOnUnmount: false })} height='300px'>
             <DatasetControl.Body>
                 <Grid modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
             </DatasetControl.Body>

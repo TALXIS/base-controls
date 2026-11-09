@@ -417,7 +417,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
     }, [])
 
     //the dataset outlives the control, which only shows it
-    const loadFields = useMemo(() => async () => ({ provider: dataset.getDataProvider() }), [dataset])
+    const loadFields = useMemo(() => async () => ({ provider: dataset.getDataProvider(), destroyProviderOnUnmount: false }), [dataset])
 
     useEffect(() => {
         dataset.setDataSource(columns.map(toDisplayRow))
@@ -713,7 +713,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
 
         {editorMode === "ui" && (
             <div className={styles.tableWrap}>
-                <DatasetControl onLoad={loadFields} destroyProviderOnUnmount={false} height="100%">
+                <DatasetControl onLoad={loadFields} height="100%">
                     <DatasetControl.Header>
                         <DatasetControl.Header.Start>
                             <DatasetControl.Ribbon

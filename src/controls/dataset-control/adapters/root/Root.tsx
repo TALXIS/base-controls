@@ -24,8 +24,6 @@ export interface IDatasetControlProps<TData = unknown> {
     className?: string;
     /** The key the control's state is kept under in the state store. */
     stateKey?: string;
-    /** Whether the control destroys the providers it lets go of, on unmount and reload; defaults to `true`. */
-    destroyProviderOnUnmount?: boolean;
     /** Replacements for the box, the skeleton and the error. */
     components?: IDatasetControlComponents;
     /** Called with the control of each mount, before its init; subscribe to its events here. */

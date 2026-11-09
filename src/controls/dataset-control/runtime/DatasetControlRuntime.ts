@@ -15,6 +15,8 @@ export interface IDatasetControlLoadResult<TData = unknown> {
     provider: IDataProvider;
     /** The views to switch between; leave out for a control with one view. */
     views?: IDatasetControlView<TData>[];
+    /** Whether the control destroys the provider when it lets it go, on unmount and reload; defaults to `true`. */
+    destroyProviderOnUnmount?: boolean;
 }
 
 /** A hook over the views `onLoad` returned, which it adds to or changes in place. */
@@ -55,6 +57,7 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
     private _theme: ITheme;
     private _state: DatasetControlState;
     private _provider?: IDataProvider;
+    private _isProviderOwned = true;
     private _views: IDatasetControlView[] = [];
     public readonly hooks = {
         views: new HookRegistry<DatasetControlViewsHook>(),
@@ -158,7 +161,8 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
 
     private async _init(): Promise<void> {
         await this._moduleLoader.load(this._getProps().modules ?? [], this);
-        const { provider, views = [] } = await this._getProps().onLoad(this);
+        const { provider, views = [], destroyProviderOnUnmount } = await this._getProps().onLoad(this);
+        this._isProviderOwned = destroyProviderOnUnmount !== false;
         try {
             //a copy: the hooks change it in place
             const listedViews = [...views];
@@ -233,7 +237,7 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
     }
 
     private _releaseProvider(provider: IDataProvider): void {
-        if (this._getProps().destroyProviderOnUnmount !== false) {
+        if (this._isProviderOwned) {
             provider.destroy();
         }
     }

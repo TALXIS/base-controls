@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { IDataProvider } from "@talxis/client-libraries";
+import type { IDatasetControlLoadResult } from "../../../../runtime/DatasetControlRuntime";
 import { GridRoot as Grid } from "@controls/grid/Grid";
 import { createClientSideRowModelModule } from "@controls/grid/modules/row-model/client-side/createClientSideRowModelModule";
 import { createEditingModule } from "@controls/grid/modules/editing/createEditingModule";
@@ -54,9 +54,9 @@ export const ManageViews = (props: IManageViewsProps) => {
 
     const { header, body, footer, ribbon, quickFind, pagination, ...datasetControl } = props.components?.datasetControl ?? {};
 
-    const onLoad = async (): Promise<{ provider: IDataProvider }> => ({ provider: userQueries.getManageProvider() });
+    const onLoad = async (): Promise<IDatasetControlLoadResult> => ({ provider: userQueries.getManageProvider(), destroyProviderOnUnmount: false });
 
-    return <DatasetControl onLoad={onLoad} destroyProviderOnUnmount={false} height='100%' className={styles.datasetControl} components={datasetControl}>
+    return <DatasetControl onLoad={onLoad} height='100%' className={styles.datasetControl} components={datasetControl}>
         <Header className={styles.header} components={header}>
             <Header.Start>
                 <ManageViewsRibbon userQueries={userQueries} components={ribbon} />
