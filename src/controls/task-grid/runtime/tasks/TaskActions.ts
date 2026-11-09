@@ -1,6 +1,7 @@
 import type { IRecord } from "@talxis/client-libraries";
 import { ErrorHelper } from "@core/error-handling";
 import type { INewTaskParameters, IOpenTasksResult, ITaskDataProvider, ITaskMovePosition } from "../provider";
+import { LOOKUP_LABELS } from "@fields/lookup/labels";
 import { TASK_GRID_LABELS } from "../../labels";
 import type { ITaskRuntime } from "../interfaces";
 
@@ -36,7 +37,10 @@ export class TaskActions implements ITaskActions {
         if (!this._runtime.isCreationEnabled()) {
             return null;
         }
-        const task = this._provider.createTask(parentId, parameters);
+        //named as Power Apps names an empty lookup, so it saves without the required name
+        const { subject } = this._provider.getFieldMapping();
+        const data = { [subject]: this._runtime.getLabels(LOOKUP_LABELS).get('lookup.noName'), ...parameters?.data };
+        const task = this._provider.createTask(parentId, { ...parameters, data });
         if (!task) {
             return null;
         }

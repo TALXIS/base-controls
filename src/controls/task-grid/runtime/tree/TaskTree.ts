@@ -108,7 +108,10 @@ export class TaskTree implements ITaskGridTree {
     }
 
     public editTaskSubject(taskId: string): void {
-        this._revealTask(taskId, REVEAL_TASK_ATTEMPTS, node => this._gridApi?.startEditingCell({ rowIndex: node.rowIndex!, colKey: this._provider.getFieldMapping().subject }));
+        this._revealTask(taskId, REVEAL_TASK_ATTEMPTS, node => {
+            this._gridApi?.startEditingCell({ rowIndex: node.rowIndex!, colKey: this._provider.getFieldMapping().subject });
+            this._selectEditorText(REVEAL_TASK_ATTEMPTS);
+        });
     }
 
     private get _gridApi(): GridApi<IRecord> | undefined {
@@ -325,6 +328,19 @@ export class TaskTree implements ITaskGridTree {
             this._expansion.setExpanded(parentId, true);
         }
     };
+
+    //typing replaces the placeholder name; the editor mounts in a later frame
+    private _selectEditorText(attemptsLeft: number): void {
+        const input = this._grid.services.find('viewport')?.getScrollElement()?.closest('.ag-root-wrapper')?.querySelector<HTMLInputElement>('.ag-cell-inline-editing input');
+        if (input) {
+            input.select();
+            //a subject wider than the grid would otherwise open scrolled to its end
+            this._gridApi?.ensureColumnVisible(this._provider.getFieldMapping().subject, 'start');
+        }
+        else if (attemptsLeft > 1) {
+            requestAnimationFrame(() => this._selectEditorText(attemptsLeft - 1));
+        }
+    }
 
     //AG Grid draws a new row in a later frame
     private _revealTask(recordId: string, attemptsLeft: number, onRevealed?: (node: IRowNode<IRecord>) => void): void {
