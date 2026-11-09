@@ -80,8 +80,10 @@ export interface IDependencies {
     reload(taskIds?: string[]): Promise<void>;
     /** Whether dependencies can be created, retyped and deleted. */
     isEditable(): boolean;
-    /** Whether either task of the dependency is in a chain being saved. */
+    /** Whether either task of the dependency is in a chain whose save has run long enough to show. */
     isDependencySaving(dependency: Pick<ITaskDependency, 'predecessorTaskId' | 'successorTaskId'>): boolean;
+    /** Whether either task of the dependency is in a chain whose save has started. */
+    isDependencyLocked(dependency: Pick<ITaskDependency, 'predecessorTaskId' | 'successorTaskId'>): boolean;
     /** Whether the dependency may be created without a self-link, duplicate or cycle. */
     canCreateDependency(predecessorTaskId: string, successorTaskId: string): boolean;
     /**
@@ -163,6 +165,11 @@ export class Dependencies implements IDependencies {
     public isDependencySaving(dependency: Pick<ITaskDependency, 'predecessorTaskId' | 'successorTaskId'>): boolean {
         const savingChains = this._taskRuntime.services.get('savingChains');
         return savingChains.isTaskSaving(dependency.predecessorTaskId) || savingChains.isTaskSaving(dependency.successorTaskId);
+    }
+
+    public isDependencyLocked(dependency: Pick<ITaskDependency, 'predecessorTaskId' | 'successorTaskId'>): boolean {
+        const savingChains = this._taskRuntime.services.get('savingChains');
+        return savingChains.isTaskLocked(dependency.predecessorTaskId) || savingChains.isTaskLocked(dependency.successorTaskId);
     }
 
     public canCreateDependency(predecessorTaskId: string, successorTaskId: string): boolean {

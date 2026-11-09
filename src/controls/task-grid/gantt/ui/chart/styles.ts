@@ -12,6 +12,7 @@ import {
     GANTT_TASK_LINE_CLASS,
     GANTT_TASK_LOCKED_CLASS,
     GANTT_TASK_SAVING_CLASS,
+    GANTT_TASK_SAVING_LOCKED_CLASS,
     GANTT_TASK_STARTED_CLASS,
     GANTT_TASK_SCALE_CLASS,
     GANTT_TASK_SUMMARY_CLASS,
@@ -197,10 +198,10 @@ export const getGanttUiChartStyles = (theme: ITheme, moduleStyles: IStyle[]) => 
                 background: `color-mix(in srgb, ${theme.semanticColors.bodyBackground} 40%, transparent)`,
             },
         },
-        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS}`]: {
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_LOCKED_CLASS}`]: {
             cursor: 'progress',
         },
-        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS} .${GANTT_LINK_CONTROL_CLASS}, .${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_CLASS} .${GANTT_TASK_DRAG_HANDLE_CLASS}`]: {
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_LOCKED_CLASS} .${GANTT_LINK_CONTROL_CLASS}, .${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SAVING_LOCKED_CLASS} .${GANTT_TASK_DRAG_HANDLE_CLASS}`]: {
             display: 'none !important',
         },
     }, ...moduleStyles],

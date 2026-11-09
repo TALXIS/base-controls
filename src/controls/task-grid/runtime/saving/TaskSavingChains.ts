@@ -22,9 +22,11 @@ export interface ITaskSavingChainsHooks {
     readonly links: IHookPoint<TaskSavingChainLinksHook>;
 }
 
-/** The tasks a save can reach, held as saving until the save and the sync after it settle. */
+/** The tasks a save can reach, held until the save and the sync after it settle. */
 export interface ITaskSavingChains {
     readonly events: IEventSubscriber<ITaskSavingChainsEvents>;
+    /** Whether the task is in a chain whose save has started, so a change to it would race the save. */
+    isTaskLocked(taskId: string): boolean;
     /** Whether the task is in a chain whose save has run long enough to show. */
     isTaskSaving(taskId: string): boolean;
     readonly hooks: ITaskSavingChainsHooks;
@@ -32,10 +34,15 @@ export interface ITaskSavingChains {
     track<T>(taskIds: string[], operation: () => Promise<T>): Promise<T>;
 }
 
+interface IChainHold {
+    taskIds: Set<string>;
+    isShown: boolean;
+    timer: number;
+}
+
 interface ITaskSaves {
     count: number;
-    timer?: number;
-    chain?: Set<string>;
+    hold: IChainHold;
 }
 
 export class TaskSavingChains implements ITaskSavingChains {
@@ -44,10 +51,13 @@ export class TaskSavingChains implements ITaskSavingChains {
     public readonly hooks = {
         links: new HookRegistry<TaskSavingChainLinksHook>(),
     };
-    //how many chains being shown each task is in
-    private _counts = new Map<string, number>();
+    //how many held chains each task is in
+    private _lockedCounts = new Map<string, number>();
+    //how many shown chains each task is in
+    private _savingCounts = new Map<string, number>();
     //counted until each save and the sync after it settle
     private _saves = new Map<string, ITaskSaves>();
+    private _holds = new Set<IChainHold>();
     private _isDestroyed = false;
 
     /** Starts following the provider's saves; the returned function stops it. */
@@ -58,39 +68,33 @@ export class TaskSavingChains implements ITaskSavingChains {
         return () => { offBeforeSaved(); offAfterSaved(); };
     }
 
+    public isTaskLocked(taskId: string): boolean {
+        return this._lockedCounts.has(taskId);
+    }
+
     public isTaskSaving(taskId: string): boolean {
-        return (this._counts.get(taskId) ?? 0) > 0;
+        return this._savingCounts.has(taskId);
     }
 
     public async track<T>(taskIds: string[], operation: () => Promise<T>): Promise<T> {
-        let chain: Set<string> | undefined;
-        const timer = window.setTimeout(() => chain = this._hold(taskIds), SAVING_DELAY);
+        const hold = this._hold(taskIds);
         try {
             return await operation();
         }
         finally {
-            window.clearTimeout(timer);
-            if (chain) {
-                this._release(chain);
-            }
+            this._release(hold);
         }
     }
 
     public destroy(): void {
         this._isDestroyed = true;
-        this._saves.forEach(saves => window.clearTimeout(saves.timer));
+        this._holds.forEach(hold => window.clearTimeout(hold.timer));
     }
 
     private _onBeforeRecordSaved = (record: IRecord): void => {
         const taskId = record.getRecordId();
-        const saves = this._saves.get(taskId) ?? { count: 0 };
+        const saves = this._saves.get(taskId) ?? { count: 0, hold: this._hold([taskId]) };
         saves.count++;
-        if (!saves.chain && saves.timer === undefined) {
-            saves.timer = window.setTimeout(() => {
-                saves.timer = undefined;
-                saves.chain = this._hold([taskId]);
-            }, SAVING_DELAY);
-        }
         this._saves.set(taskId, saves);
     };
 
@@ -113,52 +117,69 @@ export class TaskSavingChains implements ITaskSavingChains {
         if (saves.count > 0) {
             return;
         }
-        window.clearTimeout(saves.timer);
         this._saves.delete(taskId);
-        if (saves.chain) {
-            this._release(saves.chain);
-        }
+        this._release(saves.hold);
     };
 
-    private _hold(taskIds: string[]): Set<string> {
-        const chain = this._getChain(taskIds);
-        chain.forEach(taskId => this._counts.set(taskId, (this._counts.get(taskId) ?? 0) + 1));
-        this.events.dispatchEvent('onChainsChanged', [...chain]);
-        return chain;
+    //locks the chain at once and shows it only once the save outlasts the delay
+    private _hold(taskIds: string[]): IChainHold {
+        const hold: IChainHold = { taskIds: this._getChain(taskIds), isShown: false, timer: 0 };
+        hold.timer = window.setTimeout(() => {
+            hold.isShown = true;
+            this._count(this._savingCounts, hold.taskIds, 1);
+            this.events.dispatchEvent('onChainsChanged', [...hold.taskIds]);
+        }, SAVING_DELAY);
+        this._holds.add(hold);
+        this._count(this._lockedCounts, hold.taskIds, 1);
+        this.events.dispatchEvent('onChainsChanged', [...hold.taskIds]);
+        return hold;
     }
 
-    private _release(chain: Set<string>): void {
+    private _release(hold: IChainHold): void {
+        window.clearTimeout(hold.timer);
+        this._holds.delete(hold);
         if (this._isDestroyed) {
             return;
         }
-        chain.forEach(taskId => {
-            const count = (this._counts.get(taskId) ?? 1) - 1;
-            if (count > 0) {
-                this._counts.set(taskId, count);
-            }
-            else {
-                this._counts.delete(taskId);
-            }
-        });
-        this.events.dispatchEvent('onChainsChanged', [...chain]);
+        this._count(this._lockedCounts, hold.taskIds, -1);
+        if (hold.isShown) {
+            this._count(this._savingCounts, hold.taskIds, -1);
+        }
+        this.events.dispatchEvent('onChainsChanged', [...hold.taskIds]);
     }
 
-    //the tasks, their subtasks, what their links reach and the parents of all of it
+    private _count(counts: Map<string, number>, taskIds: Set<string>, change: number): void {
+        taskIds.forEach(taskId => {
+            const count = (counts.get(taskId) ?? 0) + change;
+            if (count > 0) {
+                counts.set(taskId, count);
+            }
+            else {
+                counts.delete(taskId);
+            }
+        });
+    }
+
+    //a moved task takes its subtasks and successors along; a summary it stretches takes only its successors
     private _getChain(taskIds: string[]): Set<string> {
         const structure = this._provider?.getRecordTree().structure;
         const reached = new Set<string>();
-        const queue = [...taskIds];
+        const moved = new Set<string>();
+        const queue = taskIds.map(taskId => ({ taskId, isMoved: true }));
         while (queue.length > 0) {
-            const taskId = queue.pop()!;
-            if (!reached.has(taskId)) {
-                reached.add(taskId);
-                queue.push(...this._getLinkedTaskIds(taskId));
+            const { taskId, isMoved } = queue.pop()!;
+            if (moved.has(taskId) || (!isMoved && reached.has(taskId))) {
+                continue;
             }
+            reached.add(taskId);
+            if (isMoved) {
+                moved.add(taskId);
+                structure?.getDescendants(taskId).forEach(descendant => queue.push({ taskId: descendant.getRecordId(), isMoved: true }));
+            }
+            this._getLinkedTaskIds(taskId).forEach(linkedTaskId => queue.push({ taskId: linkedTaskId, isMoved: true }));
+            structure?.getAncestorIds(taskId).forEach(ancestorId => queue.push({ taskId: ancestorId, isMoved: false }));
         }
-        const chain = new Set(reached);
-        taskIds.forEach(taskId => structure?.getDescendants(taskId).forEach(descendant => chain.add(descendant.getRecordId())));
-        reached.forEach(taskId => structure?.getAncestorIds(taskId).forEach(ancestorId => chain.add(ancestorId)));
-        return chain;
+        return reached;
     }
 
     private _getLinkedTaskIds(taskId: string): string[] {

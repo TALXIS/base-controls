@@ -214,7 +214,7 @@ export class Links implements ILinks {
 
     //a task in a chain being saved stays as it is, links included
     private _isLinkAllowed(chart: GanttStatic, sourceId: string, drop: ILinkDrop): boolean {
-        if (this._dependencies?.isDependencySaving({ predecessorTaskId: sourceId, successorTaskId: drop.targetId })) {
+        if (this._dependencies?.isDependencyLocked({ predecessorTaskId: sourceId, successorTaskId: drop.targetId })) {
             return false;
         }
         const type = getDependencyType(!!chart.getState().link_from_start, drop.isToStart);
@@ -268,7 +268,7 @@ export class Links implements ILinks {
     private _onLinkDblClick = (id: string | number): boolean => {
         const chart = this._gantt.services.find('chart');
         const link = chart?.isLinkExists(id) ? chart.getLink(id) : undefined;
-        if (this.isEditable() && link && !this._isLinkSaving(link)) {
+        if (this.isEditable() && link && !this._dependencies?.isDependencyLocked({ predecessorTaskId: String(link.source), successorTaskId: String(link.target) })) {
             runQuietly(() => this._deleteLink(String(id)));
         }
         return false;

@@ -5,7 +5,7 @@ import type { IRecord } from "@talxis/client-libraries";
 import type { ITaskDataProviderEvents } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { IGantt } from "../interfaces";
-import { GANTT_TASK_DONE_CLASS, GANTT_TASK_INACTIVE_CLASS, GANTT_TASK_LOCKED_CLASS, GANTT_TASK_SAVING_CLASS, GANTT_TASK_STARTED_CLASS, GANTT_TASK_SUMMARY_CLASS, setTaskIndexResolver } from "../chart";
+import { GANTT_TASK_DONE_CLASS, GANTT_TASK_INACTIVE_CLASS, GANTT_TASK_LOCKED_CLASS, GANTT_TASK_SAVING_CLASS, GANTT_TASK_SAVING_LOCKED_CLASS, GANTT_TASK_STARTED_CLASS, GANTT_TASK_SUMMARY_CLASS, setTaskIndexResolver } from "../chart";
 import type { IGanttSchedule } from "../schedule";
 import { GanttTaskMotion } from "./GanttTaskMotion";
 
@@ -23,7 +23,9 @@ export interface IGanttTasks {
     getRecord(taskId: string): IRecord | undefined;
     /** Whether the task's record is locked against edits, as the grid beside it decides. */
     isLocked(taskId: string): boolean;
-    /** Whether the task is in a chain being saved. */
+    /** Whether the task is in a chain whose save has started, so a change to it would race the save. */
+    isInSavingChain(taskId: string): boolean;
+    /** Whether the task is in a chain whose save has run long enough to show. */
     isSaving(taskId: string): boolean;
     /** The displayed tasks, top down. */
     getTaskIds(): string[];
@@ -114,6 +116,10 @@ export class GanttTasks implements IGanttTasks {
         return !!record && !!this._gantt.services.get('grid').modules.find('editing')?.locks.get({ record }).isLocked;
     }
 
+    public isInSavingChain(taskId: string): boolean {
+        return this._taskRuntime.services.get('savingChains').isTaskLocked(taskId);
+    }
+
     public isSaving(taskId: string): boolean {
         return this._taskRuntime.services.get('savingChains').isTaskSaving(taskId);
     }
@@ -180,6 +186,9 @@ export class GanttTasks implements IGanttTasks {
         }
         if (this.isLocked(record.getRecordId())) {
             classNames.push(GANTT_TASK_LOCKED_CLASS);
+        }
+        if (this.isInSavingChain(record.getRecordId())) {
+            classNames.push(GANTT_TASK_SAVING_LOCKED_CLASS);
         }
         if (this.isSaving(record.getRecordId())) {
             classNames.push(GANTT_TASK_SAVING_CLASS);
