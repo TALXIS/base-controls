@@ -105,8 +105,6 @@ export interface IDependencies {
     destroy(): void;
 }
 
-type DependencyLoadingLabel = 'dependencies.creatingDependency' | 'dependencies.savingDependency' | 'dependencies.deletingDependency';
-
 /** Each task's dependencies, held for the grid and written through the store. */
 export class Dependencies implements IDependencies {
     public events = new EventEmitter<IDependenciesEvents>();
@@ -191,7 +189,7 @@ export class Dependencies implements IDependencies {
             this._setDependencies([...this._dependencies, created], [created]);
             await this._taskRuntime.getProvider().synchronize();
             return created;
-        }, 'dependencies.creatingDependency');
+        });
     }
 
     public async updateDependency(dependencyId: string, changes: Pick<ITaskDependency, 'type'>): Promise<boolean> {
@@ -205,7 +203,7 @@ export class Dependencies implements IDependencies {
             this._setDependencies(this._dependencies.map(dependency => dependency.id === dependencyId ? updated : dependency), [updated]);
             await this._taskRuntime.getProvider().synchronize();
             return true;
-        }, 'dependencies.savingDependency');
+        });
     }
 
     public async deleteDependency(dependencyId: string): Promise<boolean> {
@@ -218,7 +216,7 @@ export class Dependencies implements IDependencies {
             this._setDependencies(this._dependencies.filter(dependency => dependency.id !== dependencyId), [existing]);
             await this._taskRuntime.getProvider().synchronize();
             return true;
-        }, 'dependencies.deletingDependency');
+        });
     }
 
     public destroy(): void {
@@ -226,8 +224,8 @@ export class Dependencies implements IDependencies {
     }
 
     //both tasks and whatever comes after them stay put until the write and its sync settle
-    private _executeInChain<T>(dependency: Pick<ITaskDependency, 'predecessorTaskId' | 'successorTaskId'>, operation: () => Promise<T>, loadingLabel: DependencyLoadingLabel): Promise<T> {
-        return this._taskRuntime.services.get('savingChains').track([dependency.predecessorTaskId, dependency.successorTaskId], () => this._execute(operation, loadingLabel));
+    private _executeInChain<T>(dependency: Pick<ITaskDependency, 'predecessorTaskId' | 'successorTaskId'>, operation: () => Promise<T>): Promise<T> {
+        return this._taskRuntime.services.get('savingChains').track([dependency.predecessorTaskId, dependency.successorTaskId], () => this._execute(operation));
     }
 
     private _addDependencyLinks: TaskSavingChainLinksHook = (result, { taskId }) => {
@@ -329,8 +327,9 @@ export class Dependencies implements IDependencies {
         }
     };
 
-    private _execute<T>(operation: () => Promise<T>, loadingLabel: DependencyLoadingLabel): Promise<T> {
-        return this._taskRuntime.execute(operation, { loading: { message: this._labels.get(loadingLabel) }, error: { title: this._labels.get('dependencies.dependenciesFailed') } });
+    //the chain shows the write on the tasks it moves, so the control stays usable
+    private _execute<T>(operation: () => Promise<T>): Promise<T> {
+        return this._taskRuntime.execute(operation, { loading: { show: false }, error: { title: this._labels.get('dependencies.dependenciesFailed') } });
     }
 }
 
