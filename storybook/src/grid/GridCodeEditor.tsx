@@ -61,6 +61,8 @@ export const GridCodeEditor = (props: IGridCodeEditorProps) => {
         const { typescriptDefaults } = monaco.languages.typescript
         //as modules, two open editors do not both declare `GridExample`
         typescriptDefaults.setCompilerOptions({ ...typescriptDefaults.getCompilerOptions(), moduleDetection: MODULE_DETECTION_FORCE })
+        //the worker only sees models in an editor otherwise, so imports between example files fail
+        typescriptDefaults.setEagerModelSync(true)
         registerExtraLibs(monaco, SANDBOX_TYPINGS, 'file:///sandbox/grid-runtime.d.ts')
         syncModels()
     }
