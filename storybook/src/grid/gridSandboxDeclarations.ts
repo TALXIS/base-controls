@@ -2202,6 +2202,7 @@ declare const DataProviderScope: (props: { provider: IDataProvider; children?: R
 declare function useDataProvider(): IDataProvider;
 /** Returns the provider and draws the component again on each of the events, read once at mount. */
 declare function useDataProviderEvents(events: (keyof IDataProviderEventListeners)[]): IDataProvider;
+declare const useEventEmitter: typeof import('@talxis/base-controls').useEventEmitter;
 /** Keeps state by id in a plain dictionary, written in place. */
 declare class StateStore implements IStateStore {
     constructor(parameters?: { state?: IStateDictionary });

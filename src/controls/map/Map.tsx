@@ -5,7 +5,6 @@ import { IMapProps } from "./interfaces";
 import { MapRuntime } from "./runtime/MapRuntime";
 import { MapContext } from "./context";
 import { MapUiContainer } from "./ui";
-import { LoadingOverlay } from "./adapters/loading-overlay";
 
 /** Shows the records of the provider around it as pins, drawn by its library module. */
 export const MapRoot = (props: IMapProps) => {
@@ -20,12 +19,11 @@ export const MapRoot = (props: IMapProps) => {
 
 const MapMount = (props: IMapProps) => {
     const runtime = useRuntime<MapRuntime>();
-    const { loading, errorMessage, loadingOverlay, ...containerComponents } = props.components ?? {};
+    const { loading, errorMessage, ...containerComponents } = props.components ?? {};
 
     return <MapContext.Provider value={runtime}>
         <MapUiContainer height={props.height} className={props.className} components={containerComponents}>
             {props.children}
-            <LoadingOverlay components={loadingOverlay} />
         </MapUiContainer>
     </MapContext.Provider>;
 };

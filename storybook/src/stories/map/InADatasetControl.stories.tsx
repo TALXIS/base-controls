@@ -14,6 +14,8 @@ A map can be the body of a [**DatasetControl**](?path=/docs/controls-datasetcont
 
 \`LeafletMap\` or \`GoogleMap\` goes in \`DatasetControl.Body\` with no provider of its own, as in the example's \`GridExample.tsx\`, and the parts go in the header as for any body: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). The control mounts its body again for each load, such as a view switch or saving the columns, and the map with it, so its view fits the new pins each time.
 
+The map shows no loading state of its own while the provider loads. To show one, cover the control with its loading overlay, as \`LoadingCover\` in the example's \`GridExample.tsx\` does from inside the map: \`useDatasetControl().parts.get('loadingOverlay').show()\` while the provider's \`onLoading\` says it loads. Each load in the example takes a second, as \`loadTrip\` in \`views.ts\` makes it, so you can see it, such as on a quick find.
+
 ## The placeholder
 
 Until its first load, a \`DatasetControl\` shows a placeholder shaped like a grid. \`Map.Ui.Skeleton\` draws a map in place of the grid's rows and footer, under the same header, so nothing jumps when the map arrives. Hand it to \`components.skeleton.onRenderSkeleton\`, as \`GridExample.tsx\` does; it takes the control's \`height\` and \`showHeader\`.

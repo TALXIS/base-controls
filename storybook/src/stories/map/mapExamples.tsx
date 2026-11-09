@@ -73,12 +73,6 @@ export const createCitiesProvider = () => {
         metadata: { PrimaryIdAttribute: 'name', PrimaryNameAttribute: 'name', LogicalName: 'capital', QuickFindColumns: ['name', 'country'] },
         columns: COLUMNS,
     })
-    //TEMPORARY: every load takes 5s, to see the map's loading overlay
-    const getDataAsync = provider.getDataAsync.bind(provider)
-    provider.getDataAsync = async (...args: Parameters<typeof getDataAsync>) => {
-        await new Promise(resolve => setTimeout(resolve, 5000))
-        return getDataAsync(...args)
-    }
     return provider
 }
 
@@ -600,13 +594,25 @@ const GridExample = () => {
 
 export const BoardingPassExample = () => run(BOARDING_PASS_CODE)
 
-const TRIP_CODE = `import { DatasetControl, Map } from '@talxis/base-controls'
+const TRIP_CODE = `import { DatasetControl, Map, useDataProvider, useDatasetControl, useEventEmitter } from '@talxis/base-controls'
+import type { IDataProviderEventListeners } from '@talxis/client-libraries'
 import { Stack } from '@fluentui/react'
 import { FIELD_MAPPING } from './data'
 import { loadTrip } from './views'
 import { TripRibbon } from './TripRibbon'
 import { COMPONENTS } from './CityCard'
 import { useLibraryPicker } from './LibraryPicker'
+
+//covers the control with its loading overlay while the provider loads, such as for a quick find
+const LoadingCover = () => {
+    const overlay = useDatasetControl().parts.get('loadingOverlay')
+    const hide = React.useRef<() => void>()
+    useEventEmitter<IDataProviderEventListeners>(useDataProvider(), 'onLoading', isLoading => {
+        hide.current?.()
+        hide.current = isLoading ? overlay.show('Loading map data…') : undefined
+    })
+    return null
+}
 
 const GridExample = () => {
     //the pins and popups of CityCard.tsx, for either library
@@ -628,7 +634,9 @@ const GridExample = () => {
             </DatasetControl.Header>
             <DatasetControl.Body>
                 {/* takes no provider of its own: it shows the control's */}
-                <library.Map fieldMapping={FIELD_MAPPING} />
+                <library.Map fieldMapping={FIELD_MAPPING}>
+                    <LoadingCover />
+                </library.Map>
             </DatasetControl.Body>
         </DatasetControl>
     </Stack>
@@ -685,6 +693,12 @@ const VIEWS: IDatasetControlView[] = [
 
 export const loadTrip = async (): Promise<IDatasetControlLoadResult> => {
     const provider = createCitiesProvider()
+    //a second per load, like a server, so the control's overlay shows over the map
+    const getDataAsync = provider.getDataAsync.bind(provider)
+    provider.getDataAsync = async (...args: Parameters<typeof getDataAsync>) => {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        return getDataAsync(...args)
+    }
     //what Edit columns offers: a memory provider lists the columns of its saved queries
     provider.setMetadata({ ...provider.getMetadata(), SavedQueries: [{ columns: ['name', 'country', 'population', 'region'].map(getColumn) }] })
     return { provider, views: VIEWS }
