@@ -36,6 +36,9 @@ every claim against `src/` before you write it.
 - British spelling (behaviour, colour, customise, initialise), no contractions, no selling adjectives.
 - No internals, no rationale, no history, no "why it is built this way", no lifecycle essays. Say what a
   thing is, how to call it, and its default.
+- The one exception is Concepts › Introduction, which says why the library exists: build applications
+  from finished parts instead of writing or generating the same code again, and extend them through
+  options, slots, hooks and modules. Keep that section; no other page argues it.
 - Vary the form: short prose, tables, a live example doing the explaining. Go easy on bullet lists, and
   never write a wall of text.
 - Terms: *pieces* are the keys of a `components` map; *slots* are `onRender…` functions; *parts* are
@@ -53,6 +56,8 @@ every claim against `src/` before you write it.
   shell command.
 - Use the smallest example that makes the point. Explain it with one-line comments inside its code, not
   with prose around it.
+- The Concepts › Introduction showcase is the exception to the next rule: it shows as many controls and
+  features working together as the scenario can use.
 - No fluff: an example holds only what concerns its control and the point of its page. Cut pickers,
   switchers and toggles for anything the page is not about (the map library picker belongs only on Map ›
   Map libraries; elsewhere draw a `LeafletMap`), logs and counters the caption does not use, data, columns
