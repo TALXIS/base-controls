@@ -29,9 +29,6 @@ export const OptionTag = (props: IOptionTagProps) => {
 
     return components.onRenderContainer({
         className: mergeStyles(styles.optionTag, props.className),
-        children: <>
-            {components.onRenderDot({ className: styles.dot })}
-            {components.onRenderLabel({ className: styles.label, title: props.label, children: props.label })}
-        </>,
+        children: components.onRenderLabel({ className: styles.label, title: props.label, children: props.label }),
     });
 };

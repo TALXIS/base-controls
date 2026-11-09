@@ -4102,7 +4102,7 @@ type TaskLoadWaiter = (params: { taskIds: string[] }) => Promise<void> | void;
 interface ITaskDataProviderEvents {
     onTasksCreated: (records: IRecord[], parentId?: string) => void;
     onTasksDeleted: (taskIds: string[]) => void;
-    onTaskMoved: (params: { movingRecord: IRecord; targetRecord: IRecord; position: string; parentRecord?: IRecord }) => void;
+    onTaskMoved: (params: { movingRecord: IRecord; targetRecord: IRecord; position: string; parentRecord?: IRecord; stackRank: string }) => void;
     /** Tasks whose data changed in place, whatever changed it. */
     onTasksUpdated: (records: IRecord[]) => void;
     /** The editor the tasks were opened in outside the grid closed. */

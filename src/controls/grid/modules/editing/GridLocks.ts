@@ -72,7 +72,7 @@ export class GridLocks implements IGridLocks {
         if (record && this._isRecordLocked(record)) {
             return { isLocked: true, lockedBy: 'record' };
         }
-        if (record && columnName && this._isCellLocked(record, columnName, colDef)) {
+        if (record && columnName && this._isCellLocked(record, columnName)) {
             return { isLocked: true, lockedBy: 'cell' };
         }
         return { isLocked: false };
@@ -89,7 +89,7 @@ export class GridLocks implements IGridLocks {
         return result.isLocked;
     }
 
-    private _isCellLocked(record: IRecord, columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
+    private _isCellLocked(record: IRecord, columnName: string): boolean {
         const result: IGridLock = { isLocked: false };
         this.hooks.lock.apply(result, { record, columnName });
         return result.isLocked;

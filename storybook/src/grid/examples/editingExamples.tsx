@@ -66,7 +66,7 @@ const createTimesheets = () => {
     return timesheets
 }
 
-const validateHours = (result: IFieldValidationResult, { record }: { record: IRecord }) => {
+const validateHours: GridValidationHook = (result, { record }) => {
     const hours = Number(record.getValue('hours') ?? 0)
     if (hours < 0.25 || hours > 12) {
         result.error = true
@@ -74,28 +74,21 @@ const validateHours = (result: IFieldValidationResult, { record }: { record: IRe
     }
 }
 
-const validateComment = (result: IFieldValidationResult, { record }: { record: IRecord }) => {
+const validateComment: GridValidationHook = (result, { record }) => {
     if (Number(record.getValue('status')) === REJECTED && !record.getValue('comment')) {
         result.error = true
         result.errorMessage = 'Say why the entry was rejected.'
     }
 }
 
-const VALIDATION_HOOKS: { [colId: string]: IGridColumnCellContext['validationHook'] } = {
+const VALIDATION_HOOKS: { [columnName: string]: GridValidationHook } = {
     hours: validateHours,
     comment: validateComment,
 }
 
 const onSetup = (grid: IGrid) => {
-    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-        for (const colDef of columnDefs) {
-            const validationHook = VALIDATION_HOOKS[colDef.colId!]
-            if (validationHook) {
-                //spread, so the cell keeps the rest of what the grid set
-                colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, validationHook } }
-            }
-        }
-    })
+    //runs for every column of every record
+    grid.services.get('validation').hooks.validation.add((result, parameters) => VALIDATION_HOOKS[parameters.columnName]?.(result, parameters))
 }
 
 const GridExample = () => {

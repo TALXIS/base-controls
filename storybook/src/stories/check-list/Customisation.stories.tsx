@@ -12,7 +12,7 @@ Apart from its three columns, a checklist is a grid, so you customise it the way
 
 ## Add grid features
 
-The checklist's columns take everything a grid column does, through a column definitions hook in \`onSetup\`, as *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview) describes. The release board above colours overdue dates, locks finished items, adds *Assign to me* as a cell command and totals the estimates.
+The checklist's columns take everything a grid column does, through a column definitions hook in \`onSetup\`, as *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview) describes, and the grid's hooks on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) reach its cells. The release board above colours overdue dates, locks finished items and adds *Assign to me* with theme, lock and commands hooks, and totals the estimates.
 
 \`modules\` replaces the default editing module. Add \`createLicenseModule\`, \`createEditingModule\`, \`createRowSelectionModule\`, \`createClipboardModule\`, \`createAggregationModule\`, \`createLegacyClientApiCompatibilityModule\` or a module of your own. Leave out sorting, filtering and grouping, which change the order, and cell selection, which turns dragging off.
 

@@ -65,46 +65,31 @@ const GridExample = () => {
     const isDone = (record: IRecord) => !!checkList()?.isCompleted(record)
     const isOverdue = (record: IRecord) => !isDone(record) && !!record.getValue('duedate') && dayjs(record.getValue('duedate')).isBefore(dayjs(), 'day')
 
-    //a finished item's name and due date cannot be edited
-    const lockWhenDone = (result: IGridLock, { record }: { record: IRecord }) => {
-        if (isDone(record)) {
-            result.isLocked = true
-        }
-    }
-
     const assignToMe = (record: IRecord) => {
         //a grid field saves at once, as the editing module auto-saves
         gridRef.current?.services.get('fields').get(record, 'owner').setValue(CURRENT_USER)
     }
 
-    //what each column's cells decide, by column name
-    const cells: { [colId: string]: IGridColumnCellContext } = {
-        name: { lockHook: lockWhenDone },
-        owner: {
-            commandsHook: (result, { record }) => {
-                if (checkList()?.isItem(record) && !isDone(record) && !record.getValue('owner')) {
-                    result.items.push({ key: 'assign', text: 'Assign to me', iconProps: { iconName: 'AddFriend' }, onClick: () => assignToMe(record) })
-                }
-            },
-        },
-        duedate: {
-            lockHook: lockWhenDone,
-            themeHook: (builder, { record }) => {
-                if (isOverdue(record)) {
-                    builder.tint(OVERDUE)
-                }
-            },
-        },
-    }
-
     const onSetup = (grid: IGrid) => {
         gridRef.current = grid
-        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-            for (const colDef of columnDefs.filter(colDef => cells[colDef.colId!])) {
-                //spread, so each cell keeps the rest of what the grid set
-                colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, ...cells[colDef.colId!] } }
+        //each hook runs for every cell
+        const cells = grid.services.get('cells')
+        cells.hooks.commands.add((result, { record, columnName }) => {
+            if (columnName === 'owner' && checkList()?.isItem(record) && !isDone(record) && !record.getValue('owner')) {
+                result.items.push({ key: 'assign', text: 'Assign to me', iconProps: { iconName: 'AddFriend' }, onClick: () => assignToMe(record) })
             }
         })
+        cells.hooks.theme.add((builder, { record, columnName }) => {
+            if (columnName === 'duedate' && isOverdue(record)) {
+                builder.tint(OVERDUE)
+            }
+        })
+        //a finished item's name and due date cannot be edited
+        grid.modules.observe('editing', editing => editing.locks.hooks.lock.add((result: IGridLock, { record, columnName }: IGridLockHookParameters) => {
+            if (record && (columnName === 'name' || columnName === 'duedate') && isDone(record)) {
+                result.isLocked = true
+            }
+        }))
     }
 
     return <DatasetControl onLoad={async () => ({ provider: sortChecklistProvider(provider, FIELD_MAPPING) })}>

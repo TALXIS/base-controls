@@ -45,7 +45,7 @@ With a \`height\`, the grid is exactly that tall and its rows scroll inside it, 
 
 ## Colour cells by their data
 
-A column colours its cells with \`context.cell.themeHook(builder, { record })\`, as the example at the top does. To colour across columns, such as a whole row, register \`grid.services.get('cells').hooks.theme.add(hook, priority?)\` in a module; the column's own \`themeHook\` runs after the hooks.
+Add a hook to \`grid.services.get('cells').hooks.theme\`, in \`onSetup\` or a module. It runs for every cell with \`(builder, { record, columnName })\`: check \`columnName\` to colour one column, as the example at the top does, or leave it out to colour a whole row.
 
 \`builder.tint(hue, strength?)\` tints a cell by a hue: \`'subtle'\` by default, \`'strong'\`, or \`'solid'\`, which fills it. For full control, set \`builder.colors\` (\`primary\`, \`background\`, \`text\`), and the cell's value, links, tags and editor all follow. Colour formats and helpers such as \`getTextColorForBackground\` are on [**Theming**](?path=/docs/concepts-theming--overview).
 
@@ -59,7 +59,7 @@ The theme is applied again whenever the record changes; if it depends on anythin
 
 ## Colour column headers
 
-A column colours its header with \`context.header.themeHook(builder)\`. To colour any header, add \`grid.services.get('columns').headers.hooks.theme.add(hook, priority?)\` in a module; \`themeHook\` runs after it. Everything in the header takes the colours, the name, the required marker and the module icons, while its menu draws in the app theme (see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview)). Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`, as the example does.
+Add a hook to \`grid.services.get('columns').headers.hooks.theme\`. It runs for every header with \`(builder, header)\`; check \`header.getColDef().colId\` to colour one column. Everything in the header takes the colours, the name, the required marker and the module icons, while its menu draws in the app theme (see *Surfaces* on [**Theming**](?path=/docs/concepts-theming--overview)). Headers redraw after every load; if the colour depends on anything else, call \`headers.render()\`, as the example does.
 
 {{story: Show which columns need a review}}
 

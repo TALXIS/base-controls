@@ -46,6 +46,7 @@ const GridExample = () => {
         grid.services.get('columns').events.addEventListener('onColumnsChanged', columns => log('onColumnsChanged', columns.length + ' columns written back'))
         grid.services.get('rows').events.addEventListener('onRowClicked', record => log('onRowClicked', ticketOf(record)))
         grid.services.get('cells').events.addEventListener('onFocusedCellChanged', (record, columnName) => log('onFocusedCellChanged', record ? ticketOf(record) + ' ' + columnName : 'none'))
+        grid.modules.observe('editing', editing => editing.events.addEventListener('onEditedCellChanged', (_previous: IGridEditedCell | undefined, cell: IGridEditedCell | undefined) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none')))
         const removeProviderListeners = [
             provider.addEventListener('onLoading', isLoading => log('onLoading', String(isLoading))),
             provider.addEventListener('onRecordColumnValueChanged', (record, columnName) => log('onRecordColumnValueChanged', ticketOf(record) + ' ' + columnName + ' = ' + (record.getFormattedValue(columnName) ?? 'empty'))),
@@ -79,7 +80,7 @@ const GridExample = () => {
                     <Grid
                         //modules are read at mount
                         key={mountCount + String(isAutoSaveOn)}
-                        modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: isAutoSaveOn, onEditedCellChanged: (_previous, cell) => log('onEditedCellChanged', cell ? ticketOf(provider.getRecordsMap()[cell.recordId]) + ' ' + cell.columnName : 'none') }), createSortingModule()]}
+                        modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: isAutoSaveOn }), createSortingModule()]}
                         height='440px'
                         onSetup={onSetup}
                         onLoad={() => log('onLoad')} />

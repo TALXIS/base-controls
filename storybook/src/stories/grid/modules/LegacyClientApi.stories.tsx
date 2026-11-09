@@ -40,12 +40,12 @@ Notifications show only while their row is hovered, holds the focused cell or is
 
 The module registers its hooks at \`GRID_MODULE_PRIORITY.legacyClientApiCompatibility\`, which is \`0\`: ahead of every other built-in module, and level with any hook you register without a priority. Hooks at a higher priority can change its locks, loading and colours (see *How hooks run* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
 
-The grid's validation replaces a script's \`setValidationExpression\` on a column with \`context.cell.validationHook\`, and on every column once a \`hooks.validation\` hook exists. Move such a check into the grid's validation (see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)).
+Once a \`hooks.validation\` hook exists, the grid's validation replaces a script's \`setValidationExpression\` on every provider column. Move such a check into the grid's validation (see *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)).
 
 | When | What happens |
 |---|---|
 | There is no editing module, the column is locked, or the record is locked as a whole | A disabled expression cannot open the cell |
-| A column has \`context: { isLocked: false }\` and metadata \`IsValidForUpdate: false\` | Its cells stay locked: return \`false\` from a \`setDisabledExpression\` on it too, or unlock them in \`context.cell.lockHook\` |
+| A column has \`context: { isLocked: false }\` and metadata \`IsValidForUpdate: false\` | Its cells stay locked: return \`false\` from a \`setDisabledExpression\` on it too, or unlock them in a lock hook at a priority above \`GRID_MODULE_PRIORITY.legacyClientApiCompatibility\` |
 | Rows are grouped | A script's background is repainted with the grid's; its text colour stays |
 | A group row or the totals row has expressions | They apply too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) |
 

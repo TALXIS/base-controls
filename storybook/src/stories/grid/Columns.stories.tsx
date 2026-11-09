@@ -12,7 +12,7 @@ The grid builds a column for each of the provider's columns, with its header tex
 
 ## Change a column
 
-In \`onSetup\`, add a hook to \`grid.services.get('columns').hooks.columnDefinitions\`. It receives the column definitions each time the grid builds its columns: find one by its \`colId\` and change it, or push one of your own. A definition takes any AG Grid column definition key, plus \`context\` for what the grid itself reads (see *The column context* below). Spread the existing \`context\`, and its \`cell\` or \`header\`, so the grid's own keys stay. At the default priority the modules run after your hook and can overwrite what it sets: see *Columns* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
+In \`onSetup\`, add a hook to \`grid.services.get('columns').hooks.columnDefinitions\`. It receives the column definitions each time the grid builds its columns: find one by its \`colId\` and change it, or push one of your own. A definition takes any AG Grid column definition key, plus \`context\` for what the grid itself reads (see *The column context* below). Spread the existing \`context\`, and its \`cell\`, so the grid's own keys stay. At the default priority the modules run after your hook and can overwrite what it sets: see *Columns* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
 | \`colId\` | Column |
 |---|---|
@@ -44,20 +44,22 @@ The column takes the grid's header and keeps its \`initialWidth\`. It has no edi
 
 ## Add cell commands
 
-\`context.cell.commandsHook(result, { record })\` adds commands to the column's cells. They show while the row is hovered, focused or selected, and are asked for each time, so they can depend on the record. Push \`ICommandBarItemProps\` to \`result.items\` for buttons, or to \`result.overflowItems\` for the **…** menu. Give each a \`text\`; \`iconOnly: true\` shows just the icon.
+In \`onSetup\`, add a hook to \`grid.services.get('cells').hooks.commands\`. It runs for every cell with \`(result, { record, columnName })\`, so check \`columnName\` first. Commands show while the row is hovered, focused or selected, and are asked for each time, so they can depend on the record. Push \`ICommandBarItemProps\` to \`result.items\` for buttons, or to \`result.overflowItems\` for the **…** menu. Give each a \`text\`; \`iconOnly: true\` shows just the icon.
 
 {{story: Reorder from the row}}
 
 ## Extend the header
 
-Clicking a header opens its menu. \`context.header\` adds to the header and its menu:
+Clicking a header opens its menu. The hooks on \`grid.services.get('columns').headers.hooks\` add to the header and its menu. Each runs for every header and receives the header second, so check \`header.getColDef().colId\` first:
 
-| Callback | Does |
+| Hook | Does |
 |---|---|
-| \`adornmentsHook(adornments)\` | Push \`{ key, placement: 'prefix' \\| 'suffix', title?, onRender? }\` to draw beside the name. |
-| \`menuSectionsHook(sections)\` | Push \`{ key, title, items }\`, or remove a module's section by its key. |
-| \`menuItemsHook(items)\` | Change the final menu items. |
-| \`themeHook(builder)\` | Colour the header. See *Colour column headers* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+| \`adornments(adornments, header)\` | Push \`{ key, placement: 'prefix' \\| 'suffix', title?, onRender? }\` to draw beside the name. |
+| \`menuSections(sections, header)\` | Push \`{ key, title, items }\`, or remove a module's section by its key. |
+| \`menuItems(items, header)\` | Change the final menu items. |
+| \`theme(builder, header)\` | Colour the header. See *Colour column headers* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
+
+The modules add theirs at \`GRID_MODULE_PRIORITY\`: to remove or change what a module added, give your hook a higher priority.
 
 The menu is built each time it opens, and adornments each time the header draws. After a change the header should show, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
 
@@ -85,7 +87,7 @@ Columns you push are not kept. A grid outside a DatasetControl keeps nothing: sa
 
 ### The column context
 
-What the grid reads from a column's \`context\`. The \`cell\` and \`header\` callbacks run after the hooks of their kind on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview), so a column overrides them.
+What the grid reads from a column's \`context\`. What a column's cells and header draw beyond these, such as commands, colours or locks, comes from the hooks on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
 | Key | Type | Description |
 |---|---|---|
@@ -96,17 +98,10 @@ What the grid reads from a column's \`context\`. The \`cell\` and \`header\` cal
 | \`widthOffset\` | \`number\` | Pixels added for what a module draws in the column, such as grouping's indent. Not saved. |
 | \`cell.isRowResizable\` | \`boolean\` | Draws the grip a row is dragged taller by. |
 | \`cell.enableOneClickEdit\` | \`boolean\` | With editing, draws the editing control in the cell. See *Edit in place* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`cell.commandsHook\` | \`(result, { record }) => void\` | The cell's commands. See *Add cell commands*. |
-| \`cell.themeHook\` | \`(builder, { record }) => void\` | The cell's colours. See *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview). |
-| \`cell.loadingHook\` | \`(result, { record }) => void\` | Draws a shimmer in place of the value while \`result.isLoading\`. |
-| \`cell.lockHook\` | \`(result, { record }) => void\` | With editing, locks the cell. See *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`cell.validationHook\` | \`(result, { record }) => void\` | Marks the value invalid. See *Validation* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`cell.controlParametersHook\` | \`(parameters, { record }) => void\` | The parameters the cell's control receives. See *Control parameters*. |
-| \`header.adornmentsHook\`, \`menuSectionsHook\`, \`menuItemsHook\`, \`themeHook\` | Callbacks | See *Extend the header*. |
 
 ### Control parameters
 
-\`cell.controlParametersHook\`, and the \`hooks.controlParameters\` hook, change what a cell's control receives. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\`, which reads these:
+A hook on \`grid.services.get('cells').hooks.controlParameters\` changes what a cell's control receives; it runs with \`(parameters, { record, columnName, takesInput })\`. Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Unassigned' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\`, which reads these:
 
 | Parameter | Description |
 |---|---|
@@ -182,7 +177,7 @@ export const ReorderFromTheRow: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`commandsHook\` adds *Reorder* to low-stock products, and *Copy SKU* and *Discontinue* to the **…** menu. Try: hover a row.`,
+                story: `A \`hooks.commands\` hook adds *Reorder* to low-stock products, and *Copy SKU* and *Discontinue* to the **…** menu. Try: hover a row.`,
             },
         },
     },
@@ -194,7 +189,7 @@ export const FlagLowStockInTheHeader: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`adornmentsHook\` adds a low-stock badge, and \`menuSectionsHook\` adds quick filters. Try: open the *In stock* menu.`,
+                story: `An \`adornments\` hook adds a low-stock badge, and a \`menuSections\` hook adds quick filters. Try: open the *In stock* menu.`,
             },
         },
     },

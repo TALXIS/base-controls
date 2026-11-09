@@ -25,7 +25,7 @@ Every column draws its header with \`Grid.ColumnHeader.Renderer\`. To change a c
 | \`requiredMarker\` | \`onRenderText\` | | The \`*\` of a required column |
 | \`menu\` | \`onRenderContextualMenu\` | | The column's menu |
 
-The icons in \`prefix\` and \`suffix\` are adornments that modules and \`context.header.adornmentsHook\` add, and the menu's items come from \`context.header.menuSectionsHook\`: see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview). The checkbox column and the grouping expansion column draw headers of their own: see [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) and [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+The icons in \`prefix\` and \`suffix\` are adornments that modules and \`headers.hooks.adornments\` add, and the menu's items come from \`headers.hooks.menuSections\`: see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview). The checkbox column and the grouping expansion column draw headers of their own: see [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) and [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 ## Compose it from the parts
 
@@ -34,7 +34,7 @@ To lay out the header yourself, set \`headerComponent\` to a component that gets
 | Part | Brings |
 |---|---|
 | \`Root\` | Makes it a column's header. Required, and outermost |
-| \`Theme\` | The header's colours, from \`context.header.themeHook\` and theme hooks |
+| \`Theme\` | The header's colours, from the \`headers.hooks.theme\` hooks |
 | \`Container\` | The button the header is: hover, focus, alignment, and a click that opens the menu |
 | \`Prefix\` | The icons before the name |
 | \`Content\` | What holds the name and the required marker |

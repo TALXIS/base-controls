@@ -24,7 +24,9 @@ const onSetup = (grid: IGrid) => {
 }
 
 const GridExample = () => {
-    const [starred, setStarred] = React.useState<string[]>([])
+    const [starred, setStarred] = React.useState(() => provider.getSelectedRecordIds())
+
+    React.useEffect(() => provider.addEventListener('onRecordsSelected', setStarred), [])
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>{starred.length ? starred.length + ' products starred for the next order.' : 'Star the products to order next.'}</MessageBar>
@@ -32,7 +34,7 @@ const GridExample = () => {
             <Grid
                 modules={[
                     createClientSideRowModelModule(),
-                    createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setStarred }),
+                    createRowSelectionModule({ mode: 'multiple' }),
                 ]}
                 onSetup={onSetup}
                 height='400px' />

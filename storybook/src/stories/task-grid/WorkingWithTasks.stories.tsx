@@ -36,7 +36,7 @@ A task whose \`stateCode\` column is not \`0\` is inactive. It stays read-only, 
 
 A row dropped between two rows lands at the level its distance from the left suggests. Held over a task for a moment, it becomes a subtask, and held over a closed parent a little longer, the parent opens. The new parent and rank are saved through the store.
 
-Rows can be dragged while the tree is shown, the tasks are sorted by nothing but their stack rank, and no cell is being edited. \`createTaskDraggingModule\` takes \`onTaskMoved({ movingRecord, targetRecord, position, parentRecord, stackRank })\`, called after a task is moved, with \`position\` \`'above'\`, \`'below'\` or \`'child'\`.
+Rows can be dragged while the tree is shown, the tasks are sorted by nothing but their stack rank, and no cell is being edited. \`createTaskDraggingModule()\` takes no options; follow the moves with \`onTaskMoved\` under *Events*.
 
 ## Events
 
@@ -46,6 +46,7 @@ The task provider's \`taskEvents\` follow every change, whichever way it was mad
 |---|---|
 | \`onTasksCreated(records, parentId?)\` | After tasks are created, with the parent they went under. |
 | \`onTasksDeleted(taskIds)\` | After tasks are deleted. |
+| \`onTaskMoved({ movingRecord, targetRecord, position, parentRecord, stackRank })\` | After a task is moved, with \`position\` \`'above'\`, \`'below'\` or \`'child'\`. |
 | \`onTasksUpdated(records)\` | After tasks take new values in place, such as what a form or the backend changed. |
 
 ## Where next

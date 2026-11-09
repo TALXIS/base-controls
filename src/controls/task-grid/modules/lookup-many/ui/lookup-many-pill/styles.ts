@@ -5,7 +5,7 @@ export const getLookupManyUiPillStyles = (theme: ITheme, color: string) => merge
     pill: {
         display: 'inline-flex',
         flexGrow: 0,
-        height: 22,
+        height: 20,
         maxWidth: 200,
         minWidth: 0,
     },
@@ -13,7 +13,6 @@ export const getLookupManyUiPillStyles = (theme: ITheme, color: string) => merge
         minWidth: 0,
         overflow: 'hidden',
         color: 'inherit',
-        fontWeight: 600,
         '&:hover, &:active, &:focus, &:active:hover': { color: 'inherit' },
     },
     remove: {

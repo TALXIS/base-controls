@@ -71,27 +71,6 @@ const GridExample = () => {
         gridRef.current!.services.get('cells').render()
     }
 
-    const winChanceCell: IGridColumnCellContext = {
-        loadingHook: (result, { record }) => {
-            result.isLoading = forecasting.has(record.getRecordId())
-        },
-        lockHook: (result, { record }) => {
-            result.isLocked = isClosed(record)
-        },
-        validationHook: (result, { record }) => {
-            const chance = Number(record.getValue('probability') ?? 0)
-            if (chance < 0 || chance > 100) {
-                result.error = true
-                result.errorMessage = 'A win chance is between 0 and 100 %.'
-            }
-        },
-        commandsHook: (result, { record }) => {
-            if (!isClosed(record)) {
-                result.items.push({ key: 'forecast', text: 'Forecast', iconOnly: true, iconProps: { iconName: 'Lightbulb' }, onClick: () => { forecast(record) } })
-            }
-        },
-    }
-
     const onSetup = (grid: IGrid) => {
         gridRef.current = grid
         grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
@@ -99,8 +78,32 @@ const GridExample = () => {
             const probability = columnDefs.find(colDef => colDef.colId === 'probability')!
             Object.assign(probability, { headerName: 'Win chance', cellRenderer: WinChanceCell, initialWidth: 220 })
             //spread, so the column keeps the rest of what the grid set
-            probability.context = { ...probability.context, alignment: 'left', cell: { ...probability.context?.cell, ...winChanceCell } }
+            probability.context = { ...probability.context, alignment: 'left' }
         })
+        //each hook runs for every cell
+        const cells = grid.services.get('cells')
+        cells.hooks.loading.add((result, { record, columnName }) => {
+            if (columnName === 'probability') {
+                result.isLoading = forecasting.has(record.getRecordId())
+            }
+        })
+        cells.hooks.commands.add((result, { record, columnName }) => {
+            if (columnName === 'probability' && !isClosed(record)) {
+                result.items.push({ key: 'forecast', text: 'Forecast', iconOnly: true, iconProps: { iconName: 'Lightbulb' }, onClick: () => { forecast(record) } })
+            }
+        })
+        grid.services.get('validation').hooks.validation.add((result, { record, columnName }) => {
+            const chance = Number(record.getValue('probability') ?? 0)
+            if (columnName === 'probability' && (chance < 0 || chance > 100)) {
+                result.error = true
+                result.errorMessage = 'A win chance is between 0 and 100 %.'
+            }
+        })
+        grid.modules.observe('editing', editing => editing.locks.hooks.lock.add((result, { record, columnName }) => {
+            if (record && columnName === 'probability' && isClosed(record)) {
+                result.isLocked = true
+            }
+        }))
     }
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>

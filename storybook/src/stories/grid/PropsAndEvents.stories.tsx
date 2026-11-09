@@ -30,7 +30,7 @@ A save changes no value, so \`onRecordColumnValueChanged\` does not fire for it:
 
 ## Drive the page around the grid
 
-Subscribe in \`onSetup\`, which receives each new grid before it loads. Listeners on the grid and its services go with the grid; the provider can outlive it, so the first example removes its listeners on \`onDestroyed\` (see *Clean up* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview)). A listener is added once per mount, and so is a module's option such as \`createEditingModule({ onEditedCellChanged })\`: pass a state setter, or read what changes through a ref.
+Subscribe in \`onSetup\`, which receives each new grid before it loads. Listeners on the grid and its services go with the grid; the provider can outlive it, so the first example removes its listeners on \`onDestroyed\` (see *Clean up* on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview)). A listener is added once per mount, so pass a state setter, or read what changes through a ref. A module's events, such as editing's \`onEditedCellChanged\`, are reached with \`grid.modules.observe(name, …)\`, as the first example does.
 
 {{story: Ticket queue with a preview pane}}
 

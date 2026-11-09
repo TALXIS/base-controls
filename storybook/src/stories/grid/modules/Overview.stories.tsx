@@ -27,7 +27,7 @@ Which columns offer a feature comes from the provider's columns: \`disableSortin
 
 ## Switch a module on or off
 
-\`modules\` and every module's options are read at mount: to switch a module or change its options, give the grid a new \`key\`, as the queue above does (see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview)). A module's events come in through its options, such as \`createRowSelectionModule({ onSelectionChanged })\`.
+\`modules\` and every module's options are read at mount: to switch a module or change its options, give the grid a new \`key\`, as the queue above does (see *Change a prop that is read at mount* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview)). A module's events are on its instance: in \`onSetup\`, reach it with \`grid.modules.observe(name, …)\`.
 
 What the provider holds survives the remount: its records, sorting, filters, grouping and selection. A module you switch off leaves its state on the provider, so clear that too: when grouping goes away, remove each of \`provider.grouping.getGroupBys()\` with \`removeGroupBy(alias)\` and call \`provider.refresh()\`, as the queue does.
 

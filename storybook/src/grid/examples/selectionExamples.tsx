@@ -17,11 +17,14 @@ const keepApprovedUnselected: IGridModule = {
 }
 
 const GridExample = () => {
-    const [selectedIds, setSelectedIds] = React.useState<string[]>([])
+    const [selectedIds, setSelectedIds] = React.useState(() => provider.getSelectedRecordIds())
     const gridRef = React.useRef<IGrid>()
     const selectedEntries = selectedIds.map(id => provider.getRecordsMap()[id])
     const selectedHours = selectedEntries.reduce((total, entry) => total + Number(entry.getValue('hours') ?? 0), 0)
     const hasSelection = selectedEntries.length > 0
+
+    //the selection is the provider's
+    React.useEffect(() => provider.addEventListener('onRecordsSelected', setSelectedIds), [])
 
     const setStatus = (entries: IRecord[], status: number) => {
         entries.forEach(entry => {
@@ -59,7 +62,7 @@ const GridExample = () => {
                 modules={[
                     createClientSideRowModelModule(),
                     createEditingModule({ enableAutoSave: true }),
-                    createRowSelectionModule({ mode: 'multiple', onSelectionChanged: setSelectedIds }),
+                    createRowSelectionModule({ mode: 'multiple' }),
                     createSortingModule(),
                     keepApprovedUnselected,
                 ]}
@@ -106,6 +109,8 @@ const ProductCard = (props: IProductCardProps) => {
 const GridExample = () => {
     const [productId, setProductId] = React.useState<string>()
 
+    React.useEffect(() => provider.addEventListener('onRecordsSelected', ids => setProductId(ids[0])), [])
+
     return <Stack horizontal tokens={{ childrenGap: 16 }}>
         <div className={styles.grid}>
             <DatasetControl onLoad={async () => ({ provider: provider })}>
@@ -113,7 +118,7 @@ const GridExample = () => {
                     <Grid
                         modules={[
                             createClientSideRowModelModule(),
-                            createRowSelectionModule({ mode: 'single', onSelectionChanged: ids => setProductId(ids[0]) }),
+                            createRowSelectionModule({ mode: 'single' }),
                         ]}
                         height='440px' />
                 </DatasetControl.Body>

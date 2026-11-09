@@ -16,7 +16,6 @@ export const LookupManyUiPersonPill = (props: ILookupManyUiPersonPillProps) => {
     const { imageUrlPropertyName = 'imageurl', ...pillProps } = props;
     const styles = useMemo(() => getLookupManyUiPersonPillStyles(), []);
     return <LookupManyUiPill {...pillProps} className={styles.pill} components={{
-        onRenderDot: () => null,
         onRenderLabel: () => <TooltipHost content={props.reference.name}>
             <Persona text={props.reference.name} imageUrl={getReferenceDataValue(props.reference, imageUrlPropertyName)} size={PersonaSize.size24} imageShouldFadeIn={false} hidePersonaDetails className={styles.persona} />
         </TooltipHost>,

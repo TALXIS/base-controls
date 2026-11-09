@@ -29,7 +29,7 @@ Hooks of one kind run in ascending priority. Within one priority they run in the
 | \`grouping\`, \`aggregation\` | \`60\`, \`70\` |
 | \`clipboard\` | \`80\` |
 
-A column's own callbacks in its \`context\` run after every hook of their kind. Hooks run for group rows and the totals row too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+Cell and header hooks run for every column, so a hook meant for one column checks \`columnName\`, or the header's \`getColDef().colId\`, first. Hooks run for group rows and the totals row too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
 ## Locks
 
@@ -110,30 +110,30 @@ Every header hook receives an \`IGridColumnHeader\`:
 
 ### Every hook
 
-| Hook | On | Decides | Runs last |
-|---|---|---|---|
-| \`hooks.theme\` | \`cells\` | A cell's colours, through \`builder\`: see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview) | \`context.cell.themeHook\` |
-| \`hooks.loading\` | \`cells\` | \`result.isLoading\` | \`context.cell.loadingHook\` |
-| \`hooks.commands\` | \`cells\` | \`result.items\`, \`result.overflowItems\` | \`context.cell.commandsHook\` |
-| \`hooks.control\` | \`cells\` | \`result.control\`: the control that draws a cell, and its \`bindings\` | None |
-| \`hooks.controlParameters\` | \`cells\` | The parameters a cell's control receives | \`context.cell.controlParametersHook\` |
-| \`hooks.height\` | \`rows\` | \`result.height\`, in pixels | None |
-| \`addRowClass(className, rule)\` | \`rows\` | Whether a row takes the class; no priority | None |
-| \`hooks.lock\` | \`editing.locks\` | \`result.isLocked\` for a column, a row or a cell | \`context.cell.lockHook\` |
-| \`hooks.validation\` | \`validation\` | \`result.error\`, \`result.errorMessage\` | \`context.cell.validationHook\` |
-| \`hooks.columnDefinitions\` | \`columns\` | The column definitions AG Grid receives: see *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview) | None |
-| \`hooks.menuSections\` | \`columns.headers\` | A menu's sections | \`context.header.menuSectionsHook\` |
-| \`hooks.menuItems\` | \`columns.headers\` | A menu's final items | \`context.header.menuItemsHook\` |
-| \`hooks.adornments\` | \`columns.headers\` | What a header draws beside the name | \`context.header.adornmentsHook\` |
-| \`hooks.theme\` | \`columns.headers\` | A header's colours, through \`builder\` | \`context.header.themeHook\` |
-| \`hooks.surfaces\` | \`surfaces\` | What modules draw inside the grid: see [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview) | None |
-| \`hooks.filterControlParameters\` | \`filtering\` | The parameters of the filter callout's controls | None |
-| \`hooks.selectRecords\` | \`rowSelection\` | \`selection.recordIds\` or \`selection.isCancelled\`; may be async | None |
-| \`hooks.selectionState\` | \`rowSelection\` | \`result.state\` of a row's checkbox | None |
-| \`onKeyDown(handler)\` | \`keyboard\` | Runs for every key pressed inside the grid; no priority | None |
-| \`hooks.openRecord\` | The grid | \`request.isHandled\`: whether a hook opened the record in place of the provider. See *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview) | None |
-| \`hooks.agGridOptions\`, \`hooks.agGridInitialOptions\` | The grid | AG Grid's options: see [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview) | None |
-| \`hooks.theme\`, \`hooks.styles\` | \`gridTheme\` | The AG Grid theme and the root element's styles | None |
+| Hook | On | Decides |
+|---|---|---|
+| \`hooks.theme\` | \`cells\` | A cell's colours, through \`builder\`: see *Colour cells by their data* on [**Appearance**](?path=/docs/controls-grid-appearance--overview) |
+| \`hooks.loading\` | \`cells\` | \`result.isLoading\` |
+| \`hooks.commands\` | \`cells\` | \`result.items\`, \`result.overflowItems\` |
+| \`hooks.control\` | \`cells\` | \`result.control\`: the control that draws a cell, and its \`bindings\` |
+| \`hooks.controlParameters\` | \`cells\` | The parameters a cell's control receives |
+| \`hooks.height\` | \`rows\` | \`result.height\`, in pixels |
+| \`addRowClass(className, rule)\` | \`rows\` | Whether a row takes the class; no priority |
+| \`hooks.lock\` | \`editing.locks\` | \`result.isLocked\` for a column, a row or a cell |
+| \`hooks.validation\` | \`validation\` | \`result.error\`, \`result.errorMessage\` |
+| \`hooks.columnDefinitions\` | \`columns\` | The column definitions AG Grid receives: see *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview) |
+| \`hooks.menuSections\` | \`columns.headers\` | A menu's sections |
+| \`hooks.menuItems\` | \`columns.headers\` | A menu's final items |
+| \`hooks.adornments\` | \`columns.headers\` | What a header draws beside the name |
+| \`hooks.theme\` | \`columns.headers\` | A header's colours, through \`builder\` |
+| \`hooks.surfaces\` | \`surfaces\` | What modules draw inside the grid: see [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview) |
+| \`hooks.filterControlParameters\` | \`filtering\` | The parameters of the filter callout's controls |
+| \`hooks.selectRecords\` | \`rowSelection\` | \`selection.recordIds\` or \`selection.isCancelled\`; may be async |
+| \`hooks.selectionState\` | \`rowSelection\` | \`result.state\` of a row's checkbox |
+| \`onKeyDown(handler)\` | \`keyboard\` | Runs for every key pressed inside the grid; no priority |
+| \`hooks.openRecord\` | The grid | \`request.isHandled\`: whether a hook opened the record in place of the provider. See *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview) |
+| \`hooks.agGridOptions\`, \`hooks.agGridInitialOptions\` | The grid | AG Grid's options: see [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview) |
+| \`hooks.theme\`, \`hooks.styles\` | \`gridTheme\` | The AG Grid theme and the root element's styles |
 
 ## Where next
 

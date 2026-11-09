@@ -68,16 +68,15 @@ They return the service, not its state. To redraw when it changes, subscribe to 
 | Emitter | Event | Arguments | When it fires |
 |---|---|---|---|
 | \`grid.lifecycle.events\` | \`onReady\`, \`onInitFailed\`, \`onDestroyed\` | See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) | The mount is ready, failed to load, or ends. |
-| \`editing.events\` | \`onEditedCellChanged\` | \`previous?\`, \`next?\` | See *Options* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
-| \`rowSelection.events\` | \`onSelectionChanged\` | \`selectedRecordIds\` | The selection changes. |
+| \`editing.events\` | \`onEditedCellChanged\` | \`previous?\`, \`next?\` | See *Members* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
 | \`filtering.events\` | \`onFilterOpened\` | \`columnName\` | A column's filter callout opens. |
 | \`filtering.events\` | \`onFilterClosed\` | None | The filter callout closes. |
 
-The events of the grid itself, its provider and its \`columns\`, \`rows\` and \`cells\` are under *Events* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). No event fires when sorting, filters, grouping or totals change; they reload the provider, so follow \`onDataLoaded\` and read the provider, as the summary above the example's grid does.
+The selection is the provider's: follow it with its \`onRecordsSelected\` (see [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview)). The events of the grid itself, its provider and its \`columns\`, \`rows\` and \`cells\` are under *Events* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). No event fires when sorting, filters, grouping or totals change; they reload the provider, so follow \`onDataLoaded\` and read the provider, as the summary above the example's grid does.
 
 ## Redrawing
 
-The grid runs the hooks and the column callbacks when it draws, and nothing tells it that their result changed. A change to a record's value redraws that record's cells by itself. When anything else a result depends on changes, such as a toggle, the user's role or other records, tell the grid to draw again:
+The grid runs the hooks when it draws, and nothing tells it that their result changed. A change to a record's value redraws that record's cells by itself. When anything else a result depends on changes, such as a toggle, the user's role or other records, tell the grid to draw again:
 
 | What changed | When the grid runs it | Call |
 |---|---|---|

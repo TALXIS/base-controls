@@ -44,10 +44,9 @@ A value that fails validation shows an error icon in its cell, with the message 
 |---|---|---|
 | Required | \`metadata.RequiredLevel\` \`1\` or \`2\` on the provider column | The value is not empty |
 | Built-in | The column's data type and metadata | Single-line text against \`MaxLength\`, numbers against \`MinValue\` and \`MaxValue\`, and number, email, URL and date formats |
-| One column | \`context.cell.validationHook(result, { record })\` on the column's definition | Your rule for that column; it may read any column of the record |
-| Every column | \`hooks.validation.add(hook, priority?)\` on the \`validation\` service | Your rule for every column: see *Validation* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) |
+| Your rules | \`hooks.validation.add(hook, priority?)\` on the \`validation\` service | Runs for every column of every record with \`{ record, columnName }\`; check \`columnName\` for a rule about one column. See *Validation* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) |
 
-Your rules run first, then the required and built-in checks, so a rule can add an error but not clear a built-in one. The rules are set on the provider's records: they gate every save, a \`provider.save()\` from outside the grid included, and they replace a \`record.expressions.setValidationExpression\` of your own on the same column. Validation does not need the editing module, so a read-only grid shows invalid values too; only the editing module draws a required column's asterisk.
+Your rules run first, then the required and built-in checks, so a rule can add an error but not clear a built-in one. The rules are set on the provider's records: they gate every save, a \`provider.save()\` from outside the grid included, and once a validation hook is added, they replace a \`record.expressions.setValidationExpression\` of your own on every provider column. Validation does not need the editing module, so a read-only grid shows invalid values too; only the editing module draws a required column's asterisk.
 
 ## Edit in place
 
@@ -68,9 +67,9 @@ Locks decide what can be edited. The levels are checked in the order of the tabl
 | Grid | No editing module | Nothing |
 | Column | \`context.isLocked\`, which defaults to \`!metadata.IsValidForUpdate\`, or a lock hook asked about \`{ columnName }\` | A lock in the header |
 | Record | A lock hook asked about \`{ record }\`, or an inactive record | A dimmed row, and a lock in a column pinned at the start |
-| Cell | \`context.cell.lockHook\`, or a lock hook asked about \`{ record, columnName }\` | A lock in the cell |
+| Cell | A lock hook asked about \`{ record, columnName }\` | A lock in the cell |
 
-\`context.isLocked: true\` is final; to open a column its metadata locks, give it \`context: { isLocked: false }\`. Lock hooks are added with \`editing.locks.hooks.lock.add\`; in \`onSetup\`, reach the module with \`grid.modules.observe('editing', …)\`, as the example does (see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)). A hook asked about \`{ record }\` starts with \`result.isLocked\` as \`!record.isActive()\`, so it can also unlock. \`context.cell.lockHook\` runs after the cell-level hooks, only for a cell whose column and record are open.
+\`context.isLocked: true\` is final; to open a column its metadata locks, give it \`context: { isLocked: false }\`. Lock hooks are added with \`editing.locks.hooks.lock.add\`; in \`onSetup\`, reach the module with \`grid.modules.observe('editing', …)\`, as the example does (see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)). A hook asked about \`{ record }\` starts with \`result.isLocked\` as \`!record.isActive()\`, so it can also unlock. A cell is asked about only when its column and record are open.
 
 Locks gate only the grid's own editing: \`record.setValue()\` from your code ignores them. A lock that reads something outside its record, such as a toggle or the user's role, redraws nothing by itself: see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). The lock column is \`RECORD_LOCK_COLUMN_KEY\`, hidden until a loaded row is locked, and a dimmed row carries the class \`LOCKED_RECORD_ROW_CLASS\`. To change the tooltips, as the example does, see [**Localization**](?path=/docs/concepts-localization--overview).
 
@@ -93,7 +92,6 @@ The options are *At mount*: see *Change a prop that is read at mount* on [**Prop
 | Option | Type | Default | Description |
 |---|---|---|---|
 | \`enableAutoSave\` | \`boolean\` | \`false\` | Saves a record each time one of its values is committed. |
-| \`onEditedCellChanged\` | \`(previous?, next?) => void\` | None | Fires when an editor opens or closes, or the user steps into or out of an in-place cell. Each argument is \`{ recordId, columnName }\`. |
 
 ## Changing how it looks
 
@@ -108,7 +106,7 @@ The editing module takes no \`components\` option. It draws two columns of its o
 | | \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | | The lock of a locked record |
 | \`RecordSaveSelectionCell\` | the keys of \`RecordSaveIndicatorCell\`, and \`checkbox\` | \`checkbox\`: \`onRenderContainer\`, \`onRenderCheckbox\` | \`RowSelectionUiCheckboxComponents\` | The checkbox column's cell (\`SELECTION_COLUMN_KEY\`) with row selection on |
 
-The lock in a locked column's header is an adornment keyed \`'lock'\`, which you replace or remove in \`context.header.adornmentsHook\` (see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview)). The lock in a locked cell is the cell's own \`lockIcon\` piece: see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview).
+The lock in a locked column's header is an adornment keyed \`'lock'\`, which you replace or remove in a \`headers.hooks.adornments\` hook at \`GRID_MODULE_PRIORITY.editing + 1\` (see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview)). The lock in a locked cell is the cell's own \`lockIcon\` piece: see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview).
 
 {{story: Draw the save status your way}}
 
@@ -137,7 +135,7 @@ The module is \`grid.modules.find('editing')\`, or \`useGridModule('editing')\` 
 | \`isAutoSaveEnabled()\` | Whether each commit saves its record. |
 | \`locks.get({ record?, columnName? })\` | \`{ isLocked, lockedBy? }\`, where \`lockedBy\` is \`'column'\`, \`'record'\` or \`'cell'\`. |
 | \`locks.hooks.lock.add(hook, priority?)\` | Locks columns, records and cells. See *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). |
-| \`events\` | \`onEditedCellChanged\`: see *Options*. |
+| \`events\` | \`onEditedCellChanged(previous?, next?)\` fires when an editor opens or closes, or the user steps into or out of an in-place cell. Each argument is \`{ recordId, columnName }\`. In \`onSetup\`, subscribe inside \`grid.modules.observe('editing', …)\`. |
 
 To change a value as a cell would, saving it with \`enableAutoSave\`, go through its field: \`grid.services.get('fields').get(record, columnName).setValue(value)\`. \`record.setValue()\` changes the record and saves nothing.
 
@@ -191,7 +189,7 @@ export const CheckHoursAsTheyAreEntered: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`context.cell.validationHook\` keeps *Hours* between 0.25 and 12, and \`RequiredLevel\` makes *Work done* required. Try: enter 14 hours.`,
+                story: `A \`hooks.validation\` hook keeps *Hours* between 0.25 and 12, and \`RequiredLevel\` makes *Work done* required. Try: enter 14 hours.`,
             },
         },
     },

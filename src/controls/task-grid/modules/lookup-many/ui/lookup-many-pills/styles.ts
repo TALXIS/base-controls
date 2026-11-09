@@ -33,7 +33,7 @@ export const getLookupManyUiPillsStyles = () => {
         overflow: {
             display: 'inline-flex',
             flexGrow: 0,
-            height: 22,
+            height: 20,
             cursor: 'default',
         },
         overflowList: {

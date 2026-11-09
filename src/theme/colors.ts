@@ -12,9 +12,10 @@ const SOLID_MIN_WEIGHT = 0.75;
 
 //how much of the hue each part of a tint holds; a dark surface needs more of it to show
 const TINT_WEIGHTS = {
+    //Fluent 2's colorBrandBackground2 and colorBrandForeground2, taken as weights of the brand hue
     subtle: {
-        light: { background: 0.12, border: 0.28, text: 0.7 },
-        dark: { background: 0.18, border: 0.34, text: 0.4 },
+        light: { background: 0.08, border: 0.28, text: 0.82 },
+        dark: { background: 0.18, border: 0.34, text: 0.6 },
     },
     strong: {
         light: { background: 0.4, border: 0.6 },

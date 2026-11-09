@@ -251,16 +251,15 @@ const GridExample = () => {
     const loadTasks = React.useMemo(() => createLoadTasks(database), [database])
     //Edit and Delete act on the selected rows
     const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()], [])
-    const controlModules = React.useMemo(() => [
-        //moves tasks by dragging their rows
-        createTaskDraggingModule({ onTaskMoved: ({ movingRecord, position, targetRecord }) => setMessage('Moved ' + movingRecord.getValue('subject') + ' ' + position + ' ' + targetRecord.getValue('subject')) }),
-    ], [])
+    //moves tasks by dragging their rows
+    const controlModules = React.useMemo(() => [createTaskDraggingModule()], [])
 
     const onLoad = async (control: IDatasetControl<ITaskViewData>) => {
         const result = await loadTasks(control)
         //a new provider on every mount, so its listeners go with it
         result.provider.taskEvents.addEventListener('onTasksCreated', records => setMessage('Created ' + subjects(records)))
         result.provider.taskEvents.addEventListener('onTasksDeleted', taskIds => setMessage('Deleted ' + taskIds.length + ' tasks'))
+        result.provider.taskEvents.addEventListener('onTaskMoved', ({ movingRecord, position, targetRecord }) => setMessage('Moved ' + movingRecord.getValue('subject') + ' ' + position + ' ' + targetRecord.getValue('subject')))
         return result
     }
 

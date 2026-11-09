@@ -32,7 +32,7 @@ In \`'single'\` mode every click and every checkbox replaces the selection, and 
 
 The selection belongs to the provider, not to the grid: read and change it with the provider's selection methods, and the grid follows (see *Selection* on [**Data providers**](?path=/docs/concepts-data-providers--overview)). \`provider.getSelectedRecordIds()\` leaves group rows out unless you pass \`{ includeGroupRecordIds: true }\`, and \`provider.getRecordsMap()[id]\` returns the record, the records of loaded groups included.
 
-\`onSelectionChanged\` is called for every change, your own provider calls and a reload included, with the ids of records only. A grid that mounts over a provider that already has a selection shows those rows selected and scrolls to them. With the editing module, a row's save status is drawn in its checkbox cell.
+To follow the selection, listen to the provider's \`onRecordsSelected(selectedRecordIds)\` event, as the examples do, and remove the listener when your component unmounts. A grid that mounts over a provider that already has a selection shows those rows selected and scrolls to them. With the editing module, a row's save status is drawn in its checkbox cell.
 
 ## Refuse or change a selection
 
@@ -64,7 +64,6 @@ The options are *At mount*: see *Change a prop that is read at mount* on [**Prop
 | \`createRowSelectionModule\` option | Type | Default | Description |
 |---|---|---|---|
 | \`mode\` | \`'single' \\| 'multiple'\` | Required | How many rows may be selected at once. To offer no selection, leave the module out. |
-| \`onSelectionChanged\` | \`(selectedRecordIds: string[]) => void\` | None | Called with the ids of the selected records every time the selection changes. Pass a state setter, or read what changes through a ref. |
 
 \`createCellSelectionModule()\` takes AG Grid's \`CellSelectionOptions\`:
 
@@ -116,7 +115,6 @@ The row selection module is \`grid.modules.find('rowSelection')\`, or \`useGridM
 | \`getRecordSelectionState(node)\` | How a row's checkbox reads, after the selection state hooks. |
 | \`isRecordSelectionDisabled(record)\` | Whether the record's checkbox is disabled, such as a group row in \`'single'\` mode. |
 | \`isSelectionColumn(columnName)\` | Whether the column is the checkbox column. |
-| \`events\` | \`onSelectionChanged\`: see *Options*. |
 
 ## Where next
 
@@ -156,7 +154,7 @@ export const PickOneProduct: Story = {
     parameters: {
         docs: {
             description: {
-                story: `\`mode: 'single'\` picks the product to quote, and \`onSelectionChanged\` fills the card beside the grid. Try: click a few products.`,
+                story: `\`mode: 'single'\` picks the product to quote, and the provider's \`onRecordsSelected\` fills the card beside the grid. Try: click a few products.`,
             },
         },
     },

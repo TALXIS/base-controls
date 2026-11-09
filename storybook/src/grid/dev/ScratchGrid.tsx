@@ -1,8 +1,8 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
 import type { ColDef } from 'ag-grid-community'
-import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, IColumnHeaderRendererProps, IGridCellParams, DatasetControl } from '@talxis/base-controls'
-import { DataTypes, IAddControlNotificationOptions, IFieldValidationResult, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
+import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, GridValidationHook, IColumnHeaderRendererProps, IGridCellParams, DatasetControl } from '@talxis/base-controls'
+import { DataTypes, IAddControlNotificationOptions, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
 const PAYLOAD_COLUMN = 'payload'
@@ -335,9 +335,10 @@ const SUMMARY_COLUMN_DEFINITION = {
     valueGetter: () => null,
     valueFormatter: () => '',
 }
-const validateEstimate = (result: IFieldValidationResult, { record }: { record: IRecord }) => {
+//an estimate this team would not plan in, so a refused value can be seen
+const validateEstimate: GridValidationHook = (result, { record, columnName }) => {
     const estimate = Number(record.getValue('estimate') ?? 0)
-    if (estimate > 5) {
+    if (columnName === 'estimate' && estimate > 5) {
         result.error = true
         result.errorMessage = `An estimate of ${estimate} days is more than the 5 this team plans a task in.`
     }
@@ -351,10 +352,6 @@ const changeScratchColumns = (columnDefs: ColDef<IRecord>[]) => {
                 //a grouped status stays where grouping pins it
                 colDef.pinned = colDef.pinned ?? 'right'
                 colDef.context = { ...colDef.context, alignment: 'right' }
-                break
-            case 'estimate':
-                //an estimate this team would not plan in, so a refused value can be seen
-                colDef.context = { ...colDef.context, cell: { ...colDef.context?.cell, validationHook: validateEstimate } }
                 break
             case PAYLOAD_COLUMN:
                 Object.assign(colDef, { cellRenderer: PayloadCell, headerComponent: PayloadHeader })
@@ -492,6 +489,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                     onSetup={grid => {
                         (window as any).__scratchGrid = grid
                         grid.services.get('columns').hooks.columnDefinitions.add(changeScratchColumns, GRID_MODULE_PRIORITY.clipboard + 1)
+                        grid.services.get('validation').hooks.validation.add(validateEstimate)
                         grid.services.observe('gridApi', gridApi => { (window as any).__scratchGridApi = gridApi })
                     }} />
             </DatasetControl.Body>

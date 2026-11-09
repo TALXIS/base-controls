@@ -34,6 +34,9 @@ const DARK_EFFECTS = {
     elevation64: '0 0 8px rgba(0, 0, 0, 0.24), 0 32px 64px rgba(0, 0, 0, 0.28)',
 };
 
+//Fluent v9 leaves font smoothing to the browser; v8's antialiased draws text thinner on macOS
+const FONT_SMOOTHING = { WebkitFontSmoothing: 'auto', MozOsxFontSmoothing: 'auto' } as const;
+
 const DEFAULT_COLORS: IThemeColors = { primary: '#0078d4', background: '#ffffff', text: '#323130' };
 
 //how much of the text a dark theme's neutral slots hold over the background, after Fluent v9's webDarkTheme
@@ -232,7 +235,7 @@ export class ThemeBuilder {
             //Fluent's overlay washes the page in this slot, which stays white whatever the background
             palette.whiteTranslucent40 = DARK_OVERLAY;
         }
-        return createTheme({ palette, isInverted: currentIsDark, ...(currentIsDark && { effects: DARK_EFFECTS }) }) as ITheme;
+        return createTheme({ palette, isInverted: currentIsDark, defaultFontStyle: FONT_SMOOTHING, ...(currentIsDark && { effects: DARK_EFFECTS }) }) as ITheme;
     }
 
     /** Takes out what the theme designer does that this package does not want, in place. */
