@@ -10,6 +10,10 @@ Base Controls is a React library of controls for business applications: grids, t
 
 {{canvas: Overview}}
 
+## Why build from parts
+
+Business applications need the same things again and again: lists that sort, filter, edit and save, views of those lists, forms, task plans and maps. Writing them anew for every application leaves many slightly different copies to maintain, each with its own behaviour and its own bugs. An AI agent that generates them from scratch each time does the same, and the code base grows large and inconsistent. Base Controls gives you these as finished, tested parts, and you build the application by putting them together, as the example above does, so the code you own is the code specific to your business. When a part does not fit, you do not start over: you change an option, replace one piece of what it draws with a slot (see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview)), add behaviour with a hook or a module (see [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview)), or write a part of your own on the same runtime (see [**Building blocks**](?path=/docs/concepts-building-blocks--overview)). If you work with an AI agent, point it at these parts and their extension points instead of letting it write new ones.
+
 ## How it works
 
 An application sets up its host and its look once, at the root: the PCF context gives every control the same user, formatting and dialogs, and the app theme the same colours. Records go into a data provider, which works the same whether they come from memory, Dataverse or your own API. Controls show the records, and you customise them from a single option down to what each part draws. How these fit together: [**Building blocks**](?path=/docs/concepts-building-blocks--overview).

@@ -2,10 +2,12 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 
-const STORE_OPENINGS_CODE = `import { ClientSideGrid, DatasetControl, IDatasetControlLoadResult, IDatasetControlView, IGrid, LeafletMap, Map, Panel, useDatasetControl, useMapRecord } from '@talxis/base-controls'
+const STORE_OPENINGS_CODE = `import { ClientSideGrid, createAggregationModule, createEditingModule, createFilteringModule, createRowSelectionModule, createSortingModule, DatasetControl, IDatasetControlLoadResult, IDatasetControlView, IGrid, Panel, useDatasetControl } from '@talxis/base-controls'
 import type { IRecord } from '@talxis/client-libraries'
-import { Link, PanelType } from '@fluentui/react'
-import { createStoresProvider } from './stores'
+import { PanelType } from '@fluentui/react'
+import { createStoresProvider, VIEW_COLUMNS } from './stores'
+import { StoresRibbon } from './StoresRibbon'
+import { StoreMap } from './StoreMap'
 import { StoreForm } from './StoreForm'
 
 //the UI a view draws the stores with, read through getView().data
@@ -14,8 +16,8 @@ interface IStoreViewData {
 }
 
 const VIEWS: IDatasetControlView<IStoreViewData>[] = [
-    { id: 'all', name: 'All stores', resolve: provider => ({ columns: provider.getColumns(), data: { ui: 'grid' } }) },
-    { id: 'map', name: 'On the map', resolve: provider => ({ columns: provider.getColumns(), data: { ui: 'map' } }) },
+    { id: 'all', name: 'All stores', resolve: () => ({ columns: VIEW_COLUMNS, data: { ui: 'grid' } }) },
+    { id: 'map', name: 'On the map', resolve: () => ({ columns: VIEW_COLUMNS, data: { ui: 'map' } }) },
 ]
 
 const loadStores = async (): Promise<IDatasetControlLoadResult<IStoreViewData>> => ({ provider: createStoresProvider(), views: VIEWS })
@@ -24,21 +26,8 @@ interface IStoresProps {
     onOpenStore: (store: IRecord) => void
 }
 
-//a pin's popup with an Open link, like the store's name in the grid
-const StorePopup = (props: IStoresProps) => {
-    const store = useMapRecord()
-    return <Map.Popup.Card>
-        <Map.Popup.Header statusColumnName='status' />
-        <Map.Popup.FieldRows>
-            <Map.Popup.FieldRow columnName='manager' iconName='Contact' />
-            <Map.Popup.FieldRow columnName='openingdate' iconName='Calendar' />
-        </Map.Popup.FieldRows>
-        <Link onClick={() => props.onOpenStore(store)}>Open</Link>
-    </Map.Popup.Card>
-}
-
-//the body mounts anew for every view and reads the view once
-const StoresBody = (props: IStoresProps) => {
+//mounted anew by the control for every view
+const Stores = (props: IStoresProps) => {
     const isMap = useDatasetControl<IStoreViewData>().getView()?.data?.ui === 'map'
 
     const onSetup = (grid: IGrid) => {
@@ -50,181 +39,424 @@ const StoresBody = (props: IStoresProps) => {
         })
     }
 
-    //both draw the control's provider and take none of their own
-    return isMap
-        ? <LeafletMap fieldMapping={{ latitude: 'lat', longitude: 'lng' }} components={{ marker: { popup: { onRender: () => <StorePopup {...props} /> } } }} />
-        : <ClientSideGrid onSetup={onSetup} enableOptionSetColors />
+    return <>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <DatasetControl.ViewSwitcher />
+            </DatasetControl.Header.Start>
+            <DatasetControl.Header.End>
+                <StoresRibbon />
+                {/* only the grid shows the columns it changes */}
+                {!isMap && <DatasetControl.EditColumns />}
+                <DatasetControl.QuickFind />
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            {/* both draw the control's provider and follow its quick find */}
+            {isMap
+                ? <StoreMap onOpenStore={props.onOpenStore} />
+                : <ClientSideGrid
+                    onSetup={onSetup}
+                    enableOptionSetColors
+                    modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule(), createSortingModule(), createFilteringModule(), createAggregationModule()]} />}
+        </DatasetControl.Body>
+    </>
 }
 
 const GridExample = () => {
     const [openedStore, setOpenedStore] = React.useState<IRecord>()
 
     return <>
-        <DatasetControl onLoad={loadStores} height='480px'>
-            <DatasetControl.Header>
-                <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher />
-                </DatasetControl.Header.Start>
-            </DatasetControl.Header>
-            <DatasetControl.Body>
-                <StoresBody onOpenStore={setOpenedStore} />
-            </DatasetControl.Body>
+        <DatasetControl onLoad={loadStores} height='520px'>
+            <Stores onOpenStore={setOpenedStore} />
         </DatasetControl>
-        <Panel isOpen={!!openedStore} type={PanelType.large} headerText={openedStore?.getFormattedValue('name') ?? ''} isLightDismiss onDismiss={() => setOpenedStore(undefined)}>
+        <Panel isOpen={!!openedStore} type={PanelType.extraLarge} headerText={openedStore?.getNamedReference().name} isLightDismiss onDismiss={() => setOpenedStore(undefined)}>
             {openedStore && <StoreForm key={openedStore.getRecordId()} store={openedStore} />}
         </Panel>
     </>
 }
 `
 
+const STORES_RIBBON_FILE: IGridExampleFile = {
+    name: 'StoresRibbon.tsx',
+    code: `import { DatasetControl, IRibbonCommand, useDataProvider, useDatasetControl } from '@talxis/base-controls'
+import { OPEN } from './stores'
+
+//DatasetControl.Ribbon calls onLoad again on every selection
+export const StoresRibbon = () => {
+    const provider = useDataProvider()
+    const control = useDatasetControl()
+
+    const markOpen = async (storeIds: string[]) => {
+        const stores = storeIds.map(id => provider.getRecordsMap()[id])
+        stores.forEach(store => store.setValue('status', OPEN))
+        await provider.save(stores)
+        //the same selection now has other commands
+        await control.parts.get('ribbon').reload()
+    }
+
+    const onLoad = (): IRibbonCommand[] => {
+        const notOpenIds = provider.getSelectedRecordIds().filter(id => Number(provider.getRecordsMap()[id].getValue('status')) !== OPEN)
+        return notOpenIds.length > 0 ? [{ id: 'markOpen', label: 'Mark ' + notOpenIds.length + ' as open', iconName: 'Shop', onExecute: () => markOpen(notOpenIds) }] : []
+    }
+
+    //Save and Discard changes act on the grid's edits and the form's alike
+    return <DatasetControl.Ribbon enableSave enableDiscard onLoad={onLoad} />
+}
+`,
+}
+
+const STORE_MAP_FILE: IGridExampleFile = {
+    name: 'StoreMap.tsx',
+    code: `import { IMapUiMarkerPinProps, LeafletMap, Map, useMapRecord } from '@talxis/base-controls'
+import type { IRecord } from '@talxis/client-libraries'
+import { Link } from '@fluentui/react'
+import { STATUSES } from './stores'
+
+interface IStoreMapProps {
+    onOpenStore: (store: IRecord) => void
+}
+
+//a pin in the colour of the store's status
+const StorePin = (props: IMapUiMarkerPinProps) => {
+    const status = Number(useMapRecord().getValue('status'))
+    return <Map.Ui.MarkerPin {...props} color={STATUSES.find(option => option.Value === status)?.Color} />
+}
+
+//a pin's popup with an Open link, like the store's name in the grid
+const StorePopup = (props: IStoreMapProps) => {
+    const store = useMapRecord()
+    return <Map.Popup.Card>
+        <Map.Popup.Header statusColumnName='status' />
+        <Map.Popup.FieldRows>
+            <Map.Popup.FieldRow columnName='manager' iconName='Contact' />
+            <Map.Popup.FieldRow columnName='openingdate' iconName='Calendar' />
+        </Map.Popup.FieldRows>
+        <Link onClick={() => props.onOpenStore(store)}>Open</Link>
+    </Map.Popup.Card>
+}
+
+export const StoreMap = (props: IStoreMapProps) => <LeafletMap fieldMapping={{ latitude: 'lat', longitude: 'lng' }} components={{
+    marker: {
+        pin: { onRenderPin: pinProps => <StorePin {...pinProps} /> },
+        popup: { onRender: () => <StorePopup {...props} /> },
+    },
+}} />
+`,
+}
+
 const STORE_FORM_FILE: IGridExampleFile = {
     name: 'StoreForm.tsx',
-    code: `import { DatasetControl, Form, ITaskGridLoadResult, ITaskRuntime, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+    code: `import { Form } from '@talxis/base-controls'
 import type { IRecord } from '@talxis/client-libraries'
-import { PLAN_COLUMNS, PLAN_FIELD_MAPPING, plans } from './plans'
+import { OpeningPlan } from './OpeningPlan'
 
-const FIELDS = ['name', 'country', 'manager', 'status', 'openingdate']
+//edits the same record the grid or the map shows
+export const StoreForm = (props: { store: IRecord }) => {
+    //one field per column the list shows after Edit columns
+    const columns = props.store.getColumns().filter(column => !column.isHidden)
 
-//a TaskDatasetControl of its own, over the tasks of every store's plan
-const OpeningPlan = (props: { storeId: string }) => {
+    return <Form.Root onLoad={async () => ({ record: props.store })}>
+        <Form.Ribbon />
+        <Form.Section label='Details' layout={{ lg: 2 }} cellLabelPosition='Top'>
+            {columns.map(column => <Form.Field key={column.name} name={column.name}>
+                <Form.Cell><Form.Control /></Form.Cell>
+            </Form.Field>)}
+        </Form.Section>
+        <Form.Section label='Opening plan'>
+            <OpeningPlan store={props.store} />
+        </Form.Section>
+    </Form.Root>
+}
+`,
+}
+
+const OPENING_PLAN_FILE: IGridExampleFile = {
+    name: 'OpeningPlan.tsx',
+    code: `import { createIndexedDbCustomColumnsModule, createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createMemoryTemplatesModule, createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ITaskGridLoadResult, ITaskRuntime, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { createBarDraggingModule, createLibraryModule, createLinksModule, createMemoryMarkersModule, createMemoryNonWorkingDaysModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, TaskGantt, TaskTooltip } from '@talxis/base-controls/gantt'
+import type { IRecord } from '@talxis/client-libraries'
+import { CHECKLIST_ITEMS, DEPENDENCIES, HOLIDAYS, LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VALUES, PLAN_FIELD_MAPPING, PLAN_VIEWS, PLANS, STANDARD_OPENING, TASK_COLUMNS } from './plans'
+
+//the store's own TaskDatasetControl, with a Gantt beside its task grid
+export const OpeningPlan = (props: { store: IRecord }) => {
+    const database = PLANS[props.store.getRecordId()]
+    //the opening date as the form holds it, saved or not
+    const openingDate = dayjs(props.store.getValue('openingdate'))
+
     const loadPlan = (taskRuntime: ITaskRuntime): ITaskGridLoadResult => ({
-        store: new MemoryTaskStore({ taskRuntime, database: plans, columns: PLAN_COLUMNS }),
+        store: new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }),
         fieldMapping: PLAN_FIELD_MAPPING,
-        //the grid shows only the tasks under the store's own task
-        rootTaskId: props.storeId,
+        views: PLAN_VIEWS,
     })
 
-    return <TaskDatasetControl onLoad={loadPlan} height='300px'>
+    const planModules = [
+        createTaskDraggingModule(),
+        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: LOOKUP_MANY_VALUES }),
+        createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS }),
+        //the Gantt's links draw these
+        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
+        //From template creates its tasks in the store's own database
+        createMemoryTemplatesModule({ database, templates: [STANDARD_OPENING] }),
+        //Budget and Supplier in Edit columns, kept in the browser's IndexedDB
+        createIndexedDbCustomColumnsModule({
+            databaseName: 'introductionDocs.planColumns',
+            columns: [{ displayName: 'Budget', dataType: 'Currency', precision: 0 }, { displayName: 'Supplier', dataType: 'SingleLine.Text' }],
+            enableCreation: true,
+            enableDeletion: true,
+        }),
+    ]
+
+    const ganttModules = [
+        createLibraryModule(),
+        //today is marked as well
+        createMemoryMarkersModule({ markers: openingDate.isValid() ? [{ id: 'opening', text: 'Opening', date: openingDate, color: '#107c10' }] : [] }),
+        //weekends are shaded as well
+        createMemoryNonWorkingDaysModule({ nonWorkingDays: HOLIDAYS }),
+        //a dropped bar saves its dates through the task editing module
+        createBarDraggingModule(),
+        //Ctrl+drag over a row without dates draws them
+        createTaskDrawingModule(),
+        createTaskSelectionModule(),
+        createTaskTooltipModule({
+            components: {
+                onRender: () => <TaskTooltip.Callout>
+                    <TaskTooltip.Header />
+                    <TaskTooltip.ProgressRow />
+                    <TaskTooltip.FieldRows>
+                        <TaskTooltip.FieldRow columnName='assignedto' iconName='People' />
+                    </TaskTooltip.FieldRows>
+                    <TaskTooltip.DateRangeRow />
+                </TaskTooltip.Callout>,
+            },
+        }),
+        createLinksModule(),
+    ]
+
+    return <TaskDatasetControl modules={planModules} enableCreation enableEditing enableDeletion onLoad={loadPlan} height='500px'>
+        <DatasetControl.Header>
+            <DatasetControl.Header.Start>
+                <TaskGantt.ZoomSlider />
+            </DatasetControl.Header.Start>
+            <DatasetControl.Header.End>
+                {/* New, From template, Edit, Delete, Zoom to fit and Go to today */}
+                <TaskDatasetControl.Ribbon />
+                <DatasetControl.EditColumns />
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
         <DatasetControl.Body>
-            <TaskGrid />
+            <TaskGantt.Split defaultGanttSize={40}>
+                <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()]} />
+                <TaskGantt modules={ganttModules} />
+            </TaskGantt.Split>
         </DatasetControl.Body>
     </TaskDatasetControl>
 }
-
-//the form edits the record the grid or the map opened
-export const StoreForm = (props: { store: IRecord }) => <Form.Root onLoad={async () => ({ record: props.store })}>
-    <Form.Ribbon />
-    <Form.Section label='Store' layout={{ lg: 2 }} cellLabelPosition='Top'>
-        {FIELDS.map(name => <Form.Field key={name} name={name}>
-            <Form.Cell><Form.Control /></Form.Cell>
-        </Form.Field>)}
-    </Form.Section>
-    <Form.Section label='Opening plan'>
-        <OpeningPlan storeId={props.store.getRecordId()} />
-    </Form.Section>
-</Form.Root>
 `,
 }
 
 const STORES_FILE: IGridExampleFile = {
     name: 'stores.ts',
-    code: `import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
+    code: `import { DataTypes, IColumn, MemoryDataProvider } from '@talxis/client-libraries'
 
-//each option's colour is the colour of its tag
-const STATUSES = [
+export const OPEN = 3
+
+//each option's colour is the colour of its tag and its pins
+export const STATUSES = [
     { Value: 1, Label: 'Planned', Color: '#8764b8' },
     { Value: 2, Label: 'Fitting out', Color: '#ca5010' },
-    { Value: 3, Label: 'Open', Color: '#107c10' },
+    { Value: OPEN, Label: 'Open', Color: '#107c10' },
+]
+
+//every column Edit columns offers, each as wide as the grid draws it
+const COLUMNS: IColumn[] = [
+    //the primary column, drawn as a link in the grid
+    { name: 'name', displayName: 'Store', dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 160 },
+    { name: 'country', displayName: 'Country', dataType: DataTypes.SingleLineText, visualSizeFactor: 100 },
+    { name: 'manager', displayName: 'Manager', dataType: DataTypes.SingleLineText, visualSizeFactor: 140 },
+    { name: 'status', displayName: 'Status', dataType: DataTypes.OptionSet, metadata: { OptionSet: STATUSES }, visualSizeFactor: 110 },
+    { name: 'openingdate', displayName: 'Opening date', dataType: DataTypes.DateAndTimeDateOnly, visualSizeFactor: 120 },
+    //summed in the row pinned under the grid
+    { name: 'floorarea', displayName: 'Floor area (m²)', dataType: DataTypes.WholeNone, visualSizeFactor: 120, aggregation: { aggregationFunction: 'sum' } },
+    { name: 'seats', displayName: 'Seats', dataType: DataTypes.WholeNone, visualSizeFactor: 80 },
+]
+
+//both views open without Seats and with the pins' position hidden
+export const VIEW_COLUMNS = [
+    ...COLUMNS.filter(column => column.name !== 'seats'),
+    { name: 'lat', displayName: 'Latitude', dataType: DataTypes.Decimal, isHidden: true },
+    { name: 'lng', displayName: 'Longitude', dataType: DataTypes.Decimal, isHidden: true },
 ]
 
 //the new stores of a coffee chain, with latitude and longitude in decimal degrees
-const STORES = [
-    { storeid: 'lyon', name: 'Lyon Part-Dieu', country: 'France', manager: 'Camille Durand', status: 3, openingdate: '2026-04-18', lat: 45.7606, lng: 4.8597 },
-    { storeid: 'porto', name: 'Porto Ribeira', country: 'Portugal', manager: 'Inês Costa', status: 3, openingdate: '2026-09-05', lat: 41.1406, lng: -8.6132 },
-    { storeid: 'krakow', name: 'Kraków Kazimierz', country: 'Poland', manager: 'Marta Nowak', status: 2, openingdate: '2026-12-12', lat: 50.0517, lng: 19.945 },
-    { storeid: 'ghent', name: 'Ghent Korenmarkt', country: 'Belgium', manager: 'Pieter Claes', status: 2, openingdate: '2027-02-06', lat: 51.0545, lng: 3.7216 },
-    { storeid: 'bologna', name: 'Bologna Santo Stefano', country: 'Italy', manager: 'Giulia Romano', status: 1, openingdate: '2027-04-17', lat: 44.4914, lng: 11.348 },
-    { storeid: 'gothenburg', name: 'Gothenburg Haga', country: 'Sweden', manager: 'Erik Lindqvist', status: 1, openingdate: '2027-06-05', lat: 57.6985, lng: 11.9555 },
+export const STORES = [
+    { storeid: 'lyon', name: 'Lyon Part-Dieu', country: 'France', manager: 'Camille Durand', status: 3, openingdate: '2026-04-18', floorarea: 180, seats: 46, lat: 45.7606, lng: 4.8597 },
+    { storeid: 'porto', name: 'Porto Ribeira', country: 'Portugal', manager: 'Inês Costa', status: 3, openingdate: '2026-09-05', floorarea: 140, seats: 38, lat: 41.1406, lng: -8.6132 },
+    { storeid: 'krakow', name: 'Kraków Kazimierz', country: 'Poland', manager: 'Marta Nowak', status: 2, openingdate: '2026-12-12', floorarea: 210, seats: 54, lat: 50.0517, lng: 19.945 },
+    { storeid: 'ghent', name: 'Ghent Korenmarkt', country: 'Belgium', manager: 'Pieter Claes', status: 2, openingdate: '2027-02-06', floorarea: 120, seats: 30, lat: 51.0545, lng: 3.7216 },
+    { storeid: 'bologna', name: 'Bologna Santo Stefano', country: 'Italy', manager: 'Giulia Romano', status: 1, openingdate: '2027-04-17', floorarea: 160, seats: 42, lat: 44.4914, lng: 11.348 },
+    { storeid: 'gothenburg', name: 'Gothenburg Haga', country: 'Sweden', manager: 'Erik Lindqvist', status: 1, openingdate: '2027-06-05', floorarea: 195, seats: 50, lat: 57.6985, lng: 11.9555 },
 ]
 
 //each view's provider writes saved changes back into these rows
 export const createStoresProvider = () => new MemoryDataProvider({
     dataSource: STORES,
-    metadata: { PrimaryIdAttribute: 'storeid', PrimaryNameAttribute: 'name', LogicalName: 'store' },
-    columns: [
-        //the primary column, drawn as a link in the grid
-        { name: 'name', displayName: 'Store', dataType: DataTypes.SingleLineText, isPrimary: true },
-        { name: 'country', displayName: 'Country', dataType: DataTypes.SingleLineText },
-        { name: 'manager', displayName: 'Manager', dataType: DataTypes.SingleLineText },
-        { name: 'status', displayName: 'Status', dataType: DataTypes.OptionSet, metadata: { OptionSet: STATUSES } },
-        { name: 'openingdate', displayName: 'Opening date', dataType: DataTypes.DateAndTimeDateOnly },
-        //where the map puts each pin, hidden in the grid
-        { name: 'lat', displayName: 'Latitude', dataType: DataTypes.Decimal, isHidden: true },
-        { name: 'lng', displayName: 'Longitude', dataType: DataTypes.Decimal, isHidden: true },
-    ],
+    //a memory provider offers Edit columns the columns of its saved queries
+    metadata: { PrimaryIdAttribute: 'storeid', PrimaryNameAttribute: 'name', LogicalName: 'store', QuickFindColumns: ['name', 'manager', 'country'], SavedQueries: [{ columns: COLUMNS }] },
 })
 `,
 }
 
 const PLANS_FILE: IGridExampleFile = {
     name: 'plans.ts',
-    code: `import { MemoryTaskDatabase } from '@talxis/base-controls'
+    code: `import { ILookupManyColumn, IMemoryTemplate, ITaskChecklistItem, ITaskDependency, ITaskGridView, MemoryTaskDatabase } from '@talxis/base-controls'
+import { INonWorkingDay } from '@talxis/base-controls/gantt'
 import { DataTypes, IColumn } from '@talxis/client-libraries'
+import { STORES } from './stores'
 
-//the columns that make the tree, and the one drawn as a progress bar
-export const PLAN_FIELD_MAPPING = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', percentComplete: 'percentcomplete' }
+//the columns that make the tree, and the ones the Gantt draws
+export const PLAN_FIELD_MAPPING = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', startDate: 'start', endDate: 'end', percentComplete: 'percentcomplete' }
 
-export const PLAN_COLUMNS: IColumn[] = [
-    { name: 'subject', displayName: 'Task', dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 320 },
-    { name: 'due', displayName: 'Due', dataType: DataTypes.DateAndTimeDateOnly, visualSizeFactor: 130 },
-    { name: 'percentcomplete', displayName: 'Progress', dataType: DataTypes.WholeNone, visualSizeFactor: 160 },
+//the tasks' own columns, the dates hidden from the grid
+export const TASK_COLUMNS: IColumn[] = [
+    { name: 'subject', displayName: 'Task', dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 210 },
+    { name: 'percentcomplete', displayName: 'Progress', dataType: DataTypes.WholeNone, visualSizeFactor: 100 },
+    { name: 'start', displayName: 'Start', dataType: DataTypes.DateAndTimeDateOnly, isHidden: true },
+    { name: 'end', displayName: 'End', dataType: DataTypes.DateAndTimeDateOnly, isHidden: true },
     { name: 'taskid', displayName: 'ID', dataType: DataTypes.SingleLineText, isHidden: true },
     { name: 'parentid', displayName: 'Parent', dataType: DataTypes.LookupSimple, isHidden: true },
     { name: 'stackrank', displayName: 'Rank', dataType: DataTypes.SingleLineText, isHidden: true },
     { name: 'statecode', displayName: 'State', dataType: DataTypes.WholeNone, isHidden: true },
 ]
 
-//a parent lookup holds { id: { guid }, etn }
-const under = (taskId: string) => [{ id: { guid: taskId }, etn: 'storetask' }]
-
-//each store's plan sits under a task with the store's id
-const TASKS = [
-    { taskid: 'lyon', parentid: null, stackrank: '0|100000:', subject: 'Open Lyon Part-Dieu' },
-    { taskid: 'lyon-lease', parentid: under('lyon'), stackrank: '0|100000:', subject: 'Sign the lease', due: '2025-10-31', percentcomplete: 100 },
-    { taskid: 'lyon-fitout', parentid: under('lyon'), stackrank: '0|200000:', subject: 'Fit out the store', due: '2026-03-20', percentcomplete: 100 },
-    { taskid: 'lyon-counter', parentid: under('lyon-fitout'), stackrank: '0|100000:', subject: 'Build the counter and seating', due: '2026-02-06', percentcomplete: 100 },
-    { taskid: 'lyon-machines', parentid: under('lyon-fitout'), stackrank: '0|200000:', subject: 'Install the coffee machines', due: '2026-03-20', percentcomplete: 100 },
-    { taskid: 'lyon-team', parentid: under('lyon'), stackrank: '0|300000:', subject: 'Hire and train the team', due: '2026-04-10', percentcomplete: 100 },
-
-    { taskid: 'porto', parentid: null, stackrank: '0|200000:', subject: 'Open Porto Ribeira' },
-    { taskid: 'porto-lease', parentid: under('porto'), stackrank: '0|100000:', subject: 'Sign the lease', due: '2026-03-20', percentcomplete: 100 },
-    { taskid: 'porto-fitout', parentid: under('porto'), stackrank: '0|200000:', subject: 'Fit out the store', due: '2026-08-07', percentcomplete: 100 },
-    { taskid: 'porto-counter', parentid: under('porto-fitout'), stackrank: '0|100000:', subject: 'Build the counter and seating', due: '2026-06-26', percentcomplete: 100 },
-    { taskid: 'porto-machines', parentid: under('porto-fitout'), stackrank: '0|200000:', subject: 'Install the coffee machines', due: '2026-08-07', percentcomplete: 100 },
-    { taskid: 'porto-team', parentid: under('porto'), stackrank: '0|300000:', subject: 'Hire and train the team', due: '2026-08-28', percentcomplete: 100 },
-
-    { taskid: 'krakow', parentid: null, stackrank: '0|300000:', subject: 'Open Kraków Kazimierz' },
-    { taskid: 'krakow-lease', parentid: under('krakow'), stackrank: '0|100000:', subject: 'Sign the lease', due: '2026-06-26', percentcomplete: 100 },
-    { taskid: 'krakow-fitout', parentid: under('krakow'), stackrank: '0|200000:', subject: 'Fit out the store', due: '2026-11-13', percentcomplete: 80 },
-    { taskid: 'krakow-counter', parentid: under('krakow-fitout'), stackrank: '0|100000:', subject: 'Build the counter and seating', due: '2026-10-02', percentcomplete: 100 },
-    { taskid: 'krakow-machines', parentid: under('krakow-fitout'), stackrank: '0|200000:', subject: 'Install the coffee machines', due: '2026-11-13', percentcomplete: 60 },
-    { taskid: 'krakow-team', parentid: under('krakow'), stackrank: '0|300000:', subject: 'Hire and train the team', due: '2026-12-04', percentcomplete: 40 },
-
-    { taskid: 'ghent', parentid: null, stackrank: '0|400000:', subject: 'Open Ghent Korenmarkt' },
-    { taskid: 'ghent-lease', parentid: under('ghent'), stackrank: '0|100000:', subject: 'Sign the lease', due: '2026-08-21', percentcomplete: 100 },
-    { taskid: 'ghent-fitout', parentid: under('ghent'), stackrank: '0|200000:', subject: 'Fit out the store', due: '2027-01-08', percentcomplete: 25 },
-    { taskid: 'ghent-counter', parentid: under('ghent-fitout'), stackrank: '0|100000:', subject: 'Build the counter and seating', due: '2026-11-27', percentcomplete: 50 },
-    { taskid: 'ghent-machines', parentid: under('ghent-fitout'), stackrank: '0|200000:', subject: 'Install the coffee machines', due: '2027-01-08', percentcomplete: 0 },
-    { taskid: 'ghent-team', parentid: under('ghent'), stackrank: '0|300000:', subject: 'Hire and train the team', due: '2027-01-29', percentcomplete: 0 },
-
-    { taskid: 'bologna', parentid: null, stackrank: '0|500000:', subject: 'Open Bologna Santo Stefano' },
-    { taskid: 'bologna-lease', parentid: under('bologna'), stackrank: '0|100000:', subject: 'Sign the lease', due: '2026-10-30', percentcomplete: 75 },
-    { taskid: 'bologna-fitout', parentid: under('bologna'), stackrank: '0|200000:', subject: 'Fit out the store', due: '2027-03-19', percentcomplete: 0 },
-    { taskid: 'bologna-counter', parentid: under('bologna-fitout'), stackrank: '0|100000:', subject: 'Build the counter and seating', due: '2027-02-05', percentcomplete: 0 },
-    { taskid: 'bologna-machines', parentid: under('bologna-fitout'), stackrank: '0|200000:', subject: 'Install the coffee machines', due: '2027-03-19', percentcomplete: 0 },
-    { taskid: 'bologna-team', parentid: under('bologna'), stackrank: '0|300000:', subject: 'Hire and train the team', due: '2027-04-09', percentcomplete: 0 },
-
-    { taskid: 'gothenburg', parentid: null, stackrank: '0|600000:', subject: 'Open Gothenburg Haga' },
-    { taskid: 'gothenburg-lease', parentid: under('gothenburg'), stackrank: '0|100000:', subject: 'Sign the lease', due: '2026-12-18', percentcomplete: 30 },
-    { taskid: 'gothenburg-fitout', parentid: under('gothenburg'), stackrank: '0|200000:', subject: 'Fit out the store', due: '2027-05-07', percentcomplete: 0 },
-    { taskid: 'gothenburg-counter', parentid: under('gothenburg-fitout'), stackrank: '0|100000:', subject: 'Build the counter and seating', due: '2027-03-26', percentcomplete: 0 },
-    { taskid: 'gothenburg-machines', parentid: under('gothenburg-fitout'), stackrank: '0|200000:', subject: 'Install the coffee machines', due: '2027-05-07', percentcomplete: 0 },
-    { taskid: 'gothenburg-team', parentid: under('gothenburg'), stackrank: '0|300000:', subject: 'Hire and train the team', due: '2027-05-28', percentcomplete: 0 },
+//the modules' columns as a view lists them
+const MODULE_COLUMNS: IColumn[] = [
+    { name: 'assignedto', displayName: 'Assigned to', dataType: DataTypes.LookupSimple, visualSizeFactor: 120 },
+    { name: 'tags', displayName: 'Tags', dataType: DataTypes.LookupSimple, visualSizeFactor: 120 },
+    { name: 'checklist__virtual', displayName: 'Checklist', dataType: DataTypes.LookupSimple, visualSizeFactor: 110 },
 ]
 
-//statecode 0 marks a task active
-export const plans = new MemoryTaskDatabase({ records: TASKS.map(task => ({ ...task, statecode: 0 })), metadata: { PrimaryIdAttribute: 'taskid', LogicalName: 'storetask' } })
+export const PLAN_VIEWS: ITaskGridView[] = [
+    { id: 'plan', name: 'Opening plan', resolve: () => ({ columns: [TASK_COLUMNS[0], ...MODULE_COLUMNS, ...TASK_COLUMNS.slice(1)] }) },
+]
+
+const TAGS = [
+    { tagid: 'legal', name: 'Legal', color: '#d13438' },
+    { tagid: 'design', name: 'Design', color: '#8764b8' },
+    { tagid: 'construction', name: 'Construction', color: '#ca5010' },
+    { tagid: 'equipment', name: 'Equipment', color: '#038387' },
+    { tagid: 'hiring', name: 'Hiring', color: '#0078d4' },
+    { tagid: 'marketing', name: 'Marketing', color: '#107c10' },
+    { tagid: 'operations', name: 'Operations', color: '#69797e' },
+]
+
+//the head office team, and every store's manager
+const PEOPLE = ['Sofia Berg', 'Lukas Weber', 'Amélie Laurent', 'Jonas Peeters', 'Hana Kovač', ...STORES.map(store => store.manager)].map(name => ({ personid: name, name }))
+
+//what the Assigned to and Tags pickers offer, by entity
+export const LOOKUP_MANY_SOURCES = {
+    person: {
+        records: PEOPLE,
+        metadata: { PrimaryIdAttribute: 'personid', PrimaryNameAttribute: 'name', LogicalName: 'person', QuickFindColumns: ['name'] },
+        columns: [{ name: 'name', displayName: 'Name', dataType: DataTypes.SingleLineText, isPrimary: true }],
+    },
+    tag: {
+        records: TAGS,
+        metadata: { PrimaryIdAttribute: 'tagid', PrimaryNameAttribute: 'name', LogicalName: 'tag', QuickFindColumns: ['name'] },
+        columns: [{ name: 'name', displayName: 'Name', dataType: DataTypes.SingleLineText, isPrimary: true }, { name: 'color', displayName: 'Colour', dataType: DataTypes.SingleLineText, isHidden: true }],
+    },
+}
+
+export const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn } = {
+    assignedto: { displayName: 'Assigned to', entityName: 'person', appearance: { type: 'people' } },
+    //each pill in its tag's colour
+    tags: { displayName: 'Tags', entityName: 'tag', appearance: { type: 'colorful' } },
+}
+
+//public holidays in every country the chain opens in
+export const HOLIDAYS: INonWorkingDay[] = [
+    { id: 'newYear', date: dayjs('2025-01-01'), description: "New Year's Day", recurrence: 'FREQ=YEARLY' },
+    { id: 'labourDay', date: dayjs('2025-05-01'), description: 'Labour Day', recurrence: 'FREQ=YEARLY' },
+    { id: 'christmas', date: dayjs('2025-12-25'), description: 'Christmas Day', recurrence: 'FREQ=YEARLY' },
+]
+
+interface IStep {
+    key: string
+    subject: string
+    parent?: string
+    weeks: [number, number]
+    //'manager' stands for the store's own manager
+    people: string[]
+    tags: string[]
+    after?: string
+    checklist?: string[]
+}
+
+//the standard opening, in weeks before the opening day, negative for weeks after it
+const STEPS: IStep[] = [
+    { key: 'lease', subject: 'Sign the lease', weeks: [30, 27], people: ['Sofia Berg'], tags: ['legal'] },
+    { key: 'permits', subject: 'Get the permits', weeks: [26, 20], people: ['Sofia Berg', 'manager'], tags: ['legal'], after: 'lease', checklist: ['Building permit', 'Food hygiene licence', 'Signage permit'] },
+    { key: 'fitout', subject: 'Fit out the store', weeks: [19, 3], people: ['Lukas Weber'], tags: ['construction'] },
+    { key: 'design', parent: 'fitout', subject: 'Design the interior', weeks: [19, 16], people: ['Amélie Laurent'], tags: ['design'], after: 'permits' },
+    { key: 'counter', parent: 'fitout', subject: 'Build the counter and seating', weeks: [15, 8], people: ['Lukas Weber'], tags: ['construction'], after: 'design' },
+    { key: 'machines', parent: 'fitout', subject: 'Install the coffee machines', weeks: [7, 3], people: ['Lukas Weber'], tags: ['equipment', 'construction'], after: 'counter', checklist: ['Espresso machines', 'Grinders', 'Water filters'] },
+    { key: 'team', subject: 'Hire and train the team', weeks: [10, 1], people: ['manager', 'Hana Kovač'], tags: ['hiring'], checklist: ['Post the jobs', 'Interview the candidates', 'Barista training'] },
+    { key: 'launch', subject: 'Plan the opening day', weeks: [6, 0], people: ['manager', 'Jonas Peeters'], tags: ['marketing'], checklist: ['Send the invitations', 'Brief the local press', 'Opening offer'] },
+    { key: 'review', subject: 'Review the first month', weeks: [-1, -5], people: ['manager', 'Sofia Berg'], tags: ['operations'], after: 'launch', checklist: ['Sales against the forecast', 'Customer feedback', 'Staff rota'] },
+]
+
+//From template adds these steps, without dates, under a task named after it
+export const STANDARD_OPENING: IMemoryTemplate = {
+    id: 'standardOpening',
+    name: 'Standard store opening',
+    children: STEPS.filter(step => !step.parent).map(step => ({
+        data: { subject: step.subject },
+        children: STEPS.filter(child => child.parent === step.key).map(child => ({ data: { subject: child.subject } })),
+    })),
+}
+
+const today = dayjs().startOf('day')
+
+//how far a task has come by today
+const getProgress = (start: Dayjs, end: Dayjs) => today.isAfter(end) ? 100 : today.isBefore(start) ? 0 : Math.round(today.diff(start, 'day') / end.diff(start, 'day') * 10) * 10
+
+const person = (name: string) => ({ id: { guid: name }, name, etn: 'person' })
+
+//a tag's pill reads its colour from the reference's data
+const tag = (tagid: string) => {
+    const { name, color } = TAGS.find(candidate => candidate.tagid === tagid)!
+    return { id: { guid: tagid }, name, etn: 'tag', data: { color } }
+}
+
+//a database per store keeps the timeline on that store's tasks
+export const PLANS: { [storeId: string]: MemoryTaskDatabase } = {}
+export const LOOKUP_MANY_VALUES: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } } = {}
+export const CHECKLIST_ITEMS: Record<string, ITaskChecklistItem[]> = {}
+export const DEPENDENCIES: ITaskDependency[] = []
+
+for (const store of STORES) {
+    const opening = dayjs(store.openingdate)
+    const taskId = (key: string) => store.storeid + '-' + key
+    const tasks = STEPS.map((step, index) => {
+        const id = taskId(step.key)
+        //from the Monday of its first week to the Friday of its last
+        const start = opening.subtract(step.weeks[0], 'week').subtract(5, 'day')
+        const end = opening.subtract(step.weeks[1], 'week').subtract(1, 'day')
+        const percentcomplete = getProgress(start, end)
+        LOOKUP_MANY_VALUES[id] = { assignedto: step.people.map(name => person(name === 'manager' ? store.manager : name)), tags: step.tags.map(tag) }
+        if (step.checklist) {
+            //ticked as far as the task has come
+            CHECKLIST_ITEMS[id] = step.checklist.map((name, item) => ({ id: id + '-' + item, name, isCompleted: item < Math.round(percentcomplete / 100 * step.checklist!.length) }))
+        }
+        if (step.after) {
+            DEPENDENCIES.push({ id: taskId(step.after) + '-' + id, predecessorTaskId: taskId(step.after), successorTaskId: id, type: 'finishToStart' })
+        }
+        //active (statecode 0), and ranked in the order of the steps
+        return { taskid: id, parentid: step.parent ? [{ id: { guid: taskId(step.parent) }, etn: 'storetask' }] : null, stackrank: '0|' + (index + 1) + '00000:', statecode: 0, subject: step.subject, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD'), percentcomplete }
+    })
+    PLANS[store.storeid] = new MemoryTaskDatabase({ records: tasks, metadata: { PrimaryIdAttribute: 'taskid', LogicalName: 'storetask' } })
+}
 `,
 }
 
-export const StoreOpeningsExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: STORE_OPENINGS_CODE }, STORE_FORM_FILE, STORES_FILE, PLANS_FILE]} tabs={['preview', 'code']} />
+export const StoreOpeningsExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: STORE_OPENINGS_CODE }, STORES_RIBBON_FILE, STORE_MAP_FILE, STORE_FORM_FILE, OPENING_PLAN_FILE, STORES_FILE, PLANS_FILE]} tabs={['preview', 'code']} />
