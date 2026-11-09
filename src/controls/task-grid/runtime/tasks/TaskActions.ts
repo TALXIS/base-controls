@@ -22,6 +22,8 @@ export interface ITaskActions {
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
 }
 
+const NAMED_TASK_COUNT = 3;
+
 /** Runs the provider's task actions under the loading overlay with their errors shown. */
 export class TaskActions implements ITaskActions {
     private _runtime: ITaskRuntime;
@@ -69,7 +71,8 @@ export class TaskActions implements ITaskActions {
             return;
         }
         const subtaskCount = deletableTaskIds.filter(taskId => !taskIds.includes(taskId)).length;
-        const text = subtaskCount > 0 ? labels.get('taskGrid.confirmDeleteTasksWithSubtasks', { count: subtaskCount }) : labels.get('taskGrid.confirmDeleteTasks');
+        const names = this._getTaskNames(taskIds);
+        const text = subtaskCount > 0 ? labels.get('taskGrid.confirmDeleteTasksWithSubtasks', { names, count: subtaskCount }) : labels.get('taskGrid.confirmDeleteTasks', { names });
         const confirmation = await navigation.openConfirmDialog({ text });
         if (!confirmation.confirmed) {
             return;
@@ -115,6 +118,14 @@ export class TaskActions implements ITaskActions {
 
     private get _provider(): ITaskDataProvider {
         return this._runtime.getProvider();
+    }
+
+    //the first few by name, the rest as a count
+    private _getTaskNames(taskIds: string[]): string {
+        const recordsMap = this._provider.getRecordsMap();
+        const subject = this._provider.getFieldMapping().subject;
+        const names = taskIds.slice(0, NAMED_TASK_COUNT).map(taskId => `"${recordsMap[taskId]?.getFormattedValue(subject) ?? ''}"`).join(', ');
+        return taskIds.length > NAMED_TASK_COUNT ? `${names} +${taskIds.length - NAMED_TASK_COUNT}` : names;
     }
 
     private _execute<T>(operation: () => Promise<T>, loadingLabel: TaskLoadingLabel, errorLabel: TaskErrorLabel): Promise<T> {

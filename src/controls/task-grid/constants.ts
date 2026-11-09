@@ -7,4 +7,5 @@ export const LEVEL_INDENT = 24;
 /** The classes a task row takes. */
 export const TASK_ROW_CLASS_NAMES = {
     dropTarget: 'talxis__taskGrid__row--dropTarget',
+    draggable: 'talxis__taskGrid__row--draggable',
 };

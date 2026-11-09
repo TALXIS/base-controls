@@ -121,7 +121,7 @@ export class TaskRuntime implements ITaskRuntime {
 
     private _addPathColumn = (columns: IColumn[]): void => {
         if (!columns.some(column => column.name === PATH_COLUMN_NAME)) {
-            columns.push({ name: PATH_COLUMN_NAME, displayName: this.getLabels(TASK_GRID_LABELS).get('taskGrid.path'), dataType: DataTypes.Multiple, isVirtual: true, visualSizeFactor: 300 });
+            columns.push({ name: PATH_COLUMN_NAME, displayName: this.getLabels(TASK_GRID_LABELS).get('taskGrid.path'), dataType: DataTypes.SingleLineText, isVirtual: true, visualSizeFactor: 300 });
         }
     };
 

@@ -211,9 +211,24 @@ export class TaskTree implements ITaskGridTree {
         if (treeRows !== this._treeRows) {
             const view = this._provider.getRecordTree().view;
             this._treeRows = treeRows;
-            this._flatRows = treeRows.filter(record => view.isMatching(record.getRecordId()));
+            const order = this._getTreeOrder();
+            this._flatRows = treeRows
+                .filter(record => view.isMatching(record.getRecordId()))
+                .sort((first, second) => (order.get(first.getRecordId()) ?? Infinity) - (order.get(second.getRecordId()) ?? Infinity));
         }
         return this._flatRows;
+    }
+
+    //depth first, so each task stays under its parent in the flat list
+    private _getTreeOrder(): Map<string, number> {
+        const { structure } = this._provider.getRecordTree();
+        const order = new Map<string, number>();
+        const visit = (parentId?: string) => structure.getChildren(parentId).forEach(child => {
+            order.set(child.getRecordId(), order.size);
+            visit(child.getRecordId());
+        });
+        visit();
+        return order;
     }
 
     //runs only on a switch

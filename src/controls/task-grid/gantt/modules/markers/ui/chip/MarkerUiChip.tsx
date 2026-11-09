@@ -9,6 +9,8 @@ export interface IMarkerUiChipProps {
     /** What the chip says when pointed at, such as the date. */
     title: string;
     color: string;
+    /** Cuts the text off with an ellipsis past this width. */
+    maxWidth?: number;
     components?: Partial<IMarkerUiChipComponents>;
 }
 
@@ -21,6 +23,6 @@ export const MarkerUiChip = (props: IMarkerUiChipProps) => {
     return components.onRenderTooltip({
         hostClassName: styles.host,
         content: props.title,
-        children: components.onRenderChip({ className: styles.chip, children: props.text }),
+        children: components.onRenderChip({ className: styles.chip, style: { maxWidth: props.maxWidth }, children: props.text }),
     });
 };

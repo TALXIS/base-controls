@@ -2,7 +2,7 @@ import { translateLabels } from "@labels";
 import { LINKS_LABELS } from "./en";
 
 export const LINKS_LABELS_CS = translateLabels(LINKS_LABELS, {
-    'links.confirmDeleteLink': 'Odstranit tuto závislost?',
+    'links.confirmDeleteLink': 'Odstranit závislost {{ predecessor }} → {{ successor }}?',
     'links.linkStart': ' (začátek)',
     'links.linkEnd': ' (konec)',
     'links.predecessor': 'Předchůdce',

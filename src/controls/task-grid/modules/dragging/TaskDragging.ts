@@ -65,6 +65,7 @@ export class TaskDragging implements ITaskDragging {
         grid.hooks.agGridOptions.add(this._onAgGridOptions, TASK_GRID_PRIORITY.tree);
         services.get('gridTheme').hooks.styles.add(this._onStyles, TASK_GRID_PRIORITY.tree);
         services.get('rows').addRowClass(TASK_ROW_CLASS_NAMES.dropTarget, ({ record }) => this._dropInto?.data === record);
+        services.get('rows').addRowClass(TASK_ROW_CLASS_NAMES.draggable, ({ record }) => this._canDrag() && this._canMoveTask(record.getRecordId()));
         grid.modules.observe('editing', editing => { editing.events.addEventListener('onEditedCellChanged', this._onEditedCellChanged); });
         services.observe('gridApi', this._onGridApiAvailable);
         return this._clearTimers;

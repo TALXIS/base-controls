@@ -35,10 +35,21 @@ export const MarkerLayer = () => {
     if (!chart) {
         return null;
     }
+    const placed = markers.getMarkers()
+        .map(marker => ({ marker, left: chart.posFromDate(marker.date.toDate()) }))
+        .sort((first, second) => first.left - second.left);
     return createPortal(<MarkerUiLayer components={markers.getComponents().layer}>
-        {markers.getMarkers().map(marker => <Marker key={marker.id} marker={marker} chart={chart} />)}
+        {placed.map(({ marker, left }, index) => <Marker
+            key={marker.id}
+            marker={marker}
+            chart={chart}
+            left={left}
+            //a chip ends where the next one starts
+            maxChipWidth={index < placed.length - 1 ? Math.max(placed[index + 1].left - left - CHIP_GAP, 0) : undefined} />)}
     </MarkerUiLayer>, mountPoint);
 };
+
+const CHIP_GAP = 2;
 
 const createMountPoint = (): HTMLDivElement => {
     const mountPoint = document.createElement('div');

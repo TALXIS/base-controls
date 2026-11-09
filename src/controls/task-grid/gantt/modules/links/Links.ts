@@ -275,8 +275,11 @@ export class Links implements ILinks {
     };
 
     private async _deleteLink(dependencyId: string): Promise<void> {
-        const navigation = this._gantt.getTaskRuntime().services.get('pcfContext').navigation;
-        const confirmation = await navigation.openConfirmDialog({ text: this._labels.get('links.confirmDeleteLink') });
+        const taskRuntime = this._gantt.getTaskRuntime();
+        const dependency = this._dependencies?.getDependencies().find(candidate => candidate.id === dependencyId);
+        const getName = (taskId?: string) => (taskId && this._gantt.services.get('tasks').getRecord(taskId)?.getFormattedValue(taskRuntime.getFieldMapping().subject)) ?? '';
+        const text = this._labels.get('links.confirmDeleteLink', { predecessor: getName(dependency?.predecessorTaskId), successor: getName(dependency?.successorTaskId) });
+        const confirmation = await taskRuntime.services.get('pcfContext').navigation.openConfirmDialog({ text });
         if (confirmation.confirmed) {
             await this._dependencies?.deleteDependency(dependencyId);
         }

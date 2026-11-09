@@ -60,7 +60,7 @@ export const DateTime = (componentProps: IDateTime) => {
         fillAvailableSpace: fillsAvailableSpace,
         keepCalendarOpenAfterDaySelect: isDateTime,
         //an editor opened by typing keeps the keys in its input
-        disableAutoFocus: isAutoFocused,
+        calloutProps: isAutoFocused ? { setInitialFocus: false } : undefined,
         readOnly: context.mode.isControlDisabled,
         //@ts-ignore - this is a hack to close the calendar when dates get selected on date only fields
         onSelectDate: isDateTime ? undefined : onSelectDate,

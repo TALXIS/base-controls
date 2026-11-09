@@ -8,7 +8,6 @@ export const TEMPLATES_LABELS_CS = translateLabels(TEMPLATES_LABELS, {
     'templates.searchTemplates': 'Hledat šablony',
     'templates.noTemplates': 'Nebyly nalezeny žádné šablony',
     'templates.name': 'Název',
-    'templates.creatingTasksFromTemplate': 'Vytváření úkolů ze šablony...',
     'templates.savingTemplate': 'Ukládání šablony...',
     'templates.templatesFailed': 'Šablonu se nepodařilo použít.',
 });

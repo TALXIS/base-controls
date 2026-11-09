@@ -1,7 +1,7 @@
 import { defineLabels } from "@labels";
 
 export const LINKS_LABELS = defineLabels({
-    'links.confirmDeleteLink': 'Delete this dependency?',
+    'links.confirmDeleteLink': 'Delete the dependency {{ predecessor }} → {{ successor }}?',
     /** Follows a task's name while a link is drawn from or to its start. */
     'links.linkStart': ' (start)',
     /** Follows a task's name while a link is drawn from or to its end. */
