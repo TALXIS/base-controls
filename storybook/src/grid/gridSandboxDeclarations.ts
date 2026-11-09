@@ -4208,8 +4208,8 @@ type ITaskGridView = IDatasetControlView<ITaskViewData, ITaskDataProvider>;
 
 /** What a TaskDatasetControl's onLoad returns. */
 interface ITaskGridLoadResult {
-    /** The provider for the view. */
-    provider: ITaskDataProvider;
+    /** Where the tasks are kept, such as a MemoryTaskStore or a DataverseTaskStore. */
+    store: ITaskStore;
     /** \`stateCode\` defaults to \`statecode\`. */
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & { stateCode?: string };
     /** Scopes the tree to the subtree under this task. */
@@ -4218,8 +4218,6 @@ interface ITaskGridLoadResult {
     hoursPerDay?: number;
     /** The views to switch between; leave out for a task grid with one view. */
     views?: ITaskGridView[];
-    /** Whether the control destroys the provider when it lets it go, on unmount and reload; defaults to true. */
-    destroyProviderOnUnmount?: boolean;
 }
 
 /** The project the tasks belong to, as its store loads it. */
@@ -4263,8 +4261,8 @@ declare const createMemoryProjectModule: <TData>(parameters: { project: IProject
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'scope' | 'modules'> {
     /** The control's modules; read on every mount. */
     modules?: IDatasetControlModule[];
-    /** Returns the provider, field mapping and views on every mount; control.modules.get('taskRuntime') is the task runtime. */
-    onLoad: (control: IDatasetControl<ITaskViewData>) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
+    /** Returns the store, field mapping and views on every mount. */
+    onLoad: (taskRuntime: ITaskRuntime) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
     /** The New command and the add-subtask buttons. */
     enableCreation?: boolean;
     /** Where among its parent's children a new task goes; first when left out. */
@@ -4614,13 +4612,6 @@ interface ITaskStore {
     [operation: string]: any;
 }
 
-/** Tasks held in memory. */
-declare const createMemoryTaskProvider: (parameters: {
-    taskRuntime: ITaskRuntime;
-    createStore: (taskRuntime: ITaskRuntime) => ITaskStore;
-    provider?: new (parameters: { store: ITaskStore }) => ITaskDataProvider;
-}) => ITaskDataProvider;
-
 /** Tasks held in memory, shared by the memory stores that read and write them. */
 declare class MemoryTaskDatabase {
     /** The records are copied, so changes never reach the array. */
@@ -4828,8 +4819,6 @@ declare class DataverseTaskStore implements ITaskStore {
     });
     [operation: string]: any;
 }
-/** Puts a DataverseTaskStore together with a task provider. */
-declare const createDataverseTaskProvider: typeof createMemoryTaskProvider;
 /** The user's own task columns as TALXIS attribute definitions and values. */
 declare const createTalxisCustomColumnsModule: (parameters: { entityName: string; recordId?: string; navigationPropertyName?: string; enableCreation?: boolean; enableEditing?: boolean; enableDeletion?: boolean }) => IDatasetControlModule;
 /** The project module for a project record in Dataverse. */

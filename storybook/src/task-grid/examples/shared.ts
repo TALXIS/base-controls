@@ -31,10 +31,9 @@ export const TASK_VIEWS: ITaskGridView[] = [
 //one database for the whole example, so changes survive a view switch
 export const createTaskDatabase = () => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA })
 
-export const createLoadTasks = (database: MemoryTaskDatabase) => async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
-    const taskRuntime = control.modules.get('taskRuntime')
+export const createLoadTasks = (database: MemoryTaskDatabase) => async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
     return {
-        provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
+        store: new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }),
         fieldMapping,
         views: TASK_VIEWS,
     }

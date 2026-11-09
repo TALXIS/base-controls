@@ -66,7 +66,7 @@ export interface ITaskRuntime extends IRuntime {
     readonly services: IServiceRegistry<ITaskRuntimeServiceMap>;
     /** Every task action, run through the store under the loading overlay and its error shown. */
     readonly tasks: ITaskActions;
-    /** Calls `onLoad`, then configures and provides the provider it returns. */
+    /** Calls `onLoad`, then builds and provides the provider over the store it returns. */
     load(): Promise<IDatasetControlLoadResult<ITaskViewData>>;
     /** The view this mount loaded. */
     getView(): ITaskView | undefined;

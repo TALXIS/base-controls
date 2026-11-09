@@ -1,4 +1,4 @@
-import type { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IDataProvider, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import type { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IDataProvider, IFormatting, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { IDatasetControlResolvedView } from "@controls/dataset-control";
 import type { IUserQuerySavedValueMap } from "@controls/dataset-control/modules/user-queries/interfaces";
 import type { IEventSubscriber, IHookPoint } from "@core";

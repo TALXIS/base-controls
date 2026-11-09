@@ -24,7 +24,7 @@ import { FluentProvider, Toast, ToastBody, Toaster, ToastTitle, useToastControll
 import { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular } from '@fluentui/react-icons'
 import { DataProvider, Dataset, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
 import { createIsolatedComponent, createIsolatedHost, defineIsolatedContent, CZECH_LABELS, NOTIFICATION_MESSAGE_BAR_LABELS, PcfContextProvider, DatasetControlUiEmptyStateComponents, LocalStorageUserQueriesStore, LabelsProvider, DatasetControlUiPaginationComponents, DatasetControlUiQuickFindComponents, translateLabels, useLabels, useTaskRuntime } from '@talxis/base-controls'
-import { Checklist, CHECKLIST_LABELS, CompletionCell, NameCell, sortChecklistProvider, TaskDatasetControl, TaskGrid, createMemoryTaskProvider, MemoryTaskStore, MemoryTaskDatabase, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createTaskEditingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStore, createTaskChecklistModule, createMemoryTaskChecklistModule, createTalxisTaskChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
+import { Checklist, CHECKLIST_LABELS, CompletionCell, NameCell, sortChecklistProvider, TaskDatasetControl, TaskGrid, MemoryTaskStore, MemoryTaskDatabase, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createTaskEditingModule, createCustomColumnsModule, createIndexedDbCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, MemoryTemplatesStore, createTaskChecklistModule, createMemoryTaskChecklistModule, createTalxisTaskChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
 import { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker } from '@talxis/base-controls/controls/task-grid/gantt'
 import { LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VIEW_COLUMNS } from '../task-grid/memoryLookupManyData'
 import { TEMPLATES } from '../task-grid/memoryTemplateData'
@@ -244,7 +244,6 @@ export const GRID_SANDBOX_SCOPE = {
     DatasetControlUiQuickFindComponents,
     DatasetControlUiPaginationComponents,
     DatasetControlUiEmptyStateComponents,
-    createMemoryTaskProvider,
     MemoryTaskStore,
     MemoryTaskDatabase,
     createProjectModule,

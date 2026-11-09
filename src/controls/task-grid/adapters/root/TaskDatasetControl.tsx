@@ -5,6 +5,7 @@ import type { IDatasetControl, IDatasetControlModule, IDatasetControlProps } fro
 import type { ITaskGridLoadResult } from "../../interfaces";
 import type { ITaskViewData, TaskCreatePosition } from "../../runtime/provider";
 import { TaskRuntime } from "../../runtime/TaskRuntime";
+import type { ITaskRuntime } from "../../runtime/interfaces";
 import { TaskRuntimeContext } from "./context";
 
 export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'modules'> {
@@ -18,8 +19,8 @@ export interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITas
     enableDeletion?: boolean;
     /** The control's modules, read on every mount. */
     modules?: IDatasetControlModule[];
-    /** Returns the provider, field mapping, hours per day and views on every mount; `control.modules.get('taskRuntime')` is the task runtime. */
-    onLoad: (control: IDatasetControl<ITaskViewData>) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
+    /** Returns the store, field mapping and views on every mount. */
+    onLoad: (taskRuntime: ITaskRuntime) => ITaskGridLoadResult | Promise<ITaskGridLoadResult>;
 }
 
 /** A DatasetControl of tasks with a `TaskGrid` in its body. */

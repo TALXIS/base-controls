@@ -51,9 +51,8 @@ const GridExample = () => {
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
     ], [database])
 
-    const onLoad = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
-        const taskRuntime = control.modules.get('taskRuntime')
-        return { provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }), fieldMapping, views: VIEWS }
+    const onLoad = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
+        return { store: new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }), fieldMapping, views: VIEWS }
     }
 
     return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion stateKey='devTasks' height='100%' onLoad={onLoad}>

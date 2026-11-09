@@ -22,7 +22,7 @@ const VIEWS: ITaskGridView[] = [
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(control), views: VIEWS })
+    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(taskRuntime), views: VIEWS })
     const gridModules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule(), createFilteringModule()], [])
     const controlModules = React.useMemo(() => ${example.modules}, [database])
 
@@ -128,7 +128,7 @@ const createChecklistStore = (): ITaskChecklistStore => ({
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(control), views: VIEWS })
+    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(taskRuntime), views: VIEWS })
     //task and DatasetControl modules, read on every mount
     const controlModules = React.useMemo(() => [
         createTaskDraggingModule(),

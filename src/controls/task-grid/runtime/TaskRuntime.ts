@@ -8,6 +8,7 @@ import { HookRegistry, IRuntimeLifecycle, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels } from "@labels";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "./provider";
 import { PATH_COLUMN_NAME } from "./provider/record-tree";
+import { TaskDataProvider } from "./provider/TaskDataProvider";
 import { TASK_GRID_LABELS } from "../labels";
 import type { ITaskDatasetControlProps } from "../adapters/root/TaskDatasetControl";
 import { ITaskActions, TaskActions } from "./tasks";
@@ -50,13 +51,13 @@ export class TaskRuntime implements ITaskRuntime {
     }
 
     public async load(): Promise<IDatasetControlLoadResult<ITaskViewData>> {
-        const { provider, fieldMapping, rootTaskId, hoursPerDay, views, destroyProviderOnUnmount } = await this._getProps().onLoad(this.services.get('datasetControl'));
-        provider.configure({ fieldMapping, rootTaskId, defaultCreatePosition: this._getProps().defaultCreatePosition, hoursPerDay });
+        const { store, fieldMapping, rootTaskId, hoursPerDay, views } = await this._getProps().onLoad(this);
+        const provider = new TaskDataProvider({ store, formatting: this.services.get('pcfContext').formatting, fieldMapping, rootTaskId, hoursPerDay, defaultCreatePosition: this._getProps().defaultCreatePosition });
         provider.hooks.availableColumns.add(this._addPathColumn);
         //modules waiting for it add columns a user view may keep
         this.services.provide('provider', provider);
         //a task view is only ever resolved with this task provider
-        return { provider, views: views as IDatasetControlView<ITaskViewData>[] | undefined, destroyProviderOnUnmount };
+        return { provider, views: views as IDatasetControlView<ITaskViewData>[] | undefined };
     }
 
     public get lifecycle(): IRuntimeLifecycle {

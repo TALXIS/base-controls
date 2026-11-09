@@ -1,7 +1,7 @@
 import type { IGridComponents, IGridModule, IGridModuleMap, IGridProps } from "@controls/grid";
 import type { ITaskRuntime } from "./runtime";
-import type { IDatasetControlLoadResult, IDatasetControlView } from "@controls/dataset-control";
-import type { ITaskDataProvider, ITaskDataProviderConfigureParameters, ITaskViewData } from "./runtime/provider";
+import type { IDatasetControlView } from "@controls/dataset-control";
+import type { ITaskDataProvider, ITaskDataProviderParameters, ITaskStore, ITaskViewData } from "./runtime/provider";
 import type { ITreeCellComponents, IExpansionHeaderComponents, IPercentCompleteCellComponents, ITaskCommandsCellComponents } from "./adapters";
 
 /** The task grid's own variants of the grid modules it takes, by name. */
@@ -14,8 +14,9 @@ export type ITaskGridGridModule = IGridModule<Exclude<keyof IGridModuleMap, 'row
 export type ITaskGridView = IDatasetControlView<ITaskViewData, ITaskDataProvider>;
 
 /** What a `TaskDatasetControl`'s `onLoad` returns. */
-export interface ITaskGridLoadResult extends Omit<ITaskDataProviderConfigureParameters, 'defaultCreatePosition'>, Pick<IDatasetControlLoadResult, 'destroyProviderOnUnmount'> {
-    provider: ITaskDataProvider;
+export interface ITaskGridLoadResult extends Pick<ITaskDataProviderParameters, 'fieldMapping' | 'rootTaskId' | 'hoursPerDay'> {
+    /** Where the tasks are kept, such as a `MemoryTaskStore` or a `DataverseTaskStore`. */
+    store: ITaskStore;
     /** The views to switch between; leave out for a task grid with one view. */
     views?: ITaskGridView[];
 }

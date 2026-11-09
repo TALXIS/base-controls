@@ -19,7 +19,7 @@ const VIEWS: ITaskGridView[] = TASK_VIEWS.map(view => view.id !== 'all' ? view :
 
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
-    const loadTasks = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(control), views: VIEWS })
+    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(taskRuntime), views: VIEWS })
     const gridModules = React.useMemo(() => [
         createRowSelectionModule({ mode: 'multiple' }),
         createTaskEditingModule(),
@@ -71,11 +71,9 @@ const GridExample = () => {
     const database = React.useMemo(() => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA }), [])
 
     //returns the tasks and the field mapping
-    const loadTasks = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
-        //a module of the control, loaded before onLoad
-        const taskRuntime = control.modules.get('taskRuntime')
+    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
         return {
-            provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }) }),
+            store: new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }),
             fieldMapping,
         }
     }
@@ -128,10 +126,9 @@ const GridExample = () => {
     const database = React.useMemo(() => new MemoryTaskDatabase({ records: OFFICE_MOVE, metadata: { PrimaryIdAttribute: 'taskid', LogicalName: 'officetask' } }), [])
 
     //called at mount, on every view switch and on every reload
-    const loadTasks = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
-        const taskRuntime = control.modules.get('taskRuntime')
+    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
         return {
-            provider: createMemoryTaskProvider({ taskRuntime, createStore: () => new MemoryTaskStore({ taskRuntime, database, columns: COLUMNS }) }),
+            store: new MemoryTaskStore({ taskRuntime, database, columns: COLUMNS }),
             fieldMapping,
         }
     }
@@ -162,8 +159,8 @@ const GridExample = () => {
     const [rootTaskId, setRootTaskId] = React.useState('')
     const database = React.useMemo(createTaskDatabase, [])
 
-    const loadTasks = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => ({
-        ...await createLoadTasks(database)(control),
+    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({
+        ...await createLoadTasks(database)(taskRuntime),
         rootTaskId: rootTaskId || undefined,
     })
 
@@ -216,7 +213,7 @@ const VIEWS: ITaskGridView[] = [
 const GridExample = () => {
     const database = React.useMemo(createTaskDatabase, [])
     //the views come with the tasks
-    const loadTasks = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(control), views: VIEWS })
+    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({ ...await createLoadTasks(database)(taskRuntime), views: VIEWS })
     const gridModules = React.useMemo(() => [createSortingModule(), createFilteringModule()], [])
 
     return <TaskDatasetControl onLoad={loadTasks} stateKey='taskGridDocs.views' height='480px'>
@@ -254,13 +251,14 @@ const GridExample = () => {
     //moves tasks by dragging their rows
     const controlModules = React.useMemo(() => [createTaskDraggingModule()], [])
 
-    const onLoad = async (control: IDatasetControl<ITaskViewData>) => {
-        const result = await loadTasks(control)
+    const onLoad = async (taskRuntime: ITaskRuntime) => {
         //a new provider on every mount, so its listeners go with it
-        result.provider.taskEvents.addEventListener('onTasksCreated', records => setMessage('Created ' + subjects(records)))
-        result.provider.taskEvents.addEventListener('onTasksDeleted', taskIds => setMessage('Deleted ' + taskIds.length + ' tasks'))
-        result.provider.taskEvents.addEventListener('onTaskMoved', ({ movingRecord, position, targetRecord }) => setMessage('Moved ' + movingRecord.getValue('subject') + ' ' + position + ' ' + targetRecord.getValue('subject')))
-        return result
+        taskRuntime.services.observe('provider', provider => {
+            provider.taskEvents.addEventListener('onTasksCreated', records => setMessage('Created ' + subjects(records)))
+            provider.taskEvents.addEventListener('onTasksDeleted', taskIds => setMessage('Deleted ' + taskIds.length + ' tasks'))
+            provider.taskEvents.addEventListener('onTaskMoved', ({ movingRecord, position, targetRecord }) => setMessage('Moved ' + movingRecord.getValue('subject') + ' ' + position + ' ' + targetRecord.getValue('subject')))
+        })
+        return loadTasks(taskRuntime)
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
@@ -375,10 +373,9 @@ const TASKS_FETCH_XML = \`<fetch>
 
 const fieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', stateCode: 'statecode' }
 
-export const loadTasks = async (control: IDatasetControl<ITaskViewData>): Promise<ITaskGridLoadResult> => {
-    const taskRuntime = control.modules.get('taskRuntime')
+export const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
     return {
-        provider: createDataverseTaskProvider({ taskRuntime, createStore: () => new DataverseTaskStore({ taskRuntime, fetchXml: TASKS_FETCH_XML }) }),
+        store: new DataverseTaskStore({ taskRuntime, fetchXml: TASKS_FETCH_XML }),
         fieldMapping,
     }
 }
