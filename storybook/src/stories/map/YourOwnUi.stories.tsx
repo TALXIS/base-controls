@@ -29,8 +29,6 @@ The pins and the popups they open are drawn through slots you can replace, so a 
 | \`LeafletMap\` | \`marker.popup.container\` | \`onRenderContainer\`, with react-leaflet's \`Popup\` props | \`LeafletUiPopupComponents\` | Leaflet's popup, drawn as a Fluent callout. |
 | \`GoogleMap\` | \`marker.popup.container\` | \`onRenderContainer\`, with vis.gl's \`InfoWindow\` props | \`GoogleMapsUiPopupComponents\` | Google's info window, drawn as a Fluent callout. |
 
-The slots under \`map\` and \`marker\` are read as the map mounts, so a change to them shows on the next mount.
-
 To change the wording of the loading state and the error, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Your own pins

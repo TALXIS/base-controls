@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useLatest } from "@core";
 import { MapRoot } from "../../Map";
 import type { IMapComponents } from "../../components";
 import type { IMapModule, IMapProps } from "../../interfaces";
@@ -22,8 +23,10 @@ export interface IGoogleMapProps extends Omit<IMapProps, 'modules' | 'components
 export const GoogleMap = (props: IGoogleMapProps) => {
     const { apiKey, mapId, modules, components, children, ...mapProps } = props;
     const { map, marker, ...mapComponents } = components ?? {};
-    const library = createGoogleMapsModule({ apiKey, mapId, components: { map, marker } });
-    return <MapRoot {...mapProps} components={mapComponents} modules={[library, ...modules ?? []]}>
+    const libraryComponents = useLatest({ map, marker });
+    const library = createGoogleMapsModule({ apiKey, mapId, getComponents: () => libraryComponents.current });
+    //the library is set up as the map mounts, so new library props mount it again
+    return <MapRoot key={`${apiKey}|${mapId ?? ''}`} {...mapProps} components={mapComponents} modules={[library, ...modules ?? []]}>
         <GoogleMaps />
         {children}
     </MapRoot>;

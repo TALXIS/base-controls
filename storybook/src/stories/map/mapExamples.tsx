@@ -119,10 +119,16 @@ export const useLibraryPicker = (parameters: ILibraryPickerParameters = {}) => {
     const [apiKey, setApiKey] = React.useState(() => sessionStorage.getItem(API_KEY_ITEM) ?? '')
     const [name, setName] = React.useState<MapLibrary>(() => apiKey && sessionStorage.getItem(LIBRARY_ITEM) === 'googleMaps' ? 'googleMaps' : 'leaflet')
 
-    //a new component for each library or tiles, so the map mounts anew; Google Maps reads the key when it is picked
-    const Map = React.useMemo(() => (props: Omit<IMapProps, 'modules'>) => name === 'googleMaps'
-        ? <GoogleMap {...props} apiKey={apiKey} components={{ ...props.components, ...parameters.components }} />
-        : <LeafletMap {...props} tileUrl={parameters.tileUrl} attribution={parameters.attribution} components={{ ...props.components, ...parameters.components }} />, [name, parameters.tileUrl])
+    //one component for good, drawing whichever library is picked; a new key or new tiles mount the map again
+    const latest = React.useRef({ name, apiKey, parameters })
+    latest.current = { name, apiKey, parameters }
+    const Map = React.useMemo(() => (props: Omit<IMapProps, 'modules'>) => {
+        const { name, apiKey, parameters } = latest.current
+        const components = { ...props.components, ...parameters.components }
+        return name === 'googleMaps'
+            ? <GoogleMap {...props} apiKey={apiKey} components={components} />
+            : <LeafletMap {...props} tileUrl={parameters.tileUrl} attribution={parameters.attribution} components={components} />
+    }, [])
 
     const onNameChange = (next: MapLibrary) => {
         setName(next)
@@ -240,7 +246,7 @@ const GridExample = () => {
         <Dropdown label='Leaflet tiles' className={styles.tiles} options={TILES} selectedKey={tiles.key} disabled={library.name !== 'leaflet'} onChange={(_, option) => setTiles(option as typeof tiles)} />
         <div className={styles.map}>
             <DataProviderScope provider={provider}>
-                {/* new tiles bring a new component, so the map mounts again with them */}
+                {/* LeafletMap mounts the map again with new tiles */}
                 <library.Map fieldMapping={FIELD_MAPPING} />
             </DataProviderScope>
         </div>

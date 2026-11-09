@@ -10,8 +10,8 @@ export interface IGoogleMapsParameters {
     apiKey: string;
     /** The Map ID from Google Cloud's Map management; Google's `DEMO_MAP_ID` when left out. */
     mapId?: string;
-    /** Replacements for the map's slots and its pins' slots. */
-    components?: IGoogleMapsComponents;
+    /** Replacements for the map's slots and its pins' slots, read on every render. */
+    getComponents?: () => IGoogleMapsComponents;
 }
 
 export interface IGoogleMapsEvents {
@@ -64,7 +64,7 @@ export class GoogleMapsRuntime implements IGoogleMapsInternal {
     }
 
     public getComponents(): IGoogleMapsComponents {
-        return this._parameters.components ?? {};
+        return this._parameters.getComponents?.() ?? {};
     }
 
     public getParameters(): IGoogleMapsParameters {

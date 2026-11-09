@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useLatest } from "@core";
 import { MapRoot } from "../../Map";
 import type { IMapComponents } from "../../components";
 import type { IMapModule, IMapProps } from "../../interfaces";
@@ -22,8 +23,10 @@ export interface ILeafletMapProps extends Omit<IMapProps, 'modules' | 'component
 export const LeafletMap = (props: ILeafletMapProps) => {
     const { tileUrl, attribution, modules, components, children, ...mapProps } = props;
     const { map, marker, ...mapComponents } = components ?? {};
-    const library = createLeafletModule({ tileUrl, attribution, components: { map, marker } });
-    return <MapRoot {...mapProps} components={mapComponents} modules={[library, ...modules ?? []]}>
+    const libraryComponents = useLatest({ map, marker });
+    const library = createLeafletModule({ tileUrl, attribution, getComponents: () => libraryComponents.current });
+    //the library is set up as the map mounts, so new library props mount it again
+    return <MapRoot key={`${tileUrl ?? ''}|${attribution ?? ''}`} {...mapProps} components={mapComponents} modules={[library, ...modules ?? []]}>
         <Leaflet />
         {children}
     </MapRoot>;

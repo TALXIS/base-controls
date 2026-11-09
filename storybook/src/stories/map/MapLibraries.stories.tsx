@@ -17,7 +17,7 @@ The map works out its pins and where to look, but a *map library* draws them: Le
 | \`LeafletMap\` | Leaflet, over OpenStreetMap's tiles unless \`tileUrl\` and \`attribution\` name others. Needs no key. |
 | \`GoogleMap\` | The Google Maps JavaScript API, under your \`apiKey\`. The map shows its loading state until the API has loaded. |
 
-Both take every prop of \`Map\`, as listed on [**Map**](?path=/docs/controls-map-get-started--overview), and one \`components\` for the map's slots and the library's: see [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview). The library is set up only as the map mounts, so to switch libraries or tiles, mount the map again, as the example's \`LibraryPicker.tsx\` does with a new component for each.
+Both take every prop of \`Map\`, as listed on [**Map**](?path=/docs/controls-map-get-started--overview), and one \`components\` for the map's slots and the library's: see [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview). A change to a library prop, such as new tiles, mounts the map again with it.
 
 ## Leaflet
 
@@ -25,15 +25,15 @@ Your app imports Leaflet's stylesheet once, with \`import 'leaflet/dist/leaflet.
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
-| \`tileUrl\` | \`string\` | OpenStreetMap's | At mount | A URL template with \`{z}\`, \`{x}\` and \`{y}\`, and optionally \`{s}\` for the tile server and \`{r}\` for sharper tiles on high-density screens. |
-| \`attribution\` | \`string\` | OpenStreetMap's | At mount | The HTML credit the tile service asks you to show. |
+| \`tileUrl\` | \`string\` | OpenStreetMap's | Mounts again | A URL template with \`{z}\`, \`{x}\` and \`{y}\`, and optionally \`{s}\` for the tile server and \`{r}\` for sharper tiles on high-density screens. |
+| \`attribution\` | \`string\` | OpenStreetMap's | Mounts again | The HTML credit the tile service asks you to show. |
 
 ## Google Maps
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
-| \`apiKey\` | \`string\` | Required | At mount | A key for the Maps JavaScript API, from the Google Cloud console. |
-| \`mapId\` | \`string\` | \`DEMO_MAP_ID\` | At mount | A Map ID from *Map management* in the same Google Cloud project, which ties the map to the style Google keeps for it. Google needs one to draw Advanced Markers, which the pins are; \`DEMO_MAP_ID\` is Google's shared ID for development, so create your own for production. |
+| \`apiKey\` | \`string\` | Required | Mounts again | A key for the Maps JavaScript API, from the Google Cloud console. |
+| \`mapId\` | \`string\` | \`DEMO_MAP_ID\` | Mounts again | A Map ID from *Map management* in the same Google Cloud project, which ties the map to the style Google keeps for it. Google needs one to draw Advanced Markers, which the pins are; \`DEMO_MAP_ID\` is Google's shared ID for development, so create your own for production. |
 
 The Maps API loads once per page, under the key of the first Google map, so a later map with another key still uses the first. The map draws without Google's own buttons, such as zoom and Street View, and a click on the map closes the open popup, as in Leaflet.
 

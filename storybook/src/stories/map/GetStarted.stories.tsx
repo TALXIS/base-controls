@@ -48,9 +48,9 @@ It moves again each time the provider loads new data; in between, the user pans 
 | \`onLoad\` | \`(map: IMap) => void \\| Promise<void>\` | None | At mount | Called once the modules have loaded; the map waits for a promise it returns. |
 | \`height\` | \`string\` | Fills its parent | Live | A length such as \`'480px'\`; left out, the map fills its parent: see [**Layout**](?path=/docs/controls-map-layout--overview). |
 | \`className\` | \`string\` | None | Live | A class for the map's box. |
-| \`components\` | \`IMapComponents\` and \`ILeafletComponents\` or \`IGoogleMapsComponents\` | Defaults | Live | The map's slots and the library's; the library's, under \`map\` and \`marker\`, are read at mount. See [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview). |
+| \`components\` | \`IMapComponents\` and \`ILeafletComponents\` or \`IGoogleMapsComponents\` | Defaults | Live | The map's slots and the library's: see [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview). |
 
-\`LeafletMap\` and \`GoogleMap\` also take their library's own props, such as \`tileUrl\` and \`apiKey\`: see [**Map libraries**](?path=/docs/controls-map-map-libraries--overview). To change anything read at mount, mount the map again with a new \`key\`.
+\`LeafletMap\` and \`GoogleMap\` also take their library's own props, such as \`tileUrl\` and \`apiKey\`: see [**Map libraries**](?path=/docs/controls-map-map-libraries--overview). A change to them mounts the map again; to change anything else read at mount, mount it again with a new \`key\`.
 
 ## Where next
 

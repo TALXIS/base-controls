@@ -11,8 +11,8 @@ export interface ILeafletParameters {
     tileUrl?: string;
     /** The attribution the tiles require; OpenStreetMap's by default. */
     attribution?: string;
-    /** Replacements for the map's, its pins' and its popup's slots. */
-    components?: ILeafletComponents;
+    /** Replacements for the map's, its pins' and its popup's slots, read on every render. */
+    getComponents?: () => ILeafletComponents;
 }
 
 export interface ILeafletEvents {
@@ -61,7 +61,7 @@ export class LeafletRuntime implements ILeafletInternal {
     }
 
     public getComponents(): ILeafletComponents {
-        return this._parameters.components ?? {};
+        return this._parameters.getComponents?.() ?? {};
     }
 
     public getTiles(): { tileUrl: string; attribution: string } {
