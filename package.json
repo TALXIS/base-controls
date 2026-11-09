@@ -101,7 +101,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@fluentui/style-utilities": "^8.11.4",
     "@googlemaps/js-api-loader": "^2.1.1",
-    "@talxis/client-libraries": "file:../INT0014/src/SDK/ClientLibraries",
+    "@talxis/client-libraries": "file:vendor/talxis-client-libraries-0.0.1.tgz",
     "@talxis/client-metadata": "^0.0.7",
     "@vis.gl/react-google-maps": "^1.7.1",
     "ag-grid-community": "36.2.0",
