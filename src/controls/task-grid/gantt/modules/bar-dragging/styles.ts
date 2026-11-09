@@ -1,5 +1,4 @@
 import type { IStyle, ITheme } from "@fluentui/react";
-import { getTextColorForBackground } from "@theme";
 import { GANTT_TASK_DRAG_END_CLASS, GANTT_TASK_DRAG_HANDLE_CLASS, GANTT_TASK_DRAG_START_CLASS, GANTT_TASK_LINE_CLASS, GANTT_TASK_LOCKED_CLASS } from "../../chart";
 
 const HANDLE_WIDTH = 10;
@@ -19,8 +18,8 @@ export const getBarDraggingStyles = (theme: ITheme): IStyle => ({
             bottom: '25%',
             width: 2,
             borderRadius: 1,
-            //the bar is drawn in the theme's secondary shade
-            backgroundColor: `color-mix(in srgb, ${getTextColorForBackground(theme.palette.themeSecondary)} 75%, transparent)`,
+            //the bar's own colour, deepened so it reads on its fill as well as its track
+            backgroundColor: `color-mix(in srgb, var(--dhx-gantt-task-background) 55%, ${theme.semanticColors.bodyText})`,
         },
     },
     [`.${GANTT_TASK_LINE_CLASS} .${GANTT_TASK_DRAG_HANDLE_CLASS}.${GANTT_TASK_DRAG_START_CLASS}`]: {
