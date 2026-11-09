@@ -40,11 +40,6 @@ interface IChainHold {
     timer: number;
 }
 
-interface ITaskSaves {
-    count: number;
-    hold: IChainHold;
-}
-
 export class TaskSavingChains implements ITaskSavingChains {
     public readonly events = new EventEmitter<ITaskSavingChainsEvents>();
     private _provider?: ITaskDataProvider;
@@ -55,8 +50,8 @@ export class TaskSavingChains implements ITaskSavingChains {
     private _lockedCounts = new Map<string, number>();
     //how many shown chains each task is in
     private _savingCounts = new Map<string, number>();
-    //counted until each save and the sync after it settle
-    private _saves = new Map<string, ITaskSaves>();
+    //held until the record's saves and the sync after them settle
+    private _savingHolds = new Map<string, IChainHold>();
     private _holds = new Set<IChainHold>();
     private _isDestroyed = false;
 
@@ -93,15 +88,15 @@ export class TaskSavingChains implements ITaskSavingChains {
 
     private _onBeforeRecordSaved = (record: IRecord): void => {
         const taskId = record.getRecordId();
-        const saves = this._saves.get(taskId) ?? { count: 0, hold: this._hold([taskId]) };
-        saves.count++;
-        this._saves.set(taskId, saves);
+        if (!this._savingHolds.has(taskId)) {
+            this._savingHolds.set(taskId, this._hold([taskId]));
+        }
     };
 
     private _onAfterRecordSaved = async (result: IRecordSaveOperationResult): Promise<void> => {
         const taskId = result.recordId;
-        const saves = this._saves.get(taskId);
-        if (!saves) {
+        const hold = this._savingHolds.get(taskId);
+        if (!hold) {
             return;
         }
         //joins the sync the save starts to get the rescheduled dates
@@ -113,12 +108,12 @@ export class TaskSavingChains implements ITaskSavingChains {
                 //the provider reports a failed sync where it runs it
             }
         }
-        saves.count--;
-        if (saves.count > 0) {
+        //overlapping saves report once, on the last
+        if (this._savingHolds.get(taskId) !== hold || this._provider?.getRecordsMap()[taskId]?.isSaving()) {
             return;
         }
-        this._saves.delete(taskId);
-        this._release(saves.hold);
+        this._savingHolds.delete(taskId);
+        this._release(hold);
     };
 
     //locks the chain at once and shows it only once the save outlasts the delay
