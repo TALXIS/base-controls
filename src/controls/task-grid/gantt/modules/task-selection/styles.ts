@@ -19,8 +19,8 @@ export const getTaskSelectionStyles = (theme: ITheme): IStyle => ({
         height: '100%',
         borderRadius: 'inherit',
         background: 'inherit',
-        //unblurred shadows on each side draw a 2px edge around the whole shape
-        filter: ['brightness(0.92) saturate(1.4)', ...['2px 0', '-2px 0', '0 2px', '0 -2px'].map(offset => `drop-shadow(${offset} 0 ${theme.palette.themePrimary})`)].join(' '),
+        //a blurred glow follows the summary's end caps too
+        filter: `brightness(0.92) saturate(1.4) drop-shadow(0 0 3px color-mix(in srgb, ${theme.palette.themePrimary} 70%, transparent))`,
     },
     [`.${GANTT_TASK_LINE_CLASS}.${BAR_SELECTED_CLASS} .${GANTT_TASK_PROGRESS_WRAPPER_CLASS}`]: {
         zIndex: 1,
