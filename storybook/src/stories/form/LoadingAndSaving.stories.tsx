@@ -7,6 +7,8 @@ import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
 import { AutoSaveExample, SaveExample, SwitchRecordsExample } from '../../form/react-form/loadingAndSavingExamples'
 
 const DESCRIPTION = `
+> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
+
 A form does not fetch data itself: you hand it a record, and it edits that record and saves it through the record's data provider. The record can be one a grid already shows, or one held in memory whose saves go to your API. Try it below: set *Credit limit* above 50,000 and press **Save**.
 
 {{canvas: Save to your API}}

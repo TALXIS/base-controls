@@ -6,6 +6,8 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { FromInsideExample, FromOutsideExample } from '../../form/react-form/talkingExamples'
 
 const DESCRIPTION = `
+> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
+
 Your own code often has to follow what the user does in a form, or fill in, read and save values itself. From outside, the form hands your code an api and raises events; from a component of yours placed inside it, hooks reach the form directly. Try it below: press **Set the phone**, then **Save**, and read the log under the form.
 
 {{canvas: Follow the form}}

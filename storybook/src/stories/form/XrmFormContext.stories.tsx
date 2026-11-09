@@ -6,6 +6,8 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { CancelSaveExample, CheckWebsiteExample, DigitalOnlyExample, StartQualificationExample } from '../../form/xrm-form/examples/formContextExamples'
 
 const DESCRIPTION = `
+> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
+
 In a model-driven app, form scripts work through \`formContext\`: they read and change values, show and hide parts of the form, raise notifications and check saves through it. \`XrmForm\` hands your code the same object, so scripts written for Dataverse can run here too. Try it below: press **Start qualification**.
 
 {{canvas: Start qualification}}

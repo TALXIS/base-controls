@@ -7,6 +7,8 @@ import { OwnControlExample, RibbonAndNotificationsExample, StepTabsExample } fro
 import { FluentV9Example } from '../../form/react-form/fluentV9Examples'
 
 const DESCRIPTION = `
+> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
+
 The form draws each field with the Base Controls field for its data type, and its tabs, ribbon and notifications in Fluent UI; you can draw any of the four your own way. The form underneath stays the same, so binding, validation and saving keep working. Try it below: rate the account and watch *Unsaved changes* appear.
 
 {{canvas: Your own control}}

@@ -6,6 +6,8 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { XrmOverviewExample } from '../../form/xrm-form/examples/overviewExamples'
 
 const DESCRIPTION = `
+> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
+
 A model-driven app in Dataverse keeps each form's layout as FormXml, and runs form scripts against the form's \`formContext\`. \`XrmForm\` draws a form from that FormXml with the parts of \`Form\` and hands your code the same \`formContext\`, so a Dataverse form and its scripts can move into a React application or a PCF control. Try it below: open \`formXml.ts\` in **Code** and move *Phone* into the *Status* section.
 
 {{canvas: Overview}}

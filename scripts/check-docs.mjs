@@ -38,7 +38,8 @@ const checkCards = (source, report) => {
 };
 
 const checkDescription = (description, report) => {
-    const [lead, afterLead] = description.trim().split('\n\n');
+    //a notice quoted above the lead is not the lead
+    const [lead, afterLead] = description.trim().replace(/^>[^\n]*\n\n/, '').split('\n\n');
     if (lead.startsWith('{{') || lead.startsWith('#')) {
         report('no lead');
     }

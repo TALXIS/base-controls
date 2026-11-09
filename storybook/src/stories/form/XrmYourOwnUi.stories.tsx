@@ -6,6 +6,8 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { OwnControlExample, RibbonCommandExample } from '../../form/xrm-form/examples/yourOwnUiExamples'
 
 const DESCRIPTION = `
+> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
+
 \`XrmForm\` draws the ribbon, the notifications, the tabs and every control with the same parts as \`Form\`, and each of them can be drawn your own way. The FormXml still places the fields and \`formContext\` still drives them, so your scripts keep working on what you draw. Try it below: pick another industry.
 
 {{canvas: Your own control}}

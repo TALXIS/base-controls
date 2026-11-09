@@ -6,6 +6,8 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { ValidationExample } from '../../form/react-form/fieldsAndValidationExamples'
 
 const DESCRIPTION = `
+> **Coming soon:** \`Form\` will move to the shared runtime that \`Map\`, \`Grid\` and \`DatasetControl\` run on, and \`XrmForm\` will become a wrapper over it. Expect \`Form.Root\`, \`onFormReady\` and \`IFormApi\` to change.
+
 Each field of a form is bound to one column of the record, and can be required or checked by rules of your own. A save checks every field first; when one fails, the save stops, the control shows its error and the notifications above the form list every failure. Try it below: type a phone number without a country code and press **Save**.
 
 {{canvas: Check the phone}}
