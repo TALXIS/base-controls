@@ -1,6 +1,6 @@
-import { HookRegistry, IEventSubscriber, IHookPoint } from "@core";
+import { HookRegistry, IHookPoint } from "@core";
 import { ColDef, GridApi, IRowNode, SelectionChangedEvent, SuppressMouseEventHandlingParams } from "ag-grid-community";
-import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
+import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { SELECTION_COLUMN_KEY } from "./constants";
 import { IGridRowSelectionServiceRegistry } from "./runtime";
@@ -45,17 +45,11 @@ export interface IGridSelectionStateHookParameters {
 /** Adjusts how a row's checkbox reads, starting from whether the row is selected. */
 export type GridSelectionStateHook = (result: IGridSelectionStateResult, parameters: IGridSelectionStateHookParameters) => void;
 
-export interface IGridRowSelectionEvents {
-    /** Fires when the selected records change, with the ids now selected. */
-    onSelectionChanged: (selectedRecordIds: string[]) => void;
-}
-
 export interface IGridRowSelectionParameters {
     /** This module's own locator. */
     services: IGridRowSelectionServiceRegistry;
     /** How many rows may be selected at once. */
     mode: 'single' | 'multiple';
-    onSelectionChanged?: IGridRowSelectionEvents['onSelectionChanged'];
 }
 
 export interface IGridRowSelectionHooks {
@@ -65,8 +59,6 @@ export interface IGridRowSelectionHooks {
 
 /** Keeps the grid's and the providers' selection in sync. */
 export interface IGridRowSelection {
-    /** Subscribe to the selection events. */
-    readonly events: IEventSubscriber<IGridRowSelectionEvents>;
     /** How many rows may be selected at once. */
     getMode(): 'single' | 'multiple';
     /** Selects the records, through the `hooks.selectRecords` hooks. */
@@ -93,13 +85,11 @@ export class GridRowSelection implements IGridRowSelection {
         selectRecords: new HookRegistry<GridSelectRecordsHook>(),
         selectionState: new HookRegistry<GridSelectionStateHook>(),
     };
-    public readonly events: IEventEmitter<IGridRowSelectionEvents> = new EventEmitter<IGridRowSelectionEvents>();
 
     constructor(parameters: IGridRowSelectionParameters) {
         this._services = parameters.services;
         this._mode = parameters.mode;
         this._services.get('gridServices').observe('gridApi', () => this._onGridApiAvailable());
-        this._addEventListeners(parameters);
         this._addHooks();
     }
 
@@ -149,12 +139,6 @@ export class GridRowSelection implements IGridRowSelection {
         const provider = record.getDataProvider();
         //a group selects every record under it
         return provider.getSummarizationType() === 'grouping' && this._mode === 'single';
-    }
-
-    private _addEventListeners(parameters: IGridRowSelectionParameters): void {
-        if (parameters.onSelectionChanged) {
-            this.events.addEventListener('onSelectionChanged', parameters.onSelectionChanged);
-        }
     }
 
     private _addHooks(): void {
@@ -224,9 +208,8 @@ export class GridRowSelection implements IGridRowSelection {
         this._writeToProviders();
     };
 
-    private _onRecordsSelected = (selectedRecordIds: string[]): void => {
+    private _onRecordsSelected = (): void => {
         this._onProviderSelectionChanged();
-        this.events.dispatchEvent('onSelectionChanged', selectedRecordIds);
     };
 
     private _onProviderSelectionChanged = (): void => {

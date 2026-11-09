@@ -12,8 +12,6 @@ declare module "../../runtime/columns/colDef" {
     interface IGridColumnCellContext {
         /** Whether the control takes input where the cell stands, with no editor to open. */
         enableOneClickEdit?: boolean;
-        /** Decides whether a cell is locked, after the cell-level `locks.hooks.lock` hooks. */
-        lockHook?: (result: IGridLock, parameters: { record: IRecord }) => void;
     }
 }
 
@@ -94,7 +92,6 @@ export class GridLocks implements IGridLocks {
     private _isCellLocked(record: IRecord, columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
         const result: IGridLock = { isLocked: false };
         this.hooks.lock.apply(result, { record, columnName });
-        getColumnContext(colDef).cell?.lockHook?.(result, { record });
         return result.isLocked;
     }
 

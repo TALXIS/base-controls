@@ -93,7 +93,6 @@ export class GridControl implements IGridControl {
 
     public getFinalControlParameters(parameters: IParameters): IParameters {
         this._cells.applyControlParametersHooks(parameters, this._hookParams);
-        this._cell.getContext().cell?.controlParametersHook?.(parameters, { record: this._record });
         return parameters;
     }
 

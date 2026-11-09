@@ -11,7 +11,7 @@ export { listenToGridApi } from './runtime/grid';
 export type { IGridServiceMap, IGridServiceRegistry, IGridDeferredService } from './runtime/interfaces';
 export type { IGridCells, IGridCellsRenderParameters, IGridCell, IGridCellEvents, IGridCellHookParameters, GridControlHook, GridControlParametersHook, GridCellThemeHook, IGridCellLoading, IGridCellCommands, GridCellCommandsHook, GridCellLoadingHook, IGridFieldControl, IGridCellTheme, IGridControl } from './runtime/cells';
 export type { IGridColumnHeaders, IGridColumnHeader, IGridColumnHeaderEvents, IColumnHeaderAdornment, IColumnMenuSection, GridColumnMenuSectionsHook, GridColumnMenuItemsHook, GridColumnHeaderThemeHook, GridColumnHeaderAdornmentsHook, IGridColumnHeaderTheme } from './runtime/column-header';
-export type { IGridColumns, GridColumnDefinitionsHook, IGridColumnCellContext, IGridColumnHeaderContext, IGridColumnContext, IGridColDef } from './runtime/columns';
+export type { IGridColumns, GridColumnDefinitionsHook, IGridColumnCellContext, IGridColumnContext, IGridColDef } from './runtime/columns';
 export { DEFAULT_COLUMN_WIDTH, getColumnContext } from './runtime/columns';
 export type { IGridRows, IGridRowHeight, GridRowHeightHook, GridRowClassRule } from './runtime/rows';
 export type { IGridValidation, GridValidationHook } from './runtime/validation';

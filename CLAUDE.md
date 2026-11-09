@@ -191,7 +191,6 @@ Ask who calls it and when:
 | A method of an object you implement, called on request | a plain verb: `load`, `saveTask`, `deleteTasks` |
 | Answers a question | `get…`, `is…`, `can…` |
 | Makes something | `create…` |
-| A per-column hook on a column definition | `<thing>Hook` |
 
 The owner's trigger is the verb, and the logic plugged into it is `on<Verb>`: `lifecycle.init()` runs `onInit`.
 A private field that holds or implements a callback is `_on<What>`.

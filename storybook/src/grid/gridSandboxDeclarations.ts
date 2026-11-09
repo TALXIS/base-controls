@@ -1510,36 +1510,12 @@ interface IGridLockResult {
     lockedBy?: IGridLockLevel;
 }
 
-/** What a column decides for each of its cells, after the cell hooks. */
+/** What a column decides for each of its cells. */
 interface IGridColumnCellContext {
     /** Whether the cell takes input in place without opening an editor. */
     enableOneClickEdit?: boolean;
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
     isRowResizable?: boolean;
-    /** Runs after hooks.commands. */
-    commandsHook?: (result: IGridCellCommands, params: { record: IRecord }) => void;
-    /** Runs after every hooks.theme. */
-    themeHook?: (builder: ThemeBuilder, params: { record: IRecord }) => void;
-    /** Runs after the cell-level hooks.lock hooks. */
-    lockHook?: (result: IGridLock, params: { record: IRecord }) => void;
-    /** Runs after hooks.loading. */
-    loadingHook?: (result: IGridCellLoading, params: { record: IRecord }) => void;
-    /** Runs after hooks.validation. */
-    validationHook?: (result: IFieldValidationResult, params: { record: IRecord }) => void;
-    /** Runs after hooks.controlParameters. */
-    controlParametersHook?: (parameters: IParameters, params: { record: IRecord }) => void;
-}
-
-/** What a column decides for its header, after the header hooks. */
-interface IGridColumnHeaderContext {
-    /** Runs after hooks.theme. */
-    themeHook?: (builder: ThemeBuilder) => void;
-    /** Runs after hooks.adornments. */
-    adornmentsHook?: (adornments: IColumnHeaderAdornment[]) => void;
-    /** Runs after hooks.menuSections. */
-    menuSectionsHook?: (sections: IColumnMenuSection[]) => void;
-    /** Runs after hooks.menuItems. */
-    menuItemsHook?: (items: IContextualMenuItem[]) => void;
 }
 
 interface IGridColumnContext {
@@ -1553,7 +1529,6 @@ interface IGridColumnContext {
     /** Unsaved width a module adds for what it draws. */
     widthOffset?: number;
     cell?: IGridColumnCellContext;
-    header?: IGridColumnHeaderContext;
     /** Your own options for the column, read back with \`getColumnContext\`. */
     [key: string]: unknown;
 }
@@ -1996,12 +1971,7 @@ type GridSelectRecordsHook = (selection: IGridRecordsSelection, context: { provi
 /** Adjusts how a row's checkbox reads, starting from whether the row is selected. */
 type GridSelectionStateHook = (result: { state: IGridRowSelectionState }, context: { node: IRowNode<IRecord>; record: IRecord }) => void;
 
-interface IGridRowSelectionEvents {
-    onSelectionChanged: (selectedRecordIds: string[]) => void;
-}
-
 interface IGridRowSelection {
-    readonly events: IEventEmitter<IGridRowSelectionEvents>;
     getMode(): 'single' | 'multiple';
     readonly hooks: {
         readonly selectRecords: IHookPoint<GridSelectRecordsHook>;
@@ -3074,8 +3044,6 @@ interface ISelectionHeaderProps extends IColumnHeaderParams {
 
 interface IRowSelectionModuleParameters {
     mode: 'single' | 'multiple';
-    /** Called when the selected records change, with the ids now selected. */
-    onSelectionChanged?: (selectedRecordIds: string[]) => void;
 }
 
 interface IGridCellSelectionOptions {
@@ -3433,7 +3401,7 @@ declare const RecordLockIcon: (props: IRecordLockIconProps) => JSX.Element | nul
 /** The cell a locked record's row shows its lock in; from the editing module. */
 declare const RecordLockIndicatorCell: (props: IRecordLockIndicatorCellProps) => JSX.Element;
 /** Lets the cells be edited, and saves each edit with enableAutoSave. */
-declare function createEditingModule(options?: { enableAutoSave?: boolean; onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'] }): IGridModule;
+declare function createEditingModule(options?: { enableAutoSave?: boolean }): IGridModule;
 /** Lets a column be sorted from its menu, unless it sets disableSorting. */
 declare function createSortingModule(options?: ISortingModuleParameters): IGridModule;
 /** Lets a column with filter operators be filtered from its menu. */
@@ -4336,12 +4304,9 @@ declare const CZECH_LABELS: { [key: string]: string };
 /** The tasks of a TaskDatasetControl, drawn as a tree; goes in its body and throws anywhere else. */
 declare const TaskGrid: (props: ITaskGridProps) => JSX.Element;
 /** Lets the task grid's cells be edited, saving each edit straight away. */
-declare function createTaskEditingModule(options?: { onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'] }): IGridModule;
+declare function createTaskEditingModule(): IGridModule;
 /** Moves tasks by dragging their rows: between rows, sideways between levels, or onto another task; not in a flat list. */
-declare const createTaskDraggingModule: (parameters?: {
-    /** Called after a dragged task is moved. */
-    onTaskMoved?(params: any): void;
-}) => IDatasetControlModule;
+declare const createTaskDraggingModule: () => IDatasetControlModule;
 
 /** Where custom column definitions and values are kept. */
 interface ICustomColumnsStore {

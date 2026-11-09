@@ -1,6 +1,6 @@
 import type { ColDef, SuppressKeyboardEventParams } from "ag-grid-community";
 import { DataTypes, EventEmitter, IColumn, IDataProvider, IInternalDataProvider, IRawRecord, IRecord, IRecordSaveOperationResult, isQuickFindMatch, LookupCondition, Operators, unwrapConditionValue } from "@talxis/client-libraries";
-import type { IColumnMenuSection, IGrid } from "@controls/grid";
+import type { GridColumnMenuSectionsHook, IGrid } from "@controls/grid";
 import { ErrorHelper, IEventSubscriber } from "@core";
 import { type LabelsOf } from "@labels";
 import type { ITaskColumnMatcher, ITaskDataProvider } from "../../runtime/provider";
@@ -249,7 +249,9 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
 
     //after the editing module whose editor this replaces
     private _onGridAvailable = (grid: IGrid): void => {
-        (grid as IGrid<ITaskGridServiceMap>).services.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+        const columns = (grid as IGrid<ITaskGridServiceMap>).services.get('columns');
+        columns.hooks.columnDefinitions.add(this._onColumnDefinitions, TASK_GRID_PRIORITY.tree + 20);
+        columns.headers.hooks.menuSections.add(this._onMenuSections, Number.MAX_SAFE_INTEGER);
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
@@ -260,7 +262,6 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
             colDef.cellRenderer = LookupManyCell;
             colDef.cellEditor = LookupManyCellEditor;
             colDef.headerComponent = LookupManyColumnHeader;
-            colDef.context = { ...colDef.context, header: { ...colDef.context?.header, menuSectionsHook: (sections: IColumnMenuSection[]) => this._redirectFilterItem(sections, colDef.colId!) } };
             colDef.cellEditorPopup = true;
             colDef.cellEditorPopupPosition = 'over';
             colDef.suppressKeyboardEvent = this._suppressKeyboardEvent;
@@ -268,12 +269,16 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
     };
 
     //the grid's own callout cannot pick these records
-    private _redirectFilterItem(sections: IColumnMenuSection[], columnName: string): void {
+    private _onMenuSections: GridColumnMenuSectionsHook = (sections, header) => {
+        const columnName = header.getColDef().colId!;
+        if (!this.getColumn(columnName)) {
+            return;
+        }
         const filterItem = sections.find(section => section.key === 'filtering')?.items.find(item => item.key === 'filter');
         if (filterItem) {
             filterItem.onClick = () => this.openFilter(columnName);
         }
-    }
+    };
 
     private _suppressKeyboardEvent = (params: SuppressKeyboardEventParams<IRecord>): boolean => {
         return params.editing && PICKER_KEYS.has(params.event.key);

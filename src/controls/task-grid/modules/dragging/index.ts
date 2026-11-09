@@ -1,2 +1,2 @@
 export * from './createTaskDraggingModule';
-export type { ITaskDragging, ITaskDraggingParameters } from './TaskDragging';
+export type { ITaskDragging } from './TaskDragging';

@@ -129,7 +129,6 @@ export class GridCell implements IGridCell {
     public isLoading(): boolean {
         const result: IGridCellLoading = { isLoading: false };
         this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this.getColumnName() });
-        this.getContext().cell?.loadingHook?.(result, { record: this._record });
         return result.isLoading;
     }
 
@@ -174,7 +173,6 @@ export class GridCell implements IGridCell {
     public getCommands(): IGridCellCommands {
         const result: IGridCellCommands = { items: [], overflowItems: [] };
         this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this.getColumnName() });
-        this.getContext().cell?.commandsHook?.(result, { record: this._record });
         return result;
     }
 

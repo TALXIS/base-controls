@@ -12,7 +12,7 @@ export * from './lock-icon';
 export * from './commands';
 export * from './loading';
 export * from './resize-grip';
-export * from './legacy-nested-control-renderer';
+export type { ICellLegacyNestedControlProps } from './legacy-nested-control-renderer';
 export * from './nested-react-root';
 //the pieces the parts draw with reach a consumer through `Grid.Cell.Ui`
 export type {

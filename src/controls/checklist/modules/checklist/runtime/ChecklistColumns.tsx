@@ -1,6 +1,6 @@
 import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { GRID_MODULE_PRIORITY, RECORD_SAVE_COLUMN_KEY, IGridCellCommands, IGridColumnContext, IGridServiceRegistry } from "@controls/grid";
+import { GRID_MODULE_PRIORITY, RECORD_SAVE_COLUMN_KEY, GridCellCommandsHook, IGridColumnContext, IGridServiceRegistry } from "@controls/grid";
 import { IGridChecklist } from "../GridChecklist";
 import { CHECKLIST_LABELS } from "../../../labels";
 import { CompletionCell } from "../adapters/completion-cell";
@@ -36,6 +36,7 @@ export class ChecklistColumns {
         this._checklist = parameters.checklist;
         this._deleteColumnDefinition = this._getDeleteColumnDefinition();
         this._services.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.clipboard + 1);
+        this._services.get('cells').hooks.commands.add(this._onCellCommands, Number.MAX_SAFE_INTEGER);
     }
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
@@ -74,7 +75,6 @@ export class ChecklistColumns {
     private _getDeleteColumnDefinition(): ColDef<IRecord> {
         const context: IGridColumnContext = {
             alignment: 'center',
-            cell: { commandsHook: this._onCellCommands },
         };
         return {
             ...CONTROL_COLUMN_DEFINITION,
@@ -85,8 +85,9 @@ export class ChecklistColumns {
         };
     }
 
-    private _onCellCommands = (result: IGridCellCommands, parameters: { record: IRecord }): void => {
-        if (!this._checklist.isItem(parameters.record)) {
+    //its own column only, after every other hook
+    private _onCellCommands: GridCellCommandsHook = (result, parameters) => {
+        if (parameters.columnName !== DELETE_COLUMN_NAME || !this._checklist.isItem(parameters.record)) {
             return;
         }
         const label = this._services.get('labels').getLabels(CHECKLIST_LABELS).get('checklist.deleteItem');

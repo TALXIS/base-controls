@@ -18,19 +18,13 @@ const getUrgency = (ticket: IRecord) => {
     return hoursLeft < AT_RISK_HOURS ? AT_RISK : undefined
 }
 
-const colourByUrgency: IGridColumnCellContext['themeHook'] = (builder, { record }) => {
-    const urgency = getUrgency(record)
-    if (urgency) {
-        //tint keeps the hue readable in light and dark themes
-        builder.tint(urgency)
-    }
-}
-
 const onSetup = (grid: IGrid) => {
-    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-        const dueDate = columnDefs.find(colDef => colDef.colId === 'duedate')!
-        //spread, so the cell keeps the rest of what the grid set
-        dueDate.context = { ...dueDate.context, cell: { ...dueDate.context?.cell, themeHook: colourByUrgency } }
+    grid.services.get('cells').hooks.theme.add((builder, { record, columnName }) => {
+        const urgency = columnName === 'duedate' ? getUrgency(record) : undefined
+        if (urgency) {
+            //tint keeps the hue readable in light and dark themes
+            builder.tint(urgency)
+        }
     })
 }
 
@@ -91,9 +85,10 @@ const toMonospace = (theme: ITheme) => {
 }
 
 const onSetup = (grid: IGrid) => {
-    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-        const ticketNumber = columnDefs.find(colDef => colDef.colId === 'ticketnumber')!
-        ticketNumber.context = { ...ticketNumber.context, cell: { ...ticketNumber.context?.cell, themeHook: builder => builder.edit('monospace', toMonospace) } }
+    grid.services.get('cells').hooks.theme.add((builder, { columnName }) => {
+        if (columnName === 'ticketnumber') {
+            builder.edit('monospace', toMonospace)
+        }
     })
 }
 
@@ -187,9 +182,9 @@ const getHeaderColour = (columnName: string) => {
     return undefined
 }
 
-const validateHours = (result: IFieldValidationResult, { record }: { record: IRecord }) => {
+const validateHours: GridValidationHook = (result, { record, columnName }) => {
     const hours = Number(record.getValue('hours') ?? 0)
-    if (hours < 0.25 || hours > 12) {
+    if (columnName === 'hours' && (hours < 0.25 || hours > 12)) {
         result.error = true
         result.errorMessage = 'Log between 0.25 and 12 hours.'
     }
@@ -226,10 +221,7 @@ const GridExample = () => {
 
     const onSetup = (grid: IGrid) => {
         gridRef.current = grid
-        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-            const hours = columnDefs.find(colDef => colDef.colId === 'hours')!
-            hours.context = { ...hours.context, cell: { ...hours.context?.cell, validationHook: validateHours } }
-        })
+        grid.services.get('validation').hooks.validation.add(validateHours)
     }
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [

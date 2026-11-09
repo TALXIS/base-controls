@@ -1,5 +1,5 @@
 import type { IDatasetControlModule } from "@controls/dataset-control/runtime/interfaces";
-import { ITaskDragging, ITaskDraggingParameters, TaskDragging } from "./TaskDragging";
+import { ITaskDragging, TaskDragging } from "./TaskDragging";
 
 /** Moving tasks by dragging their rows, for `TaskDatasetControl`'s `modules`. */
 export interface ITaskDraggingModule extends IDatasetControlModule<'dragging'> { }
@@ -12,7 +12,7 @@ declare module "@controls/dataset-control/runtime/interfaces" {
 }
 
 /** Moves tasks by dragging their rows. */
-export const createTaskDraggingModule = (parameters: ITaskDraggingParameters = {}): ITaskDraggingModule => ({
+export const createTaskDraggingModule = (): ITaskDraggingModule => ({
     name: 'dragging',
-    onLoad: datasetControl => new TaskDragging(datasetControl.modules.get('taskRuntime'), parameters),
+    onLoad: datasetControl => new TaskDragging(datasetControl.modules.get('taskRuntime')),
 });

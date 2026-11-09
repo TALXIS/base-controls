@@ -194,7 +194,10 @@ const GridExample = () => {
         setStatus(product.getFormattedValue('name') + ' is discontinued.')
     }
 
-    const addCommands: IGridColumnCellContext['commandsHook'] = (result, { record }) => {
+    const addCommands: GridCellCommandsHook = (result, { record, columnName }) => {
+        if (columnName !== 'actions') {
+            return
+        }
         if (isLowStock(record) && !isDiscontinued(record)) {
             result.items.push({ key: 'reorder', text: 'Reorder', iconOnly: true, iconProps: { iconName: 'ShoppingCart' }, onClick: () => reorder(record) })
         }
@@ -207,8 +210,9 @@ const GridExample = () => {
     const onSetup = (grid: IGrid) => {
         gridRef.current = grid
         grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-            columnDefs.push({ colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96, context: { cell: { commandsHook: addCommands } } })
+            columnDefs.push({ colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96 })
         })
+        grid.services.get('cells').hooks.commands.add(addCommands)
     }
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
@@ -244,32 +248,36 @@ const GridExample = () => {
         provider.refresh()
     }
 
-    const header: IGridColumnHeaderContext = {
-        adornmentsHook: adornments => {
-            const lowStock = provider.getRecords().filter(isLowStock).length
-            if (lowStock > 0) {
-                adornments.push({ key: 'lowStock', placement: 'suffix', title: lowStock + ' below reorder level', onRender: () => <span className={styles.badge}>{lowStock}</span> })
-            }
-        },
-        menuSectionsHook: sections => {
-            sections.push({
-                key: 'quickFilters',
-                title: 'Quick filters',
-                items: [
-                    ...QUICK_FILTERS.map(filter => ({ key: filter.key, text: filter.text, iconProps: { iconName: filter.iconName }, canCheck: true, checked: activeFilter.current === filter.key, onClick: () => applyQuickFilter(filter.key) })),
-                    { key: 'showAll', text: 'Show all products', iconProps: { iconName: 'ClearFilter' }, disabled: !activeFilter.current, onClick: () => applyQuickFilter() },
-                ],
-            })
-        },
+    const addBadge: GridColumnHeaderAdornmentsHook = (adornments, header) => {
+        if (header.getColDef().colId !== 'instock') {
+            return
+        }
+        const lowStock = provider.getRecords().filter(isLowStock).length
+        if (lowStock > 0) {
+            adornments.push({ key: 'lowStock', placement: 'suffix', title: lowStock + ' below reorder level', onRender: () => <span className={styles.badge}>{lowStock}</span> })
+        }
+    }
+
+    const addQuickFilters: GridColumnMenuSectionsHook = (sections, header) => {
+        if (header.getColDef().colId !== 'instock') {
+            return
+        }
+        sections.push({
+            key: 'quickFilters',
+            title: 'Quick filters',
+            items: [
+                ...QUICK_FILTERS.map(filter => ({ key: filter.key, text: filter.text, iconProps: { iconName: filter.iconName }, canCheck: true, checked: activeFilter.current === filter.key, onClick: () => applyQuickFilter(filter.key) })),
+                { key: 'showAll', text: 'Show all products', iconProps: { iconName: 'ClearFilter' }, disabled: !activeFilter.current, onClick: () => applyQuickFilter() },
+            ],
+        })
     }
 
     const onSetup = (grid: IGrid) => {
-        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-            const inStock = columnDefs.find(colDef => colDef.colId === 'instock')!
-            inStock.context = { ...inStock.context, header: { ...inStock.context?.header, ...header } }
-        })
+        const headers = grid.services.get('columns').headers
+        headers.hooks.adornments.add(addBadge)
+        headers.hooks.menuSections.add(addQuickFilters)
         //a header does not watch the values of the records
-        grid.services.observe('gridApi', () => provider.addEventListener('onRecordColumnValueChanged', () => grid.services.get('columns').headers.render()))
+        grid.services.observe('gridApi', () => provider.addEventListener('onRecordColumnValueChanged', () => headers.render()))
     }
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>

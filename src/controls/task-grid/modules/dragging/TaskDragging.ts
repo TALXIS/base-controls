@@ -2,7 +2,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { GridApi, IRowDragItem, IRowNode, IsRowValidDropPositionParams, IsRowValidDropPositionResult, RowDragEndEvent, RowDragEnterEvent } from "ag-grid-community";
 import { ITheme } from "@fluentui/react";
 import type { IGrid, IGridAgGridInitialOptions, IGridAgGridOptions, IGridEditedCell, IGridStyles } from "@controls/grid";
-import type { ITaskDataProvider, ITaskMoveParameters, ITaskMovePosition } from "../../runtime/provider";
+import type { ITaskDataProvider, ITaskMovePosition } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
@@ -33,11 +33,6 @@ interface IGap {
     next?: IRowNode<IRecord>;
 }
 
-export interface ITaskDraggingParameters {
-    /** Called after a dragged task is moved. */
-    onTaskMoved?(parameters: ITaskMoveParameters): void;
-}
-
 /** The `dragging` module, moving a task by dragging its row. */
 export interface ITaskDragging { }
 
@@ -45,7 +40,6 @@ export interface ITaskDragging { }
 export class TaskDragging implements ITaskDragging {
     private _grid!: IGrid<ITaskGridServiceMap>;
     private _taskRuntime: ITaskRuntime;
-    private _parameters: ITaskDraggingParameters;
     private _isEditing = false;
     private _dragStart?: IDragStart;
     private _dropInto?: IRowNode<IRecord>;
@@ -57,9 +51,8 @@ export class TaskDragging implements ITaskDragging {
     private _isAnimating = false;
     private _animationTimer?: number;
 
-    constructor(taskRuntime: ITaskRuntime, parameters: ITaskDraggingParameters) {
+    constructor(taskRuntime: ITaskRuntime) {
         this._taskRuntime = taskRuntime;
-        this._parameters = parameters;
         taskRuntime.services.observe('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
     }
@@ -284,12 +277,8 @@ export class TaskDragging implements ITaskDragging {
     };
 
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
-        const offTaskMoved = provider.taskEvents.addEventListener('onTaskMoved', this._onTaskMoved);
-        const offBeforeNewDataLoaded = provider.addEventListener('onBeforeNewDataLoaded', this._onBeforeNewDataLoaded);
-        return () => { offTaskMoved(); offBeforeNewDataLoaded(); };
+        return provider.addEventListener('onBeforeNewDataLoaded', this._onBeforeNewDataLoaded);
     };
-
-    private _onTaskMoved = (parameters: ITaskMoveParameters): void => this._parameters.onTaskMoved?.(parameters);
 
     private _clearTimers = (): void => {
         window.clearTimeout(this._dropIntoTimer);

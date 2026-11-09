@@ -42,7 +42,6 @@ export interface IGridEditingEvents {
 export interface IGridEditingParameters {
     services: IGridServiceRegistry;
     enableAutoSave?: boolean;
-    onEditedCellChanged?: IGridEditingEvents['onEditedCellChanged'];
 }
 
 /** Which cell the user is editing and the keys that start and end it. */
@@ -81,9 +80,6 @@ export class GridEditing implements IGridEditing {
         this._services = parameters.services;
         this._isAutoSaveEnabled = !!parameters.enableAutoSave;
         this.locks = new GridLocks({ services: this._services });
-        if (parameters.onEditedCellChanged) {
-            this.events.addEventListener('onEditedCellChanged', parameters.onEditedCellChanged);
-        }
         this._addHooks();
         this._services.observe('keyboard', keyboard => {
             keyboard.onKeyDown(event => this._onKeyDown(event));
