@@ -1,5 +1,5 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { ColDef, GridApi } from "ag-grid-community";
+import { ColDef, GridApi, IRowNode } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
 import { GridCellCommandsHook, GridCellLoadingHook, GridLockHook, GridSelectionStateHook, GridOpenRecordHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
@@ -105,6 +105,10 @@ export class TaskTree implements ITaskGridTree {
 
     public revealTask(taskId: string): void {
         this._revealTask(taskId, REVEAL_TASK_ATTEMPTS);
+    }
+
+    public editTaskSubject(taskId: string): void {
+        this._revealTask(taskId, REVEAL_TASK_ATTEMPTS, node => this._gridApi?.startEditingCell({ rowIndex: node.rowIndex!, colKey: this._provider.getFieldMapping().subject }));
     }
 
     private get _gridApi(): GridApi<IRecord> | undefined {
@@ -308,7 +312,7 @@ export class TaskTree implements ITaskGridTree {
     };
 
     //AG Grid draws a new row in a later frame
-    private _revealTask(recordId: string, attemptsLeft: number): void {
+    private _revealTask(recordId: string, attemptsLeft: number, onRevealed?: (node: IRowNode<IRecord>) => void): void {
         const gridApi = this._gridApi;
         if (!gridApi || gridApi.isDestroyed()) {
             return;
@@ -316,9 +320,10 @@ export class TaskTree implements ITaskGridTree {
         const node = gridApi.getRowNode(recordId);
         if (node?.rowIndex != null) {
             gridApi.ensureNodeVisible(node);
+            onRevealed?.(node);
         }
         else if (attemptsLeft > 1) {
-            requestAnimationFrame(() => this._revealTask(recordId, attemptsLeft - 1));
+            requestAnimationFrame(() => this._revealTask(recordId, attemptsLeft - 1, onRevealed));
         }
     }
 

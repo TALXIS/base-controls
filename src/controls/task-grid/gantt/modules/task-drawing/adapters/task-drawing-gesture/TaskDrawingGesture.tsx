@@ -15,8 +15,14 @@ export interface ITaskDrawingGestureProps {
 
 interface IActiveDrag extends ITimelineCreateTarget {
     anchorX: number;
+    anchorClientX: number;
     clientX: number;
+    /** Draws the dates of the row's own task rather than a new one. */
+    isDrawingDates: boolean;
 }
+
+//a click on a dateless row is not a drag that dates it
+const MIN_DRAG_DISTANCE = 4;
 
 interface IPointer {
     clientX: number;
@@ -24,7 +30,7 @@ interface IPointer {
     target: EventTarget | null;
 }
 
-/** Listens for Ctrl and Ctrl+drag over the chart and draws the preview of the task. */
+/** Listens for the drags that draw a task or its dates, and draws the preview. */
 export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
     const { chart, dragging } = props;
     const gantt = useGantt();
@@ -73,6 +79,11 @@ export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
         setPreview(undefined);
     };
 
+    const isDateTarget = (target: EventTarget | null) => {
+        const rowTaskId = getCreateTarget(chart, target)?.rowTaskId;
+        return !!rowTaskId && taskDrawing.canDrawDates(rowTaskId);
+    };
+
     const stopDrawing = () => {
         activeDragRef.current = undefined;
         autoScroll.stop();
@@ -94,15 +105,16 @@ export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
             }
         },
         onMouseDown: (event: MouseEvent) => {
-            const target = event.ctrlKey && event.button === 0 && taskDrawing.isEnabled() ? getCreateTarget(chart, event.target) : undefined;
-            if (!target) {
+            const target = event.button === 0 ? getCreateTarget(chart, event.target) : undefined;
+            const isDrawingDates = !event.ctrlKey && isDateTarget(event.target);
+            if (!target || !(isDrawingDates || (event.ctrlKey && taskDrawing.isEnabled()))) {
                 return;
             }
             //the chart would otherwise start dragging the bar underneath
             event.preventDefault();
             event.stopImmediatePropagation();
             setArmed(true);
-            activeDragRef.current = { ...target, anchorX: timeline.getTimelineX(event.clientX), clientX: event.clientX };
+            activeDragRef.current = { ...target, anchorX: timeline.getTimelineX(event.clientX), anchorClientX: event.clientX, clientX: event.clientX, isDrawingDates };
             updatePreview();
         },
         onMouseMove: (event: MouseEvent) => {
@@ -110,10 +122,14 @@ export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
             const activeDrag = activeDragRef.current;
             if (!activeDrag && !event.ctrlKey) {
                 stopDrawing();
+                if (isDateTarget(event.target)) {
+                    updatePreview();
+                }
                 return;
             }
             if (activeDrag) {
-                Object.assign(activeDrag, getCreateTarget(chart, event.target), { clientX: event.clientX });
+                //dates are drawn on the row the drag began on
+                Object.assign(activeDrag, activeDrag.isDrawingDates ? {} : getCreateTarget(chart, event.target), { clientX: event.clientX });
                 autoScroll.sync(event.clientX);
             }
             updatePreview();
@@ -124,7 +140,12 @@ export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
             if (!activeDrag) {
                 return;
             }
-            if (activeDrag.rowTaskId) {
+            if (activeDrag.isDrawingDates) {
+                if (activeDrag.rowTaskId && Math.abs(activeDrag.clientX - activeDrag.anchorClientX) >= MIN_DRAG_DISTANCE) {
+                    taskDrawing.drawDates(activeDrag.rowTaskId, getSpan(activeDrag));
+                }
+            }
+            else if (activeDrag.rowTaskId) {
                 taskDrawing.create(activeDrag.rowTaskId, getSpan(activeDrag));
             }
             stopDrawing();
