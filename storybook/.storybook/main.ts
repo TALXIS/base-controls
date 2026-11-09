@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 
 const storybookDir = path.dirname(fileURLToPath(import.meta.url));
 const githubPagesBasePath = '/base-controls/';
-const clientLibrariesDir = fs.realpathSync(path.resolve(storybookDir, '../../node_modules/@talxis/client-libraries'));
 const isLocalDevelopment = process.env.NODE_ENV !== 'production';
 
 //the library's own `@name` aliases, read from its tsconfig so the two never drift apart
@@ -77,10 +76,6 @@ const config: StorybookConfig = {
     config.resolve.alias = [
       ...(Array.isArray(config.resolve.alias) ? config.resolve.alias : []),
       {
-        find: /^@talxis\/client-libraries$/,
-        replacement: path.join(clientLibrariesDir, 'src/index.ts'),
-      },
-      {
         find: /^@talxis\/base-controls$/,
         replacement: path.resolve(storybookDir, '../../src/index.ts'),
       },
@@ -112,7 +107,6 @@ const config: StorybookConfig = {
     config.server.fs.allow = [
       ...(config.server.fs.allow ?? []),
       path.resolve(storybookDir, '../..'),
-      clientLibrariesDir,
     ];
     // prevents infinite or excessive watch recursion without breaking local source resolution.
     config.server.watch ??= {};
