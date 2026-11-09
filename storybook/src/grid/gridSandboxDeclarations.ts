@@ -947,7 +947,7 @@ interface ITintColors {
 }
 
 /** A hue as a surface that sits right in the theme it lands in, light or dark. */
-declare function getTintColors(hue: string, surface: { background: string; text: string }, strength?: ITintStrength): ITintColors;
+declare function getTintColors(hue: string, theme: ITheme, strength?: ITintStrength): ITintColors;
 
 type IThemeProviderProps = React.HTMLAttributes<HTMLDivElement> & {
     /** The theme above, or the default theme, where left out. */
@@ -987,17 +987,12 @@ interface IUseThemeBuilderParameters {
 /** A builder starting from a theme, three colours or a Fluent v9 theme; Fluent's defaults where left out. */
 declare function createThemeBuilder(source?: IThemeBuilderSource): ThemeBuilder;
 
-/** The nearest shade of the background's hue at 7:1 contrast, or black or white. */
+/** White or black text for a fill you cannot change, white wherever it reaches 4.5:1. */
 declare function getTextColorForBackground(backgroundColor: string): string;
-
-/** The WCAG contrast ratio between two colours, from 1 to 21. */
-declare function getColorContrast(color: string, otherColor: string): number;
 
 /** color mixed into base: a weight of 0 is base, 1 is color. */
 declare function mixColors(color: string, base: string, weight: number): string;
 
-/** Whether dark text reads better on the colour than light text. */
-declare function isLightColor(color: string): boolean;
 
 type IAlignment = 'left' | 'center' | 'right';
 

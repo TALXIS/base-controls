@@ -34,7 +34,7 @@ const DERIVED_GANTT_VARIABLES = {
     '--dhx-gantt-container-color': 'var(--dhx-gantt-base-colors-text-base)',
     '--dhx-gantt-offtime-background': 'var(--dhx-gantt-base-colors-background-alt)',
     '--dhx-gantt-scale-background': 'var(--dhx-gantt-container-background)',
-    '--dhx-gantt-scale-color': 'var(--dhx-gantt-base-colors-text-light)',
+    '--dhx-gantt-scale-color': 'var(--dhx-gantt-base-colors-text-base)',
     '--dhx-gantt-grid-scale-background': 'var(--dhx-gantt-scale-background)',
     '--dhx-gantt-grid-scale-color': 'var(--dhx-gantt-scale-color)',
     '--dhx-gantt-grid-scale-border-vertical': 'var(--dhx-gantt-scale-border-vertical)',

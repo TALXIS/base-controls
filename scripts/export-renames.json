@@ -47,6 +47,8 @@
     ". IIsolatedComponentOptions": "IIsolatedComponentParameters",
     ". ILicenseModuleOptions": "ILicenseModuleParameters",
     ". IOnXrmFormReadyParams": "IOnXrmFormReadyParameters",
+    ". getColorContrast": null,
+    ". isLightColor": null,
     ". IRowSelectionModuleOptions": "IRowSelectionModuleParameters",
     ". ISortingModuleOptions": "ISortingModuleParameters",
     ". ITaskCreateParams": "ITaskCreateParameters",

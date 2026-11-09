@@ -7,7 +7,7 @@ const MAX_HEIGHT = 22;
 const VERTICAL_PADDING = 2;
 
 export const getOptionTagStyles = (theme: ITheme, color: string) => {
-    const tag = getTintColors(color, { background: theme.semanticColors.bodyBackground, text: theme.semanticColors.bodyText });
+    const tag = getTintColors(color, theme);
     return mergeStyleSets({
         optionTag: {
             display: 'flex',

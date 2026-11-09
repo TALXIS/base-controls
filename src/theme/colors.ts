@@ -1,13 +1,12 @@
-import { getColorFromRGBA, getColorFromString, getContrastRatio, hsl2rgb, IColor } from '@fluentui/react';
-import { IThemeColors } from './interfaces';
+import { getColorFromRGBA, getColorFromString, getContrastRatio, hsl2rgb, IColor, ISemanticColors } from '@fluentui/react';
 
 const BLACK = '#000000';
 const WHITE = '#ffffff';
-//WCAG AAA: AA's 4.5:1 reads washed out, such as mid grey on white
-const TEXT_CONTRAST = 7;
+//WCAG AA, the least any text on a fill may reach
+const TEXT_CONTRAST = 4.5;
+//a tint's own hue in its text reads washed out at AA, such as mid grey on white
+const TINTED_TEXT_CONTRAST = 7;
 const LIGHTNESS_STEP = 2;
-//WCAG AA, the least a tint's own text may reach
-const TINT_TEXT_CONTRAST = 4.5;
 //the least of the hue a solid fill keeps under white text; a lighter hue takes black text
 const SOLID_MIN_WEIGHT = 0.75;
 
@@ -27,8 +26,8 @@ const TINT_WEIGHTS = {
     },
 };
 
-//finding a text colour takes dozens of contrast checks, and a grid asks once per cell
-const textColors = new Map<string, string>();
+//finding a tinted text colour takes dozens of contrast checks, and a grid asks once per cell
+const tintedTextColors = new Map<string, string>();
 //Fluent reads a named colour by adding an element to the page and asking for its computed style
 const parsedColors = new Map<string, IColor>();
 
@@ -88,28 +87,33 @@ export const mixColors = (color: string, base: string, weight: number): string =
 };
 
 /**
- * A text colour that reads on the background: a shade of its own hue at a contrast of 7:1.
+ * The text colour for a fill you cannot change: white where it reaches WCAG AA, otherwise black.
  *
- * @returns The shade nearest to the background that reaches 7:1, or black or white where none of its hue does.
+ * @returns `#ffffff` or `#000000`; for a hue drawn on the theme, take the text of {@link getTintColors} instead.
  */
 export const getTextColorForBackground = (backgroundColor: string): string => {
-    let textColor = textColors.get(backgroundColor);
+    const whiteContrast = getColorContrast(WHITE, backgroundColor);
+    return whiteContrast >= TEXT_CONTRAST || whiteContrast > getColorContrast(BLACK, backgroundColor) ? WHITE : BLACK;
+};
+
+//a shade of the fill's own hue, stepped away from it until it reads
+const getTintedTextColor = (backgroundColor: string): string => {
+    let textColor = tintedTextColors.get(backgroundColor);
     if (textColor === undefined) {
-        textColor = findTextColor(backgroundColor);
-        textColors.set(backgroundColor, textColor);
+        textColor = findTintedTextColor(backgroundColor);
+        tintedTextColors.set(backgroundColor, textColor);
     }
     return textColor;
 };
 
-//steps the background's own lightness away from it, so the text keeps its hue
-const findTextColor = (backgroundColor: string): string => {
+const findTintedTextColor = (backgroundColor: string): string => {
     const isLight = isLightColor(backgroundColor);
     const { hue, saturation, lightness } = toHsl(parse(backgroundColor));
     const step = isLight ? -LIGHTNESS_STEP : LIGHTNESS_STEP;
     for (let candidateLightness = lightness + step; candidateLightness >= 0 && candidateLightness <= 100; candidateLightness += step) {
         const { r, g, b } = hsl2rgb(hue, saturation, candidateLightness);
         const candidate = toHex(r, g, b);
-        if (getColorContrast(candidate, backgroundColor) >= TEXT_CONTRAST) {
+        if (getColorContrast(candidate, backgroundColor) >= TINTED_TEXT_CONTRAST) {
             return candidate;
         }
     }
@@ -127,29 +131,29 @@ export interface ITintColors {
 }
 
 /**
- * A hue as a surface that sits right in the theme it lands in, light or dark.
+ * A hue drawn on a theme, light or dark: the one place to take a hue's background, border and text from.
  *
- * @param hue The colour meant, such as a status red; its weights are worked out from the surface.
- * @param surface The theme's colours the tint is drawn over.
+ * @param hue The colour meant, such as a status red.
+ * @param theme The theme it is drawn on; only its body background and text are read.
  */
-export const getTintColors = (hue: string, surface: Pick<IThemeColors, 'background' | 'text'>, strength: ITintStrength = 'subtle'): ITintColors => {
+export const getTintColors = (hue: string, theme: { semanticColors: Pick<ISemanticColors, 'bodyBackground' | 'bodyText'> }, strength: ITintStrength = 'subtle'): ITintColors => {
+    const surface = { background: theme.semanticColors.bodyBackground, text: theme.semanticColors.bodyText };
     const scheme = isLightColor(surface.background) ? 'light' : 'dark';
     if (strength === 'solid') {
         const weights = TINT_WEIGHTS.solid[scheme];
         const fill = mixColors(hue, surface.background, weights.background);
         let background = fill;
         //white reads better than black on a mid colour, so the fill darkens a little for it
-        for (let weight = 1; getColorContrast(WHITE, background) < TINT_TEXT_CONTRAST && weight >= SOLID_MIN_WEIGHT; weight -= 0.02) {
+        for (let weight = 1; getColorContrast(WHITE, background) < TEXT_CONTRAST && weight >= SOLID_MIN_WEIGHT; weight -= 0.02) {
             background = mixColors(fill, BLACK, weight);
         }
-        return getColorContrast(WHITE, background) >= TINT_TEXT_CONTRAST
-            ? { background, border: background, text: WHITE }
-            : { background: fill, border: fill, text: BLACK };
+        const solid = getColorContrast(WHITE, background) >= TEXT_CONTRAST ? background : fill;
+        return { background: solid, border: solid, text: getTextColorForBackground(solid) };
     }
     if (strength === 'strong') {
         const weights = TINT_WEIGHTS.strong[scheme];
         const background = mixColors(hue, surface.background, weights.background);
-        return { background, border: mixColors(hue, surface.background, weights.border), text: getTextColorForBackground(background) };
+        return { background, border: mixColors(hue, surface.background, weights.border), text: getTintedTextColor(background) };
     }
     const weights = TINT_WEIGHTS.subtle[scheme];
     const background = mixColors(hue, surface.background, weights.background);
@@ -157,6 +161,6 @@ export const getTintColors = (hue: string, surface: Pick<IThemeColors, 'backgrou
     return {
         background,
         border: mixColors(hue, surface.background, weights.border),
-        text: getColorContrast(text, background) >= TINT_TEXT_CONTRAST ? text : getTextColorForBackground(background),
+        text: getColorContrast(text, background) >= TEXT_CONTRAST ? text : getTintedTextColor(background),
     };
 };

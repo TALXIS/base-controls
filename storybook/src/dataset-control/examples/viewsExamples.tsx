@@ -136,7 +136,7 @@ const columns = [
 //the products in Fluent UI v9's DataGrid, sharing the provider's records and selection
 export const ProductDataGrid = () => {
     const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged'])
-    const isLight = isLightColor(useTheme().semanticColors.bodyBackground)
+    const isLight = !useTheme().isInverted
 
     return <FluentProvider theme={isLight ? webLightTheme : webDarkTheme} style={{ height: '100%', overflow: 'auto', background: 'transparent' }}>
         <DataGrid

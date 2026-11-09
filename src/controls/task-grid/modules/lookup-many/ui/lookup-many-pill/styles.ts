@@ -28,7 +28,7 @@ export const getLookupManyUiPillStyles = (theme: ITheme, color: string) => merge
         cursor: 'pointer',
         color: 'inherit',
         ':hover': {
-            backgroundColor: getTintColors(color, { background: theme.semanticColors.bodyBackground, text: theme.semanticColors.bodyText }).border,
+            backgroundColor: getTintColors(color, theme).border,
         },
     },
     removeIcon: {

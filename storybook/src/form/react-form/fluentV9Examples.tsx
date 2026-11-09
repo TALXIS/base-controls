@@ -55,7 +55,7 @@ import { SaveRegular, WarningRegular } from '@fluentui/react-icons'
 
 //v9 components need a FluentProvider, light or dark to match the Fluent v8 theme
 export const V9Provider = (props: { children: React.ReactNode }) => {
-    const isLight = isLightColor(useTheme().semanticColors.bodyBackground)
+    const isLight = !useTheme().isInverted
     return <FluentProvider theme={isLight ? webLightTheme : webDarkTheme} style={{ background: 'transparent' }}>
         {props.children}
     </FluentProvider>

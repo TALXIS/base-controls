@@ -313,7 +313,7 @@ const errorMessage: Partial<IErrorMessageBarComponents> = {
 
 //v9 copies the provider's class onto its popups, so the box is a div of its own
 const V9Container = (props: JSX.IntrinsicElements['div']) => {
-    const isLight = isLightColor(useTheme().semanticColors.bodyBackground)
+    const isLight = !useTheme().isInverted
     return <FluentProvider theme={isLight ? webLightTheme : webDarkTheme} style={{ display: 'contents' }}>
         <div {...props} />
     </FluentProvider>

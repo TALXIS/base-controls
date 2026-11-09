@@ -16,7 +16,7 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
 
     const isColorFeatureEnabled = getIsColorFeatureEnabled();
     const tag = isColorFeatureEnabled && selectedOptionColor
-        ? getTintColors(selectedOptionColor, { background: theme.semanticColors.bodyBackground, text: theme.semanticColors.bodyText })
+        ? getTintColors(selectedOptionColor, theme)
         : undefined;
 
     //a tag edits the surrounding theme

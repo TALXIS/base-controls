@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const BRAND_CODE = `import { AppThemeProvider, createClientSideRowModelModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, isLightColor, useTheme, useThemeBuilder } from '@talxis/base-controls'
+const BRAND_CODE = `import { AppThemeProvider, createClientSideRowModelModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, useTheme, useThemeBuilder } from '@talxis/base-controls'
 import { Dropdown, Label, Stack } from '@fluentui/react'
 
 const BRANDS = [
@@ -26,7 +26,7 @@ const loadCommands = async (): Promise<IRibbonCommand[]> => [
 const modules = [createClientSideRowModelModule(), createSortingModule()]
 
 const GridExample = () => {
-    const isLightPage = isLightColor(useTheme().semanticColors.bodyBackground)
+    const isLightPage = !useTheme().isInverted
     const [colors, setColors] = React.useState(BRANDS[isLightPage ? 0 : 1].colors)
     //a new theme whenever a colour changes
     const theme = useThemeBuilder({ colors })
@@ -69,8 +69,7 @@ const STAGES = [
 
 //one hue per stage, tinted for the theme the tag is drawn in
 const StageTag = (props: { name: string; hue: string; strength?: ITintStrength }) => {
-    const { semanticColors } = useTheme()
-    const colors = getTintColors(props.hue, { background: semanticColors.bodyBackground, text: semanticColors.bodyText }, props.strength)
+    const colors = getTintColors(props.hue, useTheme(), props.strength)
     return <span style={{ padding: '2px 8px', borderRadius: 4, background: colors.background, color: colors.text, border: \`1px solid \${colors.border}\` }}>
         {props.name}
     </span>

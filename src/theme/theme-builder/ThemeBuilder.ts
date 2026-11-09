@@ -82,7 +82,7 @@ export class ThemeBuilder {
 
     /** Tints the background and text by a hue, so they read in a light theme and a dark one; a solid tint's primary is its text. */
     public tint(hue: string, strength: ITintStrength = 'subtle'): void {
-        const { background, text } = getTintColors(hue, this._colors, strength);
+        const { background, text } = getTintColors(hue, { semanticColors: { bodyBackground: this._colors.background, bodyText: this._colors.text } }, strength);
         this._colors.background = background;
         this._colors.text = text;
         if (strength === 'solid') {

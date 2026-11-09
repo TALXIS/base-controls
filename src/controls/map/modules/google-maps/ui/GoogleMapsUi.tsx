@@ -1,7 +1,7 @@
 import { ReactNode, useMemo } from 'react';
 import { ColorScheme } from '@vis.gl/react-google-maps';
 import { getClassNames } from '@core';
-import { isLightColor, useTheme } from '@theme';
+import { useTheme } from '@theme';
 import type { IMapPoint } from '../../../interfaces';
 import { GoogleMapsUiComponents, IGoogleMapsUiComponents } from './components';
 import { getGoogleMapsUiStyles } from './styles';
@@ -30,7 +30,7 @@ export const GoogleMapsUiRoot = (props: IGoogleMapsUiProps) => {
         defaultCenter: { lat: props.defaultCenter.latitude, lng: props.defaultCenter.longitude },
         defaultZoom: props.defaultZoom,
         mapId: props.mapId,
-        colorScheme: isLightColor(theme.semanticColors.bodyBackground) ? ColorScheme.LIGHT : ColorScheme.DARK,
+        colorScheme: theme.isInverted ? ColorScheme.DARK : ColorScheme.LIGHT,
         disableDefaultUI: true,
         children: props.children,
     });
