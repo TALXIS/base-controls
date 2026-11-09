@@ -53,9 +53,14 @@ every claim against `src/` before you write it.
   shell command.
 - Use the smallest example that makes the point. Explain it with one-line comments inside its code, not
   with prose around it.
+- No fluff: an example holds only what concerns its control and the point of its page. Cut pickers,
+  switchers and toggles for anything the page is not about (the map library picker belongs only on Map ›
+  Map libraries; elsewhere draw a `LeafletMap`), logs and counters the caption does not use, data, columns
+  and files the example does not show, single-use helpers, `useMemo` around props read at mount, and props
+  that restate a default. A module page loads only its modules and what they need.
 - Imports only from `@talxis/base-controls`, `@talxis/client-libraries`, `@fluentui/react` (v9 examples:
-  `@fluentui/react-components`, `@fluentui/react-icons`) and the example's own files. Import lines go at the
-  top of the example's code.
+  `@fluentui/react-components`, `@fluentui/react-icons`) and the example's own files. `TaskGantt` and the
+  Gantt modules come from `@talxis/base-controls/gantt`. Import lines go at the top of the example's code.
 - Code that cannot run on the page (PCF lifecycle classes, Dataverse config, `declare module` augmentation)
   becomes an extra editor file the entry never imports.
 - async/await, never `.then`.
@@ -71,11 +76,11 @@ Each fact lives on one page; every other page links to it.
 | Fact | Owner |
 |---|---|
 | Root providers | Concepts › Quick start |
-| The runtime: one per mount, `onMounted`, `runtime.lifecycle` (status, error, events, `remount()`), writing a runtime with `RuntimeLifecycle` | Controls › RuntimeHost |
+| The runtime: one per mount, `onSetup`, `runtime.lifecycle` (status, error, events, `remount()`), writing a runtime with `RuntimeLifecycle` | Controls › RuntimeHost |
 | How pieces and slots work | Concepts › Pieces and slots |
 | Provider behaviour | Concepts › Data providers |
 | Colours | Concepts › Theming |
-| The shared ribbon: commands, members, `registerCommands` | Controls › Ribbon |
+| The shared ribbon: commands, members, `hooks.commands` | Controls › Ribbon |
 | What DatasetControl adds to the ribbon | DatasetControl › Parts › Ribbon |
 | The unsaved-changes prompt | DatasetControl › Loading data |
 | Every DatasetControl slot | DatasetControl › Your own UI |
@@ -85,6 +90,8 @@ Each fact lives on one page; every other page links to it.
 | Labels and languages | Concepts › Localization |
 
 Building blocks only mentions the runtime; control pages keep what their runtime adds and link to RuntimeHost.
+Form does not run on the shared runtime: it gives its API through `onFormReady` and `useForm()`. Never say
+it uses RuntimeHost, modules or `RuntimeLifecycle`, and never add roadmap notes about it.
 
 ## Links and ids
 
@@ -98,8 +105,11 @@ Building blocks only mentions the runtime; control pages keep what their runtime
 
 - `record.getValue()` returns choice (OptionSet) and Yes/No (TwoOptions) values as strings: `'3'`, `'0'`,
   `'1'`. Compare with `Number(record.getValue('stage')) === 3`.
-- The Storybook typecheck has about 20 errors that predate any docs work (Leaflet types, the model and
-  FormXml builder panels, mock time zone). Judge only the files you touched.
+- `useGridModule()` throws when the module is not loaded; never write `useGridModule(...)?.`.
+- A memory task without a stateCode value counts as inactive, so give memory task records `statecode: 0`.
+- `destroyProviderOnUnmount` is a field of the `onLoad` result, not a DatasetControl prop.
+- The Storybook typecheck has 17 errors that predate any docs work (the model and FormXml builder panels,
+  `grid/dev` mocks, `TaskColumnValues.ts`). Judge only the files you touched.
 - When the sandbox typings lack something an example needs, add it to `gridSandboxDeclarations.ts` or
   `gridSandboxScope.ts`, minimally, re-reading the file right before each edit.
 
