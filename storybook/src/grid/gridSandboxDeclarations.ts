@@ -3375,6 +3375,18 @@ declare const NotificationMessageBarComponents: INotificationMessageBarComponent
 declare function createClientSideRowModelModule(): IGridModule;
 /** An AG Grid Enterprise module that reads a level at a time. */
 declare function createServerSideRowModelModule(): IGridModule;
+interface IClientSideGridProps extends Omit<IGridProps, 'modules'> {
+    /** Further modules, loaded with the row model; read once, at mount. */
+    modules?: IGridModule[];
+}
+/** A Grid that holds every row at once. */
+declare const ClientSideGrid: (props: IClientSideGridProps) => JSX.Element;
+interface IServerSideGridProps extends Omit<IGridProps, 'modules'> {
+    /** Further modules, loaded with the row model; read once, at mount. */
+    modules?: IGridModule[];
+}
+/** A Grid that reads a level at a time, through AG Grid Enterprise's server-side row model. */
+declare const ServerSideGrid: (props: IServerSideGridProps) => JSX.Element;
 /** Licenses AG Grid Enterprise. */
 declare function createLicenseModule(options: ILicenseModuleParameters): IGridModule;
 /** Lets rows be selected from a checkbox column. */

@@ -7,7 +7,6 @@ const PROVIDER_VIEWS_CODE = `import { loadDeals } from './views'
 
 const GridExample = () => {
     const modules = React.useMemo(() => [
-        createClientSideRowModelModule(),
         createEditingModule({ enableAutoSave: false }),
         createSortingModule(),
         createFilteringModule(),
@@ -24,7 +23,7 @@ const GridExample = () => {
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid stateKey='grid' modules={modules} />
+            <ClientSideGrid stateKey='grid' modules={modules} />
         </DatasetControl.Body>
     </DatasetControl>
 }
@@ -97,7 +96,7 @@ const PRODUCTS_BODY_FILE: IGridExampleFile = {
 import { ProductDataGrid } from './ProductDataGrid'
 import { ProductGallery } from './ProductGallery'
 
-const ProductGrid = () => <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' })]} />
+const ProductGrid = () => <ClientSideGrid stateKey='grid' modules={[createRowSelectionModule({ mode: 'multiple' })]} />
 
 const UIS: { [ui in ProductUi]: () => JSX.Element } = {
     grid: ProductGrid,

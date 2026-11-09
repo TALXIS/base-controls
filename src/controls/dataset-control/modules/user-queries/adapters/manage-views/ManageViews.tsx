@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import type { IDatasetControlLoadResult } from "../../../../runtime/DatasetControlRuntime";
-import { GridRoot as Grid } from "@controls/grid/Grid";
-import { createClientSideRowModelModule } from "@controls/grid/modules/row-model/client-side/createClientSideRowModelModule";
+import { ClientSideGrid } from "@controls/grid/client-side-grid/ClientSideGrid";
 import { createEditingModule } from "@controls/grid/modules/editing/createEditingModule";
 import { createFilteringModule } from "@controls/grid/modules/filtering/createFilteringModule";
 import { createRowSelectionModule } from "@controls/grid/modules/row-selection/createRowSelectionModule";
@@ -45,7 +44,6 @@ export const ManageViews = (props: IManageViewsProps) => {
     const userQueries = useDatasetControlModule('userQueries');
     const styles = useMemo(() => getManageViewsStyles(), []);
     const modules = useMemo(() => [
-        createClientSideRowModelModule(),
         createEditingModule(),
         createRowSelectionModule({ mode: 'multiple' }),
         createSortingModule(),
@@ -66,7 +64,7 @@ export const ManageViews = (props: IManageViewsProps) => {
             </Header.End>
         </Header>
         <Body components={body}>
-            <Grid modules={modules} components={props.components?.grid} />
+            <ClientSideGrid modules={modules} components={props.components?.grid} />
         </Body>
         <Footer components={footer}>
             <Footer.End>

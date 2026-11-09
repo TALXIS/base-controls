@@ -108,8 +108,7 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
+            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true })]}
                 enableOptionSetColors
                 onSetup={onSetup}
                 height='440px' />
@@ -152,9 +151,8 @@ const onSetup = (grid: IGrid) => {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
+        <ClientSideGrid
             modules={[
-                createClientSideRowModelModule(),
                 createSortingModule(),
             ]}
             onSetup={onSetup}
@@ -227,8 +225,7 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createSortingModule()]}
+            <ClientSideGrid modules={[createSortingModule()]}
                 onSetup={onSetup}
                 height='440px' />
         </DatasetControl.Body>
@@ -264,8 +261,7 @@ const GridExample = () => {
     return <LabelsProvider labels={LABELS}>
         <DatasetControl onLoad={async () => ({ provider: products })}>
             <DatasetControl.Body>
-                <Grid
-                    modules={[createClientSideRowModelModule()]}
+                <ClientSideGrid
                     components={COMPONENTS}
                     height='360px' />
             </DatasetControl.Body>
@@ -304,8 +300,7 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule()]}
+            <ClientSideGrid
                 components={COMPONENTS}
                 height='400px' />
         </DatasetControl.Body>
@@ -335,9 +330,8 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: products })}>
         <DatasetControl.Body>
-            <Grid
+            <ServerSideGrid
                 modules={[
-                    createServerSideRowModelModule(),
                     createGroupingModule(),
                 ]}
                 components={COMPONENTS}
@@ -375,9 +369,8 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: products })}>
         <DatasetControl.Body>
-            <Grid
+            <ServerSideGrid
                 modules={[
-                    createServerSideRowModelModule(),
                     createGroupingModule(),
                 ]}
                 components={COMPONENTS}
@@ -520,8 +513,7 @@ const onSetup = (grid: IGrid) => {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule()]}
+        <ClientSideGrid modules={[createEditingModule()]}
             onSetup={onSetup}
             height='520px' />
     </DatasetControl.Body>

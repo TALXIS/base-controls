@@ -37,7 +37,7 @@ const GridExample = () => <DatasetControl stateKey='yourOwnPieces' onLoad={loadD
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+        <ClientSideGrid stateKey='grid' />
     </DatasetControl.Body>
 </DatasetControl>
 `

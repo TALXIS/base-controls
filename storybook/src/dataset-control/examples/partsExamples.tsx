@@ -31,7 +31,7 @@ const GridExample = () => <DatasetControl stateKey='ribbonDeals' onLoad={async (
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
+        <ClientSideGrid stateKey='grid' modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -58,7 +58,7 @@ const GridExample = () => {
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+                <ClientSideGrid stateKey='grid' />
             </DatasetControl.Body>
         </DatasetControl>
         <Text>Typed: {draft}</Text>
@@ -92,7 +92,7 @@ const GridExample = () => <DatasetControl stateKey='editColumnsDeals' onLoad={lo
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+        <ClientSideGrid stateKey='grid' />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>
@@ -116,7 +116,7 @@ const GridExample = () => <DatasetControl stateKey='notificationsDeals' onLoad={
     </DatasetControl.Header>
     <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+        <ClientSideGrid stateKey='grid' />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -178,7 +178,7 @@ const GridExample = () => <DatasetControl stateKey='pagingDeals' onLoad={async (
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+        <ClientSideGrid stateKey='grid' />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>

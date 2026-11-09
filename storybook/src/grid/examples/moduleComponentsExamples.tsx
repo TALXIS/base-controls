@@ -31,9 +31,8 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>{starred.length ? starred.length + ' products starred for the next order.' : 'Star the products to order next.'}</MessageBar>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createRowSelectionModule({ mode: 'multiple' }),
                 ]}
                 onSetup={onSetup}
@@ -63,8 +62,7 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: products })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createSortingModule({ components: COMPONENTS })]}
+            <ClientSideGrid modules={[createSortingModule({ components: COMPONENTS })]}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -98,8 +96,7 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: products })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createFilteringModule({ components: COMPONENTS })]}
+            <ClientSideGrid modules={[createFilteringModule({ components: COMPONENTS })]}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -134,8 +131,7 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: products })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS })]}
+            <ClientSideGrid modules={[createGroupingModule({ defaultExpandedLevel: 0, components: COMPONENTS })]}
                 height='460px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -193,8 +189,7 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: products })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createAggregationModule({ components: COMPONENTS })]}
+            <ClientSideGrid modules={[createAggregationModule({ components: COMPONENTS })]}
                 onSetup={onSetup}
                 height='460px' />
         </DatasetControl.Body>

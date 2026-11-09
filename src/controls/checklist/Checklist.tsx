@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { createClientSideRowModelModule, createEditingModule, Grid, IGridProps, IGridModule, IGridModuleMap } from "@controls/grid";
+import { ClientSideGrid, createEditingModule, IGridProps, IGridModule, IGridModuleMap } from "@controls/grid";
 import { createChecklistModule, IChecklistFieldMapping } from "./modules/checklist";
 
 /** A checklist's grid module; the row model is always client-side and the checklist's own is added last. */
@@ -16,10 +16,9 @@ export interface IChecklistProps extends Omit<IGridProps, 'modules'> {
 export const ChecklistRoot = (props: IChecklistProps) => {
     const { fieldMapping, modules: _, ...gridProps } = props;
     const modules = useMemo((): IGridModule[] => [
-        createClientSideRowModelModule(),
         ...props.modules ?? [createEditingModule({ enableAutoSave: true })],
         createChecklistModule({ fieldMapping }),
     ], []);
 
-    return <Grid enableZebra={false} enableOptionSetColors={true} {...gridProps} modules={modules} />;
+    return <ClientSideGrid enableZebra={false} enableOptionSetColors={true} {...gridProps} modules={modules} />;
 };

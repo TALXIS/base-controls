@@ -20,8 +20,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
+            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true })]}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -49,8 +48,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         {message && <MessageBar onDismiss={() => setMessage('')}>{message}</MessageBar>}
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule()]}
+            <ClientSideGrid modules={[createEditingModule()]}
                 height='400px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -96,8 +94,7 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
+            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true })]}
                 onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
@@ -144,9 +141,8 @@ const GridExample = () => {
                 </DatasetControl.Header.Start>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <Grid
-                    key={isWeekClosed ? 'closed' : 'open'}
-                    modules={[createClientSideRowModelModule(), ...(isWeekClosed ? [] : [createEditingModule({ enableAutoSave: true })])]}
+                <ClientSideGrid
+                    key={isWeekClosed ? 'closed' : 'open'} modules={[...(isWeekClosed ? [] : [createEditingModule({ enableAutoSave: true })])]}
                     onSetup={onSetup}
                     height='440px' />
             </DatasetControl.Body>
@@ -187,8 +183,7 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
+            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true })]}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -217,8 +212,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>To invoice for last week: {amountToInvoice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</MessageBar>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
+            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true })]}
                 onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
@@ -271,8 +265,7 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: products })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
+            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true })]}
                 onSetup={onSetup}
                 height='440px' />
         </DatasetControl.Body>

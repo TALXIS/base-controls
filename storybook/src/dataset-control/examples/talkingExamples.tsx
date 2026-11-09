@@ -34,7 +34,7 @@ const GridExample = () => <DatasetControl stateKey='talkingDrive' onLoad={loadDe
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+        <ClientSideGrid stateKey='grid' />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>
@@ -82,7 +82,7 @@ const GridExample = () => {
                 </DatasetControl.Header.Start>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+                <ClientSideGrid stateKey='grid' />
             </DatasetControl.Body>
         </DatasetControl>
         <div className={styles.log}>
@@ -122,7 +122,7 @@ const GridExample = () => <DatasetControl modules={[closingSoonModule]} stateKey
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+        <ClientSideGrid stateKey='grid' />
     </DatasetControl.Body>
 </DatasetControl>
 `

@@ -16,9 +16,8 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: deals })}>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createSortingModule(),
                     createGroupingModule({ defaultExpandedLevel: 0 }),
                     createAggregationModule(),
@@ -63,10 +62,9 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 key={type}
                 modules={[
-                    createClientSideRowModelModule(),
                     createGroupingModule({ type, defaultExpandedLevel: 0 }),
                     createAggregationModule(),
                 ]}
@@ -89,9 +87,8 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: deals })}>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createSortingModule(),
                     createFilteringModule(),
                     createAggregationModule(),
@@ -135,9 +132,8 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createGroupingModule(),
                     createAggregationModule(),
                 ]}
@@ -198,9 +194,8 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createEditingModule({ enableAutoSave: true }),
                     createGroupingModule({ defaultExpandedLevel: 0 }),
                     createAggregationModule(),

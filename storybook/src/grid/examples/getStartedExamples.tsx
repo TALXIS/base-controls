@@ -18,10 +18,9 @@ export const GridExample = (props: IGridExampleProps) => {
     return <FeatureFrame {...frame}>
         <DatasetControl onLoad={async () => ({ provider: deals })}>
             <DatasetControl.Body>
-                <Grid
+                <ClientSideGrid
                     //modules are read once, at mount
-                    key={JSON.stringify(props.features)}
-                    modules={[createClientSideRowModelModule(), ...modules ?? []]}
+                    key={JSON.stringify(props.features)} modules={[...modules ?? []]}
                     {...featureProps}
                     height='520px' />
             </DatasetControl.Body>
@@ -698,7 +697,7 @@ const createProducts = () => new MemoryDataProvider({
 //the grid shows the provider of the DatasetControl around it
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: createProducts() })}>
     <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule()]} />
+        <ClientSideGrid />
     </DatasetControl.Body>
 </DatasetControl>
 `

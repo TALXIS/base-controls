@@ -61,8 +61,7 @@ const unsavedChangesModule: IGridModule = {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule(), unsavedChangesModule]}
+        <ClientSideGrid modules={[createEditingModule(), unsavedChangesModule]}
             maxVisibleRows={9} />
     </DatasetControl.Body>
 </DatasetControl>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { DefaultButton } from '@fluentui/react'
 import {
-    createClientSideRowModelModule, createRowSelectionModule, DatasetControl, Grid, IRibbonCommand, PcfContextProvider,
+    ClientSideGrid, createRowSelectionModule, DatasetControl, IRibbonCommand, PcfContextProvider,
 } from '@talxis/base-controls'
 import { loadDeals } from '../dealViews'
 
@@ -24,7 +24,7 @@ const loadCommands = async () => COMMANDS
 
 /** DatasetControl with every part switched on or off, to check the layout of each combination. */
 export const LayoutDatasetControl = (props: ILayoutDatasetControlProps) => {
-    const modules = React.useMemo(() => [createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' })], [])
+    const modules = React.useMemo(() => [createRowSelectionModule({ mode: 'multiple' })], [])
     const ribbon = <DatasetControl.Ribbon onLoad={loadCommands} />
     const start = [props.viewSwitcher && <DatasetControl.ViewSwitcher key='viewSwitcher' />, props.ribbon === 'start' && React.cloneElement(ribbon, { key: 'ribbon' })].filter(Boolean)
     const footerIn = (region: 'start' | 'end') => [props.pagination === region && <DatasetControl.Pagination key='pagination' />, props.pageSizeSwitcher === region && <DatasetControl.PageSizeSwitcher key='pageSizeSwitcher' />].filter(Boolean)
@@ -40,7 +40,7 @@ export const LayoutDatasetControl = (props: ILayoutDatasetControlProps) => {
                     {end.length > 0 && <DatasetControl.Header.End>{end}</DatasetControl.Header.End>}
                 </DatasetControl.Header>}
                 <DatasetControl.Body>
-                    <Grid stateKey='grid' modules={modules} />
+                    <ClientSideGrid stateKey='grid' modules={modules} />
                 </DatasetControl.Body>
                 {(footerStart.length > 0 || footerEnd.length > 0) && <DatasetControl.Footer>
                     {footerStart.length > 0 && <DatasetControl.Footer.Start>{footerStart}</DatasetControl.Footer.Start>}

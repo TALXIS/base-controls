@@ -10,12 +10,11 @@ import { OwnerLeaderboard } from './OwnerLeaderboard'
 
 const DealGrid = () => {
     const modules = React.useMemo(() => [
-        createClientSideRowModelModule(),
         createRowSelectionModule({ mode: 'multiple' }),
         createSortingModule(),
         createFilteringModule(),
     ], [])
-    return <Grid stateKey='grid' modules={modules} />
+    return <ClientSideGrid stateKey='grid' modules={modules} />
 }
 
 const LAYOUTS: { [layout in DealLayout]: () => JSX.Element } = {

@@ -1,7 +1,7 @@
 import * as Babel from '@babel/standalone'
 import React from 'react'
 import type { IDataProvider } from '@talxis/client-libraries'
-import { Checklist as ChecklistBase, DatasetControl, Grid, IChecklistProps, IsolatedFrameScript, IDatasetControlProps, IGridProps, ITaskGridProps, TaskGrid as TaskGridBase, useDataProvider } from '@talxis/base-controls'
+import { Checklist as ChecklistBase, ClientSideGrid, DatasetControl, Grid, IChecklistProps, IClientSideGridProps, IServerSideGridProps, ServerSideGrid, IsolatedFrameScript, IDatasetControlProps, IGridProps, ITaskGridProps, TaskGrid as TaskGridBase, useDataProvider } from '@talxis/base-controls'
 import { GRID_SANDBOX_IMPORT_ONLY, GRID_SANDBOX_PACKAGES, GRID_SANDBOX_SCOPE } from './gridSandboxScope'
 import { createDealsProvider } from './data'
 import { createSandboxFrameScripts } from '../isolated-frame/sandboxFrame'
@@ -10,7 +10,7 @@ const SCOPE_NAMES = [...Object.keys(GRID_SANDBOX_SCOPE), 'provider', 'SANDBOX_FR
 
 type ISandboxScope = typeof GRID_SANDBOX_SCOPE
 
-//the snippet's own Grid, Checklist or TaskGrid tells the runner which provider it draws
+//the snippet's own grid, Checklist or TaskGrid tells the runner which provider it draws
 const createScope = (onProviderRendered: (provider: IDataProvider) => void): ISandboxScope => {
     const useReportProvider = () => {
         const provider = useDataProvider()
@@ -19,6 +19,14 @@ const createScope = (onProviderRendered: (provider: IDataProvider) => void): ISa
     const ReportingGrid = (props: IGridProps) => {
         useReportProvider()
         return <Grid {...props} />
+    }
+    const ReportingClientSideGrid = (props: IClientSideGridProps) => {
+        useReportProvider()
+        return <ClientSideGrid {...props} />
+    }
+    const ReportingServerSideGrid = (props: IServerSideGridProps) => {
+        useReportProvider()
+        return <ServerSideGrid {...props} />
     }
     const ReportingChecklist = (props: IChecklistProps) => {
         useReportProvider()
@@ -33,6 +41,8 @@ const createScope = (onProviderRendered: (provider: IDataProvider) => void): ISa
     return {
         ...GRID_SANDBOX_SCOPE,
         Grid: Object.assign(ReportingGrid, { Cell: Grid.Cell, ColumnHeader: Grid.ColumnHeader, Overlay: Grid.Overlay, Row: Grid.Row }),
+        ClientSideGrid: ReportingClientSideGrid,
+        ServerSideGrid: ReportingServerSideGrid,
         DatasetControl: Object.assign(SandboxDatasetControl, DatasetControl),
         Checklist: Object.assign(ReportingChecklist, ChecklistBase),
         TaskGrid: Object.assign(ReportingTaskGrid, TaskGridBase),

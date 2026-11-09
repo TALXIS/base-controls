@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../grid/GridExampleRunner'
 
-export const SHARED_PROVIDER_CODE = `import { createClientSideRowModelModule, createEditingModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, useDataProviderEvents, usePcfContext } from '@talxis/base-controls'
+export const SHARED_PROVIDER_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, createSortingModule, DatasetControl, useDataProviderEvents, usePcfContext } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 import { DefaultButton, PrimaryButton, Stack, Text } from '@fluentui/react'
 
@@ -52,9 +52,8 @@ const GridExample = () => {
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createRowSelectionModule({ mode: 'multiple' }),
                     createEditingModule(),
                     createSortingModule(),
@@ -69,7 +68,7 @@ const GridExample = () => {
 }
 `
 
-export const STEER_FROM_CODE_CODE = `import { createClientSideRowModelModule, createSortingModule, DatasetControl, Grid } from '@talxis/base-controls'
+export const STEER_FROM_CODE_CODE = `import { ClientSideGrid, createSortingModule, DatasetControl } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider, Operators, Type } from '@talxis/client-libraries'
 import { DefaultButton, Stack } from '@fluentui/react'
 
@@ -132,7 +131,7 @@ const GridExample = () => {
         </Stack>
         <DatasetControl onLoad={async () => ({ provider: tickets, destroyProviderOnUnmount: false })} height='340px'>
             <DatasetControl.Body>
-                <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} enableOptionSetColors />
+                <ClientSideGrid modules={[createSortingModule()]} enableOptionSetColors />
             </DatasetControl.Body>
             <DatasetControl.Footer>
                 <DatasetControl.Footer.End>
@@ -144,7 +143,7 @@ const GridExample = () => {
 }
 `
 
-const HAND_DOWN_CODE = `import { createClientSideRowModelModule, createRowSelectionModule, DataProviderScope, Grid, Spinner, useDataProviderEvents } from '@talxis/base-controls'
+const HAND_DOWN_CODE = `import { ClientSideGrid, createRowSelectionModule, DataProviderScope, Spinner, useDataProviderEvents } from '@talxis/base-controls'
 import { MessageBar, MessageBarType, SearchBox, Stack, Text } from '@fluentui/react'
 
 //draws again on each of these events
@@ -182,7 +181,7 @@ const GridExample = () => {
                 <SelectedCount />
                 <LoadStatus />
             </Stack>
-            <Grid modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' })]} height='360px' />
+            <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' })]} height='360px' />
         </Stack>
     </DataProviderScope>
 }
@@ -254,7 +253,7 @@ const GridExample = () => {
 }
 `
 
-const EVENTS_CODE = `import { createClientSideRowModelModule, createEditingModule, createRowSelectionModule, DatasetControl, Grid, ITheme, useTheme } from '@talxis/base-controls'
+const EVENTS_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, DatasetControl, ITheme, useTheme } from '@talxis/base-controls'
 import { DefaultButton, mergeStyleSets, Stack } from '@fluentui/react'
 
 const getStyles = (theme: ITheme) => mergeStyleSets({
@@ -288,7 +287,7 @@ const GridExample = () => {
         </Stack>
         <DatasetControl onLoad={async () => ({ provider: deals, destroyProviderOnUnmount: false })} height='300px'>
             <DatasetControl.Body>
-                <Grid modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
+                <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
             </DatasetControl.Body>
         </DatasetControl>
         <div className={styles.log}>
@@ -298,7 +297,7 @@ const GridExample = () => {
 }
 `
 
-const OWN_PROVIDER_CODE = `import { createClientSideRowModelModule, createEditingModule, DatasetControl, Grid, useDataProviderEvents } from '@talxis/base-controls'
+const OWN_PROVIDER_CODE = `import { ClientSideGrid, createEditingModule, DatasetControl, useDataProviderEvents } from '@talxis/base-controls'
 import { DataTypes, IRecord, IRecordSaveOperationResult, MemoryDataProvider } from '@talxis/client-libraries'
 import { PrimaryButton, Stack, Text } from '@fluentui/react'
 import { saveProduct } from './api'
@@ -344,7 +343,7 @@ const SaveButton = () => {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: createProducts() })} height='280px'>
     <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule(), createEditingModule()]} />
+        <ClientSideGrid modules={[createEditingModule()]} />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>
@@ -368,7 +367,7 @@ export const saveProduct = async (product: IRawRecord) => {
 `,
 }
 
-const SERVER_PROVIDER_CODE = `import { createClientSideRowModelModule, createSortingModule, DatasetControl, Grid } from '@talxis/base-controls'
+const SERVER_PROVIDER_CODE = `import { ClientSideGrid, createSortingModule, DatasetControl } from '@talxis/base-controls'
 import { DataProvider, DataTypes, IAvailableRelatedColumn, IColumn, ICommand, IRecordDeleteOperationResult, IRecordSaveOperationResult, IRetrievedData, IRetrieveRecordCommandOptions } from '@talxis/client-libraries'
 import { fetchProducts } from './api'
 
@@ -449,7 +448,7 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: new P
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} />
+        <ClientSideGrid modules={[createSortingModule()]} />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.End>

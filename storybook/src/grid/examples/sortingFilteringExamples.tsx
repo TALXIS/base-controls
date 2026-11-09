@@ -3,9 +3,8 @@ import { GridExampleRunner } from '../GridExampleRunner'
 
 export const TRIAGE_QUEUE_CODE = `const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
+        <ClientSideGrid
             modules={[
-                createClientSideRowModelModule(),
                 createSortingModule(),
                 createFilteringModule(),
             ]}
@@ -34,9 +33,8 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: tickets })}>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createSortingModule(),
                     createFilteringModule(),
                 ]}
@@ -94,9 +92,8 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: tickets })}>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createSortingModule(),
                     createFilteringModule(),
                     filterPlaceholdersModule,

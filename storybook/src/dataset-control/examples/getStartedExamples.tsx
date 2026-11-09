@@ -10,7 +10,6 @@ const GridExample = () => {
     const controlModules = React.useMemo(() => [createLocalStorageUserQueriesModule({ storageKey: 'get-started.deals.views' })], [])
     //every grid module, so the grid edits, selects, copies, sorts, filters, groups and totals
     const gridModules = React.useMemo(() => [
-        createClientSideRowModelModule(),
         createEditingModule(),
         createRowSelectionModule({ mode: 'multiple' }),
         createCellSelectionModule(),
@@ -39,7 +38,7 @@ const GridExample = () => {
         <DatasetControl.Notifications />
         <DatasetControl.Body>
             {/* takes no provider of its own: it draws the control's */}
-            <Grid stateKey='grid' modules={gridModules} enableOptionSetColors />
+            <ClientSideGrid stateKey='grid' modules={gridModules} enableOptionSetColors />
         </DatasetControl.Body>
         <DatasetControl.Footer>
             <DatasetControl.Footer.Start>
@@ -95,7 +94,7 @@ const GridExample = () => <DatasetControl onLoad={loadDeals} stateKey='deals-bas
     </DatasetControl.Header>
     <DatasetControl.Body>
         {/* takes no provider of its own: it draws the control's */}
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+        <ClientSideGrid stateKey='grid' />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.End>

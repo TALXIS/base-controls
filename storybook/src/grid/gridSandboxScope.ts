@@ -9,8 +9,8 @@ import {
     initializeIcons, Pivot, PivotItem, PrimaryButton, ProgressIndicator, SearchBox, Separator, Slider, Stack, Text, TextField, Toggle,
 } from '@fluentui/react'
 import {
-    Spinner, AggregateCell, AggregationUi, createAggregationModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, EditingCell, SelectionCell, SelectionCheckbox, SelectionHeader, RecordSaveSelectionCell, RecordSaveIndicator, RecordSaveIndicatorCell, RecordSaveUi, RecordLockIcon, RecordLockIndicatorCell, createFilteringModule,
-    createGroupingModule, createLegacyClientApiCompatibilityModule, createLicenseModule, createRowSelectionModule, createServerSideRowModelModule, createSortingModule,
+    Spinner, AggregateCell, AggregationUi, createAggregationModule, createCellSelectionModule, ClientSideGrid, createClientSideRowModelModule, createClipboardModule, createEditingModule, EditingCell, SelectionCell, SelectionCheckbox, SelectionHeader, RecordSaveSelectionCell, RecordSaveIndicator, RecordSaveIndicatorCell, RecordSaveUi, RecordLockIcon, RecordLockIndicatorCell, createFilteringModule,
+    createGroupingModule, createLegacyClientApiCompatibilityModule, createLicenseModule, createRowSelectionModule, ServerSideGrid, createServerSideRowModelModule, createSortingModule,
     DEFAULT_COLUMN_WIDTH, FilteringUi, getColumnContext, getTextColorForBackground, getTintColors, mixColors, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationCardComponents, NotificationMessageBar, NotificationMessageBarComponents, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
@@ -160,6 +160,8 @@ export const GRID_SANDBOX_SCOPE = {
     LOCKED_RECORD_ROW_CLASS,
     GROUP_EXPANSION_COLUMN_KEY,
     DEFAULT_COLUMN_WIDTH,
+    ClientSideGrid,
+    ServerSideGrid,
     createClientSideRowModelModule,
     createServerSideRowModelModule,
     createRowSelectionModule,

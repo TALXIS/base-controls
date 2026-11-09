@@ -1,7 +1,7 @@
 import React from 'react'
 import { Dropdown, IDropdownOption, Stack, Text } from '@fluentui/react'
 import type { ColDef } from 'ag-grid-community'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, Grid, GRID_MODULE_PRIORITY, IGrid, IGridCellParams, IGridModule, PcfContextProvider, DatasetControl } from '@talxis/base-controls'
+import { createCellSelectionModule, ClientSideGrid, createClipboardModule, createEditingModule, Grid, GRID_MODULE_PRIORITY, IGrid, IGridCellParams, IGridModule, PcfContextProvider, DatasetControl } from '@talxis/base-controls'
 import { getFormatting, getLocaleFromLanguageId, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATE_COLUMN_NAMES, getDataSource, PRIMARY_ID } from './parsingScratchData'
 import { mockTimeZone } from './mockTimeZone'
@@ -110,7 +110,6 @@ const addParsingColumns = (columnDefs: ColDef<IRecord>[]) => {
 const onSetup = (grid: IGrid) => grid.services.get('columns').hooks.columnDefinitions.add(addParsingColumns, GRID_MODULE_PRIORITY.clipboard + 1)
 
 const createModules = (autoSave: boolean): IGridModule[] => [
-    createClientSideRowModelModule(),
     createEditingModule({ enableAutoSave: autoSave }),
     createClipboardModule(),
     createCellSelectionModule(),
@@ -172,7 +171,7 @@ const ParsingGrid = (props: IParsingScratchGridProps & { culture: string, langua
         <LastChange change={change} />
         <DatasetControl onLoad={async () => ({ provider: provider })}>
             <DatasetControl.Body>
-                <Grid
+                <ClientSideGrid
                     modules={createModules(props.enableAutoSave)}
                     onSetup={onSetup}
                     height='100%'

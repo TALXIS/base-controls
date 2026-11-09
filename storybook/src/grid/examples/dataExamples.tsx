@@ -37,7 +37,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: catalogue })}>
         <DatasetControl.Body>
             {/* enableOptionSetColors draws options as tags in their colour */}
-            <Grid modules={[createClientSideRowModelModule()]} enableOptionSetColors />
+            <ClientSideGrid enableOptionSetColors />
         </DatasetControl.Body>
     </DatasetControl>
 }
@@ -142,7 +142,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: directory })}>
         {opened && <MessageBar onDismiss={() => setOpened('')}>{opened}</MessageBar>}
         <DatasetControl.Body>
-            <Grid modules={[createClientSideRowModelModule(), createEditingModule()]} enableOptionSetColors onSetup={onSetup} height='360px' />
+            <ClientSideGrid modules={[createEditingModule()]} enableOptionSetColors onSetup={onSetup} height='360px' />
         </DatasetControl.Body>
     </DatasetControl>
 }
@@ -176,7 +176,7 @@ const GridExample = () => {
     const stockCount = React.useMemo(createStockCount, [])
     return <DatasetControl onLoad={async () => ({ provider: stockCount })}>
         <DatasetControl.Body>
-            <Grid modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]} height='420px' />
+            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true })]} height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
 }

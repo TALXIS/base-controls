@@ -13,7 +13,7 @@ const GridExample = () => <DatasetControl stateKey='deals-loading-data' onLoad={
     </DatasetControl.Header>
     {/* a placeholder stands in for the parts until onLoad's provider has its first page */}
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+        <ClientSideGrid stateKey='grid' />
     </DatasetControl.Body>
 </DatasetControl>
 `
@@ -48,7 +48,7 @@ const GridExample = () => <DatasetControl onLoad={loadDeals} stateKey='deals-dep
         </DatasetControl.Header.Start>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule()]} />
+        <ClientSideGrid stateKey='grid' />
     </DatasetControl.Body>
 </DatasetControl>
 `

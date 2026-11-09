@@ -1,7 +1,7 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
 import type { ColDef } from 'ag-grid-community'
-import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, createServerSideRowModelModule, Callout, Grid, GridValidationHook, IColumnHeaderRendererProps, IGridCellParams, DatasetControl } from '@talxis/base-controls'
+import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, ClientSideGrid, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, ServerSideGrid, Callout, Grid, GridValidationHook, IColumnHeaderRendererProps, IGridCellParams, DatasetControl } from '@talxis/base-controls'
 import { DataTypes, IAddControlNotificationOptions, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -458,9 +458,6 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     //remounted on every change: modules are read once, which is the contract this story holds to
     const key = `${mountCount}-${props.rowModel}-${props.enableEditing}-${props.enableAutoSave}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}-${props.heatmap}`
     const modules = React.useMemo<IGridModule[]>(() => [
-        props.rowModel === 'clientSide'
-            ? createClientSideRowModelModule()
-            : createServerSideRowModelModule(),
         ...(props.enableEditing ? [createEditingModule({ enableAutoSave: props.enableAutoSave })] : []),
         ...(props.clipboard ? [createClipboardModule()] : []),
         createLegacyClientApiCompatibilityModule(),
@@ -473,11 +470,13 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         ...(props.heatmap ? [heatmapModule] : []),
     ], [key])
 
+    const RowModelGrid = props.rowModel === 'clientSide' ? ClientSideGrid : ServerSideGrid
+
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
         <CommandBarButton iconProps={{ iconName: 'Refresh' }} text='Remount' styles={{ root: { alignSelf: 'flex-start', height: 32 } }} onClick={() => setMountCount(count => count + 1)} />
         <DatasetControl onLoad={async () => ({ provider: provider })}>
             <DatasetControl.Body>
-                <Grid
+                <RowModelGrid
                     key={key}
                     modules={modules}
                     height='100%'

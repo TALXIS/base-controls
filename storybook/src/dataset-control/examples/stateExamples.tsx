@@ -20,7 +20,7 @@ const GridExample = () => {
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createSortingModule(), createRowSelectionModule({ mode: 'multiple' })]} />
+                <ClientSideGrid stateKey='grid' modules={[createSortingModule(), createRowSelectionModule({ mode: 'multiple' })]} />
             </DatasetControl.Body>
         </DatasetControl>}
     </Stack>
@@ -66,7 +66,7 @@ const GridExample = () => {
                         </DatasetControl.Header.End>
                     </DatasetControl.Header>
                     <DatasetControl.Body>
-                        <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createSortingModule()]} />
+                        <ClientSideGrid stateKey='grid' modules={[createSortingModule()]} />
                     </DatasetControl.Body>
                 </DatasetControl>
             </StateProvider>

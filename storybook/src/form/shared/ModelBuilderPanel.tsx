@@ -16,7 +16,7 @@ import {
 } from "@fluentui/react"
 import { DataTypes, Dataset, IColumn, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { createClientSideRowModelModule, createRowSelectionModule, DatasetControl, Grid, IRibbonCommand, Panel } from "@talxis/base-controls"
+import { ClientSideGrid, createRowSelectionModule, DatasetControl, IRibbonCommand, Panel } from "@talxis/base-controls"
 import { usePcfContext } from "@talxis/base-controls"
 import { createMemoryRecord, Form, useField } from "@talxis/base-controls"
 import type { ICommandBarItemProps } from "@fluentui/react"
@@ -726,9 +726,8 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                     </DatasetControl.Header>
                     <DatasetControl.Notifications />
                     <DatasetControl.Body>
-                        <Grid
+                        <ClientSideGrid
                             modules={[
-                                createClientSideRowModelModule(),
                                 createRowSelectionModule({ mode: "multiple" }),
                             ]}
                             enableNavigation

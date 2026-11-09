@@ -24,8 +24,7 @@ const LABELS = { 'grid.valueLocked': 'A closed deal keeps its numbers. Reopen it
 const GridExample = () => <LabelsProvider labels={LABELS}>
     <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), closedDealsModule]}
+            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true }), closedDealsModule]}
                 enableOptionSetColors
                 height='420px' />
         </DatasetControl.Body>
@@ -68,8 +67,7 @@ const dayLimitModule: IGridModule = {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), dayLimitModule]}
+        <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true }), dayLimitModule]}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -123,8 +121,7 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), priceRefresh.module]}
+            <ClientSideGrid modules={[priceRefresh.module]}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -156,8 +153,7 @@ const urgentRowsModule: IGridModule = {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), urgentRowsModule]}
+        <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true }), urgentRowsModule]}
             enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
@@ -194,9 +190,8 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         {message && <MessageBar messageBarType={MessageBarType.success} onDismiss={() => setMessage('')}>{message}</MessageBar>}
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createSortingModule(),
                     createFilteringModule(),
                     copyColumnModule,
@@ -226,8 +221,7 @@ export const CURRENCY_IN_HEADER_CODE = `const currencyModule: IGridModule = {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createSortingModule(), currencyModule]}
+        <ClientSideGrid modules={[createSortingModule(), currencyModule]}
             height='420px' />
     </DatasetControl.Body>
 </DatasetControl>
@@ -259,8 +253,7 @@ const assignToMeModule: IGridModule = {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), assignToMeModule]}
+        <ClientSideGrid modules={[assignToMeModule]}
             enableOptionSetColors
             height='440px' />
     </DatasetControl.Body>
@@ -305,8 +298,7 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), columnsByRole]}
+            <ClientSideGrid modules={[columnsByRole]}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -331,8 +323,7 @@ const placeholdersModule: IGridModule = {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), placeholdersModule]}
+        <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true }), placeholdersModule]}
             height='440px' />
     </DatasetControl.Body>
 </DatasetControl>

@@ -75,7 +75,7 @@ defineIsolatedContent('deals', FramedDeals)
     },
     {
         name: 'deals.tsx',
-        code: `import { createClientSideRowModelModule, createSortingModule, DatasetControl, Grid } from '@talxis/base-controls'
+        code: `import { ClientSideGrid, createSortingModule, DatasetControl, Grid } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 import { Stack, Text } from '@fluentui/react'
 
@@ -105,7 +105,7 @@ export const DealsGrid = (props: { heading: string }) => <Stack tokens={{ childr
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} />
+            <ClientSideGrid modules={[createSortingModule()]} />
         </DatasetControl.Body>
     </DatasetControl>
 </Stack>

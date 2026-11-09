@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const BRAND_CODE = `import { AppThemeProvider, createClientSideRowModelModule, createSortingModule, DatasetControl, Grid, IRibbonCommand, useTheme, useThemeBuilder } from '@talxis/base-controls'
+const BRAND_CODE = `import { AppThemeProvider, ClientSideGrid, createSortingModule, DatasetControl, IRibbonCommand, useTheme, useThemeBuilder } from '@talxis/base-controls'
 import { Dropdown, Label, Stack } from '@fluentui/react'
 
 const BRANDS = [
@@ -23,7 +23,7 @@ const loadCommands = async (): Promise<IRibbonCommand[]> => [
     },
 ]
 
-const modules = [createClientSideRowModelModule(), createSortingModule()]
+const modules = [createSortingModule()]
 
 const GridExample = () => {
     const isLightPage = !useTheme().isInverted
@@ -50,7 +50,7 @@ const GridExample = () => {
                     </DatasetControl.Header.Start>
                 </DatasetControl.Header>
                 <DatasetControl.Body>
-                    <Grid modules={modules} />
+                    <ClientSideGrid modules={modules} />
                 </DatasetControl.Body>
             </DatasetControl>
         </AppThemeProvider>
@@ -99,7 +99,7 @@ const GridExample = () => {
 }
 `
 
-const RED_ROWS_CODE = `import { createClientSideRowModelModule, createEditingModule, DatasetControl, Grid, IGridModule } from '@talxis/base-controls'
+const RED_ROWS_CODE = `import { ClientSideGrid, createEditingModule, DatasetControl, IGridModule } from '@talxis/base-controls'
 
 const ESCALATED = '#a4262c'
 
@@ -117,7 +117,7 @@ const escalatedTicketsModule: IGridModule = {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider })}>
     <DatasetControl.Body>
-        <Grid modules={[createClientSideRowModelModule(), createEditingModule(), escalatedTicketsModule]} height='440px' />
+        <ClientSideGrid modules={[createEditingModule(), escalatedTicketsModule]} height='440px' />
     </DatasetControl.Body>
 </DatasetControl>
 `

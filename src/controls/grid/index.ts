@@ -1,5 +1,7 @@
 export * from './Grid';
 export * from './namespace';
+export * from './client-side-grid';
+export * from './server-side-grid';
 export { useGridService, useGridServices } from './useGridService';
 export { useGridModule } from './useGridModule';
 export * from './adapters';

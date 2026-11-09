@@ -34,7 +34,7 @@ export interface ITaskGridComponents extends IGridComponents {
 
 /** The tasks of a `TaskDatasetControl`, drawn as a tree in its body. */
 export interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
-    /** Read once, at mount, and loaded after the client-side row model and the task tree. */
+    /** Read once, at mount, and loaded after the task tree. */
     modules?: ITaskGridGridModule[];
     components?: ITaskGridComponents;
 }

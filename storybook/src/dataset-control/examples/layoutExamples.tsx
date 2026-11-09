@@ -67,7 +67,7 @@ const GridExample = () => {
                 </DatasetControl.Header>
                 {has('Notifications') && <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />}
                 <DatasetControl.Body>
-                    <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' })]} />
+                    <ClientSideGrid stateKey='grid' modules={[createRowSelectionModule({ mode: 'multiple' })]} />
                 </DatasetControl.Body>
                 <DatasetControl.Footer>
                     <DatasetControl.Footer.Start>
@@ -110,7 +110,7 @@ const GridExample = () => {
             </DatasetControl.Header>
             {/* takes what the header and the footer leave */}
             <DatasetControl.Body>
-                <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createSortingModule()]} />
+                <ClientSideGrid stateKey='grid' modules={[createSortingModule()]} />
             </DatasetControl.Body>
             <DatasetControl.Footer>
                 <DatasetControl.Footer.Start>

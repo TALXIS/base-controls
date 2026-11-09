@@ -36,10 +36,9 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 //a new key makes the grid build its columns again
                 key={String(showEveryColumn)}
-                modules={[createClientSideRowModelModule()]}
                 onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
@@ -113,8 +112,7 @@ const GridExample = () => {
     return <>
         <DatasetControl onLoad={async () => ({ provider: provider })}>
             <DatasetControl.Body>
-                <Grid
-                    modules={[createClientSideRowModelModule()]}
+                <ClientSideGrid
                     onSetup={onSetup}
                     height='420px' />
             </DatasetControl.Body>
@@ -164,8 +162,7 @@ const onSetup = (grid: IGrid) => {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule(), createEditingModule()]}
+        <ClientSideGrid modules={[createEditingModule()]}
             onSetup={onSetup}
             height='440px' />
     </DatasetControl.Body>
@@ -218,8 +215,7 @@ const GridExample = () => {
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <MessageBar>{status}</MessageBar>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true })]}
+            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true })]}
                 onSetup={onSetup}
                 height='440px' />
         </DatasetControl.Body>
@@ -282,8 +278,7 @@ const GridExample = () => {
 
     return <DatasetControl onLoad={async () => ({ provider: provider })}>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: true }), createSortingModule()]}
+            <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true }), createSortingModule()]}
                 onSetup={onSetup}
                 height='440px' />
         </DatasetControl.Body>
@@ -301,8 +296,7 @@ export const LONG_NOTES_CODE = `const onSetup = (grid: IGrid) => {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule()]}
+        <ClientSideGrid
             onSetup={onSetup}
             height='480px' />
     </DatasetControl.Body>
@@ -317,8 +311,7 @@ export const AUTO_HEIGHT_CODE = `const onSetup = (grid: IGrid) => {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
-            modules={[createClientSideRowModelModule()]}
+        <ClientSideGrid
             onSetup={onSetup}
             height='480px' />
     </DatasetControl.Body>
@@ -343,7 +336,7 @@ const ProductList = (props: IProductListProps) => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid modules={[createClientSideRowModelModule()]} height='420px' />
+            <ClientSideGrid height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const FIRST_APP_CODE = `import { AppThemeProvider, createClientSideRowModelModule, DatasetControl, Grid, PcfContextProvider, StateProvider } from '@talxis/base-controls'
+const FIRST_APP_CODE = `import { AppThemeProvider, ClientSideGrid, DatasetControl, Grid, PcfContextProvider, StateProvider } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 
 //a data provider holds the records; this one keeps them in memory
@@ -27,7 +27,7 @@ const GridExample = () => <PcfContextProvider>
             {/* the DatasetControl loads the provider, and the Grid inside it draws the records */}
             <DatasetControl onLoad={loadProducts} height='240px'>
                 <DatasetControl.Body>
-                    <Grid modules={[createClientSideRowModelModule()]} />
+                    <ClientSideGrid />
                 </DatasetControl.Body>
             </DatasetControl>
         </AppThemeProvider>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../grid/GridExampleRunner'
 
-const SWITCH_LANGUAGE_CODE = `import { createClientSideRowModelModule, createSortingModule, CZECH_LABELS, DatasetControl, Grid, LabelsProvider, PcfContextProvider } from '@talxis/base-controls'
+const SWITCH_LANGUAGE_CODE = `import { ClientSideGrid, createSortingModule, CZECH_LABELS, DatasetControl, LabelsProvider, PcfContextProvider } from '@talxis/base-controls'
 import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
 import { ChoiceGroup, Stack } from '@fluentui/react'
 
@@ -51,7 +51,7 @@ const GridExample = () => {
                         </DatasetControl.Header.End>
                     </DatasetControl.Header>
                     <DatasetControl.Body>
-                        <Grid modules={[createClientSideRowModelModule(), createSortingModule()]} />
+                        <ClientSideGrid modules={[createSortingModule()]} />
                     </DatasetControl.Body>
                     <DatasetControl.Footer>
                         <DatasetControl.Footer.Start>

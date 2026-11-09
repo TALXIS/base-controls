@@ -58,9 +58,8 @@ const GridExample = () => {
         </DatasetControl.Header>
         {hasSelection && <MessageBar>{selectedEntries.length} {selectedEntries.length === 1 ? 'entry' : 'entries'} selected, {selectedHours} hours in all.</MessageBar>}
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createEditingModule({ enableAutoSave: true }),
                     createRowSelectionModule({ mode: 'multiple' }),
                     createSortingModule(),
@@ -115,9 +114,8 @@ const GridExample = () => {
         <div className={styles.grid}>
             <DatasetControl onLoad={async () => ({ provider: provider })}>
                 <DatasetControl.Body>
-                    <Grid
+                    <ClientSideGrid
                         modules={[
-                            createClientSideRowModelModule(),
                             createRowSelectionModule({ mode: 'single' }),
                         ]}
                         height='440px' />
@@ -135,9 +133,8 @@ export const COPY_PRICE_LIST_CODE = `const GridExample = () => {
     return <Stack tokens={{ childrenGap: 12 }}>
         <DatasetControl onLoad={async () => ({ provider: provider })}>
             <DatasetControl.Body>
-                <Grid
+                <ClientSideGrid
                     modules={[
-                        createClientSideRowModelModule(),
                         createCellSelectionModule(),
                         createClipboardModule({ copyHeadersToClipboard: true }),
                     ]}

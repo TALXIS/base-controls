@@ -28,7 +28,7 @@ const GridExample = () => <DatasetControl stateKey='selectedValue' onLoad={loadD
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <Grid stateKey='grid' modules={[createClientSideRowModelModule(), createRowSelectionModule({ mode: 'multiple' })]} />
+        <ClientSideGrid stateKey='grid' modules={[createRowSelectionModule({ mode: 'multiple' })]} />
     </DatasetControl.Body>
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { ContextualMenuItemType, IButtonProps } from '@fluentui/react'
 import {
-    createClientSideRowModelModule, createRowSelectionModule, createSortingModule, DatasetControl, Grid, IDatasetControl,
+    ClientSideGrid, createRowSelectionModule, createSortingModule, DatasetControl, IDatasetControl,
     IRibbonCommand, PcfContextProvider, useDataProvider, DatasetControlUiViewSwitcherComponents,
 } from '@talxis/base-controls'
 import { loadDeals } from '../dealViews'
@@ -50,7 +50,6 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
     const [isThrowing, setIsThrowing] = React.useState(false)
     const failNextLoadRef = React.useRef(false)
     const modules = React.useMemo(() => [
-        createClientSideRowModelModule(),
         createRowSelectionModule({ mode: 'multiple' }),
         createSortingModule(),
     ], [])
@@ -90,7 +89,7 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
             <DatasetControl.Notifications messages={props.overrideSlots ? [{ text: 'Deals sync nightly.', level: 'INFO' }] : undefined} />
             {isThrowing && <ThrowingPart />}
             <DatasetControl.Body>
-                <Grid stateKey='grid' modules={modules} />
+                <ClientSideGrid stateKey='grid' modules={modules} />
             </DatasetControl.Body>
             <DatasetControl.Footer>
                 <DatasetControl.Footer.Start>

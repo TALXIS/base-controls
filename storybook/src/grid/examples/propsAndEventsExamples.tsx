@@ -77,10 +77,9 @@ const GridExample = () => {
                     </DatasetControl.Header.Start>
                 </DatasetControl.Header>
                 <DatasetControl.Body>
-                    <Grid
+                    <ClientSideGrid
                         //modules are read at mount
-                        key={mountCount + String(isAutoSaveOn)}
-                        modules={[createClientSideRowModelModule(), createEditingModule({ enableAutoSave: isAutoSaveOn }), createSortingModule()]}
+                        key={mountCount + String(isAutoSaveOn)} modules={[createEditingModule({ enableAutoSave: isAutoSaveOn }), createSortingModule()]}
                         height='440px'
                         onSetup={onSetup}
                         onLoad={() => log('onLoad')} />
@@ -143,8 +142,7 @@ const GridExample = () => {
         <div className={styles.grid}>
             <DatasetControl onLoad={async () => ({ provider: provider })}>
                 <DatasetControl.Body>
-                    <Grid
-                        modules={[createClientSideRowModelModule(), createSortingModule()]}
+                    <ClientSideGrid modules={[createSortingModule()]}
                         //a double-click opens the ticket's panel
                         enableNavigation={false}
                         height='480px'

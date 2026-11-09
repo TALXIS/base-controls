@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const APPLICATION_CODE = `import { AppThemeProvider, createClientSideRowModelModule, DatasetControl, Form, Grid, IGrid, Panel, PcfContextProvider, StateProvider, useThemeBuilder } from '@talxis/base-controls'
+const APPLICATION_CODE = `import { AppThemeProvider, ClientSideGrid, DatasetControl, Form, IGrid, Panel, PcfContextProvider, StateProvider, useThemeBuilder } from '@talxis/base-controls'
 import { IRecord } from '@talxis/client-libraries'
 import { Dropdown } from '@fluentui/react'
 
@@ -61,7 +61,7 @@ const GridExample = () => {
                     </DatasetControl.Header>
                     <DatasetControl.Body>
                         {/* click a deal's name to open it */}
-                        <Grid modules={[createClientSideRowModelModule()]} onSetup={onSetup} />
+                        <ClientSideGrid onSetup={onSetup} />
                     </DatasetControl.Body>
                 </DatasetControl>
                 {/* drawn in the same theme as the grid */}

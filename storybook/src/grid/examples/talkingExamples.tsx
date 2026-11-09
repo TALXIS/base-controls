@@ -45,9 +45,8 @@ const GridExample = () => {
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createEditingModule({ enableAutoSave: true }),
                     createRowSelectionModule({ mode: 'multiple' }),
                     createSortingModule(),
@@ -95,7 +94,7 @@ const GridExample = () => {
                 </DatasetControl.Header.Start>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                {isOpen && <Grid modules={[createClientSideRowModelModule(), lifeLog]} onSetup={onSetup} onLoad={() => log('onLoad: awaited before AG Grid renders')} height='320px' />}
+                {isOpen && <ClientSideGrid modules={[lifeLog]} onSetup={onSetup} onLoad={() => log('onLoad: awaited before AG Grid renders')} height='320px' />}
             </DatasetControl.Body>
         </DatasetControl>
         <Stack tokens={{ childrenGap: 4 }} styles={{ root: { padding: 12, borderRadius: 4, background: theme.semanticColors.bodyStandoutBackground } }}>

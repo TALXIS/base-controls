@@ -24,6 +24,8 @@ const GridExample = () => {
         setRowModel(next)
     }
 
+    const RowModelGrid = rowModel === 'serverSide' ? ServerSideGrid : ClientSideGrid
+
     return <DatasetControl onLoad={async () => ({ provider: tickets })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
@@ -34,13 +36,12 @@ const GridExample = () => {
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
-                //modules are read at mount
+            <RowModelGrid
+                //the modules are read at mount
                 key={rowModel}
                 modules={[
                     //the module requires a key
                     ...(AG_GRID_LICENSE_KEY ? [createLicenseModule({ key: AG_GRID_LICENSE_KEY })] : []),
-                    rowModel === 'serverSide' ? createServerSideRowModelModule() : createClientSideRowModelModule(),
                     createGroupingModule(),
                 ]}
                 height='440px' />
@@ -110,11 +111,10 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
-                //modules are read at mount
+            <ClientSideGrid
+                //the row model and modules are read at mount
                 key={JSON.stringify(switches)}
                 modules={[
-                    createClientSideRowModelModule(),
                     ...(switches.selection ? [createRowSelectionModule({ mode: 'multiple' })] : []),
                     ...(switches.sorting ? [createSortingModule()] : []),
                     ...(switches.filtering ? [createFilteringModule()] : []),

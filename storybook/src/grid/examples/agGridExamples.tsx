@@ -45,8 +45,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         {order && <MessageBar onDismiss={() => setOrder('')}>The provider now holds this order: {order}</MessageBar>}
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), columnOrderLock]}
+            <ClientSideGrid modules={[columnOrderLock]}
                 onSetup={onSetup}
                 height='420px' />
         </DatasetControl.Body>
@@ -98,8 +97,7 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
-                modules={[createClientSideRowModelModule(), createSortingModule(), highlightChangesModule]}
+            <ClientSideGrid modules={[createSortingModule(), highlightChangesModule]}
                 enableOptionSetColors
                 onSetup={grid => { gridRef.current = grid }}
                 height='400px' />

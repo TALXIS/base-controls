@@ -22,10 +22,9 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 //a new key mounts the grid again
-                key={mountCount}
-                modules={[createClientSideRowModelModule(), createGroupingModule({ defaultExpandedLevel: 0 })]}
+                key={mountCount} modules={[createGroupingModule({ defaultExpandedLevel: 0 })]}
                 //the scroll position, focused cell and open groups are kept under this key
                 stateKey='ticket-queue'
                 height='360px' />
@@ -78,7 +77,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         {ticket && <MessageBar>Previewing {ticket.getFormattedValue('ticketnumber')}: {ticket.getFormattedValue('title')}</MessageBar>}
         <DatasetControl.Body>
-            <Grid key={mountCount} modules={[createClientSideRowModelModule(), preview]} stateKey='ticket-preview' height='360px' />
+            <ClientSideGrid key={mountCount} modules={[preview]} stateKey='ticket-preview' height='360px' />
         </DatasetControl.Body>
     </DatasetControl>
 }

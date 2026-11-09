@@ -81,9 +81,8 @@ const onSetup = (grid: IGrid) => {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
+        <ClientSideGrid
             modules={[
-                createClientSideRowModelModule(),
                 createLegacyClientApiCompatibilityModule(),
                 supportDeskScript,
             ]}
@@ -157,9 +156,8 @@ const GridExample = () => {
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <Grid
+            <ClientSideGrid
                 modules={[
-                    createClientSideRowModelModule(),
                     createEditingModule({ enableAutoSave: true }),
                     createLegacyClientApiCompatibilityModule(),
                     stockScript,
@@ -189,9 +187,8 @@ const triageScript: IGridModule = {
 
 const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
     <DatasetControl.Body>
-        <Grid
+        <ClientSideGrid
             modules={[
-                createClientSideRowModelModule(),
                 createEditingModule({ enableAutoSave: true }),
                 createLegacyClientApiCompatibilityModule(),
                 triageScript,
