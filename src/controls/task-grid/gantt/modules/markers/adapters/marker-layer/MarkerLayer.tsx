@@ -28,8 +28,9 @@ export const MarkerLayer = () => {
             rerender();
             return true;
         };
-        chart.attachEvent('onGanttRender', place);
+        const eventId = chart.attachEvent('onGanttRender', place);
         place();
+        return () => chart.detachEvent(eventId);
     }, [chart]);
 
     if (!chart) {
