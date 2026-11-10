@@ -4418,7 +4418,7 @@ declare const createCustomColumnsModule: (parameters: {
     enableDeletion?: boolean;
 }) => IDatasetControlModule;
 
-/** A custom column as the IndexedDB store keeps it. */
+/** What a custom column is. */
 interface ICustomColumnDefinition {
     displayName: string;
     dataType: string;
@@ -4429,12 +4429,26 @@ interface ICustomColumnDefinition {
     options?: string[];
 }
 
-/** The user's own task columns kept in the browser's IndexedDB; a new one is a sample text column. */
-declare const createIndexedDbCustomColumnsModule: (parameters: {
-    /** The IndexedDB database the columns and their values are kept in; one per control. */
-    databaseName: string;
-    /** The columns a new database starts with. */
-    columns?: ICustomColumnDefinition[];
+/** A custom column as its table keeps it. */
+interface ICustomColumnRow extends ICustomColumnDefinition {
+    /** The column's name; the store adds the custom column suffix where it is missing. */
+    name: string;
+    /** Orders the columns; a seeded row without it comes first. */
+    createdOn?: number;
+}
+
+/** One task's custom column values. */
+interface ICustomColumnValuesRow {
+    taskId: string;
+    values: IRawRecord;
+}
+
+/** The user's own task columns kept in the columns and values tables you pass; a new one is a sample text column. */
+declare const createMemoryCustomColumnsModule: (parameters: {
+    /** Keyed by name. */
+    columns: MemoryTable<ICustomColumnRow>;
+    /** Keyed by taskId. */
+    values: MemoryTable<ICustomColumnValuesRow>;
     enableCreation?: boolean;
     enableDeletion?: boolean;
 }) => IDatasetControlModule;

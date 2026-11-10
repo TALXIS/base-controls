@@ -173,7 +173,7 @@ export const StoreForm = (props: { store: IRecord }) => {
 
 const OPENING_PLAN_FILE: IGridExampleFile = {
     name: 'OpeningPlan.tsx',
-    code: `import { createIndexedDbCustomColumnsModule, createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createMemoryTemplatesModule, createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, IMemoryTemplate, ITaskGridLoadResult, ITaskRuntime, MemoryTable, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+    code: `import { createMemoryCustomColumnsModule, createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createMemoryTemplatesModule, createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ICustomColumnRow, ICustomColumnValuesRow, IMemoryTemplate, ITaskGridLoadResult, ITaskRuntime, MemoryTable, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { createBarDraggingModule, createLibraryModule, createLinksModule, createMemoryMarkersModule, createMemoryNonWorkingDaysModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, TaskGantt, TaskTooltip } from '@talxis/base-controls/gantt'
 import type { IRecord } from '@talxis/client-libraries'
 import { CHECKLIST_ITEMS, DEPENDENCIES, HOLIDAYS, LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VALUES, PLAN_FIELD_MAPPING, PLAN_METADATA, PLAN_VIEWS, PLANS, STANDARD_OPENING, TASK_COLUMNS } from './plans'
@@ -182,6 +182,9 @@ import { CHECKLIST_ITEMS, DEPENDENCIES, HOLIDAYS, LOOKUP_MANY_COLUMNS, LOOKUP_MA
 const templates = new MemoryTable<IMemoryTemplate>({ idKey: 'id', rows: [STANDARD_OPENING] })
 
 //the store's own TaskDatasetControl, with a Gantt beside its task grid
+const PLAN_COLUMNS = new MemoryTable<ICustomColumnRow>({ idKey: 'name', rows: [{ name: 'budget', displayName: 'Budget', dataType: 'Currency', precision: 0 }, { name: 'supplier', displayName: 'Supplier', dataType: 'SingleLine.Text', createdOn: 1 }] })
+const PLAN_COLUMN_VALUES = new MemoryTable<ICustomColumnValuesRow>({ idKey: 'taskId' })
+
 export const OpeningPlan = (props: { store: IRecord }) => {
     const tasks = PLANS[props.store.getRecordId()]
     //the opening date as the form holds it, saved or not
@@ -201,10 +204,10 @@ export const OpeningPlan = (props: { store: IRecord }) => {
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
         //From template creates its tasks in the store's own table
         createMemoryTemplatesModule({ tasks, templates }),
-        //Budget and Supplier in Edit columns, kept in the browser's IndexedDB
-        createIndexedDbCustomColumnsModule({
-            databaseName: 'introductionDocs.planColumns',
-            columns: [{ displayName: 'Budget', dataType: 'Currency', precision: 0 }, { displayName: 'Supplier', dataType: 'SingleLine.Text' }],
+        //Budget and Supplier in Edit columns
+        createMemoryCustomColumnsModule({
+            columns: PLAN_COLUMNS,
+            values: PLAN_COLUMN_VALUES,
             enableCreation: true,
             enableDeletion: true,
         }),

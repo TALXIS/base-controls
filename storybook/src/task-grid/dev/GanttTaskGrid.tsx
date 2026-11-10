@@ -135,9 +135,9 @@ const GridExample = () => {
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: '${data.storageKey}.userViews' }),
         createMemoryProjectModule({ projects: new MemoryTable({ idKey: 'id', rows: [{ id: 'website', name: 'Website Redesign', startDate: '2025-10-01', endDate: '2026-01-31' }] }), projectId: 'website' }),
         createTaskDraggingModule(),
-        createIndexedDbCustomColumnsModule({
-            databaseName: '${data.storageKey}.customColumns',
-            columns: [{ displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }],
+        createMemoryCustomColumnsModule({
+            columns: new MemoryTable<ICustomColumnRow>({ idKey: 'name', rows: [{ name: 'risk', displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }] }),
+            values: new MemoryTable<ICustomColumnValuesRow>({ idKey: 'taskId' }),
             enableCreation: true,
             enableDeletion: true,
         }),

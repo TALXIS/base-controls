@@ -3,20 +3,26 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { TASK_EXAMPLE_TABS, withTasks } from './shared'
 
-const CUSTOM_COLUMNS_CODE = `import { createIndexedDbCustomColumnsModule, createTaskEditingModule, DatasetControl, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const CUSTOM_COLUMNS_CODE = `import { createMemoryCustomColumnsModule, createTaskEditingModule, DatasetControl, ICustomColumnRow, ICustomColumnValuesRow, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { createLoadTasks, createTaskTable } from './tasks'
 
 const loadTasks = createLoadTasks(createTaskTable())
 
+//the columns the user starts with, and the values the cells save
+const customColumns = new MemoryTable<ICustomColumnRow>({
+    idKey: 'name',
+    rows: [
+        { name: 'risk', displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] },
+        { name: 'budget', displayName: 'Budget', dataType: 'Currency', precision: 0, createdOn: 1 },
+    ],
+})
+const customColumnValues = new MemoryTable<ICustomColumnValuesRow>({ idKey: 'taskId' })
+
 const GridExample = () => {
     const modules = [
-        //a new database starts with these columns
-        createIndexedDbCustomColumnsModule({
-            databaseName: 'taskGridDocs.customColumns',
-            columns: [
-                { displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] },
-                { displayName: 'Budget', dataType: 'Currency', precision: 0 },
-            ],
+        createMemoryCustomColumnsModule({
+            columns: customColumns,
+            values: customColumnValues,
             enableCreation: true,
             enableDeletion: true,
         }),

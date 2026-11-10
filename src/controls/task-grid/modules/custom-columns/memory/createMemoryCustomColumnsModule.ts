@@ -1,16 +1,17 @@
+import type { MemoryTable } from "@core/state";
 import { createCustomColumnsModule, ICustomColumnsModule } from "../createCustomColumnsModule";
 import type { ICustomColumnsParameters } from "../CustomColumns";
-import { ICustomColumnDefinition, IndexedDbCustomColumnsStore } from "./IndexedDbCustomColumnsStore";
+import { ICustomColumnRow, ICustomColumnValuesRow, MemoryCustomColumnsStore } from "./MemoryCustomColumnsStore";
 
-export interface IIndexedDbCustomColumnsModuleParameters extends Omit<ICustomColumnsParameters, 'createStore' | 'enableEditing'> {
-    /** The IndexedDB database of one control's columns and values. */
-    databaseName: string;
-    /** The columns a new database starts with. */
-    columns?: ICustomColumnDefinition[];
+export interface IMemoryCustomColumnsModuleParameters extends Omit<ICustomColumnsParameters, 'createStore' | 'enableEditing'> {
+    /** Keyed by `name`. */
+    columns: MemoryTable<ICustomColumnRow>;
+    /** Keyed by `taskId`. */
+    values: MemoryTable<ICustomColumnValuesRow>;
 }
 
-/** The user's own task columns kept in the browser's IndexedDB. */
-export const createIndexedDbCustomColumnsModule = (parameters: IIndexedDbCustomColumnsModuleParameters): ICustomColumnsModule => {
-    const { databaseName, columns, ...moduleParameters } = parameters;
-    return createCustomColumnsModule({ ...moduleParameters, enableEditing: false, createStore: taskRuntime => new IndexedDbCustomColumnsStore({ taskRuntime, databaseName, columns }) });
+/** The user's own task columns kept in the `columns` and `values` tables you pass. */
+export const createMemoryCustomColumnsModule = (parameters: IMemoryCustomColumnsModuleParameters): ICustomColumnsModule => {
+    const { columns, values, ...moduleParameters } = parameters;
+    return createCustomColumnsModule({ ...moduleParameters, enableEditing: false, createStore: taskRuntime => new MemoryCustomColumnsStore({ taskRuntime, columns, values }) });
 };

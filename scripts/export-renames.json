@@ -269,5 +269,9 @@
     "./gantt ITaskTooltipRootProps": null,
     "./gantt LinkTooltipRoot": null,
     "./gantt ILinkTooltipRootProps": null,
-    ". ITaskExecuteParameters": "IRuntimeExecuteParameters"
+    ". ITaskExecuteParameters": "IRuntimeExecuteParameters",
+    ". createIndexedDbCustomColumnsModule": "createMemoryCustomColumnsModule",
+    ". IIndexedDbCustomColumnsModuleParameters": "IMemoryCustomColumnsModuleParameters",
+    ". IIndexedDbCustomColumnsStoreParameters": null,
+    ". IndexedDbCustomColumnsStore": null
 }

@@ -1,10 +1,12 @@
 import type { LabelsOf } from "@labels";
 import { DatasetConstants, DataType, DataTypes, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import type { MemoryTable } from "@core/state";
 import type { ITaskRuntime } from "../../../runtime";
 import type { ICustomColumnsStore } from "../CustomColumns";
 import { CUSTOM_COLUMNS_LABELS } from "../labels";
+import { simulateBackend, SIMULATED_LOAD_DELAY_MS } from "../../../runtime/data-sources/memory/simulateBackend";
 
-/** A custom column as the IndexedDB store keeps it. */
+/** What a custom column is. */
 export interface ICustomColumnDefinition {
     displayName: string;
     dataType: DataType;
@@ -15,70 +17,59 @@ export interface ICustomColumnDefinition {
     options?: string[];
 }
 
-export interface IIndexedDbCustomColumnsStoreParameters {
-    taskRuntime: ITaskRuntime;
-    /** The IndexedDB database of one control's columns and values. */
-    databaseName: string;
-    /** The columns a new database starts with. */
-    columns?: ICustomColumnDefinition[];
-}
-
-interface IStoredColumn {
+/** A custom column as its table keeps it. */
+export interface ICustomColumnRow extends ICustomColumnDefinition {
+    /** The column's name; the store adds the custom column suffix where it is missing. */
     name: string;
-    definition: ICustomColumnDefinition;
-    /** Keeps the columns in the order they were made. */
-    createdOn: number;
+    /** Orders the columns; a seeded row without it comes first. */
+    createdOn?: number;
 }
 
-interface IStoredValues {
+/** One task's custom column values. */
+export interface ICustomColumnValuesRow {
     taskId: string;
     values: IRawRecord;
 }
 
-const COLUMNS_STORE = 'columns';
-const VALUES_STORE = 'values';
-//raised whenever what the stores hold changes shape
-const DATABASE_VERSION = 2;
+export interface IMemoryCustomColumnsStoreParameters {
+    taskRuntime: ITaskRuntime;
+    columns: MemoryTable<ICustomColumnRow>;
+    values: MemoryTable<ICustomColumnValuesRow>;
+}
 
-const toPromise = <T,>(request: IDBRequest<T>): Promise<T> => new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-});
+export class MemoryCustomColumnsStore implements ICustomColumnsStore {
+    private _parameters: IMemoryCustomColumnsStoreParameters;
 
-/** Custom columns kept in the browser's IndexedDB with their values by task. */
-export class IndexedDbCustomColumnsStore implements ICustomColumnsStore {
-    private _parameters: IIndexedDbCustomColumnsStoreParameters;
-    private _database?: Promise<IDBDatabase>;
-
-    constructor(parameters: IIndexedDbCustomColumnsStoreParameters) {
+    constructor(parameters: IMemoryCustomColumnsStoreParameters) {
         this._parameters = parameters;
     }
 
     public async loadColumns(): Promise<IColumn[]> {
-        const stored = await toPromise<IStoredColumn[]>((await this._getStore(COLUMNS_STORE)).getAll());
-        return stored.sort((left, right) => left.createdOn - right.createdOn).map(entry => this._toColumn(entry));
+        await simulateBackend(SIMULATED_LOAD_DELAY_MS);
+        const rows = this._parameters.columns.getRows();
+        return rows.sort((left, right) => (left.createdOn ?? 0) - (right.createdOn ?? 0)).map(row => this._toColumn(row));
     }
 
     public async loadValues(taskIds: string[]): Promise<Map<string, IRawRecord>> {
+        await simulateBackend(SIMULATED_LOAD_DELAY_MS);
         const taskIdSet = new Set(taskIds);
-        const stored = await toPromise<IStoredValues[]>((await this._getStore(VALUES_STORE)).getAll());
-        return new Map(stored.filter(entry => taskIdSet.has(entry.taskId)).map(entry => [entry.taskId, entry.values]));
+        const rows = this._parameters.values.getRows(row => taskIdSet.has(row.taskId));
+        return new Map(rows.map(row => [row.taskId, row.values]));
     }
 
     public async saveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult> {
+        await simulateBackend();
         const taskId = record.getRecordId();
-        const store = await this._getStore(VALUES_STORE, 'readwrite');
-        const stored = await toPromise<IStoredValues | undefined>(store.get(taskId));
-        await toPromise(store.put({ taskId, values: { ...stored?.values, [column.name]: value } } satisfies IStoredValues));
+        const stored = this._parameters.values.getRow(taskId);
+        this._parameters.values.insert([{ taskId, values: { ...stored?.values, [column.name]: value } }]);
         return { success: true, recordId: taskId, fields: [column.name] };
     }
 
     public async createColumn(): Promise<string | null> {
-        const store = await this._getStore(COLUMNS_STORE, 'readwrite');
-        const count = await toPromise(store.count());
+        await simulateBackend();
+        const count = this._parameters.columns.getRows().length;
         const name = this._toColumnName(crypto.randomUUID());
-        const definition: ICustomColumnDefinition = { displayName: this._labels.get('customColumns.newColumnName', { number: count + 1 }), dataType: DataTypes.SingleLineText };
-        await toPromise(store.put({ name, definition, createdOn: Date.now() } satisfies IStoredColumn));
+        this._parameters.columns.insert([{ name, displayName: this._labels.get('customColumns.newColumnName', { number: count + 1 }), dataType: DataTypes.SingleLineText, createdOn: Date.now() }]);
         return name;
     }
 
@@ -88,42 +79,18 @@ export class IndexedDbCustomColumnsStore implements ICustomColumnsStore {
     }
 
     public async deleteColumn(columnName: string): Promise<string | null> {
-        await toPromise((await this._getStore(COLUMNS_STORE, 'readwrite')).delete(columnName));
-        const values = await this._getStore(VALUES_STORE, 'readwrite');
-        for (const entry of await toPromise<IStoredValues[]>(values.getAll())) {
-            if (columnName in entry.values) {
-                const { [columnName]: _deleted, ...rest } = entry.values;
-                await toPromise(values.put({ ...entry, values: rest } satisfies IStoredValues));
-            }
-        }
+        await simulateBackend();
+        const { columns, values } = this._parameters;
+        columns.delete(columns.getRows(row => this._toColumnName(row.name) === columnName).map(row => row.name));
+        values.insert(values.getRows(row => columnName in row.values).map(row => {
+            const { [columnName]: _deleted, ...rest } = row.values;
+            return { ...row, values: rest };
+        }));
         return columnName;
     }
 
-    private async _getStore(name: string, mode: IDBTransactionMode = 'readonly'): Promise<IDBObjectStore> {
-        return (await this._getDatabase()).transaction(name, mode).objectStore(name);
-    }
-
-    //the seed columns go in only as the database is made or upgraded
-    private _getDatabase(): Promise<IDBDatabase> {
-        this._database ??= new Promise((resolve, reject) => {
-            const request = indexedDB.open(this._parameters.databaseName, DATABASE_VERSION);
-            request.onupgradeneeded = () => {
-                const database = request.result;
-                [...database.objectStoreNames].forEach(name => database.deleteObjectStore(name));
-                const columns = database.createObjectStore(COLUMNS_STORE, { keyPath: 'name' });
-                database.createObjectStore(VALUES_STORE, { keyPath: 'taskId' });
-                (this._parameters.columns ?? []).forEach((definition, index) => {
-                    columns.put({ name: this._toColumnName(crypto.randomUUID()), definition, createdOn: index } satisfies IStoredColumn);
-                });
-            };
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-        return this._database;
-    }
-
-    private _toColumn(stored: IStoredColumn): IColumn {
-        const { displayName, dataType, isRequired, precision, options } = stored.definition;
+    private _toColumn(row: ICustomColumnRow): IColumn {
+        const { displayName, dataType, isRequired, precision, options } = row;
         const metadata: { [key: string]: unknown } = { RequiredLevel: isRequired ? 2 : 0 };
         if (precision !== undefined) {
             metadata.Precision = precision;
@@ -134,7 +101,7 @@ export class IndexedDbCustomColumnsStore implements ICustomColumnsStore {
         if (dataType === DataTypes.TwoOptions) {
             metadata.OptionSet = [{ Value: 0, Label: this._labels.get('customColumns.no'), Color: '' }, { Value: 1, Label: this._labels.get('customColumns.yes'), Color: '' }];
         }
-        return { name: stored.name, displayName, dataType, isVirtual: true, visualSizeFactor: 200, metadata: metadata as IColumn['metadata'] };
+        return { name: this._toColumnName(row.name), displayName, dataType, isVirtual: true, visualSizeFactor: 200, metadata: metadata as IColumn['metadata'] };
     }
 
     private get _labels(): LabelsOf<typeof CUSTOM_COLUMNS_LABELS> {

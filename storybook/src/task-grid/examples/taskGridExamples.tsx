@@ -3,7 +3,7 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { TASK_EXAMPLE_TABS, withTasks } from './shared'
 
-const SHOWCASE_CODE = `import { createFilteringModule, createIndexedDbCustomColumnsModule, createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createMemoryTemplatesModule, createRowSelectionModule, createSortingModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, IMemoryTemplate, ITaskGridView, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const SHOWCASE_CODE = `import { createFilteringModule, createMemoryCustomColumnsModule, createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createMemoryTemplatesModule, createRowSelectionModule, createSortingModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ICustomColumnRow, ICustomColumnValuesRow, IMemoryTemplate, ITaskGridView, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { createLoadTasks, createTaskTable, TASK_VIEWS } from './tasks'
 
 //sample data from these docs: LOOKUP_MANY_*, CHECKLIST_*, DEPENDENC*, TEMPLATES, getTaskColumns
@@ -13,6 +13,8 @@ const templates = new MemoryTable<IMemoryTemplate>({ idKey: 'id', rows: TEMPLATE
 const lookupManyValues = new MemoryTable({ idKey: 'taskId', rows: LOOKUP_MANY_VALUES })
 const checklistItems = new MemoryTable({ idKey: 'id', rows: CHECKLIST_ITEMS })
 const dependencies = new MemoryTable({ idKey: 'id', rows: DEPENDENCIES })
+const customColumns = new MemoryTable<ICustomColumnRow>({ idKey: 'name', rows: [{ name: 'risk', displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }] })
+const customColumnValues = new MemoryTable<ICustomColumnValuesRow>({ idKey: 'taskId' })
 
 //All tasks shows the modules' columns too and searches assignees and tags
 const VIEWS: ITaskGridView[] = [{
@@ -29,7 +31,7 @@ const loadTasks = createLoadTasks(tasks, VIEWS)
 const GridExample = () => {
     const modules = [
         createTaskDraggingModule(),
-        createIndexedDbCustomColumnsModule({ databaseName: 'taskGridDocs.showcase.columns', columns: [{ displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }], enableCreation: true }),
+        createMemoryCustomColumnsModule({ columns: customColumns, values: customColumnValues, enableCreation: true }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
         createMemoryTemplatesModule({ tasks, templates }),
         createMemoryTaskChecklistModule({ items: checklistItems }),
