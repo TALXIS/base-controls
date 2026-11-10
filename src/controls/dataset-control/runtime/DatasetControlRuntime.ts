@@ -1,6 +1,6 @@
 import type { ITheme } from "@fluentui/react";
 import { IAvailableRelatedColumn, IColumn, IDataProvider, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { HookRegistry, IStateStore, ModuleLoader, RuntimeLifecycle, ServiceRegistry, IHookPoint } from "@core";
+import { HookRegistry, IStateStore, ModuleLoader, Runtime, RuntimeLifecycle, ServiceRegistry, IHookPoint } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlProps } from "../adapters/root/Root";
 import { IDatasetControl, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceRegistry, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
@@ -45,7 +45,7 @@ export interface IDatasetControlRuntimeParameters {
     theme: ITheme;
 }
 
-export class DatasetControlRuntime implements IDatasetControlInternal {
+export class DatasetControlRuntime extends Runtime implements IDatasetControlInternal {
     public readonly lifecycle = new RuntimeLifecycle({
         onInit: () => this._init(),
         onDestroy: () => this._destroy(),
@@ -66,6 +66,7 @@ export class DatasetControlRuntime implements IDatasetControlInternal {
     private _view?: IDatasetControlResolvedView;
 
     constructor(parameters: IDatasetControlRuntimeParameters) {
+        super();
         this._getProps = parameters.getProps;
         this._theme = parameters.theme;
         this._state = parameters.state;

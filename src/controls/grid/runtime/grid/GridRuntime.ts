@@ -3,7 +3,7 @@ import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowId
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
-import { HookRegistry, IStateStore, ModuleLoader, RuntimeLifecycle, ServiceRegistry } from "@core";
+import { HookRegistry, IStateStore, ModuleLoader, Runtime, RuntimeLifecycle, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import { RowLoading } from "../../adapters/rows/loading";
 import { LoadingOverlay } from "../../adapters/overlays/loading";
@@ -70,7 +70,7 @@ export interface IGridRuntimeParameters {
     getLabelsService: () => LabelsService;
 }
 
-export class GridRuntime implements IGrid {
+export class GridRuntime extends Runtime implements IGrid {
     public readonly lifecycle = new RuntimeLifecycle({
         onInit: () => this._init(),
         onDestroy: () => this._destroy(),
@@ -91,6 +91,7 @@ export class GridRuntime implements IGrid {
     public readonly events: IEventEmitter<IGridEvents> = new EventEmitter<IGridEvents>();
 
     constructor({ getProps, provider, pcfContext, theme, state, datasetControl, getLabelsService }: IGridRuntimeParameters) {
+        super();
         this._getProps = getProps;
         this._services.provide('grid', this);
         //first api listener so the others find the options applied

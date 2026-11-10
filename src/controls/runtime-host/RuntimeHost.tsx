@@ -5,6 +5,9 @@ import { ErrorMessageBoundary } from "@ui/error-message-bar";
 import { LoadingBoundary } from "@ui/loading-boundary";
 import { RuntimeContext, RuntimeStatusContext } from "./context";
 import { IRuntimeHostComponents } from "./components";
+import { RuntimeHostUiContainer } from "./ui";
+import { RuntimeLoadingOverlay } from "./adapters/loading-overlay";
+import { RuntimeExecuteError } from "./adapters/execute-error";
 
 /** What the host runs: a runtime that owns a lifecycle. */
 export interface IHostedRuntime extends IRuntime {
@@ -55,15 +58,19 @@ const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<
 
     return <RuntimeContext.Provider value={runtime}>
         <RuntimeStatusContext.Provider value={status}>
-            <ErrorMessageBoundary
-                error={status === 'failed' ? lifecycle.getError() : undefined}
-                onRetry={() => lifecycle.remount()}
-                onOpenDetails={openErrorDialog}
-                components={props.components?.errorMessage}>
-                <LoadingBoundary isLoading={status === 'initializing'} components={props.components?.loading}>
-                    <RuntimeStateProvider runtime={runtime}>{props.children}</RuntimeStateProvider>
-                </LoadingBoundary>
-            </ErrorMessageBoundary>
+            <RuntimeHostUiContainer components={props.components?.container}>
+                <ErrorMessageBoundary
+                    error={status === 'failed' ? lifecycle.getError() : undefined}
+                    onRetry={() => lifecycle.remount()}
+                    onOpenDetails={openErrorDialog}
+                    components={props.components?.mountError}>
+                    <LoadingBoundary isLoading={status === 'initializing'} components={props.components?.initLoading}>
+                        <RuntimeStateProvider runtime={runtime}>{props.children}</RuntimeStateProvider>
+                    </LoadingBoundary>
+                </ErrorMessageBoundary>
+                <RuntimeLoadingOverlay components={props.components?.loadingOverlay} />
+                <RuntimeExecuteError components={props.components?.executeError} />
+            </RuntimeHostUiContainer>
         </RuntimeStatusContext.Provider>
     </RuntimeContext.Provider>;
 };

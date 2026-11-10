@@ -33,7 +33,7 @@ export const RibbonRoot = (props: IRibbonProps) => {
         onRenderContainer: () => <RibbonUiShimmer align={props.align} className={props.className} components={props.components?.shimmer} />,
     };
 
-    return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} components={{ errorMessage: props.components?.errorMessage, loading }}>
+    return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} components={{ mountError: props.components?.errorMessage, initLoading: loading }}>
         <RibbonMount {...props} />
     </RuntimeHost>;
 };
@@ -63,7 +63,7 @@ const RibbonMount = (props: IRibbonProps) => {
         if (command.commands) {
             return { ...item, disabled: props.disabled || command.disabled, subMenuProps: { items: command.commands.map(toItem) } };
         }
-        return { ...item, disabled: props.disabled || command.disabled || runtime.isRunning(command.id), onClick: () => { runtime.execute(command); } };
+        return { ...item, disabled: props.disabled || command.disabled || runtime.isRunning(command.id), onClick: () => { runtime.executeCommand(command); } };
     };
 
     return <RibbonUiCommandBar items={(runtime.getCommands() ?? []).map(toItem)} align={props.align} className={props.className} components={commandBar} />;

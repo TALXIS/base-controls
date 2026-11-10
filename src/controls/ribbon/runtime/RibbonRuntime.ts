@@ -1,5 +1,5 @@
 import { EventEmitter } from "@talxis/client-libraries";
-import { HookRegistry, IEventSubscriber, IRuntime, RuntimeLifecycle, IHookPoint } from "@core";
+import { HookRegistry, IEventSubscriber, IRuntime, Runtime, RuntimeLifecycle, IHookPoint } from "@core";
 import { IRibbonActionCommand, IRibbonCommand } from "../interfaces";
 
 /** What the ribbon raises; its init and teardown are on `lifecycle.events`. */
@@ -38,7 +38,7 @@ export interface IRibbonRuntimeParameters {
     onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
 }
 
-export class RibbonRuntime implements IRibbon {
+export class RibbonRuntime extends Runtime implements IRibbon {
     public readonly lifecycle = new RuntimeLifecycle({
         onInit: () => this._init(),
         onDestroy: () => this._destroy(),
@@ -54,6 +54,7 @@ export class RibbonRuntime implements IRibbon {
     private _runningCommandIds = new Set<string>();
 
     constructor(parameters: IRibbonRuntimeParameters) {
+        super();
         this._onLoad = parameters.onLoad;
     }
 
@@ -86,7 +87,7 @@ export class RibbonRuntime implements IRibbon {
         }
     }
 
-    public async execute(command: IRibbonActionCommand): Promise<void> {
+    public async executeCommand(command: IRibbonActionCommand): Promise<void> {
         this._runningCommandIds.add(command.id);
         this.events.dispatchEvent('onBeforeExecute', command);
         try {

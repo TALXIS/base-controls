@@ -53,7 +53,7 @@ export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
         </DatasetControlUi.Container>,
     };
 
-    return <RuntimeHost<DatasetControlRuntime> createRuntime={createRuntime} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ errorMessage, loading }}>
+    return <RuntimeHost<DatasetControlRuntime> createRuntime={createRuntime} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ mountError: errorMessage, initLoading: loading }}>
         {/* the mount never reads view data */}
         <DatasetControlMount {...props as IDatasetControlProps} />
     </RuntimeHost>;

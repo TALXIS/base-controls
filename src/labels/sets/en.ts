@@ -34,6 +34,7 @@ import { TEMPLATES_LABELS } from '@controls/task-grid/modules/templates/labels/e
 import { LEGACY_DATASET_CONTROL_LABELS } from '@legacy/dataset-control/labels';
 import { ERROR_MESSAGE_BAR_LABELS } from '@ui/error-message-bar/labels/en';
 import { LOADING_BOUNDARY_LABELS } from '@ui/loading-boundary/labels/en';
+import { RUNTIME_EXECUTE_ERROR_LABELS } from '@controls/runtime-host/adapters/execute-error/labels/en';
 import { NOTIFICATION_MESSAGE_BAR_LABELS } from '@ui/notifications/message-bar/labels/en';
 import type { ILabelSet } from '..';
 
@@ -75,5 +76,6 @@ export const BASE_CONTROLS_LABEL_SETS: ILabelSet[] = [
     LEGACY_DATASET_CONTROL_LABELS,
     ERROR_MESSAGE_BAR_LABELS,
     LOADING_BOUNDARY_LABELS,
+    RUNTIME_EXECUTE_ERROR_LABELS,
     NOTIFICATION_MESSAGE_BAR_LABELS,
 ];

@@ -1,5 +1,5 @@
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IRuntime, IServiceRegistry, ModuleLoader, RuntimeLifecycle, ServiceRegistry } from "@core";
+import { IRuntime, IServiceRegistry, ModuleLoader, Runtime, RuntimeLifecycle, ServiceRegistry } from "@core";
 import type { IMapModuleLocator, IMapModuleMap, IMapPoint, IMapProps } from "../interfaces";
 import { MapViewport } from "./viewport/MapViewport";
 
@@ -24,7 +24,7 @@ export interface IMapRuntimeParameters {
     getProps: () => IMapProps;
 }
 
-export class MapRuntime implements IMap {
+export class MapRuntime extends Runtime implements IMap {
     public readonly lifecycle = new RuntimeLifecycle({
         onInit: () => this._init(),
         onDestroy: () => this._destroy(),
@@ -34,6 +34,7 @@ export class MapRuntime implements IMap {
     private _getProps: () => IMapProps;
 
     constructor(parameters: IMapRuntimeParameters) {
+        super();
         this._getProps = parameters.getProps;
         this.services.provide('provider', parameters.provider);
         const viewport = new MapViewport({ map: this });
