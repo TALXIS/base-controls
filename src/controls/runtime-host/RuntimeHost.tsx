@@ -39,7 +39,6 @@ const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<
     const { lifecycle } = runtime;
     const { rerender } = useRerender();
     const openErrorDialog = useOpenErrorDialog();
-    const parentStateStore = useStateStore();
 
     //subscribed in the commit, before the init below starts
     useEventEmitter<IRuntimeEvents>(lifecycle.events, STATUS_EVENTS, rerender);
@@ -62,11 +61,16 @@ const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<
                 onOpenDetails={openErrorDialog}
                 components={props.components?.errorMessage}>
                 <LoadingBoundary isLoading={status === 'initializing'} components={props.components?.loading}>
-                    <StateContext.Provider value={runtime.getStateStore?.() ?? parentStateStore}>
-                        {props.children}
-                    </StateContext.Provider>
+                    <RuntimeStateProvider runtime={runtime}>{props.children}</RuntimeStateProvider>
                 </LoadingBoundary>
             </ErrorMessageBoundary>
         </RuntimeStatusContext.Provider>
     </RuntimeContext.Provider>;
+};
+
+//so the the state is not requested from the runtime while it is still initializing
+const RuntimeStateProvider = (props: { runtime: IHostedRuntime; children?: React.ReactNode }) => {
+    const parentStateStore = useStateStore();
+    const stateStore = useMemo(() => props.runtime.getStateStore?.() ?? parentStateStore, [parentStateStore]);
+    return <StateContext.Provider value={stateStore}>{props.children}</StateContext.Provider>;
 };
