@@ -63,20 +63,21 @@ const isSameLink = (left: Link | undefined, right: Link | undefined): boolean =>
 export class Links implements ILinks {
     private _gantt: IGantt;
     private _parameters: ILinksParameters;
-    private _dependencies?: IDependencies;
+    private _dependencies: IDependencies;
     private _isSyncing = false;
     //the end of the task under the pointer that a link being drawn would attach to
     private _linkDrop?: ILinkDrop;
     private _markLinkDropFrame?: number;
-    private _offDependenciesChanged?: () => void;
+    private _offDependenciesChanged: () => void;
 
     constructor(gantt: IGantt, parameters: ILinksParameters) {
         this._gantt = gantt;
         this._parameters = parameters;
-        this._dependencies = gantt.getTaskRuntime().services.get('datasetControl').modules.find('dependencies');
-        if (!this._dependencies) {
-            return;
+        const dependencies = gantt.getTaskRuntime().services.get('datasetControl').modules.find('dependencies');
+        if (!dependencies) {
+            throw new Error("The links module needs a dependencies module, such as createMemoryDependenciesModule(), in TaskDatasetControl's modules.");
         }
+        this._dependencies = dependencies;
         gantt.hooks.chartConfig.add(this._configureChart);
         gantt.services.get('theme').hooks.styles.add((result, theme) => result.styles.push(getLinksStyles(theme)));
         gantt.surfaces.hooks.surfaces.add(this._onSurfaces);
@@ -90,7 +91,7 @@ export class Links implements ILinks {
     }
 
     public isEditable(): boolean {
-        return !!this._dependencies?.isEditable() && this._gantt.getTaskRuntime().isEditingEnabled();
+        return this._dependencies.isEditable() && this._gantt.getTaskRuntime().isEditingEnabled();
     }
 
     public getComponents(): ILinksComponents {
@@ -98,7 +99,7 @@ export class Links implements ILinks {
     }
 
     public destroy(): void {
-        this._offDependenciesChanged?.();
+        this._offDependenciesChanged();
     }
 
     private _configureChart = (chart: GanttStatic): void => {
@@ -209,12 +210,12 @@ export class Links implements ILinks {
     }
 
     private _isLinkSaving(link: Link): boolean {
-        return !!this._dependencies?.isDependencySaving({ predecessorTaskId: String(link.source), successorTaskId: String(link.target) });
+        return this._dependencies.isDependencySaving({ predecessorTaskId: String(link.source), successorTaskId: String(link.target) });
     }
 
     //a task in a chain being saved stays as it is, links included
     private _isLinkAllowed(chart: GanttStatic, sourceId: string, drop: ILinkDrop): boolean {
-        if (this._dependencies?.isDependencyLocked({ predecessorTaskId: sourceId, successorTaskId: drop.targetId })) {
+        if (!this._dependencies.canCreateDependency(sourceId, drop.targetId) || this._dependencies.isDependencyLocked({ predecessorTaskId: sourceId, successorTaskId: drop.targetId })) {
             return false;
         }
         const type = getDependencyType(!!chart.getState().link_from_start, drop.isToStart);
@@ -224,7 +225,7 @@ export class Links implements ILinks {
     //drawn from the dependencies every time so the chart holds no link they lack
     private _syncLinks = (): void => {
         const chart = this._gantt.services.find('chart');
-        if (!chart || !this._dependencies) {
+        if (!chart) {
             return;
         }
         const wanted = new Map<string, Link>();
@@ -260,7 +261,7 @@ export class Links implements ILinks {
         const type = drop?.targetId === String(link.target) ? getDependencyType(drawnType.startsWith('start'), drop.isToStart) : drawnType;
         this._linkDrop = undefined;
         runQuietly(async () => {
-            await this._dependencies?.createDependency({ predecessorTaskId: String(link.source), successorTaskId: String(link.target), type });
+            await this._dependencies.createDependency({ predecessorTaskId: String(link.source), successorTaskId: String(link.target), type });
         });
         return false;
     };
@@ -268,7 +269,7 @@ export class Links implements ILinks {
     private _onLinkDblClick = (id: string | number): boolean => {
         const chart = this._gantt.services.find('chart');
         const link = chart?.isLinkExists(id) ? chart.getLink(id) : undefined;
-        if (this.isEditable() && link && !this._dependencies?.isDependencyLocked({ predecessorTaskId: String(link.source), successorTaskId: String(link.target) })) {
+        if (this.isEditable() && link && !this._dependencies.isDependencyLocked({ predecessorTaskId: String(link.source), successorTaskId: String(link.target) })) {
             runQuietly(() => this._deleteLink(String(id)));
         }
         return false;
@@ -276,12 +277,12 @@ export class Links implements ILinks {
 
     private async _deleteLink(dependencyId: string): Promise<void> {
         const taskRuntime = this._gantt.getTaskRuntime();
-        const dependency = this._dependencies?.getDependencies().find(candidate => candidate.id === dependencyId);
+        const dependency = this._dependencies.getDependencies().find(candidate => candidate.id === dependencyId);
         const getName = (taskId?: string) => (taskId && this._gantt.services.get('tasks').getRecord(taskId)?.getFormattedValue(taskRuntime.getFieldMapping().subject)) ?? '';
         const text = this._labels.get('links.confirmDeleteLink', { predecessor: getName(dependency?.predecessorTaskId), successor: getName(dependency?.successorTaskId) });
         const confirmation = await taskRuntime.services.get('pcfContext').navigation.openConfirmDialog({ text });
         if (confirmation.confirmed) {
-            await this._dependencies?.deleteDependency(dependencyId);
+            await this._dependencies.deleteDependency(dependencyId);
         }
     }
 }

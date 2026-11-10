@@ -12,8 +12,10 @@ import {
     GANTT_LINK_START_DENY_CLASS,
     GANTT_LINK_TARGET_CLASS,
     GANTT_LINK_TOOLTIP_CLASS,
+    GANTT_TASK_CONTENT_CLASS,
     GANTT_TASK_LINE_CLASS,
     GANTT_TASK_LINK_CLASS,
+    GANTT_TASK_PROGRESS_WRAPPER_CLASS,
 } from "../../chart";
 import { LINK_DRAG_POINTER_VARIABLES, LINK_DRAG_TYPE_CLASS, LINK_DROP_ATTRIBUTE, LINK_SAVING_CLASS } from "./classNames";
 
@@ -23,6 +25,8 @@ const SAVING_PULSE = keyframes({
     '0%, 100%': { opacity: 1 },
     '50%': { opacity: 0.35 },
 });
+
+const getDropGlow = (color: string): string => `drop-shadow(0 0 3px color-mix(in srgb, ${color} 70%, transparent))`;
 
 export const getLinksStyles = (theme: ITheme): IStyle => ({
     '--dhx-gantt-link-background': theme.semanticColors.bodySubtext,
@@ -39,11 +43,18 @@ export const getLinksStyles = (theme: ITheme): IStyle => ({
     [LINK_TARGET_GLOW_SELECTOR]: {
         boxShadow: 'none',
     },
-    [`.${GANTT_TASK_LINE_CLASS}[${LINK_DROP_ATTRIBUTE}]`]: {
-        boxShadow: `0 0 0 2px ${theme.palette.themePrimary}`,
+    //glows as a selected bar does, around its shape
+    [`.${GANTT_TASK_LINE_CLASS}[${LINK_DROP_ATTRIBUTE}] .${GANTT_TASK_CONTENT_CLASS}`]: {
+        height: '100%',
+        borderRadius: 'inherit',
+        background: 'inherit',
+        filter: getDropGlow(theme.palette.themePrimary),
     },
-    [`.${GANTT_TASK_LINE_CLASS}[${LINK_DROP_ATTRIBUTE}$="denied"]`]: {
-        boxShadow: `0 0 0 2px ${theme.semanticColors.errorIcon}`,
+    [`.${GANTT_TASK_LINE_CLASS}[${LINK_DROP_ATTRIBUTE}$="denied"] .${GANTT_TASK_CONTENT_CLASS}`]: {
+        filter: getDropGlow(theme.semanticColors.errorIcon),
+    },
+    [`.${GANTT_TASK_LINE_CLASS}[${LINK_DROP_ATTRIBUTE}] .${GANTT_TASK_PROGRESS_WRAPPER_CLASS}`]: {
+        zIndex: 1,
     },
     [`.${GANTT_TASK_LINE_CLASS}[${LINK_DROP_ATTRIBUTE}] .${GANTT_LINK_CONTROL_CLASS}`]: {
         display: 'flex',

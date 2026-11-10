@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../../../grid/showcase/ExploreCar
 import { GanttLinksExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-The links module draws the task grid's dependencies as arrows between the bars, and lets the user draw and delete them. The dependencies come from the [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) module, which keeps them in memory, in Dataverse or in TALXIS: without it, the links module draws nothing. Try it below: drag from the end of one bar to the start of another.
+The links module draws the task grid's dependencies as arrows between the bars, and lets the user draw and delete them. The dependencies come from the [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) module, which keeps them in memory, in Dataverse or in TALXIS: without it, the Gantt fails to load with an error saying so. Try it below: drag from the end of one bar to the start of another.
 
 {{canvas: Link the tasks}}
 
@@ -14,7 +14,7 @@ The links module draws the task grid's dependencies as arrows between the bars, 
 
 | Gesture | Does |
 |---|---|
-| Drag from the handle at either end of a bar to another bar | Draws a link. The ends it joins decide the type: *finish to start*, *start to start*, *finish to finish* or *start to finish*. A duplicate, a cycle or a link to a task that is saving is refused. |
+| Drag from the handle at either end of a bar to another bar | Draws a link. The ends it joins decide the type: *finish to start*, *start to start*, *finish to finish* or *start to finish*. A duplicate, a cycle or a link to a task that is saving is refused, and shows as refused while it is drawn. |
 | Double-click a link | Deletes it, once the user confirms |
 | Point at a link | Shows what it joins |
 
