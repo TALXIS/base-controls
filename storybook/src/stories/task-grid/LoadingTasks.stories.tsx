@@ -58,7 +58,7 @@ A \`MemoryTable\` is one table of plain rows that you create and keep, outside t
 
 ### Dataverse
 
-The example's *dataverse.ts* loads the tasks from Dataverse; its parameters are under *Reference* below. *Edit* opens the task's form in a side dialog, or the bulk edit form for several, and the form is told the task is read-only when it is inactive or \`enableEditing\` is off. New tasks are created in their place straight away, with the project lookup filled in when the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module is there. To change how the store works, extend \`DataverseTaskStore\`: its helper methods are \`protected\`.
+The example's *dataverse.ts* loads the tasks from Dataverse; its parameters are under *Reference* below. *Edit* opens the task's form in a side dialog, or the bulk edit form for several, and the form is told the task is read-only when it is inactive or \`enableEditing\` is off. New tasks are created in their place straight away, with the project lookup filled in when the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module is there. To change how the store works, such as to give new tasks values of their own, extend \`DataverseTaskStore\` and override \`createTask\`: its helper methods are \`protected\`.
 
 ## Rescheduled dates
 
@@ -84,7 +84,6 @@ Implement \`ITaskStore\`, listed under *Reference* below, and return it from \`o
 | \`fetchXml\` | Required. Selects the tasks. It is a Liquid template over \`project\`, from the [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module, and \`hostRecord\`. |
 | \`hostRecord\` | \`{ entityName, id?, data? }\`, the record the grid sits on, such as the one the form shows. |
 | \`form\` | How tasks open: \`editId\` and \`bulkEditId\` pick the forms, and \`getParameters(operation, defaults)\` changes what \`Xrm.Navigation.navigateTo\` gets. |
-| \`getNewTaskDefaults\` | \`(params) => IRawRecord\`, or a promise of one: values every new task starts with; the values it is created with win. |
 
 ### Your own store
 

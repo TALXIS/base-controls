@@ -38,8 +38,6 @@ export interface IDataverseTaskStoreParameters {
     /** The record the grid sits on, as `hostRecord` in the FetchXML. */
     hostRecord?: IDataverseHostRecord;
     form?: IDataverseTaskFormParameters;
-    /** Values every new task starts with, by column. */
-    getNewTaskDefaults?: (parameters: ITaskCreateParameters) => IRawRecord | Promise<IRawRecord>;
 }
 
 const SIDE_DIALOG: Xrm.Navigation.NavigationOptions = { target: 2, width: { value: 80, unit: '%' }, position: 1 };
@@ -98,8 +96,7 @@ export class DataverseTaskStore implements ITaskStore {
 
     public async createTask(parameters: ITaskCreateParameters): Promise<ITaskCreateResult | null> {
         const placement = this._getPlacement(parameters);
-        const defaults = { ...await this._parameters.getNewTaskDefaults?.(parameters), ...parameters.data };
-        const record = await this._createThroughWebApi({ ...defaults, ...placement, ...parameters.taskId && { [this._primaryIdAttribute]: parameters.taskId } });
+        const record = await this._createThroughWebApi({ ...parameters.data, ...placement, ...parameters.taskId && { [this._primaryIdAttribute]: parameters.taskId } });
         return record && { record };
     }
 

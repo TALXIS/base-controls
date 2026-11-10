@@ -4875,7 +4875,6 @@ declare class DataverseTaskStore implements ITaskStore {
         fetchXml: string;
         hostRecord?: IDataverseHostRecord;
         form?: { editId?: string; bulkEditId?: string; getParameters?: (operation: 'edit' | 'bulkEdit' | 'open', defaults: any) => any };
-        getNewTaskDefaults?: (params: ITaskCreateParameters) => IRawRecord | Promise<IRawRecord>;
     });
     [operation: string]: any;
 }
