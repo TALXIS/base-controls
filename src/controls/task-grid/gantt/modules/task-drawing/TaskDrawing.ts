@@ -54,7 +54,7 @@ export class TaskDrawing implements ITaskDrawing {
         const chart = this._gantt.services.find('chart');
         const tasks = this._gantt.services.find('tasks');
         const taskRuntime = this._gantt.getTaskRuntime();
-        if (!chart?.isTaskExists(taskId) || !chart.getTask(taskId).unscheduled || !tasks || !taskRuntime.isEditingEnabled()) {
+        if (!chart?.isTaskExists(taskId) || !chart.getTask(taskId).unscheduled || !tasks || !taskRuntime.isEditingEnabled() || !this._gantt.services.get('grid').modules.find('editing')) {
             return false;
         }
         const hasSubtasks = taskRuntime.getProvider().getRecordTree().structure.getDescendants(taskId).length > 0;

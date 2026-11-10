@@ -12,7 +12,7 @@ Three Gantt modules let the user change tasks on the timeline: move and resize b
 
 ## Move and resize bars
 
-\`createBarDraggingModule()\` lets the user drag a bar to move the task, or drag either end to change its start or end. The bar snaps as described under *Dates* on [**Gantt**](?path=/docs/controls-taskgrid-gantt-get-started--overview), and the dates are written once it is dropped. It needs \`enableEditing\`, and the dates save straight away with \`createTaskEditingModule()\` in \`TaskGrid\`, as the example has. A task that is locked or saving cannot be dragged.
+\`createBarDraggingModule()\` lets the user drag a bar to move the task, or drag either end to change its start or end. The bar snaps as described under *Dates* on [**Gantt**](?path=/docs/controls-taskgrid-gantt-get-started--overview), and the dates are written once it is dropped. It needs \`enableEditing\` and \`createTaskEditingModule()\` in \`TaskGrid\`, as the example has, and the dates save straight away. Without either, and for a task that is locked or saving, bars cannot be dragged.
 
 | Option | Default | Description |
 |---|---|---|
@@ -27,7 +27,7 @@ Three Gantt modules let the user change tasks on the timeline: move and resize b
 |---|---|---|
 | Hold Ctrl | Shows the date under the pointer | \`enableCreation\` |
 | Ctrl+drag over a row | Draws a new task under the parent of the row's task, first or last among its siblings as on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview) | \`enableCreation\` |
-| Drag along the empty row of a task with no dates, such as one just made with *New* | Draws that task's dates. Not for a task with subtasks, or one that is locked or saving. | \`enableEditing\` |
+| Drag along the empty row of a task with no dates, such as one just made with *New* | Draws that task's dates. Not for a task with subtasks, or one that is locked or saving. | \`enableEditing\` and \`createTaskEditingModule()\` |
 
 Drawn dates save as a dragged bar's do. The module takes \`components\`: see *Changing how it looks* below.
 

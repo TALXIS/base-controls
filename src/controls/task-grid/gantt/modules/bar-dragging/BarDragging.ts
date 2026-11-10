@@ -82,7 +82,8 @@ export class BarDragging implements IBarDragging {
     //a second change would race the one being saved
     private _canDrag(taskId: string): boolean {
         const tasks = this._gantt.services.find('tasks');
-        return !!tasks && this._gantt.getTaskRuntime().isEditingEnabled() && !tasks.isLocked(taskId) && !tasks.isInSavingChain(taskId);
+        const isEditable = this._gantt.getTaskRuntime().isEditingEnabled() && !!this._gantt.services.get('grid').modules.find('editing');
+        return !!tasks && isEditable && !tasks.isLocked(taskId) && !tasks.isInSavingChain(taskId);
     }
 
     //the chart's own rounding on drop and its shortest bar follow the same steps
