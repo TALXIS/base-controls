@@ -1,4 +1,9 @@
 {
+    ". IMemoryTaskDatabaseParameters": null,
+    ". IMemoryTaskShape": null,
+    ". IMemoryTemplatesStoreParameters": null,
+    ". MemoryTaskDatabase": null,
+    ". MemoryTemplatesStore": null,
     ". IDatasetControlEvents": null,
     ". IDatasetControlLoadParameters": null,
     ". ITaskGridLoadParameters": null,

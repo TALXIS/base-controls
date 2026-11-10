@@ -40,17 +40,17 @@ const createHeader = (header?: IGanttExample['header']) => header ? `
         <DatasetControl.Header>${createHeaderRegion('Start', header.start)}${createHeaderRegion('End', header.end)}
         </DatasetControl.Header>` : ''
 
-const createGanttCode = (example: IGanttExample) => withImports(`import { createLoadTasks, createTaskDatabase } from './tasks'
+const createGanttCode = (example: IGanttExample) => withImports(`import { createLoadTasks, createTaskTable } from './tasks'
 ${example.setup ?? ''}
 const GridExample = () => {
-    const database = React.useMemo(createTaskDatabase, [])${example.controlModules ? `
+    const tasks = React.useMemo(createTaskTable, [])${example.controlModules ? `
     const controlModules = [${example.controlModules}
     ]` : ''}
     const ganttModules = [
         createLibraryModule(),${example.ganttModules}
     ]
 
-    return <TaskDatasetControl${example.controlModules ? ' modules={controlModules}' : ''}${example.controlProps ?? ''} onLoad={createLoadTasks(database)} height='520px'>${createHeader(example.header)}
+    return <TaskDatasetControl${example.controlModules ? ' modules={controlModules}' : ''}${example.controlProps ?? ''} onLoad={createLoadTasks(tasks)} height='520px'>${createHeader(example.header)}
         <DatasetControl.Body>
             <TaskGantt.Split>
                 <TaskGrid${example.gridModules ? ` modules={[${example.gridModules}]}` : ''} />
@@ -72,13 +72,13 @@ const SHOWCASE_CODE = createGanttCode({
         createBarDraggingModule(),`,
 })
 
-const BASIC_CODE = withImports(`import { createLoadTasks, createTaskDatabase } from './tasks'
+const BASIC_CODE = withImports(`import { createLoadTasks, createTaskTable } from './tasks'
 
 const GridExample = () => {
-    const database = React.useMemo(createTaskDatabase, [])
+    const tasks = React.useMemo(createTaskTable, [])
 
     //the Gantt needs the startDate and endDate tasks.ts maps
-    return <TaskDatasetControl onLoad={createLoadTasks(database)} height='480px'>
+    return <TaskDatasetControl onLoad={createLoadTasks(tasks)} height='480px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 <TaskGantt.ZoomSlider />

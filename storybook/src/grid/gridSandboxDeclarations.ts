@@ -4545,17 +4545,8 @@ interface IMemoryTemplate extends IMemoryTemplateTask {
     name: string;
 }
 
-/** Templates held in memory. */
-declare class MemoryTemplatesStore implements ITemplatesStore {
-    /** Its tasks are created in the database the grid's MemoryTaskStore reads. */
-    constructor(parameters: { taskRuntime: ITaskRuntime; database: MemoryTaskDatabase; templates: IMemoryTemplate[] });
-    createTemplatesProvider(): IDataProvider;
-    createTasks(params: ITemplateTasksCreateParameters): Promise<ITasksCreateResult | null>;
-    createTemplate(template: ITemplate): Promise<void>;
-}
-
-/** Task templates held in memory, the ones captured since kept for as long as the module is. */
-declare const createMemoryTemplatesModule: (parameters: { database: MemoryTaskDatabase; templates: IMemoryTemplate[] }) => IDatasetControlModule;
+/** Task templates kept in the \`templates\` table, for tasks loaded through \`MemoryTaskStore\`. */
+declare const createMemoryTemplatesModule: (parameters: { templates: MemoryTable<IMemoryTemplate> }) => IDatasetControlModule;
 
 /** The sample templates: a bug fix, a feature and a research spike. */
 declare const TEMPLATES: IMemoryTemplate[];
@@ -4653,22 +4644,25 @@ interface ITaskStore {
     [operation: string]: any;
 }
 
-/** Tasks held in memory, shared by the memory stores that read and write them. */
-declare class MemoryTaskDatabase {
-    /** The records are copied, so changes never reach the array. */
-    constructor(parameters: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata });
-    getMetadata(): IMemoryProviderEntityMetadata;
-    getTasks(): IRawRecord[];
-    getTask(taskId: string): IRawRecord | undefined;
-    /** Creates the tasks with their subtrees, the first at the rank params give and the rest after it. */
-    createTasks(trees: ICreateTaskTree[], params: Omit<ITaskCreateParameters, 'data'>, shape: { fieldMapping: IFieldMapping; columns: IColumn[] }): IRawRecord[];
-    updateTask(taskId: string, values: IRawRecord): void;
-    deleteTasks(taskIds: string[]): void;
+/** One table of plain rows, kept by whoever creates it and read by the memory stores it is given. */
+declare class MemoryTable<TRow extends object> {
+    /** Rows are copied in and out, so no one holds the table's own. */
+    constructor(parameters: { idKey: keyof TRow & string; rows?: TRow[] });
+    readonly events: IEventSubscriber<{ onChanged: () => void }>;
+    getRow(id: string): TRow | undefined;
+    filter(predicate: (row: TRow) => boolean): TRow[];
+    insert(rows: TRow[]): void;
+    update(id: string, values: Partial<TRow>): void;
+    delete(ids: string[]): void;
+    /** Every row as plain data, to keep or to \`load\` again. */
+    dump(): TRow[];
+    /** Replaces every row. */
+    load(rows: TRow[]): void;
 }
 
-/** Tasks held in memory; editing one, or opening a record a lookup points to, shows an alert. */
+/** Tasks kept in a \`MemoryTable\`; opening one, or a record a lookup points to, shows an alert. */
 declare class MemoryTaskStore implements ITaskStore {
-    constructor(parameters: { taskRuntime: ITaskRuntime; database: MemoryTaskDatabase; columns: IColumn[] });
+    constructor(parameters: { taskRuntime: ITaskRuntime; tasks: MemoryTable<IRawRecord>; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] });
     [operation: string]: any;
 }
 

@@ -4,8 +4,8 @@ import { IMemoryTemplatesStoreParameters, MemoryTemplatesStore } from "./MemoryT
 
 export interface IMemoryTemplatesModuleParameters extends Omit<IMemoryTemplatesStoreParameters, 'taskRuntime'>, Omit<ITemplatesParameters, 'createStore'> { }
 
-/** Task templates held in memory, the ones captured since kept for as long as the module is. */
+/** Task templates kept in the `templates` table, for tasks loaded through `MemoryTaskStore`. */
 export const createMemoryTemplatesModule = (parameters: IMemoryTemplatesModuleParameters): ITemplatesModule => {
-    const { database, templates, ...moduleParameters } = parameters;
-    return createTemplatesModule({ ...moduleParameters, createStore: taskRuntime => new MemoryTemplatesStore({ taskRuntime, database, templates }) });
+    const { templates, ...moduleParameters } = parameters;
+    return createTemplatesModule({ ...moduleParameters, createStore: taskRuntime => new MemoryTemplatesStore({ taskRuntime, templates }) });
 };

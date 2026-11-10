@@ -1,6 +1,7 @@
 import { DataTypes, IMemoryProviderEntityMetadata, MemoryDataProvider } from "@talxis/client-libraries";
+import type { MemoryTable } from "@core/state";
 import type { ICreateTaskTree, ITasksCreateResult } from "../../../runtime/provider";
-import type { MemoryTaskDatabase } from "../../../runtime/data-sources/memory/MemoryTaskDatabase";
+import { MemoryTaskStore } from "../../../runtime/data-sources/memory/MemoryTaskStore";
 import type { ITaskRuntime } from "../../../runtime";
 import type { ITemplate, ITemplatesStore, ITemplateTasksCreateParameters } from "../Templates";
 import { simulateBackend } from "../../../runtime/data-sources/memory/simulateBackend";
@@ -21,10 +22,8 @@ export interface IMemoryTemplate extends IMemoryTemplateTask {
 
 export interface IMemoryTemplatesStoreParameters {
     taskRuntime: ITaskRuntime;
-    /** Where a template's tasks are created, the one the grid's memory task store reads. */
-    database: MemoryTaskDatabase;
-    /** Copied in with the templates captured later. */
-    templates: IMemoryTemplate[];
+    /** Where the templates are kept, the ones the user saves included. */
+    templates: MemoryTable<IMemoryTemplate>;
 }
 
 const TEMPLATE_METADATA: IMemoryProviderEntityMetadata = {
@@ -34,38 +33,39 @@ const TEMPLATE_METADATA: IMemoryProviderEntityMetadata = {
     QuickFindColumns: ['name'],
 };
 
-/** Templates held in memory. */
+/** Templates kept in a `MemoryTable`, creating their tasks through the grid's `MemoryTaskStore`. */
 export class MemoryTemplatesStore implements ITemplatesStore {
     private _taskRuntime: ITaskRuntime;
-    private _database: MemoryTaskDatabase;
-    private _templates: IMemoryTemplate[];
+    private _templates: MemoryTable<IMemoryTemplate>;
 
     constructor(parameters: IMemoryTemplatesStoreParameters) {
         this._taskRuntime = parameters.taskRuntime;
-        this._database = parameters.database;
-        this._templates = structuredClone(parameters.templates);
+        this._templates = parameters.templates;
     }
 
     public createTemplatesProvider(): MemoryDataProvider {
-        const provider = new MemoryDataProvider({ dataSource: this._templates.map(template => ({ id: template.id, name: template.name })), metadata: TEMPLATE_METADATA });
+        const provider = new MemoryDataProvider({ dataSource: this._templates.dump().map(template => ({ id: template.id, name: template.name })), metadata: TEMPLATE_METADATA });
         provider.setColumns([{ name: 'name', displayName: this._taskRuntime.getLabels(TEMPLATES_LABELS).get('templates.name'), dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 200 }]);
         return provider;
     }
 
     public async createTasks(parameters: ITemplateTasksCreateParameters): Promise<ITasksCreateResult | null> {
         await simulateBackend();
-        const template = this._templates.find(candidate => candidate.id === parameters.templateId);
+        const template = this._templates.getRow(parameters.templateId);
         if (!template) {
             return null;
         }
-        const provider = this._taskRuntime.getProvider();
-        const fieldMapping = provider.getFieldMapping();
-        const tree: ICreateTaskTree = { data: { ...template.data, [fieldMapping.subject]: template.name }, children: template.children };
-        return { records: this._database.createTasks([tree], parameters, { fieldMapping, columns: provider.getColumns() }) };
+        const store = this._taskRuntime.getProvider().getStore();
+        if (!(store instanceof MemoryTaskStore)) {
+            throw new Error('Memory templates need the tasks loaded through MemoryTaskStore.');
+        }
+        const subject = this._taskRuntime.getProvider().getFieldMapping().subject;
+        const tree: ICreateTaskTree = { data: { ...template.data, [subject]: template.name }, children: template.children };
+        return { records: store.createTaskTrees([tree], parameters) };
     }
 
     public async createTemplate(template: ITemplate): Promise<void> {
         await simulateBackend();
-        this._templates.push({ id: crypto.randomUUID(), name: template.name, ...structuredClone(template.tree) });
+        this._templates.insert([{ ...template.tree, id: crypto.randomUUID(), name: template.name }]);
     }
 }

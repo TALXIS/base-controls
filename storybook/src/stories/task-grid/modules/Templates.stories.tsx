@@ -18,7 +18,7 @@ With \`enableCreation\`, *From template* sits in the ribbon's *New* menu, for to
 
 | Factory | Keeps the templates |
 |---|---|
-| \`createMemoryTemplatesModule\` | In memory. \`templates\` are the starting templates, and \`database\` is the \`MemoryTaskDatabase\` the tasks are created in, the one the \`MemoryTaskStore\` reads. Templates the user saves are kept until the control mounts again, such as on a view switch. |
+| \`createMemoryTemplatesModule\` | In the \`templates\` [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview) you keep, the ones the user saves included. Their tasks are created through the grid's \`MemoryTaskStore\`, so load the tasks with it. |
 | \`createTemplatesModule\` | In a store of yours: \`createStore\` returns an \`ITemplatesStore\`. |
 
 A memory template is a task: \`data\` holds its column values, and \`children\` its subtasks, each with \`data\` and \`children\` of its own. The template's own task is named after it.
@@ -49,7 +49,7 @@ A memory template is a task: \`data\` holds its column values, and \`children\` 
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Working with tasks', iconName: 'Edit', href: '?path=/docs/controls-taskgrid-working-with-tasks--overview', text: 'Create, edit, delete and move tasks one at a time.' },
-    { title: 'Loading tasks', iconName: 'CloudDownload', href: '?path=/docs/controls-taskgrid-loading-tasks--overview', text: 'The memory database the templates create their tasks in.' },
+    { title: 'Loading tasks', iconName: 'CloudDownload', href: '?path=/docs/controls-taskgrid-loading-tasks--overview', text: 'The memory tables the templates and their tasks are kept in.' },
 ]
 
 const meta = {

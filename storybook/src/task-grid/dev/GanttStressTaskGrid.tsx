@@ -30,7 +30,8 @@ const VIEWS: ITaskGridView[] = [
 const GridExample = () => {
     const tasks = React.useMemo(() => createStressTasks(10000), [])
     const lookupManyValues = React.useMemo(() => takeLookupManyValues(tasks), [tasks])
-    const database = React.useMemo(() => new MemoryTaskDatabase({ records: tasks, metadata: TASK_METADATA }), [tasks])
+    const taskTable = React.useMemo(() => new MemoryTable({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: tasks }), [tasks])
+    const templates = React.useMemo(() => new MemoryTable({ idKey: 'id', rows: TEMPLATES }), [])
     const modules = React.useMemo(() => [
         createRowSelectionModule({ mode: 'multiple' }),
         createTaskEditingModule(),
@@ -48,10 +49,10 @@ const GridExample = () => {
             enableDeletion: true,
         }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
-        createMemoryTemplatesModule({ database, templates: TEMPLATES }),
+        createMemoryTemplatesModule({ templates }),
         createMemoryTaskChecklistModule({ items: createChecklistItems(tasks) }),
         createMemoryDependenciesModule({ dependencies: createDependencies(tasks) }),
-    ], [database])
+    ], [taskTable])
     const ganttModules = React.useMemo(() => [
         createLibraryModule(),
         createMarkersModule(),
@@ -64,7 +65,7 @@ const GridExample = () => {
     ], [])
 
     const onLoad = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
-        return { store: new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }), fieldMapping, views: VIEWS }
+        return { store: new MemoryTaskStore({ taskRuntime, tasks: taskTable, metadata: TASK_METADATA, columns: TASK_COLUMNS }), fieldMapping, views: VIEWS }
     }
 
     return <TaskDatasetControl modules={datasetControlModules} enableCreation enableEditing enableDeletion stateKey='devGanttStressTasks' height='100%' onLoad={onLoad}>

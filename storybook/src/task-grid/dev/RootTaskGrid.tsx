@@ -35,7 +35,7 @@ const ROOT_OPTIONS = [
 
 const GridExample = () => {
     const [rootTaskId, setRootTaskId] = React.useState('')
-    const database = React.useMemo(() => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA }), [])
+    const taskTable = React.useMemo(() => new MemoryTable({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: TASKS }), [])
     const modules = React.useMemo(() => [
         createRowSelectionModule({ mode: 'multiple' }),
         createTaskEditingModule(),
@@ -48,7 +48,7 @@ const GridExample = () => {
 
     const onLoad = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
         return {
-            store: new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }),
+            store: new MemoryTaskStore({ taskRuntime, tasks: taskTable, metadata: TASK_METADATA, columns: TASK_COLUMNS }),
             fieldMapping,
             views: VIEWS,
             rootTaskId: rootTaskId || undefined,

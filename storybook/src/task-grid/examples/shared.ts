@@ -4,7 +4,8 @@ import type { IGridExampleFile } from '../../grid/GridLivePreview'
 /** The sample tasks, their views and a memory loader, imported by the Task Grid examples. */
 export const TASKS_FILE: IGridExampleFile = {
     name: 'tasks.ts',
-    code: `import { IFieldMapping, ITaskGridLoadResult, ITaskGridView, ITaskRuntime, MemoryTaskDatabase, MemoryTaskStore } from '@talxis/base-controls'
+    code: `import { IFieldMapping, ITaskGridLoadResult, ITaskGridView, ITaskRuntime, MemoryTable, MemoryTaskStore } from '@talxis/base-controls'
+import type { IRawRecord } from '@talxis/client-libraries'
 
 //TASKS, TASK_METADATA, TASK_COLUMNS and getTaskColumns are the sample tasks of these docs
 export const fieldMapping: IFieldMapping = {
@@ -31,12 +32,12 @@ export const TASK_VIEWS: ITaskGridView[] = [
     { id: 'flat', name: 'Every task on its own', resolve: () => ({ columns: getTaskColumns('subject', 'statuscode', 'priority'), data: { isFlatList: true } }) },
 ]
 
-//one database for the whole example, so changes survive a view switch
-export const createTaskDatabase = () => new MemoryTaskDatabase({ records: TASKS, metadata: TASK_METADATA })
+//one table for the whole example, so changes survive a view switch
+export const createTaskTable = () => new MemoryTable<IRawRecord>({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: TASKS })
 
-export const createLoadTasks = (database: MemoryTaskDatabase, views = TASK_VIEWS) => async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
+export const createLoadTasks = (tasks: MemoryTable<IRawRecord>, views = TASK_VIEWS) => async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {
     return {
-        store: new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }),
+        store: new MemoryTaskStore({ taskRuntime, tasks, metadata: TASK_METADATA, columns: TASK_COLUMNS }),
         fieldMapping,
         views,
     }

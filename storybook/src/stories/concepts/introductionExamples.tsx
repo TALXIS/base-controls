@@ -173,19 +173,22 @@ export const StoreForm = (props: { store: IRecord }) => {
 
 const OPENING_PLAN_FILE: IGridExampleFile = {
     name: 'OpeningPlan.tsx',
-    code: `import { createIndexedDbCustomColumnsModule, createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createMemoryTemplatesModule, createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ITaskGridLoadResult, ITaskRuntime, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+    code: `import { createIndexedDbCustomColumnsModule, createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createMemoryTemplatesModule, createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, IMemoryTemplate, ITaskGridLoadResult, ITaskRuntime, MemoryTable, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { createBarDraggingModule, createLibraryModule, createLinksModule, createMemoryMarkersModule, createMemoryNonWorkingDaysModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, TaskGantt, TaskTooltip } from '@talxis/base-controls/gantt'
 import type { IRecord } from '@talxis/client-libraries'
-import { CHECKLIST_ITEMS, DEPENDENCIES, HOLIDAYS, LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VALUES, PLAN_FIELD_MAPPING, PLAN_VIEWS, PLANS, STANDARD_OPENING, TASK_COLUMNS } from './plans'
+import { CHECKLIST_ITEMS, DEPENDENCIES, HOLIDAYS, LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VALUES, PLAN_FIELD_MAPPING, PLAN_METADATA, PLAN_VIEWS, PLANS, STANDARD_OPENING, TASK_COLUMNS } from './plans'
+
+//one for every store, so a template the user saves is offered on all of them
+const templates = new MemoryTable<IMemoryTemplate>({ idKey: 'id', rows: [STANDARD_OPENING] })
 
 //the store's own TaskDatasetControl, with a Gantt beside its task grid
 export const OpeningPlan = (props: { store: IRecord }) => {
-    const database = PLANS[props.store.getRecordId()]
+    const tasks = PLANS[props.store.getRecordId()]
     //the opening date as the form holds it, saved or not
     const openingDate = dayjs(props.store.getValue('openingdate'))
 
     const loadPlan = (taskRuntime: ITaskRuntime): ITaskGridLoadResult => ({
-        store: new MemoryTaskStore({ taskRuntime, database, columns: TASK_COLUMNS }),
+        store: new MemoryTaskStore({ taskRuntime, tasks, metadata: PLAN_METADATA, columns: TASK_COLUMNS }),
         fieldMapping: PLAN_FIELD_MAPPING,
         views: PLAN_VIEWS,
     })
@@ -196,8 +199,8 @@ export const OpeningPlan = (props: { store: IRecord }) => {
         createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS }),
         //the Gantt's links draw these
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
-        //From template creates its tasks in the store's own database
-        createMemoryTemplatesModule({ database, templates: [STANDARD_OPENING] }),
+        //From template creates its tasks among the store's own tasks
+        createMemoryTemplatesModule({ templates }),
         //Budget and Supplier in Edit columns, kept in the browser's IndexedDB
         createIndexedDbCustomColumnsModule({
             databaseName: 'introductionDocs.planColumns',
@@ -309,9 +312,9 @@ export const createStoresProvider = () => new MemoryDataProvider({
 
 const PLANS_FILE: IGridExampleFile = {
     name: 'plans.ts',
-    code: `import { ILookupManyColumn, IMemoryTemplate, ITaskChecklistItem, ITaskDependency, ITaskGridView, MemoryTaskDatabase } from '@talxis/base-controls'
+    code: `import { ILookupManyColumn, IMemoryTemplate, ITaskChecklistItem, ITaskDependency, ITaskGridView, MemoryTable } from '@talxis/base-controls'
 import { INonWorkingDay } from '@talxis/base-controls/gantt'
-import { DataTypes, IColumn } from '@talxis/client-libraries'
+import { DataTypes, IColumn, IRawRecord } from '@talxis/client-libraries'
 import { STORES } from './stores'
 
 //the columns that make the tree, and the ones the Gantt draws
@@ -428,8 +431,9 @@ const tag = (tagid: string) => {
     return { id: { guid: tagid }, name, etn: 'tag', data: { color } }
 }
 
-//a database per store keeps the timeline on that store's tasks
-export const PLANS: { [storeId: string]: MemoryTaskDatabase } = {}
+export const PLAN_METADATA = { PrimaryIdAttribute: 'taskid', LogicalName: 'storetask' }
+//a table per store keeps the timeline on that store's tasks
+export const PLANS: { [storeId: string]: MemoryTable<IRawRecord> } = {}
 export const LOOKUP_MANY_VALUES: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } } = {}
 export const CHECKLIST_ITEMS: Record<string, ITaskChecklistItem[]> = {}
 export const DEPENDENCIES: ITaskDependency[] = []
@@ -454,7 +458,7 @@ for (const store of STORES) {
         //active (statecode 0), and ranked in the order of the steps
         return { taskid: id, parentid: step.parent ? [{ id: { guid: taskId(step.parent) }, etn: 'storetask' }] : null, stackrank: '0|' + (index + 1) + '00000:', statecode: 0, subject: step.subject, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD'), percentcomplete }
     })
-    PLANS[store.storeid] = new MemoryTaskDatabase({ records: tasks, metadata: { PrimaryIdAttribute: 'taskid', LogicalName: 'storetask' } })
+    PLANS[store.storeid] = new MemoryTable<IRawRecord>({ idKey: 'taskid', rows: tasks })
 }
 `,
 }

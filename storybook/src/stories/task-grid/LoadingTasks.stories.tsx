@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { OwnTasksExample, RootTaskExample } from '../../task-grid/examples/taskGridExamples'
+import { KeepTheTasksExample, OwnTasksExample, RootTaskExample } from '../../task-grid/examples/taskGridExamples'
 
 const DESCRIPTION = `
 A task grid loads every task of the view at once from a *store*, such as one in memory or a Dataverse table. You hand the control that store together with a field mapping, which names the columns that make the tree: each task's parent and its place among its siblings. Try it below: add a task to \`OFFICE_MOVE\` in **Code**.
@@ -42,13 +42,19 @@ A store reads and writes the tasks for the task provider. Create a new one in ev
 
 | Store | Tasks are kept |
 |---|---|
-| \`MemoryTaskStore\` | In a \`MemoryTaskDatabase\`, in the page. For prototypes, tests and these docs. |
+| \`MemoryTaskStore\` | In a \`MemoryTable\` you keep, in the page. For prototypes, tests and these docs. |
 | \`DataverseTaskStore\` | In a Dataverse table, read through FetchXML and edited in its forms. TALXIS tasks load with it too. |
 | Your own \`ITaskStore\` | Wherever your store reads and writes them. See *Your own store* below. |
 
 ### Memory
 
-\`MemoryTaskStore\` takes the \`taskRuntime\`, the \`database\` and the \`columns\` that views and *Edit columns* pick from. \`MemoryTaskDatabase\` takes \`records\` and \`metadata\` with its \`PrimaryIdAttribute\`, copies the records and keeps every change, so create it once outside \`onLoad\`, as the example does. Creating and deleting pause briefly, as a server would, and opening a task shows an alert. Memory modules that create tasks, such as templates, take the same \`database\`.
+A \`MemoryTable\` is one table of plain rows that you create and keep, outside the control, so it outlives every mount. Every memory store and memory module reads and writes the tables you give it: tasks, templates, checklists and the rest each have their own. Try it below: keep a copy, delete a few tasks, then load the copy.
+
+{{story: Keep the tasks}}
+
+\`new MemoryTable({ idKey, rows })\` copies the rows in and hands out copies, so no one changes it behind its back. \`dump()\` returns every row as plain data, and \`load(rows)\` replaces them all, so a dump saved as JSON loads back as it was. \`getRow\`, \`filter\`, \`insert\`, \`update\` and \`delete\` read and write single rows, and \`events\` fires \`onChanged\` after each write. A control reads its tables when it loads: after writing one yourself, call \`reload()\` on the control to show it. Pass the same table to two controls and both read the same rows.
+
+\`MemoryTaskStore\` takes the \`taskRuntime\`, the \`tasks\` table, the \`metadata\` whose \`PrimaryIdAttribute\` is the table's \`idKey\`, and the \`columns\` that views and *Edit columns* pick from. Creating and deleting pause briefly, as a server would, and opening a task shows an alert.
 
 ### Dataverse
 
@@ -124,6 +130,11 @@ type Story = StoryObj<typeof meta>
 export const ShowYourOwnTasks: Story = {
     name: 'Show your own tasks',
     render: () => renderStory(<OwnTasksExample />),
+}
+
+export const KeepTheTasks: Story = {
+    name: 'Keep the tasks',
+    render: () => renderStory(<KeepTheTasksExample />),
 }
 
 export const StartFromATask: Story = {
