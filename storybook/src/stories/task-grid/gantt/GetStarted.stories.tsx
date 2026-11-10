@@ -25,6 +25,8 @@ The Gantt draws the task grid's tasks on a timeline, row for row with the grid b
 | with subtasks, while the tree is shown | a thinner summary bar |
 | missing a date, or ending before it starts | nothing, until the user draws its dates (see [**Editing on the timeline**](?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview)) |
 
+With date-only columns, a task spans at least its one day, so it is never a diamond on its own. To draw such tasks as milestones, set the bar's \`type\` to \`'milestone'\` in a \`tasks\` hook of a module of yours (see [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview)).
+
 Names stay in the grid. Started, done, inactive, locked and saving tasks each have a look of their own.
 
 ## Dates
