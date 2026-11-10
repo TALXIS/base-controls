@@ -2248,7 +2248,7 @@ interface IGridModule {
 declare const HighlightChangesModule: unknown;
 
 declare const GRID_MODULE_PRIORITY: {
-    readonly legacyClientApiCompatibility: 0;
+    readonly legacyClientApiCompatibility: -10;
     readonly rowModel: 10;
     readonly editing: 15;
     readonly rowSelection: 20;
