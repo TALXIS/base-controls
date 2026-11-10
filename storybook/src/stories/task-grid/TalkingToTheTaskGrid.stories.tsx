@@ -18,7 +18,7 @@ Inside the control, such as in a part of your own, \`useTaskRuntime()\` returns 
 
 ## Tasks
 
-\`taskRuntime.tasks\` makes the same changes the user does. Each one shows its failure in a dialog, and the loading overlay while it runs, except \`create\`: the new task's row shows the wait.
+\`taskRuntime.tasks\` makes the same changes the user does. Each one runs behind the loading overlay and shows its failure in a dialog before it rejects. \`create\` is the exception: the new task's row shows the wait, and a failure resolves \`null\`.
 
 | Member | Description |
 |---|---|
@@ -33,14 +33,7 @@ To change a value, set it on the record and save it, as *Complete the selected* 
 
 ## Run your own work
 
-\`execute(operation, parameters?)\` runs an async operation as the task actions run: with the loading overlay, and its failure shown once in a dialog. *Complete the selected* uses it.
-
-| Parameter | Default | Description |
-|---|---|---|
-| \`loading.show\` | \`true\` | \`false\` runs it without the overlay. |
-| \`loading.message\` | None | Shown in the overlay. |
-| \`error.title\` | A generic title | The dialog's title. |
-| \`error.rethrow\` | \`true\` | \`false\` resolves \`undefined\` once the dialog is shown, instead of throwing. |
+\`taskRuntime.execute(operation, parameters?)\` runs an async operation as the task actions run: behind the loading overlay, with its failure shown once in a dialog. *Complete the selected* uses it. It is the \`execute\` every runtime has, and its parameters are under *Run actions* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
 ## Settings of your own
 

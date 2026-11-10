@@ -20,14 +20,14 @@ A task grid loads every task of the view at once from a *store*, such as one in 
 | \`fieldMapping\` | Yes | The columns that make the tree. See *Field mapping* below. |
 | \`views\` | No | The views to switch between. See [**Views and the tree**](?path=/docs/controls-taskgrid-views-and-the-tree--overview). Without them, the grid shows the store's columns. |
 | \`rootTaskId\` | No | Shows only the tasks under one task. See *Start from a task* below. |
-| \`hoursPerDay\` | No | How many hours a day of a task's duration holds; \`24\` when left out. |
+| \`hoursPerDay\` | No | How many hours a day of a task's duration holds, unless the duration column's metadata says otherwise; \`24\` when left out. |
 
 ## Field mapping
 
 | Key | Required | Description |
 |---|---|---|
 | \`parentId\` | Yes | The lookup to the parent task. Empty for a top-level task. |
-| \`subject\` | Yes | The task's name. Drawn with the tree's indent and arrow, pinned left, and searched by quick find when the view names no columns. |
+| \`subject\` | Yes | The task's name. Drawn with the tree's indent and arrow, pinned left, and searched by quick find while no quick find columns are set. |
 | \`stackRank\` | Yes | The task's place among its siblings: a LexoRank string, such as \`0\\|hzzzzz:\`. The grid writes it when a task is created or moved. \`StackRank.between(previous, next)\` makes one. |
 | \`stateCode\` | No, \`'statecode'\` | \`0\` is active; any other value, or none, is inactive, so give every task one. See *Inactive tasks* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). |
 | \`percentComplete\` | No | Drawn as a progress bar. |
@@ -48,11 +48,20 @@ A store reads and writes the tasks for the task provider. Create a new one in ev
 
 ### Memory
 
-A \`MemoryTable\` is one table of plain rows that you create and keep, outside the control, so it outlives every mount. Every memory store and memory module reads and writes the tables you give it: tasks, templates, checklists and the rest each have their own. Try it below: keep a copy, delete a few tasks, then load the copy.
+A \`MemoryTable\` is one table of plain rows that you create and keep, outside the control, so it outlives every mount. Every memory store and memory module reads and writes the tables you give it: tasks, templates, checklists and the rest each have their own.
 
 {{story: Keep the tasks}}
 
-\`new MemoryTable({ idKey, rows })\` copies the rows in and hands out copies, so no one changes it behind its back. \`getRows()\` returns every row as plain data, so rows saved as JSON start a new table as it was: give the control the new table and mount it anew, as the example does. \`getRows(predicate)\` returns only the rows it keeps, and \`getRow\`, \`insert\`, \`update\` and \`delete\` read and write single rows. A control reads its tables when it loads: after writing one yourself, call \`reload()\` on the control to show it. Pass the same table to two controls and both read the same rows.
+| Member | Description |
+|---|---|
+| \`new MemoryTable({ idKey, rows? })\` | A table whose rows are found by their \`idKey\` column, starting with copies of \`rows\`. |
+| \`getRows(predicate?)\` | Copies of every row, or of the rows \`predicate\` keeps, as plain data. |
+| \`getRow(id)\` | A copy of one row, or \`undefined\`. |
+| \`insert(rows)\` | Adds copies of the rows, replacing any with the same id. |
+| \`update(id, values)\` | Merges \`values\` into a row. Does nothing when there is no such row. |
+| \`delete(ids)\` | Removes the rows. |
+
+Rows from \`getRows()\` saved as JSON start a new table as it was: give the control the new table and mount it anew, as the example does. A control reads its tables when it loads, so after writing to one yourself, call \`reload()\` on the DatasetControl that \`onSetup\` hands you to show it. Two controls given the same table read the same rows.
 
 \`MemoryTaskStore\` takes the \`taskRuntime\`, the \`tasks\` table, the \`metadata\` whose \`PrimaryIdAttribute\` is the table's \`idKey\`, and the \`columns\` that views and *Edit columns* pick from. Creating and deleting pause briefly, as a server would, and opening a task shows an alert.
 
@@ -134,6 +143,13 @@ export const ShowYourOwnTasks: Story = {
 export const KeepTheTasks: Story = {
     name: 'Keep the tasks',
     render: () => renderStory(<KeepTheTasksExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The tasks table kept outside the control, copied as JSON and loaded again. Try: keep a copy, delete a few tasks, then load the copy.`,
+            },
+        },
+    },
 }
 
 export const StartFromATask: Story = {

@@ -21,7 +21,7 @@ The column layout, sorting, filtering and grouping belong to the provider, not t
 | Key | Shape | Description |
 |---|---|---|
 | \`viewport\` | \`{ scroll?: { rowId? }, focusedCell?: { rowId, columnId } }\` | The row at the top of the viewport and the focused cell. The horizontal scroll is not kept. |
-| \`grouping\` | \`{ expandedLevel, toggledGroups }\` | How many levels are open, and the groups the user opened or closed against that level. With the grouping module only. |
+| \`grouping\` | \`{ expandedLevel, toggledGroups }\` | The deepest level that is open by itself, and the groups the user opened or closed against it. With the grouping module only. |
 
 On mount, once the kept row has loaded, the grid scrolls it back to the top and focuses the kept cell; if the user scrolls or clicks a cell first, the grid stays where it is. A later load, such as a sort, a filter or a new page, scrolls back to the top.
 

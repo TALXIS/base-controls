@@ -34,7 +34,7 @@ Put \`DatasetControl.Notifications\` between the header and the body. It draws t
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
-| \`messages\` | \`INotificationMessage[]\` | None | Live | Messages of your own: \`{ text, level }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`. |
+| \`messages\` | \`INotificationMessage[]\` | None | Live | Messages of your own: \`{ text, level, onDismiss? }\`, with \`level\` one of \`'ERROR'\`, \`'WARNING'\` and \`'INFO'\`; \`onDismiss\` adds a close button that calls it. |
 | \`components\` | \`Partial<IDatasetControlNotificationsComponents>\` | Defaults | Live | See [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview). |
 
 ### EmptyState

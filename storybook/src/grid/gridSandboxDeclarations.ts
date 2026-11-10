@@ -769,6 +769,8 @@ interface IMemoryDataProviderOptions {
     sorting?: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
     filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression;
     searchQuery?: string;
+    /** Formats the values the controls draw. */
+    formatting?: IFormatting;
 }
 
 interface IMemoryProvider extends IDataProvider {
@@ -3819,7 +3821,12 @@ declare const RuntimeHost: typeof import('@talxis/base-controls').RuntimeHost;
 /** One mount's status, error and events; a runtime owns one, and the host drives it. */
 declare const RuntimeLifecycle: typeof import('@talxis/base-controls').RuntimeLifecycle;
 /** What a runtime is built on: loading, executor and execute beside the lifecycle it creates. */
-declare const Runtime: typeof import('@talxis/base-controls').Runtime;
+declare abstract class Runtime implements IRuntime {
+    abstract readonly lifecycle: IRuntimeLifecycle;
+    readonly loading: IRuntimeLoading;
+    readonly executor: IRuntimeExecutor;
+    readonly execute: IRuntimeExecutor['execute'];
+}
 /** The runtime of the nearest RuntimeHost; for the control's own mount component only. */
 declare const useRuntime: typeof import('@talxis/base-controls').useRuntime;
 /** The ribbon's commands as plain UI, with no runtime behind them. */
@@ -3930,8 +3937,6 @@ interface IDatasetControlPartMap {
     pageSizeSwitcher: IDatasetControlPageSizeSwitcher;
     notifications: IDatasetControlNotifications;
     editColumns: IDatasetControlEditColumns;
-    /** The overlay over the whole control; always there. */
-    loadingOverlay: IDatasetControlLoadingOverlay;
     /** The grid in the body, while it is rendered. */
     grid: IGrid;
 }
@@ -3954,14 +3959,6 @@ declare function useDatasetControlRegion(): 'start' | 'end' | undefined;
 declare function useDatasetControlModule(name: string): any;
 /** Makes a part once and provides it on the control under name, for control.parts. */
 declare function useProvideDatasetControlPart<TName extends keyof IDatasetControlPartMap>(name: TName, create: () => IDatasetControlPartMap[TName]): IDatasetControlPartMap[TName];
-
-/** The overlay that covers the whole control while something runs. */
-interface IDatasetControlLoadingOverlay {
-    /** Covers the whole control until every caller has hidden it again; returns the hide for this caller. */
-    show(message?: string): () => void;
-    isLoading(): boolean;
-    getMessage(): string | undefined;
-}
 
 /** Looks up the parts rendered right now. */
 interface IDatasetControlPartLocator {
@@ -4021,9 +4018,34 @@ interface IDatasetControlProps<TData = unknown> {
     className?: string;
     /** The key the control's state is kept under in the state store. */
     stateKey?: string;
-    components?: Partial<IDatasetControlContainerComponents> & { errorMessage?: Partial<IErrorMessageBarComponents>; skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null } };
+    components?: Partial<IDatasetControlContainerComponents> & Partial<Omit<IRuntimeHostComponents, 'container' | 'placeholder'>> & { skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null } };
     /** Called with the control of each mount, before its init; subscribe to its events here. */
     onSetup?: (control: IDatasetControl<TData>) => void;
+}
+
+/** One failure of execute, waiting to be dismissed. */
+interface IRuntimeExecuteFailure {
+    title: string;
+    /** What the operation threw. */
+    error: unknown;
+}
+
+/** Replacements for what a RuntimeHost draws itself. */
+interface IRuntimeHostComponents {
+    /** The box the host draws everything in. */
+    container: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null }>;
+    /** What stands in for the runtime until it is ready. */
+    placeholder: Partial<typeof LoadingBoundaryComponents>;
+    /** What stands in for the runtime when its init failed or its UI threw. */
+    mountError: Partial<IErrorMessageBarComponents>;
+    /** What covers the ready runtime while its loading is shown. */
+    loadingOverlay: Partial<{
+        onRenderOverlay: (props: import('@fluentui/react').IOverlayProps) => JSX.Element | null;
+        onRenderSpinner: (props: ISpinnerProps) => JSX.Element | null;
+        onRenderText: (props: ITextProps) => JSX.Element | null;
+    }>;
+    /** How the failures of execute are shown, oldest first. */
+    executeError: Partial<{ onRenderErrors: (props: { failures: IRuntimeExecuteFailure[]; onDismiss: (failure: IRuntimeExecuteFailure) => void }) => JSX.Element | null }>;
 }
 
 interface IErrorMessageBarComponents {
@@ -4089,7 +4111,7 @@ interface IDatasetControlNamespace {
     QuickFind: (props: {
         components?: Partial<IDatasetControlUiQuickFindComponents>;
     }) => JSX.Element;
-    Notifications: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[]; components?: Partial<{ onRenderNotifications: (props: INotificationMessageBarProps) => JSX.Element | null }> }) => JSX.Element;
+    Notifications: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO'; onDismiss?: () => void }[]; components?: Partial<{ onRenderNotifications: (props: INotificationMessageBarProps) => JSX.Element | null }> }) => JSX.Element;
     Pagination: (props: { components?: Partial<{ onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }> }) => JSX.Element;
     PageSizeSwitcher: (props: { pageSizes?: number[]; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
     /** The empty state in place of its children while the provider has no records. */
@@ -4718,7 +4740,7 @@ declare class MemoryTaskStore implements ITaskStore {
     [operation: string]: any;
 }
 
-/** The sample tasks: 108 tasks over seven projects. */
+/** The sample tasks: 137 tasks over seven projects. */
 declare const TASKS: IRawRecord[];
 /** Builds a deterministic tree of count tasks up to eight levels deep, with uneven branching. */
 declare const createStressTasks: (count: number) => IRawRecord[];

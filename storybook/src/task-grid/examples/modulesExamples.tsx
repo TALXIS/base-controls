@@ -107,7 +107,7 @@ const GridExample = () => <TaskDatasetControl modules={[createMemoryTemplatesMod
 </TaskDatasetControl>
 `
 
-const CHECKLIST_CODE = `import { createMemoryTaskChecklistModule, DatasetControl, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const CHECKLIST_CODE = `import { createMemoryTaskChecklistModule, DatasetControl, IMemoryTaskChecklistItem, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { IColumn } from '@talxis/client-libraries'
 import { createLoadTasks, createTaskTable } from './tasks'
 
@@ -119,7 +119,7 @@ const loadTasks = createLoadTasks(createTaskTable(), [
 ])
 
 //CHECKLIST_ITEMS are the sample checklist items of these docs, each with its taskId
-const items = new MemoryTable({ idKey: 'id', rows: CHECKLIST_ITEMS })
+const items = new MemoryTable<IMemoryTaskChecklistItem>({ idKey: 'id', rows: CHECKLIST_ITEMS })
 
 const GridExample = () => <TaskDatasetControl modules={[createMemoryTaskChecklistModule({ items })]} onLoad={loadTasks} height='480px'>
     <DatasetControl.Body>
@@ -246,7 +246,7 @@ const CUSTOM_COLUMNS_TALXIS_FILE: IGridExampleFile = {
     name: 'talxis.ts',
     code: `import { createTalxisCustomColumnsModule } from '@talxis/base-controls'
 
-//with TALXIS, use this module instead of the IndexedDB one in GridExample.tsx
+//with TALXIS, use this module instead of the memory one in GridExample.tsx
 export const createProjectColumnsModule = (projectId: string) => createTalxisCustomColumnsModule({ entityName: 'task', recordId: projectId, enableCreation: true, enableEditing: true, enableDeletion: true })
 `,
 }

@@ -88,7 +88,7 @@ The grid shows the records of the provider's current page, so the page size deci
 | Multi-select option set | \`MultiSelectOptionSet\` | The labels, or a tag for each | A multi-select drop-down |
 | Two options | \`TwoOptions\` | The label, or a tag | A toggle |
 | Lookup | \`LookupSimple\`, \`LookupOwner\`, \`LookupCustomer\`, \`LookupRegarding\` | A link to each record | A Dataverse search; needs Xrm and a \`FetchXmlDataProvider\` |
-| File, image | \`File\`, \`Image\` | The file's name, or a thumbnail | Not editable |
+| File, image | \`File\`, \`Image\` | A link with the file's name; an image adds its thumbnail | Not editable |
 | Language, time zone | \`WholeLanguage\`, \`WholeTimeZone\` | The number | A text box |
 
 ## Where next

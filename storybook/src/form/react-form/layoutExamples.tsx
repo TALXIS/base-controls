@@ -11,7 +11,7 @@ const GridExample = () => {
 
     return <>
         <Slider label='Width of the form' min={320} max={1100} step={10} value={width} onChange={setWidth} valueFormat={value => \`\${value}px\`} />
-        <Text>{\`The tab draws \${columnsPerRow} columns in a row.\`}</Text>
+        <Text>{\`Columns in a row: \${columnsPerRow}\`}</Text>
         <div style={{ width, maxWidth: '100%' }}>
             <Form.Root onLoad={async () => ({ record: account })}>
                 <Form.Tabs expandedTab={tab} onTabChange={setTab}>

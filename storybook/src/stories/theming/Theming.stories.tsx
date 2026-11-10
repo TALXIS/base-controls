@@ -84,7 +84,7 @@ export const TintAndEdit: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Four cards, each drawn in a theme built another way. Try: change the hue, or the font size in the \`edit\`.`,
+                story: `Four cards, each drawn in a theme built another way. Try: change \`HUE\` or \`FONT_SIZE\`.`,
             },
         },
     },

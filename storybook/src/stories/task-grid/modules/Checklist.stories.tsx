@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { ChecklistExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-The checklist module shows how far each task's checklist is done, as *done/total* in a *Checklist* column. The column is read-only: checklists are edited where they are kept, such as in the task's form. Try it below: pass \`items: {}\` in **Code** to empty every cell.
+The checklist module shows how far each task's checklist is done, as *done/total* in a *Checklist* column. The column is read-only: checklists are edited where they are kept, such as in the task's form. Try it below: give the \`items\` table \`rows: []\` in **Code** to empty every cell.
 
 {{canvas: Show checklist progress}}
 

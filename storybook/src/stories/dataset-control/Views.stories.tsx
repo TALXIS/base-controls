@@ -29,7 +29,7 @@ The switcher needs only a view's name; what the view shows is resolved when it o
 
 ## Load the view
 
-\`onLoad\` returns \`{ provider, views }\`, as \`loadDeals\` in the example's \`views.ts\` shows. The control picks the view and calls its \`resolve(provider)\`, where *Won deals* sets its filter and *Biggest deals* its sorting. Do not set the columns or linking there, nor call \`addAggregation\` or \`addGroupBy\`: the control replaces the provider's columns, and those live on them. Return them on the columns instead. The full sequence is on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
+\`onLoad\` returns \`{ provider, views }\`, as \`loadDeals\` in the example's \`views.ts\` shows. The control picks the view and calls its \`resolve(provider)\`, where *Won deals* sets its filter and *Biggest deals* its sorting. Do not set the columns or linking there, nor call \`addAggregation\` or \`addGroupBy\`: return totals and grouping on the columns instead, as \`aggregation\` and \`grouping\`. The full sequence is on [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview).
 
 Inside the control, \`useDatasetControl().getView()\` returns the open view with its \`data\`, for example to draw it as cards: see [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 

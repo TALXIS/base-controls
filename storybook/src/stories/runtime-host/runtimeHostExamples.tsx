@@ -155,7 +155,7 @@ const GridExample = () => {
 }
 `
 
-const RUN_ACTIONS_CODE = `import { NotificationMessageBar, Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
+const RUN_ACTIONS_CODE = `import { Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
 import { DefaultButton, getTheme, PrimaryButton, Stack, Text } from '@fluentui/react'
 
 const theme = getTheme()
@@ -205,7 +205,7 @@ const DealSummary = () => {
         setTotal(runtime.getTotal())
     }
 
-    //the host shows the failure under the title; rethrow: false resolves undefined instead
+    //the host opens the error dialog under the title; rethrow: false resolves undefined instead
     const sendToFinance = () => runtime.execute(() => postToFinance(total), { error: { title: 'The summary could not be sent to finance.', rethrow: false } })
 
     return <>
@@ -220,26 +220,124 @@ const DealSummary = () => {
     </>
 }
 
-//the bar draws its messages as HTML
-const escapeHtml = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
 const GridExample = () => (
-    <RuntimeHost createRuntime={() => new DealSummaryRuntime()} components={{
-        //the card is the host's box, so the spinner covers it and the failures show inside it
-        container: { onRenderContainer: props => <div {...props} style={CARD_STYLE} /> },
-        //replaces the error dialog with one notification bar, which groups the failures once there are several
-        executeError: {
-            onRenderErrors: ({ failures, onDismiss }) => <NotificationMessageBar messages={failures.map(failure => ({
-                level: 'ERROR',
-                text: \`<b>\${escapeHtml(failure.title)}</b> \${escapeHtml((failure.error as Error).message)}\`,
-                //each message gets its own close button
-                onDismiss: () => onDismiss(failure),
-            }))} />,
-        },
-    }}>
+    //the card is the host's box, so the spinner covers it
+    <RuntimeHost createRuntime={() => new DealSummaryRuntime()} components={{ container: { onRenderContainer: props => <div {...props} style={CARD_STYLE} /> } }}>
         <DealSummary />
     </RuntimeHost>
 )
+`
+
+const OWN_UI_CODE = `import { NotificationMessageBar, Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
+import { DefaultButton, getTheme, Icon, IMessageBarProps, PrimaryButton, ProgressIndicator, Shimmer, ShimmerElementType, Stack, Text, Toggle } from '@fluentui/react'
+
+const theme = getTheme()
+
+const CARD_STYLE: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+    minHeight: 120,
+    padding: 20,
+    border: \`1px solid \${theme.palette.neutralLight}\`,
+    borderRadius: 8,
+}
+
+class DealSummaryRuntime extends Runtime {
+    public readonly lifecycle = new RuntimeLifecycle({ onInit: () => this._init() })
+    private _isServiceDown: () => boolean
+    private _total = 0
+
+    constructor(isServiceDown: () => boolean) {
+        super()
+        this._isServiceDown = isServiceDown
+    }
+
+    public getTotal(): number {
+        return this._total
+    }
+
+    public async sendToFinance(): Promise<void> {
+        await this.execute(() => this._callServer(1500), { loading: { message: 'Sending to finance...' }, error: { title: 'The summary could not be sent to finance.', rethrow: false } })
+    }
+
+    private async _init(): Promise<void> {
+        await this._callServer(1500)
+        this._total = 34500
+    }
+
+    //stands in for a server call, which fails while the service is down
+    private async _callServer(ms: number): Promise<void> {
+        await new Promise(resolve => setTimeout(resolve, ms))
+        if (this._isServiceDown()) {
+            throw new Error('The deals service is not reachable.')
+        }
+    }
+}
+
+const DealSummary = () => {
+    const runtime = useRuntime<DealSummaryRuntime>()
+    return <>
+        <Stack>
+            <Text variant='small' styles={{ root: { color: theme.palette.neutralSecondary } }}>Open deals</Text>
+            <Text variant='xxLarge' styles={{ root: { fontWeight: 600 } }}>{runtime.getTotal().toLocaleString()} USD</Text>
+        </Stack>
+        <Stack horizontal tokens={{ childrenGap: 8 }}>
+            <PrimaryButton text='Send to finance' iconProps={{ iconName: 'Send' }} onClick={() => runtime.sendToFinance()} />
+            <DefaultButton text='Reload' iconProps={{ iconName: 'Refresh' }} onClick={() => runtime.lifecycle.remount()} />
+        </Stack>
+    </>
+}
+
+//the summary's shape in the brand's colours, in place of the spinner and its text
+const SummarySkeleton = () => <Stack tokens={{ childrenGap: 8 }}>
+    {[{ width: 80, height: 12 }, { width: 200, height: 32 }, { width: 240, height: 32 }].map(({ width, height }) =>
+        <Shimmer key={width} width={width} shimmerColors={{ shimmer: theme.palette.themeLighter, shimmerWave: theme.palette.themeLight }} shimmerElements={[{ type: ShimmerElementType.line, height }]} />)}
+</Stack>
+
+//a card in place of the bar: children hold the error's message, actions its commands
+const ErrorCard = (props: IMessageBarProps) => <Stack tokens={{ childrenGap: 12 }} styles={{ root: { padding: 16, borderRadius: 8, backgroundColor: theme.semanticColors.errorBackground } }}>
+    <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 8 }}>
+        <Icon iconName='PlugDisconnected' styles={{ root: { fontSize: 20, color: theme.palette.redDark } }} />
+        <Text variant='large' styles={{ root: { fontWeight: 600 } }}>The deals could not be loaded</Text>
+    </Stack>
+    <Text>{props.children}</Text>
+    {props.actions}
+</Stack>
+
+//the bar draws its messages as HTML
+const escapeHtml = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+const GridExample = () => {
+    const isServiceDown = React.useRef(false)
+
+    return <Stack tokens={{ childrenGap: 12 }} styles={{ root: { maxWidth: 480 } }}>
+        <Toggle label='Service unavailable' inlineLabel onChange={(_, checked) => { isServiceDown.current = !!checked }} />
+        <RuntimeHost createRuntime={() => new DealSummaryRuntime(() => isServiceDown.current)} components={{
+            container: { onRenderContainer: props => <div {...props} style={CARD_STYLE} /> },
+            placeholder: { onRenderContainer: () => <SummarySkeleton /> },
+            mountError: {
+                onRenderMessageBar: props => <ErrorCard {...props} />,
+                //the items are Details and Try again, each with its onClick
+                onRenderCommandBar: props => <Stack horizontal tokens={{ childrenGap: 8 }}>
+                    {props.items.map(item => <DefaultButton key={item.key} text={item.text} iconProps={item.iconProps} onClick={() => item.onClick?.()} />)}
+                </Stack>,
+            },
+            //a progress bar over the card while execute runs, above the message
+            loadingOverlay: { onRenderSpinner: () => <ProgressIndicator styles={{ root: { width: 200 } }} /> },
+            //one notification bar in place of the error dialog, grouping the failures once there are several
+            executeError: {
+                onRenderErrors: ({ failures, onDismiss }) => <NotificationMessageBar messages={failures.map(failure => ({
+                    level: 'ERROR',
+                    text: \`<b>\${escapeHtml(failure.title)}</b> \${escapeHtml((failure.error as Error).message)}\`,
+                    onDismiss: () => onDismiss(failure),
+                }))} />,
+            },
+        }}>
+            <DealSummary />
+        </RuntimeHost>
+    </Stack>
+}
 `
 
 export const DealSummaryExample = () => <GridExampleRunner seedCode={DEAL_SUMMARY_CODE} tabs={['preview', 'code']} />
@@ -247,3 +345,5 @@ export const DealSummaryExample = () => <GridExampleRunner seedCode={DEAL_SUMMAR
 export const KeepStateExample = () => <GridExampleRunner seedCode={KEEP_STATE_CODE} tabs={['preview', 'code']} />
 
 export const RunActionsExample = () => <GridExampleRunner seedCode={RUN_ACTIONS_CODE} tabs={['preview', 'code']} />
+
+export const OwnUiExample = () => <GridExampleRunner seedCode={OWN_UI_CODE} tabs={['preview', 'code']} />

@@ -298,7 +298,8 @@ const PanelDrawer = (props: IPanelProps & { children?: React.ReactNode, keepOpen
     <DrawerFooter>{props.onRenderFooterContent?.()}</DrawerFooter>
 </OverlayDrawer>
 
-const errorMessage: Partial<IErrorMessageBarComponents> = {
+//a failed load of the control, the ribbon or the column editor
+const errorBar: Partial<IErrorMessageBarComponents> = {
     onRenderMessageBar: props => <MessageBar intent='error' style={{ margin: 8 }}>
         <MessageBarBody>{props.children}</MessageBarBody>
         <MessageBarActions>{props.actions}</MessageBarActions>
@@ -320,14 +321,14 @@ const V9Container = (props: JSX.IntrinsicElements['div']) => {
 export const V9 = {
     control: {
         onRenderContainer: props => <V9Container {...props} />,
-        errorMessage,
+        mountError: errorBar,
     },
     viewSwitcher: {
         onRenderButton: props => <MenuFromButton {...props} />,
     },
     ribbon: {
         onRenderCommandBar: props => <CommandToolbar {...props} />,
-        errorMessage,
+        mountError: errorBar,
     },
     quickFind: {
         onRenderTextField: (props: any) => <Input
@@ -373,7 +374,7 @@ export const V9 = {
             </>,
             onRenderCommandBar: props => <CommandToolbar {...props} />,
         },
-        errorMessage,
+        errorMessage: errorBar,
     },
     notifications: {
         onRenderNotifications: props => <Notifications {...props} />,

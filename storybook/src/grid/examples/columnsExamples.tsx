@@ -228,21 +228,6 @@ const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provi
 </DatasetControl>
 `
 
-export const AUTO_HEIGHT_CODE = `const onSetup = (grid: IGrid) => {
-    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-        columnDefs.find(colDef => colDef.colId === 'notes')!.autoHeight = true
-    })
-}
-
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
-    <DatasetControl.Body>
-        <ClientSideGrid
-            onSetup={onSetup}
-            height='480px' />
-    </DatasetControl.Body>
-</DatasetControl>
-`
-
 export const REMEMBER_LAYOUT_CODE = `const GridExample = () => {
     const [visit, setVisit] = React.useState(0)
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
@@ -283,7 +268,5 @@ export const RowCommandsExample = () => <GridExampleRunner seedCode={ROW_COMMAND
 export const HeaderExample = () => <GridExampleRunner seedCode={HEADER_CODE} dataset='products' />
 
 export const LongNotesExample = () => <GridExampleRunner seedCode={LONG_NOTES_CODE} onCreateProvider={createNotesProvider} />
-
-export const AutoHeightExample = () => <GridExampleRunner seedCode={AUTO_HEIGHT_CODE} onCreateProvider={createNotesProvider} />
 
 export const RememberLayoutExample = () => <GridExampleRunner seedCode={REMEMBER_LAYOUT_CODE} tabs={['preview', 'code']} />

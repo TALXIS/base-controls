@@ -1,8 +1,8 @@
 import React from 'react'
 import { GridExampleRunner } from '../grid/GridExampleRunner'
 
-const SWITCH_LANGUAGE_CODE = `import { ClientSideGrid, createSortingModule, CZECH_LABELS, DatasetControl, LabelsProvider, PcfContextProvider } from '@talxis/base-controls'
-import { DataTypes, MemoryDataProvider } from '@talxis/client-libraries'
+const SWITCH_LANGUAGE_CODE = `import { ClientSideGrid, createSortingModule, CZECH_LABELS, DatasetControl, LabelsProvider, PcfContextProvider, usePcfContext } from '@talxis/base-controls'
+import { DataTypes, IFormatting, MemoryDataProvider } from '@talxis/client-libraries'
 import { ChoiceGroup, Stack } from '@fluentui/react'
 
 //the culture formats dates and numbers, the labels translate the strings
@@ -22,7 +22,7 @@ const LANGUAGES = [
 ]
 
 //column names are data, not labels: they come with the columns
-const createDeals = (columnNames: string[]) => new MemoryDataProvider({
+const createDeals = (columnNames: string[], formatting: IFormatting) => new MemoryDataProvider({
     dataSource: [
         { dealid: 'contoso', name: 'Contoso: CRM rollout', value: 4000, closedate: '2026-03-15' },
         { dealid: 'fabrikam', name: 'Fabrikam: Support renewal', value: 21500, closedate: '2026-04-02' },
@@ -34,7 +34,28 @@ const createDeals = (columnNames: string[]) => new MemoryDataProvider({
         { name: 'value', displayName: columnNames[1], dataType: DataTypes.Currency },
         { name: 'closedate', displayName: columnNames[2], dataType: DataTypes.DateAndTimeDateOnly },
     ],
+    //the values follow the culture of the PCF context
+    formatting,
 })
+
+const Deals = (props: { columnNames: string[] }) => {
+    const { formatting } = usePcfContext()
+    return <DatasetControl onLoad={async () => ({ provider: createDeals(props.columnNames, formatting) })} height='300px'>
+        <DatasetControl.Header>
+            <DatasetControl.Header.End>
+                <DatasetControl.QuickFind />
+            </DatasetControl.Header.End>
+        </DatasetControl.Header>
+        <DatasetControl.Body>
+            <ClientSideGrid modules={[createSortingModule()]} />
+        </DatasetControl.Body>
+        <DatasetControl.Footer>
+            <DatasetControl.Footer.Start>
+                <DatasetControl.PageSizeSwitcher />
+            </DatasetControl.Footer.Start>
+        </DatasetControl.Footer>
+    </DatasetControl>
+}
 
 const GridExample = () => {
     const [language, setLanguage] = React.useState(LANGUAGES[0])
@@ -43,21 +64,7 @@ const GridExample = () => {
         <PcfContextProvider userSettings={{ lcid: language.lcid, formatInfoCultureName: language.culture }}>
             <LabelsProvider labels={language.labels}>
                 {/* remounted, so the grid builds again with the new labels and culture */}
-                <DatasetControl key={language.key} onLoad={async () => ({ provider: createDeals(language.columnNames) })} height='300px'>
-                    <DatasetControl.Header>
-                        <DatasetControl.Header.End>
-                            <DatasetControl.QuickFind />
-                        </DatasetControl.Header.End>
-                    </DatasetControl.Header>
-                    <DatasetControl.Body>
-                        <ClientSideGrid modules={[createSortingModule()]} />
-                    </DatasetControl.Body>
-                    <DatasetControl.Footer>
-                        <DatasetControl.Footer.Start>
-                            <DatasetControl.PageSizeSwitcher />
-                        </DatasetControl.Footer.Start>
-                    </DatasetControl.Footer>
-                </DatasetControl>
+                <Deals key={language.key} columnNames={language.columnNames} />
             </LabelsProvider>
         </PcfContextProvider>
     </Stack>

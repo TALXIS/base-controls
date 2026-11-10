@@ -15,7 +15,7 @@ Custom columns are columns users add to the tasks themselves, from *Edit columns
 | Option | Default | Description |
 |---|---|---|
 | \`enableCreation\` | \`false\` | *Add custom column* in *Edit columns*. |
-| \`enableEditing\` | \`false\` | An edit command on each custom column in *Edit columns*. Not on the IndexedDB module. |
+| \`enableEditing\` | \`false\` | An edit command on each custom column in *Edit columns*. Not on the memory module. |
 | \`enableDeletion\` | \`false\` | A delete command on each custom column in *Edit columns*, which deletes its values in every task too, after the user confirms. |
 
 The values are edited in the grid, with \`enableEditing\` and \`createTaskEditingModule()\`, and saved one by one.
@@ -24,11 +24,11 @@ The values are edited in the grid, with \`enableEditing\` and \`createTaskEditin
 
 | Factory | Keeps the columns and their values |
 |---|---|
-| \`createIndexedDbCustomColumnsModule\` | In the browser's IndexedDB, under \`databaseName\`. \`columns\` are what a new database starts with. |
+| \`createMemoryCustomColumnsModule\` | In two [**\`MemoryTable\`s**](?path=/docs/controls-taskgrid-loading-tasks--overview) you keep: \`columns\`, keyed by \`name\`, and \`values\`, each task's values as \`{ taskId, values }\` keyed by \`taskId\`. |
 | \`createTalxisCustomColumnsModule\` | In TALXIS attribute definitions and attribute values. A new or edited column opens the definition's form in a side dialog. |
 | \`createCustomColumnsModule\` | In a store of yours: \`createStore\` returns an \`ICustomColumnsStore\`. |
 
-Each of the IndexedDB \`columns\` is a \`displayName\`, a \`dataType\`, and \`isRequired\`, \`precision\` or \`options\` where they apply. A column the user adds is a text column named *Custom column* and the next number. The example's *talxis.ts* keeps the project's columns in TALXIS.
+A row of the memory \`columns\` table is a \`name\`, a \`displayName\`, a \`dataType\`, and \`isRequired\`, \`precision\` or \`options\` where they apply; \`createdOn\` orders the columns, and a row without it comes first. A column the user adds there is a text column named *Custom column* and the next number. The example's *talxis.ts* keeps the project's columns in TALXIS.
 
 ## Reference
 

@@ -19,7 +19,7 @@ A dependency says that one task waits on another. The dependencies module holds 
 | \`successorTaskId\` | The task that waits on it. |
 | \`type\` | \`'finishToStart'\`, \`'startToStart'\`, \`'finishToFinish'\` or \`'startToFinish'\`. |
 
-A dependency joins two different tasks, once, without a cycle, and can change while \`enableEditing\` is on. It saves without the loading overlay; on the Gantt, its tasks show as saving until it settles. Deleting a task drops its dependencies.
+A dependency joins two different tasks, once, without a cycle, and can change while \`enableEditing\` is on. It saves without the loading overlay; on the Gantt, its tasks show as saving until it settles. Deleting a task drops its dependencies from the grid, but the store is not asked to delete them: a backend that keeps them, such as the memory table, loads them again on the next mount.
 
 ## Where dependencies are kept
 

@@ -14,7 +14,7 @@ The Gantt draws the task grid's tasks on a timeline, row for row with the grid b
 
 {{story: Bars beside the grid}}
 
-\`TaskGantt\` and its modules come from their own entry, \`@talxis/base-controls/gantt\`, so a task grid without a Gantt never loads DHTMLX; the rest comes from \`@talxis/base-controls\`. \`TaskGantt.Split\` puts the \`TaskGrid\` and the \`TaskGantt\` side by side in the body, and \`TaskGantt.ZoomSlider\` goes in the header. The Gantt needs \`startDate\` and \`endDate\` in the field mapping: see *Field mapping* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
+\`TaskGantt\` and its modules come from their own entry, \`@talxis/base-controls/gantt\`, the only one that loads DHTMLX; the rest comes from \`@talxis/base-controls\`. \`TaskGantt.Split\` puts the \`TaskGrid\` and the \`TaskGantt\` side by side in the body, and \`TaskGantt.ZoomSlider\` goes in the header. The Gantt needs \`startDate\` and \`endDate\` in the field mapping: see *Field mapping* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
 
 ## What it draws
 
@@ -36,11 +36,11 @@ Names stay in the grid. Started, done, inactive, locked and saving tasks each ha
 | both date only | the task's last day | whole days | days |
 | either with a time of day | the moment it ends | 15 minutes to a day, by zoom | hours |
 
-With \`duration\` mapped, the Gantt writes it along with the dates: the working minutes between them, with a day of the \`hoursPerDay\` hours that \`onLoad\` returns, and [**Non-working days**](?path=/docs/controls-taskgrid-gantt-modules-non-working-days--overview) left out. A change on the timeline is written as an edit in the grid is, and saves straight away with \`createTaskEditingModule()\` in \`TaskGrid\`. The Gantt does not schedule tasks itself: see *Rescheduled dates* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
+With \`duration\` mapped, the Gantt writes it along with the dates: the working minutes between them, with a day of the \`hoursPerDay\` hours that \`onLoad\` returns, and [**Non-working days**](?path=/docs/controls-taskgrid-gantt-modules-non-working-days--overview) left out. A change on the timeline saves as an edit in the grid does: see [**Editing on the timeline**](?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview) for what it needs. The Gantt does not schedule tasks itself: see *Rescheduled dates* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
 
 ## Zoom and navigation
 
-Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty timeline to scroll it. The ribbon gains *Zoom to fit*, which fits the selected tasks or every task the grid shows, and *Go to today*, and the subject cell of every task with a date *Show on timeline*. To zoom to dates of your own, call \`zoomToRange({ start, end })\` on the Gantt's \`zooming\` service. With a \`stateKey\` on \`TaskGantt\` and on \`TaskGantt.Split\`, the zoom and the split's width are kept per view, and user views save them.
+Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty timeline to scroll it. The ribbon gains *Zoom to fit*, which fits the selected tasks or every task the grid shows, and *Go to today*, and the subject cell of every task with a date *Show on timeline*. To zoom to dates of your own, call \`zoomToRange({ start, end })\`, with two \`Date\`s, on the Gantt's \`zooming\` service: see [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview). With a \`stateKey\` on \`TaskGantt\` and on \`TaskGantt.Split\`, the zoom and the split's width are kept per view, and user views save them.
 
 ## Changing how it looks
 

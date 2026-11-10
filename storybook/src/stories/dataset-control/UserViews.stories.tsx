@@ -82,8 +82,8 @@ The example's \`dataverse.ts\` creates both Dataverse modules. Both need a page 
 |---|---|
 | \`saveWithView(key, getter, applier?)\` | Saves a value of your own with every user view: see *Save more with a view*. |
 | \`getManageProvider()\` | The provider *Manage views* edits the views in, from the store's \`createManageProvider()\`. |
-| \`deleteViews(viewIds)\` | Deletes the views through that provider; a failure raises \`onOperationFailed\`. |
-| \`events\` | \`onManageRequested\` when the user picks **Manage views**, \`onOperationFailed(error)\` when a save or delete fails. |
+| \`deleteViews(viewIds)\` | Deletes the views through that provider; a failure opens the error dialog. |
+| \`events\` | \`onManageRequested\` when the user picks **Manage views**. |
 
 ## Where next
 

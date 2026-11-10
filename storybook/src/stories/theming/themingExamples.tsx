@@ -110,6 +110,7 @@ const DERIVED_CODE = `import { createThemeBuilder, ITheme, ThemeProvider, useThe
 import { PrimaryButton, Stack, Text } from '@fluentui/react'
 
 const HUE = '#d13438'
+const FONT_SIZE = 12
 
 //outside React, tint and edit the builder, then call getTheme
 const createAlertTheme = (theme: ITheme) => {
@@ -135,8 +136,8 @@ const GridExample = () => {
     const ocean = useThemeBuilder({ colors: { primary: '#0f7b8a', background: '#f4fafb', text: '#12313a' } })
     //or an existing theme, here tinted by a hue
     const tinted = useThemeBuilder({ theme: pageTheme }, { tint: { hue: HUE } })
-    //the edited theme is cached by key: a different edit needs a different key
-    const compact = useThemeBuilder({ theme: pageTheme }, { edit: { key: 'compact-12', edit: theme => { theme.fonts.medium.fontSize = 12 } } })
+    //the key names everything the edit reads
+    const compact = useThemeBuilder({ theme: pageTheme }, { edit: { key: 'compact-' + FONT_SIZE, edit: theme => { theme.fonts.medium.fontSize = FONT_SIZE } } })
     const alert = React.useMemo(() => createAlertTheme(pageTheme), [pageTheme])
     const cards = [{ title: 'colors', theme: ocean }, { title: 'tint', theme: tinted }, { title: 'edit', theme: compact }, { title: 'createThemeBuilder', theme: alert }]
     return <Stack horizontal wrap tokens={{ childrenGap: 12 }}>

@@ -187,7 +187,7 @@ const VIEWS: ITaskGridView[] = [
         id: 'planning',
         name: 'Planning',
         resolve: provider => {
-            //sorts each task's subtasks
+            //sorts the tasks among their siblings
             provider.setSorting([{ name: 'scheduledstart', sortDirection: 0 }])
             return { columns: COLUMNS }
         },
@@ -237,7 +237,7 @@ const GridExample = () => {
         //a new provider on every mount, so its listeners go with it
         taskRuntime.services.observe('provider', provider => {
             provider.taskEvents.addEventListener('onTasksCreated', records => setMessage('Created ' + records.map(record => record.getValue('subject')).join(', ')))
-            provider.taskEvents.addEventListener('onTasksDeleted', taskIds => setMessage('Deleted ' + taskIds.length + ' tasks'))
+            provider.taskEvents.addEventListener('onTasksDeleted', taskIds => setMessage('Tasks deleted: ' + taskIds.length))
             provider.taskEvents.addEventListener('onTaskMoved', ({ movingRecord, position, targetRecord }) => setMessage('Moved ' + movingRecord.getValue('subject') + ' ' + position + ' ' + targetRecord.getValue('subject')))
         })
         return loadTasks(taskRuntime)
@@ -269,7 +269,7 @@ import { createLoadTasks, createTaskTable } from './tasks'
 const GridExample = () => {
     //the table outlives every mount, so it can be read and kept at any time
     const [tasks, setTasks] = React.useState(createTaskTable)
-    const loadTasks = React.useMemo(() => createLoadTasks(tasks), [tasks])
+    const loadTasks = createLoadTasks(tasks)
     const [copy, setCopy] = React.useState<string>()
     const [mountKey, setMountKey] = React.useState(0)
 

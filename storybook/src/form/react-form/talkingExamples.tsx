@@ -29,7 +29,7 @@ const GridExample = () => {
             onDirtyStateChanged={isDirty => write(\`onDirtyStateChanged: \${isDirty}\`)}
             onBeforeSave={() => write('onBeforeSave')}
             onAfterSave={({ success }) => write(\`onAfterSave: \${success ? 'saved' : 'not saved'}\`)}
-            onValidationSummaryChanged={summary => write(\`onValidationSummaryChanged: \${summary.length} errors\`)}
+            onValidationSummaryChanged={summary => write(\`onValidationSummaryChanged: [\${summary.map(item => item.fieldName).join(', ')}]\`)}
             onError={message => write(\`onError: \${message}\`)}>
             <Form.Ribbon />
             <Form.Section label='Account'>

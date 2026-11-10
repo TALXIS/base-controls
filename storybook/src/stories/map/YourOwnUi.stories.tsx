@@ -16,7 +16,7 @@ The pins and the popups they open are drawn through slots you can replace, so a 
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| All three | Top level | \`onRenderContainer\` | \`MapUiContainerComponents\` | The box the library draws in. |
+| All three | Top level | \`onRenderContainer\` | \`MapUiContainerComponents\` | The map's box, which holds the library's map, the loading state and a failed load. |
 | All three | \`loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the map has loaded. |
 | All three | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, such as a map without a library. |
 | \`LeafletMap\` | \`map\` | \`onRenderMap\`, \`onRenderTileLayer\` | \`LeafletUiComponents\` | The react-leaflet map and its tiles. |

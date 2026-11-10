@@ -131,7 +131,7 @@ const EDITING_CODE = createGanttCode({
     controlProps: ' enableCreation enableEditing',
     gridModules: `createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()`,
     ganttModules: `
-        //needs enableEditing
+        //needs enableEditing and createTaskEditingModule()
         createBarDraggingModule(),
         //Ctrl+drag over a row draws a new task with enableCreation
         createTaskDrawingModule(),

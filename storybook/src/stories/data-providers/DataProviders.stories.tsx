@@ -25,6 +25,8 @@ Every provider comes from \`@talxis/client-libraries\` and implements \`IDataPro
 
 \`new FetchXmlDataProvider({ fetchXml })\` needs a page that can reach Dataverse, such as a model-driven app. Call \`setViewId(id)\` before the first load to take the columns of a saved view.
 
+Every provider also takes a \`formatting\`, which formats the values it hands to the controls. Pass \`usePcfContext().formatting\` to follow the culture of the [**PCF context**](?path=/docs/concepts-pcf-context--overview); without it, a provider formats as the user settings of \`window.Xrm\`, which the first \`PcfContextProvider\` on a page sets.
+
 ## Hand it to controls
 
 Controls take their provider from around them, not from a prop. A [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) loads the provider its \`onLoad\` returns and hands it to everything inside it. Without one, wrap the controls in \`DataProviderScope\` and load the provider yourself.
@@ -79,7 +81,7 @@ The provider keeps which records are selected, so anything showing them can sele
 
 ## Groups and totals
 
-Grouping and totals are part of the column definitions. Mark the column to group by with \`grouping\` and the columns to total with \`aggregation\`, then \`refresh()\`, as the example under *Load and read* does. The same can be added by call, with \`provider.grouping.addGroupBy({ columnName, alias })\` and \`provider.aggregation.addAggregation({ columnName, alias, aggregationFunction })\`, which need the alias named as the table below names it. \`getRecords()\` then returns one record per group, and a group's records are in a provider of their own, from \`createGroupedRecordDataProvider(group)\`.
+Grouping and totals are part of the column definitions. Mark the column to group by with \`grouping\` and the columns to total with \`aggregation\`, then \`refresh()\`, as the example under *Load and read* does. The same can be added by call, with \`provider.grouping.addGroupBy({ columnName, alias })\` and \`provider.aggregation.addAggregation({ columnName, alias, aggregationFunction })\`. A group's value is always kept under \`<column>_group\`, so pass that as the group's alias; a total is kept under the alias you give it. \`getRecords()\` then returns one record per group, and a group's records are in a provider of their own, from \`createGroupedRecordDataProvider(group)\`.
 
 | A group record holds | Under |
 |---|---|

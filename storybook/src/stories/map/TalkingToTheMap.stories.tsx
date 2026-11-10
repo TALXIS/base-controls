@@ -28,7 +28,7 @@ A new \`key\` mounts a new map and calls both again; how mounts work is on [**Ru
 | \`getPoint(record)\` | Where the record's pin goes, as \`{ latitude, longitude }\`; \`undefined\` when its position is not a number. |
 | \`modules\` | The loaded modules: \`modules.get('library')\` is the map library. |
 | \`services\` | \`get('provider')\`, the records' provider, and \`get('viewport')\`, which moves the view. |
-| \`lifecycle\` | The mount's status and events: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
+| \`lifecycle\`, \`loading\`, \`execute\` | What every runtime has: the mount's status and events, a cover over the map's box, and actions whose errors the map shows: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 
 ## From inside the map
 

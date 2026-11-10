@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { AutoHeightExample, HeaderExample, KeyColumnsExample, LongNotesExample, ProductLinkExample, RememberLayoutExample, RowCommandsExample, StockValueExample } from '../../grid/examples/columnsExamples'
+import { HeaderExample, KeyColumnsExample, LongNotesExample, ProductLinkExample, RememberLayoutExample, RowCommandsExample, StockValueExample } from '../../grid/examples/columnsExamples'
 
 const DESCRIPTION = `
 The grid builds a column for each of the provider's columns, with its header text, width and data type. A hook on the grid's columns changes those columns, or adds columns of your own, without touching the provider: key columns that stay in view, a link to the record, a calculated value or a button on every row. Try it below: turn off *Show every column*.
@@ -12,7 +12,7 @@ The grid builds a column for each of the provider's columns, with its header tex
 
 ## Change a column
 
-In \`onSetup\`, add a hook to \`grid.services.get('columns').hooks.columnDefinitions\`. It receives the column definitions each time the grid builds its columns: find one by its \`colId\` and change it, or push one of your own. A definition takes any AG Grid column definition key, plus \`context\` for what the grid itself reads (see *The column context* below). Spread the existing \`context\`, and its \`cell\`, so the grid's own keys stay. At the default priority the modules run after your hook and can overwrite what it sets: see *Columns* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
+In \`onSetup\`, add a hook to \`grid.services.get('columns').hooks.columnDefinitions\`. It receives the column definitions each time the grid builds its columns: find one by its \`colId\` and change it, or push one of your own. A definition takes any AG Grid column definition key, plus \`context\` for what the grid itself reads (see *The column context* below). Spread the existing \`context\`, and its \`cell\`, so the grid's own keys stay. At the default priority, \`0\`, every module except the legacy client API one runs after your hook and can overwrite what it sets: see *Columns* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
 
 | \`colId\` | Column |
 |---|---|
@@ -67,13 +67,9 @@ The menu is built each time it opens, and adornments each time the header draws.
 
 ## Show long text
 
-Multiline text and text area columns wrap, up to six lines, with the full text in the tooltip. Users can drag a row taller by the grip on a cell's bottom edge; \`context.cell.isRowResizable\` turns the grip on or off for any column.
+Multiline text and text area columns wrap onto the lines their row has room for, up to six, with the full text in the tooltip. Users can drag a row taller by the grip on a cell's bottom edge; \`context.cell.isRowResizable\` turns the grip on or off for any column.
 
 {{story: Read long notes}}
-
-To size rows to the text instead, set AG Grid's \`autoHeight: true\` on the column: each row grows to fit its text, still up to six lines.
-
-{{story: Fit rows to their notes}}
 
 ## Remember the layout
 
@@ -202,18 +198,6 @@ export const ReadLongNotes: Story = {
         docs: {
             description: {
                 story: `*Notes* wrap and can be dragged taller, while *Next step* stays on one line with \`isRowResizable: false\`. Try: drag a row's bottom edge.`,
-            },
-        },
-    },
-}
-
-export const FitRowsToTheirNotes: Story = {
-    name: 'Fit rows to their notes',
-    render: () => renderStory(<AutoHeightExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `\`autoHeight: true\` on *Notes* makes every row as tall as its note, up to six lines. Try: open **Code** and set \`autoHeight\` to \`false\`.`,
             },
         },
     },

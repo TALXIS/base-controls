@@ -20,7 +20,7 @@ Loading records, running a command or saving a view can fail, and the user needs
 | The ribbon's first \`onLoad\` | The error in place of the commands, with **Details** and **Try again** |
 | A later \`onLoad\` of the ribbon, such as on a new selection | The error dialog; the commands before it stay |
 | Loading the columns *Edit columns* offers | The error in place of the pickers, with **Details** and **Try again** |
-| A ribbon command's \`onExecute\`, or saving or deleting a user view | The error dialog |
+| A ribbon command's \`onExecute\`, saving or deleting a user view, or your own \`control.execute(operation)\` | The error dialog |
 
 ## Failed loads
 
@@ -28,9 +28,11 @@ The error's \`message\` is the title, and **Details** opens the error dialog wit
 
 ## Failed actions
 
-The error dialog shows the error's \`message\` and its stack as the details. It is the PCF context's \`navigation.openErrorDialog\`, so in a PCF control it is the host's own dialog: see [**PCF context**](?path=/docs/concepts-pcf-context--overview).
+The error dialog is titled *The action could not be completed.* and shows the error's \`message\` as its details. Several failures open one dialog after another, oldest first. It is the PCF context's \`navigation.openErrorDialog\`, so in a PCF control it is the host's own dialog: see [**PCF context**](?path=/docs/concepts-pcf-context--overview). To show failures another way, replace the control's \`executeError\` piece: see *Reference* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 
-A user view fails when the store throws, when a \`saveWithView\` getter throws, or when a delete in *Manage views* returns \`success: false\`. A failed delete without an \`errorMessage\` shows a default one: to change it, see [**Localization**](?path=/docs/concepts-localization--overview).
+A user view fails when the store throws, when a \`saveWithView\` getter throws, or when a delete in *Manage views* returns \`success: false\`. A failed delete without an \`errorMessage\` shows a default one. To change the title or that message, see [**Localization**](?path=/docs/concepts-localization--overview).
+
+An action of your own gets the same dialog when it runs through \`control.execute(operation)\`, which also covers the control while it runs: see *Run actions* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
 {{story: Take the server down}}
 
@@ -38,14 +40,11 @@ A user view fails when the store throws, when a \`saveWithView\` getter throws, 
 
 The control shows the failure either way. To also log it, or show it elsewhere, listen in \`onSetup\`, which runs for every mount, as both examples do below the control.
 
-| Event | On | Arguments |
-|---|---|---|
-| \`onInitFailed\` | \`control.lifecycle.events\` | \`error\` |
-| \`onReloadFailed\` | The ribbon's \`events\` | \`error\` |
-| \`onExecuteFailed\` | The ribbon's \`events\` | \`command\`, \`error\` |
-| \`onOperationFailed\` | The \`userQueries\` module's \`events\` | \`error\` |
-
-Without \`DatasetControl.UserQueries\` rendered, \`onOperationFailed\` is the only sign a user view failed.
+| Event | On | Arguments | Fires for |
+|---|---|---|---|
+| \`onInitFailed\` | \`control.lifecycle.events\` | \`error\` | A failed load |
+| \`onExecuteFailed\` | \`control.executor.events\` | \`error\`, \`title\` | A failed user view, or a failed \`control.execute\` |
+| \`onExecuteFailed\` | The ribbon's \`executor.events\` | \`error\`, \`title\` | A failed command, or a failed later \`onLoad\` of the ribbon |
 
 ## Where next
 

@@ -73,7 +73,7 @@ export const FilterChips: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Four filters do not fit, so the chips show only their values. Try: remove two chips and watch the rest get their labels back.`,
+                story: `Four filters do not fit, so the chips show only their values. Try: remove **Stage** and **Account manager**, and watch the rest get their labels back.`,
             },
         },
     },

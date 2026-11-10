@@ -28,7 +28,7 @@ A module that keeps data comes in variants: one per backend, and a base factory 
 | Module | Description | Memory | Dataverse | TALXIS | Your own store |
 |---|---|---|---|---|---|
 | [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) | The project the tasks belong to. | \`createMemoryProjectModule\` | \`createDataverseProjectModule\` | | \`createProjectModule\` |
-| [**Custom columns**](?path=/docs/controls-taskgrid-modules-custom-columns--overview) | Columns users add to the tasks themselves. | \`createIndexedDbCustomColumnsModule\`, in the browser | | \`createTalxisCustomColumnsModule\` | \`createCustomColumnsModule\` |
+| [**Custom columns**](?path=/docs/controls-taskgrid-modules-custom-columns--overview) | Columns users add to the tasks themselves. | \`createMemoryCustomColumnsModule\` | | \`createTalxisCustomColumnsModule\` | \`createCustomColumnsModule\` |
 | [**Lookup many**](?path=/docs/controls-taskgrid-modules-lookup-many--overview) | Columns of many related records, such as assignees and tags. | \`createMemoryLookupManyModule\` | \`createDataverseLookupManyModule\` | | \`createLookupManyModule\` |
 | [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) | Tasks created from a template, and saved as one. | \`createMemoryTemplatesModule\` | | | \`createTemplatesModule\` |
 | [**Checklist**](?path=/docs/controls-taskgrid-modules-checklist--overview) | Each task's checklist progress. | \`createMemoryTaskChecklistModule\` | | \`createTalxisTaskChecklistModule\` | \`createTaskChecklistModule\` |
@@ -39,7 +39,7 @@ A module that keeps data comes in variants: one per backend, and a base factory 
 
 ## Your own store
 
-The base factory takes \`createStore\`, which the module calls with the task runtime on every mount; the checklist in the example uses one. A store implements the module's \`I…Store\`, listed on each module's page. Its writes are required, so throw "Not implemented." from one your backend lacks; an optional \`destroy()\` runs when the module goes.
+The base factory takes \`createStore\`, which the module calls with the task runtime on every mount; the checklist in the example uses one. A store implements the module's \`I…Store\`, listed on each module's page with its optional methods marked. Throw "Not implemented." from a required write your backend lacks; an optional \`destroy()\` runs when the module goes.
 
 ## Columns from modules
 

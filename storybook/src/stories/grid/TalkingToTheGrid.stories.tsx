@@ -21,9 +21,10 @@ Outside the grid, such as in the ribbon above, keep the grid \`onSetup\` passes 
 | \`modules\` | The modules the grid was given, by name. See *Modules* below. |
 | \`events\` | \`onDataLoaded\`. See *Events* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). |
 | \`lifecycle\` | The mount's status and events, such as \`onReady\` and \`onDestroyed\`. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
+| \`loading\`, \`execute(operation, parameters?)\` | Cover the grid with a spinner while your code works, and run an action whose failure is shown to the user. See *Run actions* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`hooks.agGridOptions\`, \`hooks.agGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
 | \`hooks.openRecord\` | What opening a record does. See *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview). |
-| \`openRecord(params)\` | Opens a record as a double-click does: through \`hooks.openRecord\`, then the provider. |
+| \`openRecord(parameters)\` | Opens a record as a double-click does: through \`hooks.openRecord\`, then the provider. |
 | \`getLabels(set)\` | A set of labels as the grid resolves them. See [**Localization**](?path=/docs/concepts-localization--overview). |
 
 ## From mount to unmount

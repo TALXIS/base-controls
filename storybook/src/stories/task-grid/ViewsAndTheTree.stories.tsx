@@ -16,7 +16,7 @@ A task view looks at the tasks a particular way, such as sorted by start date or
 
 | Method | Description |
 |---|---|
-| \`setSorting(sorting)\` | Sorts each task's subtasks. Without it, tasks keep their stack rank order. |
+| \`setSorting(sorting)\` | Sorts the tasks among their siblings. Without it, tasks keep their stack rank order. |
 | \`setFiltering(filtering)\` | Filters the tasks. |
 | \`setQuickFindColumns(columnNames)\` | The columns quick find searches. The subject column when not called. On \`ITaskDataProvider\`. |
 | \`setSearchQuery(query)\` | Starts the view searched. |
@@ -29,7 +29,9 @@ Ancestors a filter or a search keeps are in italics where they do not match them
 
 ## Flat list
 
-A flat list shows the matching tasks on their own, without their ancestors. A *Path* column after the subject lists each task's ancestors, the column of **+** buttons is hidden, and tasks cannot be dragged. The user switches it with *Show hierarchy* in \`TaskDatasetControl.Settings\`, and your code with \`taskRuntime.setFlatList()\`.
+A flat list shows the matching tasks on their own, without their ancestors. The column of **+** buttons is hidden, and tasks cannot be dragged. The user switches it with *Show hierarchy* in \`TaskDatasetControl.Settings\`, and your code with \`taskRuntime.setFlatList()\`.
+
+Switching to a flat list adds a *Path* column after the subject, listing each task's ancestors, and switching back takes it away. A view that starts as a flat list, such as *Every task on its own* in the example, shows it only when its columns list \`PATH_COLUMN_NAME\`.
 
 ## User views and state
 

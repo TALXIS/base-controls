@@ -39,12 +39,6 @@ const GridExample = () => {
     const timesheets = React.useMemo(createWeekProvider, [])
     const [type, setType] = React.useState<GroupingType>('nested')
 
-    const changeType = (next: GroupingType) => {
-        setType(next)
-        //the provider regroups by the new type only on its next load
-        timesheets.refresh()
-    }
-
     return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
@@ -52,16 +46,19 @@ const GridExample = () => {
                     label='Group the week'
                     selectedKey={type}
                     options={[{ key: 'nested', text: 'By employee, then by day' }, { key: 'flat', text: 'One group per employee and day' }]}
-                    onChange={(_, option) => changeType(option?.key as GroupingType)} />
+                    onChange={(_, option) => setType(option?.key as GroupingType)} />
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
             <ClientSideGrid
+                //the type is read at mount
                 key={type}
                 modules={[
                     createGroupingModule({ type, defaultExpandedLevel: 0 }),
                     createAggregationModule(),
                 ]}
+                //the provider regroups by the grid's type only on its next load
+                onLoad={async () => { await timesheets.refresh() }}
                 height='480px' />
         </DatasetControl.Body>
     </DatasetControl>

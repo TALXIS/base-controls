@@ -406,13 +406,13 @@ import { FIELD_MAPPING, VISITED } from './data'
 import { loadTrip } from './views'
 import { COMPONENTS } from './CityCard'
 
-//covers the control with its loading overlay while the provider loads, such as for a quick find
+//covers the control while the provider loads, such as for a quick find
 const LoadingCover = () => {
-    const overlay = useDatasetControl().parts.get('loadingOverlay')
+    const control = useDatasetControl()
     const hide = React.useRef<() => void>()
     useEventEmitter<IDataProviderEventListeners>(useDataProvider(), 'onLoading', isLoading => {
         hide.current?.()
-        hide.current = isLoading ? overlay.show('Loading map data…') : undefined
+        hide.current = isLoading ? control.loading.show('Loading map data…') : undefined
     })
     return null
 }

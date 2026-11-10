@@ -12,7 +12,7 @@ The non-working days module shades weekends and the days you list, such as holid
 
 ## What it does
 
-The days are shaded while the zoom shows single days, and pointing at one on the scale shows its description. Durations count only working time, and a bar dragged or drawn onto non-working days slides off them in the direction it moved. *Hide non-working days* in \`TaskDatasetControl.Settings\` takes them off the timeline while it shows single days, a choice kept per view and saved with user views.
+The days are shaded while the zoom shows single days, and pointing at one on the scale shows its description. Durations count only working time, and a bar dragged or drawn onto non-working days slides off them in the direction it moved. *Hide non-working days* in \`TaskDatasetControl.Settings\` takes them off the timeline while it shows single days. User views save the choice; to keep it per view, give \`TaskGantt\` a \`stateKey\`.
 
 ## A non-working day
 

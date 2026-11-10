@@ -15,8 +15,8 @@ The Gantt itself lines the tasks up on a timeline; dragging bars, drawing links,
 | Module | Factory | Needs | Description |
 |---|---|---|---|
 | Library | \`createLibraryModule()\`, \`createProLibraryModule({ Gantt })\` | | DHTMLX Gantt itself. Required. See *The library* below. |
-| [**Editing on the timeline**](?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview) | \`createBarDraggingModule()\` | \`enableEditing\` | Moving and resizing bars. |
-| | \`createTaskDrawingModule()\` | \`enableCreation\`, \`enableEditing\` | Drawing a new task with Ctrl+drag, and the dates of a task that has none. |
+| [**Editing on the timeline**](?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview) | \`createBarDraggingModule()\` | \`enableEditing\`, and \`createTaskEditingModule()\` in \`TaskGrid\` | Moving and resizing bars. |
+| | \`createTaskDrawingModule()\` | \`enableCreation\`; for dates, what bar dragging needs | Drawing a new task with Ctrl+drag, and the dates of a task that has none. |
 | | \`createTaskSelectionModule()\` | | Selecting tasks from the chart, in the grid's selection. |
 | [**Markers**](?path=/docs/controls-taskgrid-gantt-modules-markers--overview) | \`createMarkersModule()\`, \`createMemoryMarkersModule()\` | The [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) module, for the project's markers | Today, the project's start and end, and dates of your own. |
 | [**Non-working days**](?path=/docs/controls-taskgrid-gantt-modules-non-working-days--overview) | \`createNonWorkingDaysModule()\`, \`createMemoryNonWorkingDaysModule()\` | \`TaskDatasetControl.Settings\`, to hide them | Weekends and holidays, shaded and left out of durations. |
@@ -26,7 +26,7 @@ The Gantt itself lines the tasks up on a timeline; dragging bars, drawing links,
 
 Every factory above comes from \`@talxis/base-controls/gantt\`. The task modules some of them need, such as Project and Dependencies, come from \`@talxis/base-controls\` and go in \`TaskDatasetControl\`'s \`modules\`, as in the example.
 
-\`createMarkersModule\` and \`createNonWorkingDaysModule\` take a \`createStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on the task grid's [**Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take the data itself.
+\`createMarkersModule\` and \`createNonWorkingDaysModule\` take a \`createStore(taskRuntime)\` for a store of your own, as the task modules do: see *Your own store* on the task grid's [**Modules**](?path=/docs/controls-taskgrid-modules--overview). Their memory variants take a \`MemoryTable\` instead.
 
 ## The library
 

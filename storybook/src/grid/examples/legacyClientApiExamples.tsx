@@ -26,7 +26,7 @@ const getRecommendations = (record: IRecord): IAddControlNotificationOptions[] =
             uniqueId: 'overdue',
             iconName: 'Clock',
             text: 'Overdue',
-            messages: ['The customer was due a first answer by ' + dayjs(record.getValue('duedate')).format('ddd D MMM, HH:mm') + '.'],
+            messages: ['The customer was due a first answer by ' + record.getFormattedValue('duedate') + '.'],
             actions: [
                 { message: 'Assign to me', iconName: 'AddFriend', actions: [() => assignToMe(record)] },
                 { message: 'Escalate', iconName: 'Up', actions: [() => update(record, { escalated: true })] },

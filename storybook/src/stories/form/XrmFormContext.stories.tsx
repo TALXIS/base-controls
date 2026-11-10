@@ -12,7 +12,7 @@ In a model-driven app, form scripts work through \`formContext\`: they read and 
 
 ## Get the form context
 
-\`onFormReady({ formContext, api })\` is called once the record and the FormXml have loaded, so register there what a form's OnLoad would. To call \`formContext\` from buttons of your own, keep it in state, as the example does. \`api\` is the one \`Form.Root\` hands over: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
+\`onFormReady({ formContext, api })\` is called once the record and the FormXml have loaded, so register there what a form's OnLoad would; handlers added there with \`data.addOnLoad()\` and \`ui.addOnLoad()\` run once the form is drawn. To call \`formContext\` from buttons of your own, keep it in state, as the example does. \`api\` is the one \`Form.Root\` hands over: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
 
 | Call | Takes |
 |---|---|

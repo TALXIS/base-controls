@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../../../grid/showcase/ExploreCar
 import { GanttEditingExample } from '../../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-Three Gantt modules let the user change tasks on the timeline: move and resize bars, draw new tasks and missing dates, and select tasks. A change to a task's dates saves as an edit in the grid does. Try it below: drag a bar a week later.
+Three Gantt modules let the user plan on the timeline: move and resize bars, draw new tasks and missing dates, and select tasks. A change to a task's dates saves as an edit in the grid does. Try it below: drag a bar a week later.
 
 {{canvas: Plan on the timeline}}
 

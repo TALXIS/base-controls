@@ -20,7 +20,7 @@ A column whose metadata has \`RequiredLevel\` 1 or 2 is required wherever it is 
 
 | Value | Name | The field |
 |---|---|---|
-| 0 | \`None\` | Is not required, even when its column is. |
+| 0 | \`None\` | Has no mark and passes the form's checks. When its column is required, the record still refuses to save it empty. |
 | 1, 2 | \`SystemRequired\`, \`ApplicationRequired\` | Is required: when empty, it stops a save. The label has a red asterisk. |
 | 3 | \`Recommended\` | Has a blue plus by its label, and never stops a save. |
 
@@ -36,7 +36,7 @@ A save checks every column of the record, whether the form shows it or not, so a
 
 ## Show messages
 
-\`Form.Notifications\` shows its \`messages\` first, then the validation summary, each failure after its column's display name; the \`errors\` of a failed save land there too. A message is \`{ text, level }\`, where \`text\` is HTML and \`level\` is \`'ERROR'\`, \`'WARNING'\` or \`'INFO'\`. Several messages fold into one bar headed by their count and coloured by the most severe, and a click unfolds them.
+\`Form.Notifications\` shows its \`messages\` first, then the validation summary, each failure after its column's display name; the \`errors\` of a failed save land there too. A message is \`{ text, level, onDismiss? }\`, where \`text\` is HTML, \`level\` is \`'ERROR'\`, \`'WARNING'\` or \`'INFO'\`, and \`onDismiss\` adds a close button that calls it. Several messages fold into one bar headed by their count and coloured by the most severe, and a click unfolds them.
 
 Your code reads the summary with \`useValidationSummary()\` or \`onValidationSummaryChanged\`: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
 
@@ -45,10 +45,10 @@ Your code reads the summary with \`useValidationSummary()\` or \`onValidationSum
 | Part | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|---|
 | \`Form.Field\` | \`name\` | \`string\` | None | Live | The column the field binds to. |
-| \`Form.Field\` | \`requiredLevel\` | \`RequiredLevelEnum \| null\` | The column's | Live | The requirement on this form, in place of the column's. \`null\` gives the column's back. |
-| \`Form.Field\` | \`validation\` | \`{ error, errorMessage } \| null\` | None | Live | Checked before the record's own checks. \`null\` takes it off. |
+| \`Form.Field\` | \`requiredLevel\` | \`RequiredLevelEnum \| null\` | The column's | Live | The requirement on this form, in place of the column's. \`null\` gives the column's back; leaving the prop out keeps the last one. |
+| \`Form.Field\` | \`validation\` | \`{ error, errorMessage } \| null\` | None | Live | Checked before the record's own checks. \`null\` takes it off; leaving the prop out keeps the last one. |
 | \`Form.Control\` | \`disabled\` | \`boolean\` | \`false\` | Live | Draws the field read-only, with a lock by the label. |
-| \`Form.Notifications\` | \`messages\` | \`{ text, level }[]\` | \`[]\` | Live | Shown before the validation summary. |
+| \`Form.Notifications\` | \`messages\` | \`{ text, level, onDismiss? }[]\` | \`[]\` | Live | Shown before the validation summary. |
 
 \`components\` of \`Form.Control\` and \`Form.Notifications\` draws them your own way: see [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview).
 

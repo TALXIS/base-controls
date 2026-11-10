@@ -4,7 +4,7 @@ import { accountRecord } from './shared'
 
 const FLUENT_V9_CODE = `import { V9, V9Provider } from './v9'
 
-const account = ${accountRecord(['name', 'telephone1', 'industrycode', 'description'])}
+const account = ${accountRecord(['name', 'industrycode', 'description'])}
 
 const V9Field = (props: { name: string }) => <Form.Field name={props.name}>
     <Form.Cell>
@@ -25,7 +25,6 @@ const GridExample = () => {
                     <Form.Column>
                         <Form.Section label='Account'>
                             <V9Field name='name' />
-                            <V9Field name='telephone1' />
                             <V9Field name='industrycode' />
                         </Form.Section>
                     </Form.Column>

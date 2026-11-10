@@ -28,7 +28,7 @@ A command either runs or opens a menu of further commands, as **Download** does 
 
 The commands show in the order they are returned. A shimmer stands in for them until the first load finishes, and a reload keeps the previous commands until the new ones arrive, as changing the invoice's status does above. A button is disabled while its \`onExecute\` runs.
 
-When the first load throws, the error shows in place of the commands, with **Details** and **Try again**, which mounts the ribbon anew. When a reload or an \`onExecute\` throws, the commands stay and the error dialog opens: it is the PCF context's \`navigation.openErrorDialog\`, see [**PCF context**](?path=/docs/concepts-pcf-context--overview).
+When the first load throws, the error shows in place of the commands, with **Details** and **Try again**, which mounts the ribbon anew. When a reload or an \`onExecute\` throws, the commands stay and the ribbon's runtime reports the error as a failed action, which opens the error dialog by default, as **Send reminder** does above: see *Run actions* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
 {{story: A slow load}}
 
@@ -39,13 +39,13 @@ When the first load throws, the error shows in place of the commands, with **Det
 | \`onLoad\` | \`(ribbon: IRibbon) => IRibbonCommand[] \\| Promise<IRibbonCommand[]>\` | None | Live | Returns the commands, directly or once loaded; returned directly, they show without a shimmer. Called at mount and on \`reload()\`. |
 | \`align\` | \`'start' \\| 'end'\` | \`'start'\` | Live | The side the commands line up against. |
 | \`disabled\` | \`boolean\` | \`false\` | Live | Disables every command, menus included. |
-| \`className\` | \`string\` | None | Live | Added to the ribbon's box and to its shimmer. |
+| \`className\` | \`string\` | None | Live | Added to the ribbon's box, which also holds the shimmer and a failed first load. |
 | \`onSetup\` | \`(ribbon: IRibbon) => void\` | None | At mount | Hands over the ribbon of each mount, before it loads. |
 | \`components\` | \`IRibbonComponents\` | Defaults | Live | See *Changing how it looks*. |
 
 ## From your code
 
-\`onSetup\` hands over the ribbon of each mount. Its \`lifecycle\` holds the status and the lifecycle events every runtime has: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). The ribbon does not know when what your commands depend on changes, so call \`reload()\` then, as the example does when the status changes.
+\`onSetup\` hands over the ribbon of each mount. Its \`lifecycle\`, \`loading\` and \`execute\` are the ones every runtime has: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). The ribbon does not know when what your commands depend on changes, so call \`reload()\` then, as the example does when the status changes.
 
 | Member | Does |
 |---|---|
@@ -58,9 +58,7 @@ When the first load throws, the error shows in place of the commands, with **Det
 | Event | Fires |
 |---|---|
 | \`onCommandsChanged\` | After a reload brings new commands |
-| \`onReloadFailed(error)\` | When a reload throws; the previous commands stay |
 | \`onBeforeExecute(command)\` | Before a command's \`onExecute\` runs |
-| \`onExecuteFailed(command, error)\` | When \`onExecute\` throws, before \`onAfterExecute\` |
 | \`onAfterExecute(command)\` | Once \`onExecute\` settles, whether it resolved or threw |
 
 ## Add your own commands
@@ -77,11 +75,13 @@ When the first load throws, the error shows in place of the commands, with **Det
 |---|---|---|---|
 | Top level | \`onRenderCommandBar\`, with the commands as \`items\` | \`RibbonUiCommandBarComponents\` | The command bar |
 | \`shimmer\` | \`onRenderShimmer\` | \`RibbonUiShimmerComponents\` | The shimmer before the first load |
-| \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed first load |
+| \`mountError\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed first load |
+| \`executeError\` | \`onRenderErrors\` | \`RuntimeExecuteErrorComponents\` | A failed reload or command; the error dialog by default |
+| \`container\`, \`loadingOverlay\` | As on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) | \`RuntimeHostUiContainerComponents\`, \`LoadingOverlayComponents\` | The ribbon's box, and what covers it while \`ribbon.loading\` is shown |
 
 The same UI is exported as plain components that take only props, for a bar with no \`onLoad\` behind it: \`Ribbon.Ui.CommandBar\`, given Fluent's command bar \`items\`, and \`Ribbon.Ui.Shimmer\`.
 
-The commands carry your own labels. To change the wording of **Try again** and **Details**, see [**Localization**](?path=/docs/concepts-localization--overview).
+The commands carry your own labels. To change the wording of **Try again**, **Details** and the default title of a failed command, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 

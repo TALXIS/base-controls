@@ -4,7 +4,7 @@ import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { ILifecycleStep, Lifecycle } from '../../grid/showcase/Lifecycle'
-import { DealSummaryExample, KeepStateExample, RunActionsExample } from './runtimeHostExamples'
+import { DealSummaryExample, KeepStateExample, OwnUiExample, RunActionsExample } from './runtimeHostExamples'
 
 const DESCRIPTION = `
 A control that has to load something before it can draw, such as DatasetControl or the Ribbon, runs on a *runtime*: one object per mount that does the loading and reports whether the control is ready, failed or gone. \`RuntimeHost\` creates the runtime, starts and ends it, shows a failed load with a retry and covers the control while it runs an action, so a control of your own only says what it loads, what it does and what it draws. Try it below: turn on **Service unavailable**, press **Reload**, then turn it off and press **Try again**.
@@ -42,7 +42,9 @@ A remount makes a new runtime, so anything that must survive it, such as what th
 
 ## Write a runtime
 
-A runtime is a class that extends \`Runtime\`, calls \`super()\` first in its constructor, and creates its own \`lifecycle\`: a \`RuntimeLifecycle\` given \`onInit\`, which loads what the control needs and throws when it cannot, and optionally \`onDestroy\`, which releases what the runtime holds. Without \`onInit\`, the runtime is ready at once. \`Runtime\` adds \`loading\` and \`execute\`, described in *Run actions*. The runtime's own members, such as \`getTotal()\` in the example, sit beside \`lifecycle\`. An optional \`getStateStore()\` returns the store the controls inside the host keep their state in; without it, they use the store around the host.
+A runtime is a class that extends \`Runtime\`, calls \`super()\` first in its constructor, and creates its own \`lifecycle\`: a \`RuntimeLifecycle\` given \`onInit\`, which loads what the control needs and throws when it cannot, and optionally \`onDestroy\`, which releases what the runtime holds. Without \`onInit\`, the runtime is ready at once. \`Runtime\` adds \`loading\`, \`executor\` and \`execute\`, described in *Run actions*. The runtime's own members, such as \`getTotal()\` in the example, sit beside \`lifecycle\`. An optional \`getStateStore()\` returns the store the controls inside the host keep their state in; without it, they use the store around the host.
+
+A control built on the host can take \`components\` from its own users and pass them on to the host, as \`Ribbon\` and \`DatasetControl\` do, so they get the same choice of how it looks.
 
 ## Draw the mount
 
@@ -74,10 +76,12 @@ To cover the control for work that does not run through \`execute\`, call \`runt
 | \`container\` | \`onRenderContainer\` | \`RuntimeHostUiContainerComponents\` | The box the host draws everything in; a control can draw its own root here |
 | \`placeholder\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the runtime is ready |
 | \`mountError\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, or an error the control threw while it drew |
-| \`loadingOverlay\` | \`onRenderOverlay\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the control while \`runtime.loading\` is shown |
+| \`loadingOverlay\` | \`onRenderOverlay\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the control while \`runtime.loading\` is shown, such as while \`execute\` runs |
 | \`executeError\` | \`onRenderErrors\` | \`RuntimeExecuteErrorComponents\` | The failures of \`execute\` not yet dismissed, given \`failures\` and \`onDismiss(failure)\` |
 
-To change the wording of **Try again**, **Details** and the default title of a failed action, see [**Localization**](?path=/docs/concepts-localization--overview).
+{{story: Your own loading and errors}}
+
+To change the wording of the loading text, **Try again**, **Details** and the default title of a failed action, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Reference
 
@@ -136,7 +140,7 @@ export const RunActions: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Adding a deal covers the summary until it is saved, and failed sends show in a notification bar instead of the error dialog, grouped once there are several. Try: press Add a 5,000 USD deal, then Send to finance twice.`,
+                story: `Adding a deal covers the summary until it is saved, and a failed send opens the error dialog under the title it was given. Try: press **Add a 5,000 USD deal**, then **Send to finance**.`,
             },
         },
     },
@@ -149,6 +153,18 @@ export const KeepThePickedOwner: Story = {
         docs: {
             description: {
                 story: `Picking an account manager stores it and remounts, and the new runtime loads that owner's deals. Try: pick Ben Carter.`,
+            },
+        },
+    },
+}
+
+export const YourOwnLoadingAndErrors: Story = {
+    name: 'Your own loading and errors',
+    render: () => renderStory(<OwnUiExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `Every piece the host draws is replaced: a skeleton for the first load, an error card for a failed one, a progress bar while a send runs and a notification bar for failed sends. Try: turn on **Service unavailable**, press **Send to finance**, then **Reload**, and turn it off before **Try again**.`,
             },
         },
     },

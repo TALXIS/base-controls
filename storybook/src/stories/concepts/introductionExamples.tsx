@@ -123,7 +123,7 @@ const StorePin = (props: IMapUiMarkerPinProps) => {
     return <Map.Ui.MarkerPin {...props} color={STATUSES.find(option => option.Value === status)?.Color} />
 }
 
-//a pin's popup with an Open link, like the store's name in the grid
+//a pin's popup with a link that opens the store, as its name in the grid does
 const StorePopup = (props: IStoreMapProps) => {
     const store = useMapRecord()
     return <Map.Popup.Card>
@@ -132,7 +132,7 @@ const StorePopup = (props: IStoreMapProps) => {
             <Map.Popup.FieldRow columnName='manager' iconName='Contact' />
             <Map.Popup.FieldRow columnName='openingdate' iconName='Calendar' />
         </Map.Popup.FieldRows>
-        <Link onClick={() => props.onOpenStore(store)}>Open</Link>
+        <Link onClick={() => props.onOpenStore(store)}>Open the store</Link>
     </Map.Popup.Card>
 }
 
@@ -178,13 +178,12 @@ import { createBarDraggingModule, createLibraryModule, createLinksModule, create
 import type { IRecord } from '@talxis/client-libraries'
 import { CHECKLIST_ITEMS, DEPENDENCIES, HOLIDAYS, LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VALUES, PLAN_FIELD_MAPPING, PLAN_METADATA, PLAN_VIEWS, PLANS, STANDARD_OPENING, TASK_COLUMNS } from './plans'
 
-//one for every store, so a template the user saves is offered on all of them
+//one for every store, so a template or a column the user adds is offered on all of them
 const templates = new MemoryTable<IMemoryTemplate>({ idKey: 'id', rows: [STANDARD_OPENING] })
-
-//the store's own TaskDatasetControl, with a Gantt beside its task grid
-const PLAN_COLUMNS = new MemoryTable<ICustomColumnRow>({ idKey: 'name', rows: [{ name: 'budget', displayName: 'Budget', dataType: 'Currency', precision: 0 }, { name: 'supplier', displayName: 'Supplier', dataType: 'SingleLine.Text', createdOn: 1 }] })
+const PLAN_COLUMNS = new MemoryTable<ICustomColumnRow>({ idKey: 'name', rows: [{ name: 'budget', displayName: 'Budget', dataType: 'Currency', precision: 0 }, { name: 'supplier', displayName: 'Supplier', dataType: 'SingleLine.Text' }] })
 const PLAN_COLUMN_VALUES = new MemoryTable<ICustomColumnValuesRow>({ idKey: 'taskId' })
 
+//the store's own TaskDatasetControl, with a Gantt beside its task grid
 export const OpeningPlan = (props: { store: IRecord }) => {
     const tasks = PLANS[props.store.getRecordId()]
     //the opening date as the form holds it, saved or not
@@ -221,7 +220,7 @@ export const OpeningPlan = (props: { store: IRecord }) => {
         createMemoryNonWorkingDaysModule({ nonWorkingDays: HOLIDAYS }),
         //a dropped bar saves its dates through the task editing module
         createBarDraggingModule(),
-        //Ctrl+drag over a row without dates draws them
+        //a drag along the row of a task without dates draws them
         createTaskDrawingModule(),
         createTaskSelectionModule(),
         createTaskTooltipModule({
@@ -308,7 +307,7 @@ export const STORES = [
 export const createStoresProvider = () => new MemoryDataProvider({
     dataSource: STORES,
     //a memory provider offers Edit columns the columns of its saved queries
-    metadata: { PrimaryIdAttribute: 'storeid', PrimaryNameAttribute: 'name', LogicalName: 'store', QuickFindColumns: ['name', 'manager', 'country'], SavedQueries: [{ columns: COLUMNS }] },
+    metadata: { PrimaryIdAttribute: 'storeid', PrimaryNameAttribute: 'name', LogicalName: 'store', DisplayCollectionName: 'stores', QuickFindColumns: ['name', 'manager', 'country'], SavedQueries: [{ columns: COLUMNS }] },
 })
 `,
 }

@@ -70,6 +70,7 @@ Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed,
 | \`parts\`, \`modules\` | The parts and the modules, under *Reach the parts* and *Add a module*. |
 | \`surfaces.hooks.surfaces.add(hook, priority?)\` | Draws a dialog or panel of your own in the control: \`hook(items)\` pushes \`{ key, onRender }\`, and \`onRender\` returns \`null\` while there is nothing to show. |
 | \`lifecycle\` | The status, the error and the lifecycle events, and \`remount()\` for the view that failed to load. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
+| \`execute(operation, parameters?)\`, \`loading\`, \`executor\` | Runs an action of your own while a spinner covers the control, and opens the error dialog when it throws; \`loading.show(message?)\` covers the control for work of your own. See *Run actions* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`getLabels(set)\` | A label set as the control's \`LabelsProvider\` gives it: see [**Localization**](?path=/docs/concepts-localization--overview). |
 | \`getTheme()\` | The Fluent theme the control is drawn in: see [**Theming**](?path=/docs/concepts-theming--overview). |
 
@@ -84,7 +85,6 @@ Declare what a module's \`onLoad\` returns, so \`control.modules.get\` is typed,
 | \`pagination\`, \`pageSizeSwitcher\` | [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview) |
 | \`notifications\` | [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview) |
 | \`grid\` | The grid in the body: [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) |
-| \`loadingOverlay\` | Always there. \`show(message?)\` covers the whole control and returns the function that hides it; it stays until every caller has hidden it. |
 
 ### What a module's control adds
 

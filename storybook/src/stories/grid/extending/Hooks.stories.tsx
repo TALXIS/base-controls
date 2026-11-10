@@ -16,7 +16,7 @@ Add a hook to a service or a module from a module's \`onLoad\`, or from the grid
 
 The grid runs the hooks each time it draws, so keep a hook fast and free of side effects. When something a hook reads changes, see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). Every \`add\` call takes an optional \`priority\` and returns a function that removes the hook.
 
-Hooks of one kind run in ascending priority. Within one priority they run in the order they were registered, which follows the order of the \`modules\` array. The default priority is \`0\`: the legacy client API module runs before it, and every other built-in module runs later, so where both set the same thing, the module wins. To run after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`:
+Hooks of one kind run in ascending priority. Within one priority they run in the order they were registered, which follows the order of the \`modules\` array. The default priority is \`0\`: the legacy client API module runs before it, so your hook builds on what a script set, and every other built-in module runs after it, so where one of them sets the same thing, the module wins. To run after module *x*, register at \`GRID_MODULE_PRIORITY.x + 1\`:
 
 | Module | \`GRID_MODULE_PRIORITY\` |
 |---|---|

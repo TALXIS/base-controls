@@ -23,7 +23,7 @@ A group row shows its value, a chevron and its record count in the column of its
 
 {{story: Group hours by employee and day}}
 
-The grid passes \`type\` to the provider when it mounts, and the provider regroups on its next load. To switch, remount the grid with a new \`key\` and refresh the provider, as the example does.
+The grid hands \`type\` to the provider as it mounts, and the provider regroups only on its next load. Inside a DatasetControl the provider has loaded by then, so refresh it in the grid's \`onLoad\`, as the example does. To switch, remount the grid with a new \`key\`.
 
 ## Opening groups
 
@@ -61,9 +61,9 @@ Summary rows hold their values under aliases, so \`record.getValue('status')\` r
 
 ## Preset grouping and totals
 
-Grouping and totals live on the provider, like the sort and the filter: add them before the provider loads and the grid opens grouped and totalled, as the pipeline at the top of this page does. The calls, and the aliases the values are held under, are under *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
+Grouping and totals are part of the provider's columns: set them before the provider loads and the grid opens grouped and totalled, as the pipeline at the top of this page does. How to set them, and the aliases the values are held under, are under *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
-Call \`setColumns\` first, since grouping and totals are written onto the current columns, and name the aliases as the column menu does: \`<column>_group\` and \`<column>_<function>\`. To ungroup from code, remove each level with \`removeGroupBy\`: \`grouping.clear()\` leaves the columns it ungroups read-only.
+\`grouping.addGroupBy\` and \`aggregation.addAggregation\` write onto the current columns, so call them after \`setColumns\`, as a later \`setColumns\` drops them. Name the aliases as the column menu does: \`<column>_group\` and \`<column>_<function>\`. To ungroup from code, remove each level with \`removeGroupBy\`: \`grouping.clear()\` leaves the columns it ungroups read-only.
 
 ## Options
 
