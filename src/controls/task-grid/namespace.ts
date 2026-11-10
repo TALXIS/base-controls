@@ -8,7 +8,7 @@ export interface ITaskDatasetControlParts {
     Settings: typeof Settings;
     /** `DatasetControl.PageSizeSwitcher` showing the task count, always disabled. */
     PageSizeSwitcher: typeof PageSizeSwitcher;
-    /** `DatasetControl.Ribbon`, its items passed through `addRibbonCommandUiHook`. */
+    /** `DatasetControl.Ribbon`, its items passed through `hooks.ribbonCommandUi`. */
     Ribbon: typeof Ribbon;
     /** The task grid's parts as plain UI, with no runtime behind them. */
     Ui: ITaskGridUi;

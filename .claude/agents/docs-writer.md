@@ -112,8 +112,8 @@ it uses RuntimeHost, modules or `RuntimeLifecycle`, and never add roadmap notes 
   `'1'`. Compare with `Number(record.getValue('stage')) === 3`.
 - `useGridModule()` throws when the module is not loaded; never write `useGridModule(...)?.`.
 - `destroyProviderOnUnmount` is a field of the `onLoad` result, not a DatasetControl prop.
-- The Storybook typecheck has 17 errors that predate any docs work (the model and FormXml builder panels,
-  `grid/dev` mocks, `TaskColumnValues.ts`). Judge only the files you touched.
+- The Storybook typecheck has 16 errors that predate any docs work (the model and FormXml builder panels,
+  `grid/dev` mocks). Judge only the files you touched.
 - When the sandbox typings lack something an example needs, add it to `gridSandboxDeclarations.ts` or
   `gridSandboxScope.ts`, minimally, re-reading the file right before each edit.
 

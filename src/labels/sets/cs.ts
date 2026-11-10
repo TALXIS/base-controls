@@ -19,7 +19,6 @@ import { FILTER_OPERATORS_LABELS_CS } from '@controls/grid/modules/filtering/ada
 import { GRID_FILTERING_LABELS_CS } from '@controls/grid/modules/filtering/labels/cs';
 import { GRID_GROUPING_LABELS_CS } from '@controls/grid/modules/grouping/labels/cs';
 import { GRID_SORTING_LABELS_CS } from '@controls/grid/modules/sorting/labels/cs';
-import { MAP_LABELS_CS } from '@controls/map/labels/cs';
 import { NESTED_CONTROL_RENDERER_LABELS_CS } from '@fields/nested-control-renderer/labels/cs';
 import { TASK_GRID_LABELS_CS } from '@controls/task-grid/labels/cs';
 import { TASK_CHECKLIST_LABELS_CS } from '@controls/task-grid/modules/task-checklist/labels/cs';
@@ -61,7 +60,6 @@ export const CZECH_LABELS: Labels = {
     ...GRID_FILTERING_LABELS_CS,
     ...GRID_GROUPING_LABELS_CS,
     ...GRID_SORTING_LABELS_CS,
-    ...MAP_LABELS_CS,
     ...NESTED_CONTROL_RENDERER_LABELS_CS,
     ...TASK_GRID_LABELS_CS,
     ...TASK_CHECKLIST_LABELS_CS,

@@ -26,7 +26,7 @@ export interface IGridOpenRecordParameters {
 
 /** The grid reads its provider from `DataProviderContext`, once, at mount. */
 export interface IGridProps {
-    /** What this grid is made of, in load order; read once, at mount, and must hold a row model. */
+    /** The grid's modules, loaded by `priority`; read at mount and must hold a row model. */
     modules: IGridModule[];
     /** Whether a double click on a row opens its record; read once, at mount. */
     enableNavigation?: boolean;

@@ -1,4 +1,6 @@
 {
+    ". MAP_LABELS": null,
+    ". MAP_LABELS_CS": null,
     ". IMemoryTaskDatabaseParameters": null,
     ". IMemoryTaskShape": null,
     ". IMemoryTemplatesStoreParameters": null,

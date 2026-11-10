@@ -23,7 +23,7 @@ export interface IGridValidation {
 
 /** What the grid's own parts read of it. */
 export interface IGridValidationInternal extends IGridValidation {
-    /** Whether the record's value in the column is valid, after the hooks and the column's `validationHook`. */
+    /** Whether the record's value in the column is valid, after the `validation` hooks. */
     get(parameters: { record: IRecord; columnName: string }): IFieldValidationResult;
 }
 

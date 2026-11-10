@@ -19,7 +19,6 @@ import { FILTER_OPERATORS_LABELS } from '@controls/grid/modules/filtering/adapte
 import { GRID_FILTERING_LABELS } from '@controls/grid/modules/filtering/labels/en';
 import { GRID_GROUPING_LABELS } from '@controls/grid/modules/grouping/labels/en';
 import { GRID_SORTING_LABELS } from '@controls/grid/modules/sorting/labels/en';
-import { MAP_LABELS } from '@controls/map/labels/en';
 import { NESTED_CONTROL_RENDERER_LABELS } from '@fields/nested-control-renderer/labels/en';
 import { TASK_GRID_LABELS } from '@controls/task-grid/labels/en';
 import { TASK_CHECKLIST_LABELS } from '@controls/task-grid/modules/task-checklist/labels/en';
@@ -61,7 +60,6 @@ export const BASE_CONTROLS_LABEL_SETS: ILabelSet[] = [
     GRID_FILTERING_LABELS,
     GRID_GROUPING_LABELS,
     GRID_SORTING_LABELS,
-    MAP_LABELS,
     NESTED_CONTROL_RENDERER_LABELS,
     TASK_GRID_LABELS,
     TASK_CHECKLIST_LABELS,

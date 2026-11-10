@@ -31,7 +31,7 @@ const RUNTIME_AG_GRID_MODULES = [EventApiModule, RowApiModule, ColumnApiModule, 
 /** What AG Grid reads once, when it is created. */
 export interface IGridAgGridInitialOptions {
     //plus the managed keys AG Grid needs before it hands over an api
-    options: Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey> & Pick<AgGridReactProps<IRecord>, 'rowHeight' | 'onGridReady' | 'onGridPreDestroyed'>;
+    options: Omit<AgGridReactProps<IRecord>, ManagedGridOptionKey> & Pick<AgGridReactProps<IRecord>, 'rowHeight' | 'animateRows' | 'onGridReady' | 'onGridPreDestroyed'>;
 }
 
 /** What AG Grid can be handed at any time. */
@@ -182,7 +182,7 @@ export class GridRuntime implements IGrid {
             return;
         }
         if (!this.modules.find('rowModel')) {
-            throw new Error('The grid needs a row model module, such as createClientSideRowModelModule().');
+            throw new Error('The grid needs a row model module: render ClientSideGrid or ServerSideGrid, or add createClientSideRowModelModule() to modules.');
         }
         //before AG Grid is constructed, which the host renders once the grid is ready
         ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...modules.flatMap(module => module.agGridModules ?? [])]);

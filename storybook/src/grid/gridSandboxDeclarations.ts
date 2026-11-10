@@ -746,6 +746,8 @@ interface IMemoryProviderEntityMetadata {
     /** The column drawn as a link to the record. */
     PrimaryNameAttribute?: string;
     LogicalName?: string;
+    DisplayName?: string;
+    DisplayCollectionName?: string;
     EntitySetName?: string;
     LogicalCollectionName?: string;
     PrimaryImageAttribute?: string;
@@ -3511,10 +3513,13 @@ declare const ContextualMenuItemType: typeof import('@fluentui/react').Contextua
 /** A related entity a view's columns come from. */
 type ILinkEntityExposedExpression = import('@talxis/client-libraries').ILinkEntityExposedExpression;
 
+/** A view's column: its name, plus any column fields to override. */
+type IDatasetControlViewColumn = Pick<IColumn, 'name'> & Partial<IColumn>;
+
 /** What a view sets up, resolved only when it is opened. */
 interface IDatasetControlViewDefinition<TData = unknown> {
     /** The columns the view shows, completed from the provider's available columns and set on it. */
-    columns: IColumn[];
+    columns: IDatasetControlViewColumn[];
     /** The related entities the view's columns come from, set on the provider with them. */
     linking?: ILinkEntityExposedExpression[];
     /** What else the view carries, read through getView().data. */

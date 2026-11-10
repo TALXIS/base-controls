@@ -49,7 +49,7 @@ export interface ITaskChecklistItemData {
     isCompleted: boolean;
 }
 
-/** The `checklist` module, loading each task's items through its store. */
+/** The `taskChecklist` module, loading each task's items through its store. */
 export interface ITaskChecklist {
     readonly components: ITaskChecklistComponents;
     /** What the last load threw, until the next one starts. */
