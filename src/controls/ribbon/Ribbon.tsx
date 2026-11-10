@@ -19,7 +19,7 @@ export interface IRibbonProps {
     disabled?: boolean;
     /** Called with the runtime of each mount, before its init; add hooks and subscribe here. */
     onSetup?: (ribbon: IRibbon) => void;
-    /** Replacements for the command bar, the shimmer and the error. */
+    /** Replacements for what the ribbon and its host draw. */
     components?: IRibbonComponents;
 }
 
@@ -28,11 +28,12 @@ export const RibbonRoot = (props: IRibbonProps) => {
     const propsRef = useLatest(props);
     const createRuntime = () => new RibbonRuntime({ onLoad: propsRef.current.onLoad && (ribbon => propsRef.current.onLoad!(ribbon)) });
 
-    const loading: Partial<ILoadingBoundaryComponents> = {
-        onRenderContainer: () => <RibbonUiShimmer align={props.align} components={props.components?.shimmer} />,
+    const { shimmer, container, mountError, loadingOverlay, executeError } = props.components ?? {};
+    const placeholder: Partial<ILoadingBoundaryComponents> = {
+        onRenderContainer: () => <RibbonUiShimmer align={props.align} components={shimmer} />,
     };
 
-    return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} className={props.className} components={{ mountError: props.components?.errorMessage, placeholder: loading }}>
+    return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} className={props.className} components={{ container, mountError, placeholder, loadingOverlay, executeError }}>
         <RibbonMount {...props} />
     </RuntimeHost>;
 };
@@ -41,7 +42,7 @@ export const RibbonRoot = (props: IRibbonProps) => {
 const RibbonMount = (props: IRibbonProps) => {
     const runtime = useRuntime<RibbonRuntime>();
     const { rerender } = useRerender();
-    const { errorMessage, shimmer, ...commandBar } = props.components ?? {};
+    const { shimmer, container, mountError, loadingOverlay, executeError, ...commandBar } = props.components ?? {};
 
     useEventEmitter<IRibbonEvents>(runtime.events, ['onCommandsChanged', 'onBeforeExecute', 'onAfterExecute'], rerender);
 

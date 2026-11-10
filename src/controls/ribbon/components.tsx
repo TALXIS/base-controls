@@ -1,10 +1,8 @@
-import { IErrorMessageBarComponents } from "@ui/error-message-bar";
+import type { IRuntimeHostComponents } from "@controls/runtime-host";
 import { IRibbonUiShimmerComponents, IRibbonUiCommandBarComponents } from "./ui";
 
-/** Replacements for the ribbon's slots, and for the pieces inside it by name. */
-export interface IRibbonComponents extends Partial<IRibbonUiCommandBarComponents> {
+/** Replacements for what the ribbon and its host draw. */
+export interface IRibbonComponents extends Partial<IRibbonUiCommandBarComponents>, Partial<Omit<IRuntimeHostComponents, 'placeholder'>> {
     /** The shimmer that stands in for the commands until the first load finishes. */
     shimmer?: Partial<IRibbonUiShimmerComponents>;
-    /** How a failed load of the commands looks. */
-    errorMessage?: Partial<IErrorMessageBarComponents>;
 }

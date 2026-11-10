@@ -3796,7 +3796,7 @@ interface IRibbonProps {
     onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to 'start'. */
     align?: 'start' | 'end';
-    /** Put on the ribbon's box, and on the shimmer while loading. */
+    /** Put on the ribbon's box. */
     className?: string;
     /** Disables every command, menus included. */
     disabled?: boolean;
@@ -3806,8 +3806,7 @@ interface IRibbonProps {
         onRenderCommandBar?: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null;
         /** The shimmer that stands in for the commands until the first load finishes. */
         shimmer?: Partial<{ onRenderShimmer: (props: import('@fluentui/react').IShimmerProps) => JSX.Element | null }>;
-        errorMessage?: Partial<IErrorMessageBarComponents>;
-    };
+    } & Partial<Omit<import('@talxis/base-controls').IRuntimeHostComponents, 'placeholder'>>;
 }
 
 /** Replacements for the ribbon's slots, and for the pieces inside it by name. */
