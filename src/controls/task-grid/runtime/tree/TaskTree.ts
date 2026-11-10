@@ -108,6 +108,9 @@ export class TaskTree implements ITaskGridTree {
     }
 
     public editTaskSubject(taskId: string): void {
+        if (!this._grid.modules.find('editing')) {
+            return;
+        }
         this._revealTask(taskId, REVEAL_TASK_ATTEMPTS, node => {
             this._gridApi?.startEditingCell({ rowIndex: node.rowIndex!, colKey: this._provider.getFieldMapping().subject });
             this._selectEditorText(REVEAL_TASK_ATTEMPTS);

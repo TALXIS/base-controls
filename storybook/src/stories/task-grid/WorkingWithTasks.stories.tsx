@@ -24,7 +24,7 @@ Three props turn on what the user may do with tasks, and two modules add editing
 
 *Edit* and *Delete* act on the selection, so add \`createRowSelectionModule()\` to \`TaskGrid\` (see [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview)). Without \`enableEditing\`, every task is locked.
 
-A new task shows straight away, its cells loading until the store has created it. It is named *(No Name)* until the user names it, and when its cells can be edited in place, its subject opens for typing. It goes first among its siblings, or last with \`defaultCreatePosition='last'\`; under a root task, *New* puts it under the root. The [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) module adds *From template* to both.
+A new task shows straight away, its cells loading until the store has created it. It is named *(No Name)* until the user names it, and when its cells can be edited in place, with \`enableEditing\` and \`createTaskEditingModule()\`, its subject opens for typing. It goes first among its siblings, or last with \`defaultCreatePosition='last'\`; under a root task, *New* puts it under the root. The [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) module adds *From template* to both.
 
 Deleting takes every subtask along. Tasks that could not be deleted are listed in a dialog and keep their ancestors; a store keeps a task from being deleted with \`canDeleteTask\`.
 
