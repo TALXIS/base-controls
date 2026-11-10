@@ -268,5 +268,6 @@
     "./gantt TaskTooltipRoot": null,
     "./gantt ITaskTooltipRootProps": null,
     "./gantt LinkTooltipRoot": null,
-    "./gantt ILinkTooltipRootProps": null
+    "./gantt ILinkTooltipRootProps": null,
+    ". ITaskExecuteParameters": "IRuntimeExecuteParameters"
 }

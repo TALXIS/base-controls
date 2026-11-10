@@ -35,27 +35,6 @@ export interface ITaskRuntimeServiceMap extends ITaskRuntimeModuleServiceMap {
     savingChains: ITaskSavingChains;
 }
 
-/** How `execute` shows a run while it goes. */
-export interface ITaskExecuteLoading {
-    /** `false` for a run in the background. */
-    show?: boolean;
-    /** Shown in the control's loading overlay. */
-    message?: string;
-}
-
-/** How `execute` handles a run's failure. */
-export interface ITaskExecuteError {
-    /** Titles the error dialog. */
-    title?: string;
-    /** `false` resolves `undefined` once the dialog is shown. */
-    rethrow?: boolean;
-}
-
-export interface ITaskExecuteParameters {
-    loading?: ITaskExecuteLoading;
-    error?: ITaskExecuteError;
-}
-
 export interface ITaskRuntimeHooks {
     /** Every item `TaskDatasetControl.Ribbon` draws, menus included. */
     readonly ribbonCommandUi: IHookPoint<TaskRibbonCommandUiHook>;
@@ -82,9 +61,6 @@ export interface ITaskRuntime extends IRuntime {
     isDeletionEnabled(): boolean;
     /** How many hours a day of a task's duration holds. */
     getHoursPerDay(): number;
-    /** Runs the operation under the loading overlay and shows its failure in a dialog. */
-    execute<T>(operation: () => Promise<T>, options: ITaskExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
-    execute<T>(operation: () => Promise<T>, parameters?: ITaskExecuteParameters): Promise<T>;
     readonly hooks: ITaskRuntimeHooks;
     /** Copies of the items with every ribbon command UI hook applied, sub-menus included. */
     getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[];

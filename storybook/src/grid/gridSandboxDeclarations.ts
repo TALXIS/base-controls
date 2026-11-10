@@ -4212,21 +4212,6 @@ interface ITaskDataProvider extends IDataProvider {
 }
 
 /** One mount of a TaskDatasetControl: what its modules provide on and its parts read. */
-/** How execute shows a run and handles its failure; by default it shows the loading, and the dialog before rethrowing. */
-interface ITaskExecuteParameters {
-    loading?: {
-        /** Defaults to true; false for a run in the background. */
-        show?: boolean;
-        /** Shown in the grid's loading overlay. */
-        message?: string;
-    };
-    error?: {
-        /** Titles the error dialog. */
-        title?: string;
-        /** Defaults to true; false resolves undefined once the dialog is shown. */
-        rethrow?: boolean;
-    };
-}
 
 /** The task actions, each run with the grid loading and its error shown. */
 interface ITaskActions {
@@ -4255,9 +4240,9 @@ interface ITaskRuntime extends IRuntime {
     isDeletionEnabled(): boolean;
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
-    /** Runs the operation with the grid loading, and shows its failure once in a dialog. */
-    execute<T>(operation: () => Promise<T>, options: ITaskExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
-    execute<T>(operation: () => Promise<T>, options?: ITaskExecuteParameters): Promise<T>;
+    /** Runs the operation with the grid loading, and shows its failure once. */
+    execute<T>(operation: () => T | Promise<T>, options: IRuntimeExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
+    execute<T>(operation: () => T | Promise<T>, options?: IRuntimeExecuteParameters): Promise<T>;
     readonly hooks: {
         /** Registers a hook over every item TaskDatasetControl.Ribbon draws, the ones in its menus included. */
         readonly ribbonCommandUi: IHookPoint<(item: IContextualMenuItem) => void>;

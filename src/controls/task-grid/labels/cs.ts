@@ -26,5 +26,4 @@ export const TASK_GRID_LABELS_CS = translateLabels(TASK_GRID_LABELS, {
     'taskGrid.openTasksFailed': 'Úkoly se nepodařilo otevřít.',
     'taskGrid.moveTaskFailed': 'Úkol se nepodařilo přesunout.',
     'taskGrid.openRecordFailed': 'Záznam se nepodařilo otevřít.',
-    'taskGrid.actionFailed': 'Akci se nepodařilo dokončit.',
 });

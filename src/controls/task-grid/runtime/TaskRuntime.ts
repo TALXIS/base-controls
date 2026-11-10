@@ -13,9 +13,8 @@ import { TASK_GRID_LABELS } from "../labels";
 import type { ITaskDatasetControlProps } from "../adapters/root/TaskDatasetControl";
 import { ITaskActions, TaskActions } from "./tasks";
 import { runQuietly } from "./runQuietly";
-import { TaskExecutor } from "./TaskExecutor";
 import { TaskSavingChains } from "./saving";
-import type { ITaskExecuteParameters, ITaskRuntime, ITaskRuntimeServiceMap, TaskRibbonCommandUiHook } from "./interfaces";
+import type { ITaskRuntime, ITaskRuntimeServiceMap, TaskRibbonCommandUiHook } from "./interfaces";
 
 export interface ITaskRuntimeParameters {
     datasetControl: IDatasetControlInternal;
@@ -31,7 +30,6 @@ export class TaskRuntime implements ITaskRuntime {
         ribbonCommandUi: new HookRegistry<TaskRibbonCommandUiHook>(),
     };
     public readonly tasks: ITaskActions = new TaskActions(this);
-    private _executor = new TaskExecutor(this);
     private _savingChains = new TaskSavingChains();
 
     constructor(parameters: ITaskRuntimeParameters) {
@@ -70,6 +68,10 @@ export class TaskRuntime implements ITaskRuntime {
 
     public get executor(): IRuntimeExecutor {
         return this.services.get('datasetControl').executor;
+    }
+
+    public get execute(): IRuntimeExecutor['execute'] {
+        return this.services.get('datasetControl').execute;
     }
 
     public getView(): ITaskView | undefined {
@@ -151,10 +153,4 @@ export class TaskRuntime implements ITaskRuntime {
         }
         commands.unshift(...taskCommands);
     };
-
-    public execute<T>(operation: () => Promise<T>, options: ITaskExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
-    public execute<T>(operation: () => Promise<T>, parameters?: ITaskExecuteParameters): Promise<T>;
-    public execute<T>(operation: () => Promise<T>, parameters?: ITaskExecuteParameters): Promise<T | undefined> {
-        return this._executor.execute(operation, parameters);
-    }
 }

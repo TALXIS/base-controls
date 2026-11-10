@@ -32,6 +32,4 @@ export const TASK_GRID_LABELS = defineLabels({
     'taskGrid.openTasksFailed': 'The tasks could not be opened.',
     'taskGrid.moveTaskFailed': 'The task could not be moved.',
     'taskGrid.openRecordFailed': 'The record could not be opened.',
-    /** Titles the error dialog of an action that names none of its own. */
-    'taskGrid.actionFailed': 'The action could not be completed.',
 });

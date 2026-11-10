@@ -1,7 +1,6 @@
 import { DatasetConstants, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { ICommandBarItemProps } from "@legacy";
 import type { DatasetControlEditColumnsSession, IDatasetControlEditColumns } from "@controls/dataset-control/adapters/edit-columns";
-import { ErrorHelper } from "@core";
 import { type LabelsOf } from "@labels";
 import type { ITaskDataProvider } from "../../runtime/provider";
 import type { ITaskRuntime } from "../../runtime";
@@ -199,11 +198,6 @@ export class CustomColumns implements ICustomColumns {
 
     //the commands do not await them
     private async _run(operation: () => Promise<void>): Promise<void> {
-        try {
-            await operation();
-        }
-        catch (error) {
-            await this._taskRuntime.services.get('pcfContext').navigation.openErrorDialog({ message: this._labels.get('customColumns.customColumnsFailed'), details: ErrorHelper.getMessageFromError(error) });
-        }
+        await this._taskRuntime.execute(operation, { loading: { show: false }, error: { title: this._labels.get('customColumns.customColumnsFailed'), rethrow: false } });
     }
 }

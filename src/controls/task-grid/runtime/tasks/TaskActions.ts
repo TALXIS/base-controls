@@ -81,16 +81,17 @@ export class TaskActions implements ITaskActions {
         if (!confirmation.confirmed) {
             return;
         }
-        const result = await this._execute(() => provider.deleteTasks(taskIds), 'taskGrid.deletingTasks', 'taskGrid.deleteTasksFailed');
-        const failures = [
-            ...(result?.success === false ? result.errors : []),
-            ...refusedTaskIds.map(id => ({ id, error: labels.get('taskGrid.taskCannotBeDeleted') })),
-        ];
-        if (failures.length > 0) {
-            const subject = this._runtime.getFieldMapping().subject;
-            const message = failures.map(failure => `${provider.getRecordsMap()[failure.id]?.getValue(subject) ?? failure.id}: ${ErrorHelper.getMessageFromError(failure.error)}`).join('\n');
-            await navigation.openErrorDialog({ message: labels.get('taskGrid.deleteTasksFailed'), details: message });
-        }
+        await this._execute(async () => {
+            const result = await provider.deleteTasks(taskIds);
+            const failures = [
+                ...(result?.success === false ? result.errors : []),
+                ...refusedTaskIds.map(id => ({ id, error: labels.get('taskGrid.taskCannotBeDeleted') })),
+            ];
+            if (failures.length > 0) {
+                const subject = this._runtime.getFieldMapping().subject;
+                throw new Error(failures.map(failure => `${provider.getRecordsMap()[failure.id]?.getValue(subject) ?? failure.id}: ${ErrorHelper.getMessageFromError(failure.error)}`).join('\n'));
+            }
+        }, 'taskGrid.deletingTasks', 'taskGrid.deleteTasksFailed');
     }
 
     public async move(taskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null> {
