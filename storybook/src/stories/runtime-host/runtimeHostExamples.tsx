@@ -2,7 +2,19 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
 const DEAL_SUMMARY_CODE = `import { Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
-import { DefaultButton, Text, Toggle } from '@fluentui/react'
+import { DefaultButton, getTheme, Stack, Text, Toggle } from '@fluentui/react'
+
+const theme = getTheme()
+
+const CARD_STYLE: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+    minHeight: 120,
+    padding: 20,
+    border: \`1px solid \${theme.palette.neutralLight}\`,
+    borderRadius: 8,
+}
 
 const OPEN_DEALS = [4000, 21500, 9000]
 
@@ -38,11 +50,20 @@ class DealSummaryRuntime extends Runtime {
 const DealSummary = () => {
     const runtime = useRuntime<DealSummaryRuntime>()
     return <>
-        <Text>Open deals: {runtime.getTotal().toLocaleString()} USD </Text>
+        <Stack>
+            <Text variant='small' styles={{ root: { color: theme.palette.neutralSecondary } }}>Open deals</Text>
+            <Text variant='xxLarge' styles={{ root: { fontWeight: 600 } }}>{runtime.getTotal().toLocaleString()} USD</Text>
+        </Stack>
         {/* a new runtime, which loads again */}
-        <DefaultButton text='Reload' onClick={() => runtime.lifecycle.remount()} />
+        <DefaultButton text='Reload' iconProps={{ iconName: 'Refresh' }} onClick={() => runtime.lifecycle.remount()} styles={{ root: { alignSelf: 'flex-start' } }} />
     </>
 }
+
+//the lifecycle events of every mount, oldest first
+const EventLog = (props: { entries: string[] }) => <Stack tokens={{ childrenGap: 4 }} styles={{ root: { padding: 12, borderRadius: 8, backgroundColor: theme.palette.neutralLighterAlt } }}>
+    <Text variant='small' styles={{ root: { color: theme.palette.neutralSecondary, fontWeight: 600 } }}>Lifecycle events</Text>
+    {props.entries.map((entry, index) => <Text key={index} variant='small' styles={{ root: { fontFamily: 'Consolas, monospace', color: entry.startsWith('onInitFailed') ? theme.palette.redDark : theme.palette.neutralPrimary } }}>{entry}</Text>)}
+</Stack>
 
 const GridExample = () => {
     const isServiceDown = React.useRef(false)
@@ -57,13 +78,14 @@ const GridExample = () => {
         runtime.lifecycle.events.addEventListener('onDestroyed', () => log('onDestroyed'))
     }
 
-    return <>
+    return <Stack tokens={{ childrenGap: 12 }} styles={{ root: { maxWidth: 480 } }}>
         <Toggle label='Service unavailable' inlineLabel onChange={(_, checked) => { isServiceDown.current = !!checked }} />
-        <RuntimeHost createRuntime={() => new DealSummaryRuntime(() => isServiceDown.current)} onSetup={onSetup}>
+        {/* the card is the host's box, so the loading state and a failed load show inside it */}
+        <RuntimeHost createRuntime={() => new DealSummaryRuntime(() => isServiceDown.current)} onSetup={onSetup} components={{ container: { onRenderContainer: props => <div {...props} style={CARD_STYLE} /> } }}>
             <DealSummary />
         </RuntimeHost>
-        <pre>{entries.join('\\n')}</pre>
-    </>
+        <EventLog entries={entries} />
+    </Stack>
 }
 `
 

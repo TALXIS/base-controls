@@ -310,6 +310,28 @@ A part often names a column by itself, such as a map popup's or a Gantt tooltip'
 
 - **The map popup's and the Gantt tooltip's field rows** draw nothing for a column the view lacks, with no guard of their own.
 - **Anything that reads an optional column**, such as a module's own column, asks the record directly instead of checking the columns map first.
+
+## 12. Keep a lookup's IDs as they were given
+
+A lookup value is a list of references, and parts match them by ID: a picker hides what is already picked, a store works out which references were added and removed. A reference read back from a record should carry the ID it was written with.
+
+### Today
+
+- **Reading a lookup lowercases its IDs.** Every reference read from a record goes through \`Sanitizer.Lookup.getEntityReference\`, whose \`GuidSanitizer.removeGuidBrackets\` strips the braces and lowercases the ID (client-libraries \`FieldValueConverter._toReferences\`), whether or not it is a GUID.
+- **Records keep their own IDs.** \`record.getRecordId()\` and \`getNamedReference()\` return the ID as the data source has it.
+- **So the two stop matching** for any ID with an upper-case letter: a memory source keyed by name, such as \`'Sofia Berg'\`, or GUIDs an API returns in upper case.
+- **What it broke:** the lookup-many picker matched picks to the records it offers by exact ID. People picked on a task stayed in its list and could be picked a second time, as in the introduction's opening plan.
+- **What works around it:** \`LookupManyUiSelect\` compares IDs lowercased.
+
+### What every provider should do
+
+- **Keep an ID as it was given:** a reference reads back with the ID it was written with. Braces are stripped only from an ID that is a GUID.
+- **Match IDs in one place:** a shared helper, such as \`isSameId(left, right)\`, that ignores case for GUIDs, for anything that matches references.
+
+### What would use it
+
+- **The lookup-many picker** drops its own lowercasing.
+- **\`DataverseLookupManyStore.saveValue\`** works out added and removed references with the helper; today it compares IDs exactly.
 `
 
 const meta = {
