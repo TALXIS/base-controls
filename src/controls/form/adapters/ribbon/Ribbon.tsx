@@ -24,6 +24,14 @@ export const Ribbon = (props: IFormRibbonProps) => {
     const { onSave } = props;
     const form = useForm();
     const record = form.getRecord();
+
+    //a failed save has already reached onError
+    const saveQuietly = async () => {
+        try {
+            await form.save();
+        }
+        catch { }
+    };
     const isDirty = form.isDirty();
     const theme = useTheme();
     const styles = useMemo(() => getRibbonStyles(theme), [theme]);
@@ -97,7 +105,7 @@ export const Ribbon = (props: IFormRibbonProps) => {
                 if (onSave) {
                     onSave();
                 } else {
-                    form.save();
+                    saveQuietly();
                 }
             }
         }];

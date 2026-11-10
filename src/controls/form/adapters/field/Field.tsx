@@ -20,11 +20,11 @@ export const Field = (props: IFieldProps) => {
             return;
         }
 
-        if (requiredLevel != null) {
+        if (requiredLevel !== undefined) {
             form.setFieldRequiredLevel(name, requiredLevel);
         }
 
-        if (validation != null) {
+        if (validation !== undefined) {
             form.setFieldValid(name, validation);
         }
     }, [name, requiredLevel, validation]);

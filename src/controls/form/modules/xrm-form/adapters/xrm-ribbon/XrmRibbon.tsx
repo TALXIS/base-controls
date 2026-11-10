@@ -8,5 +8,14 @@ import { useXrmFormComponents } from "../xrm-form/context";
 export const XrmRibbon = () => {
     const formContext = useXrmFormContext();
     const components = useXrmFormComponents();
-    return <Form.Ribbon onSave={() => formContext.data.save()} components={components.ribbon} />
+
+    //a failed save has already reached onError
+    const save = async () => {
+        try {
+            await formContext.data.save();
+        }
+        catch { }
+    };
+
+    return <Form.Ribbon onSave={save} components={components.ribbon} />
 }

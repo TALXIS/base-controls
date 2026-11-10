@@ -37,11 +37,11 @@ const collectFields = (children: React.ReactNode): ICollectedField[] => {
 
 export const applyFieldConfigs = (form: IForm, children: React.ReactNode): void => {
     collectFields(children).forEach(({ name, requiredLevel, validation }) => {
-        if (requiredLevel != null) {
+        if (requiredLevel !== undefined) {
             form.setFieldRequiredLevel(name, requiredLevel);
         }
 
-        if (validation != null) {
+        if (validation !== undefined) {
             form.setFieldValid(name, validation);
         }
     });

@@ -44,8 +44,10 @@ export interface IForm {
     getRecord(): IRecord;
     getFields: () => IField[];
     getField: (fieldName: string) => IField;
-    setFieldRequiredLevel: (fieldName: string, requiredLevel: RequiredLevelEnum) => void;
-    setFieldValid: (fieldName: string, validation: IFieldValidationResult) => void;
+    /** `null` takes the form's own required level off again. */
+    setFieldRequiredLevel: (fieldName: string, requiredLevel: RequiredLevelEnum | null) => void;
+    /** `null` takes the form's own validation off again. */
+    setFieldValid: (fieldName: string, validation: IFieldValidationResult | null) => void;
     /** The form's own required level for the field when set, otherwise the record's. */
     getFieldRequiredLevel: (fieldName: string) => Xrm.Attributes.RequirementLevel;
     /** The form's own rules for the field first, then the record's. */
@@ -105,11 +107,19 @@ export class FormRuntime implements IForm {
     }
 
     //kept off the record until expressions are hooks: see Dev › Provider rework, section 8
-    public setFieldRequiredLevel(fieldName: string, requiredLevel: RequiredLevelEnum): void {
+    public setFieldRequiredLevel(fieldName: string, requiredLevel: RequiredLevelEnum | null): void {
+        if (requiredLevel === null) {
+            this._requiredLevelExpressions.delete(fieldName);
+            return;
+        }
         this._requiredLevelExpressions.set(fieldName, () => FormRuntime.getXrmRequirementLevelFromEnum(requiredLevel));
     }
 
-    public setFieldValid(fieldName: string, validation: IFieldValidationResult): void {
+    public setFieldValid(fieldName: string, validation: IFieldValidationResult | null): void {
+        if (validation === null) {
+            this._validationExpressions.delete(fieldName);
+            return;
+        }
         this._validationExpressions.set(fieldName, () => validation);
     }
 
@@ -265,7 +275,13 @@ export class FormRuntime implements IForm {
             this._isAutoSavePending = true;
             return;
         }
-        await this.save();
+        //a failed save has already reached onError
+        try {
+            await this.save();
+        }
+        catch {
+            return;
+        }
         if (this._isAutoSavePending) {
             this._isAutoSavePending = false;
             if (this.isDirty()) {

@@ -49,7 +49,7 @@ A component of yours inside \`Form.Root\` reaches the form through hooks:
 
 | Member | Description |
 |---|---|
-| \`save()\` | Saves as **Save** does, and resolves when the save ends. |
+| \`save()\` | Saves as **Save** does, and resolves when the save ends. When a save blocker throws, \`onError\` gets the error and \`save()\` rejects with it; **Save** and auto-save only report it to \`onError\`. |
 | \`isDirty()\`, \`isValid()\` | Whether there are unsaved changes, and whether every field passes its checks. |
 | \`getRecord()\`, \`getData()\` | The record, and its values with the unsaved changes. |
 | \`getField(name)\` | The field, with \`getValue()\`, \`setValue(value)\`, \`getColumn()\` and the rest. |

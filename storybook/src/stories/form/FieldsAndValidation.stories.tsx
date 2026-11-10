@@ -45,8 +45,8 @@ Your code reads the summary with \`useValidationSummary()\` or \`onValidationSum
 | Part | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|---|
 | \`Form.Field\` | \`name\` | \`string\` | None | Live | The column the field binds to. |
-| \`Form.Field\` | \`requiredLevel\` | \`RequiredLevelEnum\` | The column's | Live | The requirement on this form, in place of the column's. |
-| \`Form.Field\` | \`validation\` | \`{ error, errorMessage }\` | None | Live | Checked before the record's own checks. |
+| \`Form.Field\` | \`requiredLevel\` | \`RequiredLevelEnum \| null\` | The column's | Live | The requirement on this form, in place of the column's. \`null\` gives the column's back. |
+| \`Form.Field\` | \`validation\` | \`{ error, errorMessage } \| null\` | None | Live | Checked before the record's own checks. \`null\` takes it off. |
 | \`Form.Control\` | \`disabled\` | \`boolean\` | \`false\` | Live | Draws the field read-only, with a lock by the label. |
 | \`Form.Notifications\` | \`messages\` | \`{ text, level }[]\` | \`[]\` | Live | Shown before the validation summary. |
 
