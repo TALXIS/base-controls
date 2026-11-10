@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const DEAL_SUMMARY_CODE = `import { IRuntime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
+const DEAL_SUMMARY_CODE = `import { Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
 import { DefaultButton, Text, Toggle } from '@fluentui/react'
 
 const OPEN_DEALS = [4000, 21500, 9000]
@@ -9,13 +9,14 @@ const OPEN_DEALS = [4000, 21500, 9000]
 //stands in for a server call
 const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
-class DealSummaryRuntime implements IRuntime {
+class DealSummaryRuntime extends Runtime {
     //runs onInit when the host starts the mount, and keeps the status, the error and the events
     public readonly lifecycle = new RuntimeLifecycle({ onInit: () => this._init() })
     private _total = 0
     private _isServiceDown: () => boolean
 
     constructor(isServiceDown: () => boolean) {
+        super()
         this._isServiceDown = isServiceDown
     }
 
@@ -66,7 +67,7 @@ const GridExample = () => {
 }
 `
 
-const KEEP_STATE_CODE = `import { IRuntime, IStateStore, RuntimeHost, RuntimeLifecycle, Spinner, useControlStateStore, useRuntime } from '@talxis/base-controls'
+const KEEP_STATE_CODE = `import { IStateStore, Runtime, RuntimeHost, RuntimeLifecycle, Spinner, useControlStateStore, useRuntime } from '@talxis/base-controls'
 import { Dropdown, Text } from '@fluentui/react'
 
 const DEALS = [
@@ -77,12 +78,13 @@ const DEALS = [
 
 const OWNERS = ['Everyone', 'Anna Novak', 'Ben Carter']
 
-class DealSummaryRuntime implements IRuntime {
+class DealSummaryRuntime extends Runtime {
     public readonly lifecycle = new RuntimeLifecycle({ onInit: () => this._init() })
     private _store: IStateStore
     private _total = 0
 
     constructor(store: IStateStore) {
+        super()
         this._store = store
     }
 
@@ -125,12 +127,95 @@ const DealSummary = () => {
 const GridExample = () => {
     //outlives every runtime, so the next mount opens on the owner this one stored
     const store = useControlStateStore('dealSummary')
-    return <RuntimeHost createRuntime={() => new DealSummaryRuntime(store)} components={{ loading: { onRenderContainer: () => <LoadingDeals /> } }}>
+    return <RuntimeHost createRuntime={() => new DealSummaryRuntime(store)} components={{ placeholder: { onRenderContainer: () => <LoadingDeals /> } }}>
         <DealSummary />
     </RuntimeHost>
 }
 `
 
+const RUN_ACTIONS_CODE = `import { Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
+import { DefaultButton, getTheme, MessageBar, MessageBarType, PrimaryButton, Stack, Text } from '@fluentui/react'
+
+const theme = getTheme()
+
+const CARD_STYLE: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+    maxWidth: 480,
+    padding: 20,
+    border: \`1px solid \${theme.palette.neutralLight}\`,
+    borderRadius: 8,
+}
+
+//stands in for a server call
+const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+
+const postToFinance = async (total: number) => {
+    await callServer(1000)
+    throw new Error(\`The finance service did not accept \${total.toLocaleString()} USD: the quarter is closed.\`)
+}
+
+class DealSummaryRuntime extends Runtime {
+    public readonly lifecycle = new RuntimeLifecycle()
+    private _total = 34500
+
+    public getTotal(): number {
+        return this._total
+    }
+
+    //the host covers the control with a spinner and the message until it ends
+    public async addDeal(value: number): Promise<void> {
+        await this.execute(async () => {
+            await callServer(1500)
+            this._total += value
+        }, { loading: { message: 'Saving the deal...' } })
+    }
+}
+
+const DealSummary = () => {
+    const runtime = useRuntime<DealSummaryRuntime>()
+    const [total, setTotal] = React.useState(runtime.getTotal())
+
+    //execute rethrows by default, so setTotal runs only when the deal was saved
+    const addDeal = async () => {
+        await runtime.addDeal(5000)
+        setTotal(runtime.getTotal())
+    }
+
+    //the host shows the failure under the title; rethrow: false resolves undefined instead
+    const sendToFinance = () => runtime.execute(() => postToFinance(total), { error: { title: 'The summary could not be sent to finance.', rethrow: false } })
+
+    return <>
+        <Stack>
+            <Text variant='small' styles={{ root: { color: theme.palette.neutralSecondary } }}>Open deals</Text>
+            <Text variant='xxLarge' styles={{ root: { fontWeight: 600 } }}>{total.toLocaleString()} USD</Text>
+        </Stack>
+        <Stack horizontal tokens={{ childrenGap: 8 }}>
+            <PrimaryButton text='Add a 5,000 USD deal' iconProps={{ iconName: 'Add' }} onClick={addDeal} />
+            <DefaultButton text='Send to finance' iconProps={{ iconName: 'Send' }} onClick={sendToFinance} />
+        </Stack>
+    </>
+}
+
+const GridExample = () => (
+    <RuntimeHost createRuntime={() => new DealSummaryRuntime()} components={{
+        //the card is the host's box, so the spinner covers it and the failures show inside it
+        container: { onRenderContainer: props => <div {...props} style={CARD_STYLE} /> },
+        //replaces the error dialog; onDismiss takes the failure away and shows the next one
+        executeError: {
+            onRenderError: ({ title, error, onDismiss }) => <MessageBar messageBarType={MessageBarType.error} isMultiline onDismiss={onDismiss}>
+                <b>{title}</b> {(error as Error).message}
+            </MessageBar>,
+        },
+    }}>
+        <DealSummary />
+    </RuntimeHost>
+)
+`
+
 export const DealSummaryExample = () => <GridExampleRunner seedCode={DEAL_SUMMARY_CODE} tabs={['preview', 'code']} />
 
 export const KeepStateExample = () => <GridExampleRunner seedCode={KEEP_STATE_CODE} tabs={['preview', 'code']} />
+
+export const RunActionsExample = () => <GridExampleRunner seedCode={RUN_ACTIONS_CODE} tabs={['preview', 'code']} />

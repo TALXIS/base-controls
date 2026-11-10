@@ -3703,9 +3703,38 @@ interface IRuntimeLifecycle {
     remount(): void;
 }
 
+/** Whether something the runtime runs is waited on. */
+interface IRuntimeLoading {
+    readonly events: IEventSubscriber<{ onLoadingChanged: (isLoading: boolean, message?: string) => void }>;
+    /** Shows the loading until every caller has hidden it again; returns what hides it for this caller. */
+    show(message?: string): () => void;
+    isLoading(): boolean;
+    /** The message of the latest caller still showing the loading. */
+    getMessage(): string | undefined;
+}
+
+interface IRuntimeExecuteParameters {
+    /** show defaults to true; message is drawn under the spinner. */
+    loading?: { show?: boolean; message?: string };
+    /** title titles the shown error; rethrow: false resolves undefined instead of throwing. */
+    error?: { title?: string; rethrow?: boolean };
+}
+
+/** Runs operations that may throw, such as a consumer's code. */
+interface IRuntimeExecutor {
+    readonly events: IEventSubscriber<{ onExecuteFailed: (error: unknown, title?: string) => void }>;
+    execute<T>(operation: () => T | Promise<T>, parameters: IRuntimeExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
+    execute<T>(operation: () => T | Promise<T>, parameters?: IRuntimeExecuteParameters): Promise<T>;
+}
+
 /** What every runtime offers the code that uses it. */
 interface IRuntime {
     readonly lifecycle: IRuntimeLifecycle;
+    /** What the runtime waits on; its host covers it with an overlay while shown. */
+    readonly loading: IRuntimeLoading;
+    /** Runs operations that may throw; its host shows their failures. */
+    readonly executor: IRuntimeExecutor;
+    execute: IRuntimeExecutor['execute'];
 }
 
 /** What every ribbon command has. */
@@ -3787,6 +3816,8 @@ declare const Ribbon: (props: IRibbonProps) => JSX.Element;
 declare const RuntimeHost: typeof import('@talxis/base-controls').RuntimeHost;
 /** One mount's status, error and events; a runtime owns one, and the host drives it. */
 declare const RuntimeLifecycle: typeof import('@talxis/base-controls').RuntimeLifecycle;
+/** What a runtime is built on: loading, executor and execute beside the lifecycle it creates. */
+declare const Runtime: typeof import('@talxis/base-controls').Runtime;
 /** The runtime of the nearest RuntimeHost; for the control's own mount component only. */
 declare const useRuntime: typeof import('@talxis/base-controls').useRuntime;
 /** The ribbon's commands as plain UI, with no runtime behind them. */
