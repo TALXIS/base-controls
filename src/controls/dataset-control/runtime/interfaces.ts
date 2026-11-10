@@ -9,7 +9,6 @@ import type { DatasetControlPagination, IDatasetControlPagination } from "./part
 import type { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcher } from "./parts/page-size-switcher/DatasetControlPageSizeSwitcher";
 import type { DatasetControlNotifications, IDatasetControlNotifications } from "./parts/notifications/DatasetControlNotifications";
 import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "./parts/edit-columns/DatasetControlEditColumns";
-import type { DatasetControlLoadingOverlay, IDatasetControlLoadingOverlay } from "./parts/loading-overlay/DatasetControlLoadingOverlay";
 import type { IRibbon } from "@controls/ribbon";
 import type { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
 
@@ -63,8 +62,6 @@ export interface IDatasetControlPartMap {
     notifications: IDatasetControlNotifications;
     /** `DatasetControl.EditColumns`. */
     editColumns: IDatasetControlEditColumns;
-    /** The overlay over the whole control; always there, as the control renders it itself. */
-    loadingOverlay: IDatasetControlLoadingOverlay;
 }
 
 /** Looks up the parts rendered right now. */
@@ -115,7 +112,6 @@ export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
     pageSizeSwitcher: DatasetControlPageSizeSwitcher;
     notifications: DatasetControlNotifications;
     editColumns: DatasetControlEditColumns;
-    loadingOverlay: DatasetControlLoadingOverlay;
 }
 
 export type IDatasetControlServiceRegistry = IServiceRegistry<IDatasetControlServiceMap>;

@@ -9,7 +9,7 @@ export interface IRuntimeHostComponents {
     /** The box the host draws everything in. */
     container: Partial<IRuntimeHostUiContainerComponents>;
     /** What stands in for the runtime until it is ready. */
-    initLoading: Partial<ILoadingBoundaryComponents>;
+    placeholder: Partial<ILoadingBoundaryComponents>;
     /** What stands in for the runtime when its init failed or its UI threw. */
     mountError: Partial<IErrorMessageBarComponents>;
     /** What covers the ready runtime while its loading is shown. */

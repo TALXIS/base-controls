@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useEventEmitter, ErrorHelper } from "@core";
+import { useEventEmitter } from "@core";
 import { useLabels } from "@labels";
-import { usePcfContext } from "@pcf";
 import { useDatasetControlInternal } from "../../../../adapters/root/context";
 import type { IDatasetControlUserQueriesEvents } from "../../DatasetControlUserQueries";
 import { USER_QUERIES_LABELS } from "../../labels";
@@ -23,7 +22,6 @@ export interface IUserQueriesProps {
 /** The Manage views panel the module's command opens; goes inside `DatasetControl.ViewSwitcher`. */
 export const UserQueries = (props: IUserQueriesProps) => {
     const runtime = useDatasetControlInternal();
-    const pcfContext = usePcfContext();
     const userQueries = runtime.modules.find('userQueries');
     if (!userQueries) {
         throw new Error('DatasetControl.UserQueries needs the userQueries module.');
@@ -32,9 +30,6 @@ export const UserQueries = (props: IUserQueriesProps) => {
     const labels = useLabels(USER_QUERIES_LABELS);
 
     useEventEmitter<IDatasetControlUserQueriesEvents>(userQueries.events, 'onManageRequested', () => setIsManaging(true));
-    useEventEmitter<IDatasetControlUserQueriesEvents>(userQueries.events, 'onOperationFailed', error => {
-        pcfContext.navigation.openErrorDialog({ message: ErrorHelper.getMessageFromError(error), details: (error as { stack?: string } | undefined)?.stack });
-    });
 
     //the switcher lists the views as they were when the control loaded
     const close = async () => {

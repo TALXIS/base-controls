@@ -33,7 +33,7 @@ export const RibbonRoot = (props: IRibbonProps) => {
         onRenderContainer: () => <RibbonUiShimmer align={props.align} className={props.className} components={props.components?.shimmer} />,
     };
 
-    return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} components={{ mountError: props.components?.errorMessage, initLoading: loading }}>
+    return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} components={{ mountError: props.components?.errorMessage, placeholder: loading }}>
         <RibbonMount {...props} />
     </RuntimeHost>;
 };

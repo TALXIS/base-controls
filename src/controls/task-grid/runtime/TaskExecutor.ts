@@ -39,7 +39,7 @@ export class TaskExecutor {
         if (loading?.show === false) {
             return undefined;
         }
-        return this._runtime.services.get('datasetControl').parts.get('loadingOverlay').show(loading?.message);
+        return this._runtime.services.get('datasetControl').loading.show(loading?.message);
     }
 
     private async _showError(error: unknown, options?: ITaskExecuteError): Promise<void> {

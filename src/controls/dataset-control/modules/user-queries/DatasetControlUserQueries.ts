@@ -26,8 +26,6 @@ export interface IDatasetControlUserQueriesParameters extends IUserQueriesComman
 export interface IDatasetControlUserQueriesEvents {
     /** The user picked Manage views. */
     onManageRequested: () => void;
-    /** An operation on the user's views failed. */
-    onOperationFailed: (error: unknown) => void;
 }
 
 type SavedValues = { [key: string]: unknown };
@@ -198,12 +196,7 @@ export class DatasetControlUserQueries {
 
     //the menu calls operations without awaiting them
     private async _run(operation: () => Promise<void>): Promise<void> {
-        try {
-            await operation();
-        }
-        catch (error) {
-            this._events.dispatchEvent('onOperationFailed', error);
-        }
+        await this._datasetControl.execute(operation, { loading: { show: false }, error: { rethrow: false } });
     }
 }
 

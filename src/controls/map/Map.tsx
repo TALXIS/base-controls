@@ -12,7 +12,7 @@ export const MapRoot = (props: IMapProps) => {
     const propsRef = useLatest(props);
     const createRuntime = () => new MapRuntime({ provider, getProps: () => propsRef.current });
 
-    return <RuntimeHost<MapRuntime> createRuntime={createRuntime} onSetup={map => propsRef.current.onSetup?.(map)} components={{ initLoading: props.components?.loading, mountError: props.components?.errorMessage }}>
+    return <RuntimeHost<MapRuntime> createRuntime={createRuntime} onSetup={map => propsRef.current.onSetup?.(map)} components={{ placeholder: props.components?.loading, mountError: props.components?.errorMessage }}>
         <MapMount {...props} />
     </RuntimeHost>;
 };

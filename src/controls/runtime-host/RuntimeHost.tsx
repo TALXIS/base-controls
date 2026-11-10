@@ -64,7 +64,7 @@ const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<
                     onRetry={() => lifecycle.remount()}
                     onOpenDetails={openErrorDialog}
                     components={props.components?.mountError}>
-                    <LoadingBoundary isLoading={status === 'initializing'} components={props.components?.initLoading}>
+                    <LoadingBoundary isLoading={status === 'initializing'} components={props.components?.placeholder}>
                         <RuntimeStateProvider runtime={runtime}>{props.children}</RuntimeStateProvider>
                     </LoadingBoundary>
                 </ErrorMessageBoundary>
