@@ -60,10 +60,15 @@ export class GridSettings implements IGridSettings {
     }
 
     public getHeight(): string | undefined {
-        //a DatasetControl with a height sizes the grid to its body
-        if (this._datasetControl?.getHeight()) {
-            return '100%';
-        }
-        return this._getProps().height ?? undefined;
+        return getGridHeight(this._getProps().height ?? undefined, this._datasetControl);
     }
 }
+
+/** The grid's height as a CSS length; `undefined` sizes it to its rows. */
+export const getGridHeight = (height: string | undefined, datasetControl: IDatasetControlInternal | undefined): string | undefined => {
+    //a DatasetControl with a height sizes the grid to its body
+    if (datasetControl?.getHeight()) {
+        return '100%';
+    }
+    return height;
+};

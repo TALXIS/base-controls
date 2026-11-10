@@ -24,6 +24,8 @@ export interface IRuntimeHostProps<TRuntime extends IHostedRuntime> {
     onSetup?: (runtime: TRuntime) => void;
     /** Rendered once the runtime is ready; reads it with `useRuntime()`. */
     children?: React.ReactNode;
+    /** Put on the box the host draws everything in. */
+    className?: string;
     /** Replacements for what the host draws itself. */
     components?: Partial<IRuntimeHostComponents>;
 }
@@ -58,7 +60,7 @@ const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<
 
     return <RuntimeContext.Provider value={runtime}>
         <RuntimeStatusContext.Provider value={status}>
-            <RuntimeHostUiContainer components={props.components?.container}>
+            <RuntimeHostUiContainer className={props.className} components={props.components?.container}>
                 <ErrorMessageBoundary
                     error={status === 'failed' ? lifecycle.getError() : undefined}
                     onRetry={() => lifecycle.remount()}

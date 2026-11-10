@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { ILoadingBoundaryComponents } from "@ui/loading-boundary";
-import { useControlStateStore, useLatest } from "@core";
+import type { IRuntimeHostUiContainerComponents } from "@controls/runtime-host";
+import { getClassNames, useControlStateStore, useLatest } from "@core";
 import { useLabelsService } from "@labels";
 import { useTheme } from "@theme";
 import { RuntimeHost } from "@controls/runtime-host";
@@ -46,14 +47,17 @@ export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
         theme,
     });
 
-    const { container: hostContainer, mountError, skeleton, loadingOverlay, executeError, ...container } = props.components ?? {};
-    const placeholder: Partial<ILoadingBoundaryComponents> = {
-        onRenderContainer: () => <DatasetControlUi.Container height={props.height} className={props.className} components={container}>
-            <DatasetControlUi.Skeleton height={props.height} components={skeleton} />
+    const { mountError, skeleton, loadingOverlay, executeError, ...container } = props.components ?? {};
+    const runtimeContainer: Partial<IRuntimeHostUiContainerComponents> = {
+        onRenderContainer: containerProps => <DatasetControlUi.Container height={props.height} className={getClassNames([containerProps.className, props.className])} components={container}>
+            {containerProps.children}
         </DatasetControlUi.Container>,
     };
+    const placeholder: Partial<ILoadingBoundaryComponents> = {
+        onRenderContainer: () => <DatasetControlUi.Skeleton height={props.height} components={skeleton} />,
+    };
 
-    return <RuntimeHost<DatasetControlRuntime> createRuntime={createRuntime} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ container: hostContainer, mountError, placeholder, loadingOverlay, executeError }}>
+    return <RuntimeHost<DatasetControlRuntime> createRuntime={createRuntime} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ container: runtimeContainer, mountError, placeholder, loadingOverlay, executeError }}>
         {/* the mount never reads view data */}
         <DatasetControlMount {...props as IDatasetControlProps} />
     </RuntimeHost>;

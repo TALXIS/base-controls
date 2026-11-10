@@ -69,3 +69,10 @@ export const getGridStyles = (moduleStyles: IStyle[], height?: string | null, ro
         }, ...moduleStyles],
     })
 };
+
+export const getGridRootStyles = (height?: string) => mergeStyleSets({
+    //the runtime's box sits between the parent and the grid's own root
+    runtime: {
+        height,
+    },
+});

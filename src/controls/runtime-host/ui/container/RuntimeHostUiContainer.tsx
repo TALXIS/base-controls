@@ -1,9 +1,11 @@
 import { useMemo } from "react";
+import { getClassNames } from "@core";
 import { IRuntimeHostUiContainerComponents, RuntimeHostUiContainerComponents } from "./components";
 import { getRuntimeHostUiContainerStyles } from "./styles";
 
 export interface IRuntimeHostUiContainerProps {
     children?: React.ReactNode;
+    className?: string;
     components?: Partial<IRuntimeHostUiContainerComponents>;
 }
 
@@ -11,5 +13,5 @@ export interface IRuntimeHostUiContainerProps {
 export const RuntimeHostUiContainer = (props: IRuntimeHostUiContainerProps) => {
     const components = { ...RuntimeHostUiContainerComponents, ...props.components };
     const styles = useMemo(() => getRuntimeHostUiContainerStyles(), []);
-    return components.onRenderContainer({ className: styles.container, children: props.children });
+    return components.onRenderContainer({ className: getClassNames([styles.runtime, props.className]), children: props.children });
 };

@@ -13,7 +13,8 @@ import { useDataProvider } from "@data";
 import { defineBaseControl } from "@fields";
 import { IGridProps } from "./interfaces";
 import { GridRuntime } from "./runtime/grid";
-import { getGridStyles } from "./styles";
+import { getGridHeight } from "./runtime/settings";
+import { getGridRootStyles, getGridStyles } from "./styles";
 import { GridComponentsContext, GridServicesContext } from "./context";
 import { IGridComponents } from "./components";
 import { Surfaces } from "./adapters/surfaces";
@@ -37,6 +38,8 @@ export const GridRoot = (props: IGridProps) => {
     const datasetControl = useOptionalDatasetControlInternal();
     const labelsServiceRef = useLatest(useLabelsService());
     const propsRef = useLatest(props);
+    const height = getGridHeight(props.height ?? undefined, datasetControl);
+    const styles = useMemo(() => getGridRootStyles(height), [height]);
 
     const createRuntime = () => new GridRuntime({
         getProps: () => propsRef.current,
@@ -48,7 +51,7 @@ export const GridRoot = (props: IGridProps) => {
         getLabelsService: () => labelsServiceRef.current,
     });
 
-    return <RuntimeHost<GridRuntime> createRuntime={createRuntime} onSetup={grid => propsRef.current.onSetup?.(grid)}>
+    return <RuntimeHost<GridRuntime> createRuntime={createRuntime} onSetup={grid => propsRef.current.onSetup?.(grid)} className={styles.runtime}>
         <GridMount {...props} />
     </RuntimeHost>;
 };

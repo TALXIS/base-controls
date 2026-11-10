@@ -14,7 +14,7 @@ export interface IRibbonProps {
     onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
     /** Which side the commands are drawn against; defaults to `'start'`. */
     align?: 'start' | 'end';
-    /** Put on the ribbon's box, and on the shimmer while it initializes. */
+    /** Put on the ribbon's box. */
     className?: string;
     /** Disables every command, menus included. */
     disabled?: boolean;
@@ -30,10 +30,10 @@ export const RibbonRoot = (props: IRibbonProps) => {
     const createRuntime = () => new RibbonRuntime({ onLoad: propsRef.current.onLoad && (ribbon => propsRef.current.onLoad!(ribbon)) });
 
     const loading: Partial<ILoadingBoundaryComponents> = {
-        onRenderContainer: () => <RibbonUiShimmer align={props.align} className={props.className} components={props.components?.shimmer} />,
+        onRenderContainer: () => <RibbonUiShimmer align={props.align} components={props.components?.shimmer} />,
     };
 
-    return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} components={{ mountError: props.components?.errorMessage, placeholder: loading }}>
+    return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} className={props.className} components={{ mountError: props.components?.errorMessage, placeholder: loading }}>
         <RibbonMount {...props} />
     </RuntimeHost>;
 };
@@ -66,5 +66,5 @@ const RibbonMount = (props: IRibbonProps) => {
         return { ...item, disabled: props.disabled || command.disabled || runtime.isRunning(command.id), onClick: () => { runtime.executeCommand(command); } };
     };
 
-    return <RibbonUiCommandBar items={(runtime.getCommands() ?? []).map(toItem)} align={props.align} className={props.className} components={commandBar} />;
+    return <RibbonUiCommandBar items={(runtime.getCommands() ?? []).map(toItem)} align={props.align} components={commandBar} />;
 };

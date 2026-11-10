@@ -1,6 +1,6 @@
-import { useLatest } from "@core";
+import { getClassNames, useLatest } from "@core";
 import { useDataProvider } from "@data";
-import { RuntimeHost, useRuntime } from "@controls/runtime-host";
+import { IRuntimeHostUiContainerComponents, RuntimeHost, useRuntime } from "@controls/runtime-host";
 import { IMapProps } from "./interfaces";
 import { MapRuntime } from "./runtime/MapRuntime";
 import { MapContext } from "./context";
@@ -12,18 +12,19 @@ export const MapRoot = (props: IMapProps) => {
     const propsRef = useLatest(props);
     const createRuntime = () => new MapRuntime({ provider, getProps: () => propsRef.current });
 
-    return <RuntimeHost<MapRuntime> createRuntime={createRuntime} onSetup={map => propsRef.current.onSetup?.(map)} components={{ placeholder: props.components?.loading, mountError: props.components?.errorMessage }}>
+    const { loading, errorMessage, ...container } = props.components ?? {};
+    const runtimeContainer: Partial<IRuntimeHostUiContainerComponents> = {
+        onRenderContainer: containerProps => <MapUiContainer height={props.height} className={getClassNames([containerProps.className, props.className])} components={container}>
+            {containerProps.children}
+        </MapUiContainer>,
+    };
+
+    return <RuntimeHost<MapRuntime> createRuntime={createRuntime} onSetup={map => propsRef.current.onSetup?.(map)} components={{ container: runtimeContainer, placeholder: loading, mountError: errorMessage }}>
         <MapMount {...props} />
     </RuntimeHost>;
 };
 
 const MapMount = (props: IMapProps) => {
     const runtime = useRuntime<MapRuntime>();
-    const { loading, errorMessage, ...containerComponents } = props.components ?? {};
-
-    return <MapContext.Provider value={runtime}>
-        <MapUiContainer height={props.height} className={props.className} components={containerComponents}>
-            {props.children}
-        </MapUiContainer>
-    </MapContext.Provider>;
+    return <MapContext.Provider value={runtime}>{props.children}</MapContext.Provider>;
 };
