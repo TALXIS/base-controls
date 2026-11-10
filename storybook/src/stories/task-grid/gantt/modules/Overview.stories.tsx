@@ -32,7 +32,7 @@ Every factory above comes from \`@talxis/base-controls/gantt\`. The task modules
 
 \`createLibraryModule()\` brings the free build of DHTMLX Gantt, with its stylesheet. Everything on these pages works with it.
 
-To use your own DHTMLX Gantt PRO licence, pass its \`Gantt\` export to \`createProLibraryModule\` instead, and import its stylesheet yourself, as the example's *pro.ts* does. A module of your own reads which build is loaded with \`getLibrary()\`: see [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview).
+To use your own DHTMLX Gantt PRO licence, pass its \`Gantt\` export to \`createProLibraryModule\` instead, and import its stylesheet yourself, as the example's *pro.ts* does. \`createLibraryModule\` imports the free build and its stylesheet, and a production build that tree-shakes leaves both out when you use only \`createProLibraryModule\`; a dev server still loads them. A module of your own reads which build is loaded with \`getLibrary()\`: see [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview).
 
 ## Where next
 
