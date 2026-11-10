@@ -268,6 +268,28 @@ A provider's filter is the user's: what a view sets, what quick find and the gri
 - **The task grid:** hiding inactive tasks becomes a hook that returns the state-code condition while they are hidden; \`setInactiveTasksHidden\` only refreshes.
 - **The map:** a hook that returns the box it shows, added as the map loads and removed as it unmounts. The map refreshes after each pan or zoom, and the user's filter, a view's and quick find's stay as they are.
 - **Security or scope filters** a consumer wants on every query, such as records of one business unit, without a view or the user being able to clear them.
+
+## 10. Set grouping and totals on the columns only
+
+A column already says how it is grouped and totalled: \`grouping\` and \`aggregation\` are fields of \`IColumn\`. The provider also has \`grouping\` and \`aggregation\` APIs that write those same fields, so there are two ways to set one thing, and only one of them survives the columns being set.
+
+### Today
+
+- **The APIs write onto the current columns.** \`addAggregation\` and \`addGroupBy\` map over \`getColumns()\` and set the field on the matching column (\`_setColumnsProperty\`). A column that is not there yet is skipped, so on a provider with no columns the call does nothing.
+- **The next setColumns drops them.** Whatever was added is lost when the columns are replaced, as a DatasetControl does with a view's columns right after its \`resolve\` runs. A \`resolve\` that calls \`addAggregation\` shows no totals.
+- **What works around it:** the DatasetControl docs tell a view to return its totals and grouping on its columns, \`{ name: 'value', aggregation: { aggregationFunction: 'sum' } }\`, and not to call the APIs in \`resolve\`.
+
+### What every provider should do
+
+- **Read grouping and totals from the columns only:** a column's \`grouping\` and \`aggregation\` are what the provider groups and totals by.
+- **Drop \`provider.grouping\` and \`provider.aggregation\`:** no \`addGroupBy\`, \`removeGroupBy\`, \`addAggregation\` or \`removeAggregation\`. Changing them is a \`setColumns\` with the changed columns.
+- **Read back from the columns:** read-only \`getGroupBys()\` and \`getAggregations()\` on the provider, derived from the columns, so they can never disagree with them.
+
+### What would use it
+
+- **A view's \`resolve\`** returns its totals and grouping with its columns, and nothing set beside them is lost.
+- **The grid:** \`TotalRow\`, behind the aggregation module's column menu, sets the columns instead of calling \`provider.aggregation.addAggregation\`; the grouping module and the client-side row model read \`getGroupBys()\` as they do now. What the user groups or totals is kept with the columns in a view's state.
+- **User views** save grouping and totals with the column layout they already save.
 `
 
 const meta = {
