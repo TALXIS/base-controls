@@ -38,7 +38,7 @@ With \`duration\` mapped, the Gantt writes it along with the dates: the working 
 
 ## Zoom and navigation
 
-Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty timeline to scroll it. The ribbon gains *Zoom to fit* and *Go to today*, and the subject cell of every task with a date *Show on timeline*. With a \`stateKey\` on \`TaskGantt\` and on \`TaskGantt.Split\`, the zoom and the split's width are kept per view, and user views save them.
+Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty timeline to scroll it. The ribbon gains *Zoom to fit*, which fits the selected tasks or every task the grid shows, and *Go to today*, and the subject cell of every task with a date *Show on timeline*. To zoom to dates of your own, call \`zoomToRange({ start, end })\` on the Gantt's \`zooming\` service. With a \`stateKey\` on \`TaskGantt\` and on \`TaskGantt.Split\`, the zoom and the split's width are kept per view, and user views save them.
 
 ## Changing how it looks
 

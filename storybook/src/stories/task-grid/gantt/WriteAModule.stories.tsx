@@ -44,7 +44,7 @@ Every \`hooks.<thing>.add\` returns the function that removes the hook, and take
 | Key | Hooks and members |
 |---|---|
 | \`tasks\` | \`hooks.task.add((task, { record }) => …)\` changes a bar, such as its \`color\`, \`type\` or \`readonly\`. \`hooks.taskClass\` and \`hooks.rowClass\` add class names to a bar or its row. \`parse()\` rebuilds every bar, such as after what a hook reads changed. |
-| \`zooming\` | \`hooks.scaleLabel.add((result, { date, unit, step, row }) => …)\` changes a scale cell's label. \`zoomToFit()\`, \`showTask(record)\`, \`getPixelsPerDay()\`. |
+| \`zooming\` | \`hooks.scaleLabel.add((result, { date, unit, step, row }) => …)\` changes a scale cell's label. \`zoomToFit()\`, \`zoomToRange({ start, end })\`, \`showTask(record)\`, \`getPixelsPerDay()\`. |
 | \`timeline\` | \`hooks.cellClass\` and \`hooks.scaleCellClass\` add class names to a day's column or scale cell, by \`date\`. \`jumpToToday()\`. |
 | \`schedule\` | \`hooks.duration.add((result, …) => …)\` changes how a duration is counted. \`hooks.snap.add((result, …) => …)\` changes where a dragged or drawn bar lands. |
 | \`overlay\` | \`show(key)\` and \`hide(key)\` cover the chart with the loading overlay. |

@@ -48,8 +48,10 @@ export interface IGanttZooming {
     getPosition(): number;
     /** Zooms around the middle of the viewport, clamped to the range. */
     setPosition(position: number): void;
-    /** Fits the selected tasks, or every task when none is selected. */
+    /** Fits the selected tasks, or every task the grid shows when none is selected. */
     zoomToFit(): void;
+    /** Zooms so the range fills the timeline, centred on it. */
+    zoomToRange(span: IGanttSpan): void;
     /** Zooms so the task's bar, or the day of its only date, fills the timeline. */
     showTask(record: IRecord): void;
     /** Whether whole days are columns at the current zoom. */
@@ -146,14 +148,25 @@ export class GanttZooming implements IGanttZooming {
     }
 
     public zoomToFit(): void {
-        this._fitSpan(this._getFitRange(this._getZoomToFitRecords()));
+        this.zoomToRange(this._getFitRange(this._getZoomToFitRecords()));
+    }
+
+    public zoomToRange(span: IGanttSpan): void {
+        const viewportWidth = this._timeline.getViewportWidth();
+        if (!viewportWidth) {
+            return;
+        }
+        const days = Math.max(1, (+span.end - +span.start) / MILLISECONDS_PER_DAY);
+        const centreX = viewportWidth / 2;
+        this._rememberAnchor(new Date((+span.start + +span.end) / 2), centreX);
+        this._applyNow(viewportWidth * (1 - FIT_VIEWPORT_MARGIN) / days, centreX);
     }
 
     public showTask(record: IRecord): void {
         const date = this._schedule.getDate(record, 'start') ?? this._schedule.getDate(record, 'end');
         const span = this._schedule.getSpan(record) ?? (date && { start: date, end: new Date(+date + MILLISECONDS_PER_DAY) });
         if (span) {
-            this._fitSpan(span);
+            this.zoomToRange(span);
         }
     }
 
@@ -190,17 +203,6 @@ export class GanttZooming implements IGanttZooming {
         if (this._frame !== undefined) {
             cancelAnimationFrame(this._frame);
         }
-    }
-
-    private _fitSpan(span: IGanttSpan): void {
-        const viewportWidth = this._timeline.getViewportWidth();
-        if (!viewportWidth) {
-            return;
-        }
-        const days = Math.max(1, (+span.end - +span.start) / MILLISECONDS_PER_DAY);
-        const centreX = viewportWidth / 2;
-        this._rememberAnchor(new Date((+span.start + +span.end) / 2), centreX);
-        this._applyNow(viewportWidth * (1 - FIT_VIEWPORT_MARGIN) / days, centreX);
     }
 
     //batched to one render a frame
@@ -363,7 +365,7 @@ export class GanttZooming implements IGanttZooming {
         const provider = this._taskRuntime.getProvider();
         const recordsMap = provider.getRecordsMap();
         const selected = provider.getSelectedRecordIds().map(recordId => recordsMap[recordId]).filter(Boolean);
-        return selected.length > 0 ? selected : provider.getAllRecords();
+        return selected.length > 0 ? selected : provider.getRecords();
     }
 
     private _getPointerX(clientX: number): number {
