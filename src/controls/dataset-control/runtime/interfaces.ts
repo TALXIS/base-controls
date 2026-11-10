@@ -40,7 +40,7 @@ export interface IDatasetControlView<TData = unknown, TProvider extends IDataPro
     name: string;
     /** The header the view is listed under; views without one are listed under "System views". */
     group?: IDatasetControlViewGroup;
-    /** Sets the provider up for the view, such as its sorting, and returns its columns. */
+    /** Sets up the provider for the view and returns its columns, with any totals or grouping. */
     resolve: (provider: TProvider) => IDatasetControlViewDefinition<TData> | Promise<IDatasetControlViewDefinition<TData>>;
 }
 
