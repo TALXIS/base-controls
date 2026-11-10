@@ -37,6 +37,9 @@ const MultiValue = (props: MultiValueProps<Reference, true, never>) => {
 
 const Option = (props: OptionProps<Reference, true, never>) => useLookupManySelectContext().components.onRenderOption(props);
 
+//a task's stored references come back lowercased, the offered records keep their case
+const getId = (reference: Reference): string => reference.id.guid.toLowerCase();
+
 /** A multi-record picker over any provider, its picks wrapping above the records it offers. */
 export const LookupManyUiSelect = (props: ILookupManyUiSelectProps) => {
     const components = { ...LookupManyUiSelectComponents, ...props.components };
@@ -59,7 +62,7 @@ export const LookupManyUiSelect = (props: ILookupManyUiSelectProps) => {
         return isMountedRef.current ? records.map(record => ({ ...record.getNamedReference(), data: record.getRawData() }) as Reference) : [];
     };
 
-    const onRemove = (reference: Reference) => props.onChange?.(value.filter(picked => picked.id.guid !== reference.id.guid));
+    const onRemove = (reference: Reference) => props.onChange?.(value.filter(picked => getId(picked) !== getId(reference)));
 
     return <LookupManySelectContext.Provider value={{ components, onRemove, getRemoveText: props.getRemoveText }}>
         {/* a callout around a Fluent layer counts a pick as inside */}
@@ -83,7 +86,7 @@ export const LookupManyUiSelect = (props: ILookupManyUiSelectProps) => {
             defaultOptions: !props.disabled,
             noOptionsMessage: () => props.noRecordsFoundText,
             loadingMessage: () => props.loadingText,
-            getOptionValue: reference => reference.id.guid,
+            getOptionValue: getId,
             getOptionLabel: reference => reference.name ?? '',
             loadOptions,
             onChange: picked => props.onChange?.([...picked]),
