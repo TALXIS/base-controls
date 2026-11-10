@@ -12,4 +12,10 @@ export const LINKS_LABELS = defineLabels({
     'links.startToStart': 'Start to start',
     'links.finishToFinish': 'Finish to finish',
     'links.startToFinish': 'Start to finish',
+    /** Why a link being drawn would be refused. */
+    'links.refusedSelf': 'A task cannot depend on itself.',
+    'links.refusedDuplicate': 'These tasks are already linked.',
+    'links.refusedCycle': 'This link would make a loop.',
+    'links.refusedSaving': 'Wait until these tasks are saved.',
+    'links.refused': 'This link cannot be drawn.',
 });

@@ -1,5 +1,5 @@
 import { GANTT_LINK_DENY_CLASS, GANTT_LINK_TOOLTIP_CLASS } from "../../chart";
-import { LINK_DRAG_TYPE_CLASS } from "./classNames";
+import { LINK_DRAG_REFUSAL_CLASS, LINK_DRAG_TYPE_CLASS } from "./classNames";
 
 /** One end of a link being drawn: its task's name and the edge it attaches to. */
 export interface IDragLinkTooltipEnd {
@@ -11,6 +11,8 @@ export interface IDragLinkTooltipDrop {
     /** The dependency type the link would be. */
     type: string;
     target: IDragLinkTooltipEnd;
+    /** Why the link would be refused, left out when it is allowed. */
+    refusal?: string;
 }
 
 const escapeHtml = (value: string): string => value.replace(/[&<>"']/g, character => `&#${character.charCodeAt(0)};`);
@@ -21,7 +23,8 @@ export const getDragLinkTooltipHtml = (source: IDragLinkTooltipEnd, drop?: IDrag
     if (!drop) {
         return getEndHtml(source);
     }
-    return `<div class="${LINK_DRAG_TYPE_CLASS}">${escapeHtml(drop.type)}</div>${getEndHtml(source)} → ${getEndHtml(drop.target)}`;
+    const refusal = drop.refusal ? `<div class="${LINK_DRAG_REFUSAL_CLASS}">${escapeHtml(drop.refusal)}</div>` : '';
+    return `<div class="${LINK_DRAG_TYPE_CLASS}">${escapeHtml(drop.type)}</div>${getEndHtml(source)} → ${getEndHtml(drop.target)}${refusal}`;
 };
 
 export const getDragLinkTooltipClass = (isDenied: boolean): string => isDenied ? `${GANTT_LINK_TOOLTIP_CLASS} ${GANTT_LINK_DENY_CLASS}` : GANTT_LINK_TOOLTIP_CLASS;

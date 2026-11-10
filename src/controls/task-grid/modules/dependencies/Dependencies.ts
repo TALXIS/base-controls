@@ -36,6 +36,9 @@ export interface ITaskDependencyData {
 /** A dependency yet to be created. */
 export type TaskDependencyCreate = Omit<ITaskDependency, 'id'>;
 
+/** Why a dependency cannot be created. */
+export type TaskDependencyRefusal = 'self' | 'duplicate' | 'cycle';
+
 /** Where dependencies are kept. */
 export interface IDependenciesStore {
     /** The dependencies touching any of these tasks, at either end. */
@@ -86,6 +89,8 @@ export interface IDependencies {
     isDependencyLocked(dependency: Pick<ITaskDependency, 'predecessorTaskId' | 'successorTaskId'>): boolean;
     /** Whether the dependency may be created without a self-link, duplicate or cycle. */
     canCreateDependency(predecessorTaskId: string, successorTaskId: string): boolean;
+    /** Why the dependency cannot be created, or `undefined` when it can. */
+    getCreateDependencyRefusal(predecessorTaskId: string, successorTaskId: string): TaskDependencyRefusal | undefined;
     /**
      * Rejects when the store fails.
      * @returns The created dependency, or `null` when it is not allowed.
@@ -171,13 +176,17 @@ export class Dependencies implements IDependencies {
     }
 
     public canCreateDependency(predecessorTaskId: string, successorTaskId: string): boolean {
+        return !this.getCreateDependencyRefusal(predecessorTaskId, successorTaskId);
+    }
+
+    public getCreateDependencyRefusal(predecessorTaskId: string, successorTaskId: string): TaskDependencyRefusal | undefined {
         if (predecessorTaskId === successorTaskId) {
-            return false;
+            return 'self';
         }
         if (this.getSuccessors(predecessorTaskId).some(dependency => dependency.successorTaskId === successorTaskId)) {
-            return false;
+            return 'duplicate';
         }
-        return !this._reaches(successorTaskId, predecessorTaskId);
+        return this._reaches(successorTaskId, predecessorTaskId) ? 'cycle' : undefined;
     }
 
     public async createDependency(dependency: TaskDependencyCreate): Promise<ITaskDependency | null> {

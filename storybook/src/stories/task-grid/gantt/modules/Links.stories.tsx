@@ -14,7 +14,7 @@ The links module draws the task grid's dependencies as arrows between the bars, 
 
 | Gesture | Does |
 |---|---|
-| Drag from the handle at either end of a bar to another bar | Draws a link. The ends it joins decide the type: *finish to start*, *start to start*, *finish to finish* or *start to finish*. A duplicate, a cycle or a link to a task that is saving is refused, and shows as refused while it is drawn. |
+| Drag from the handle at either end of a bar to another bar | Draws a link. The ends it joins decide the type: *finish to start*, *start to start*, *finish to finish* or *start to finish*. A duplicate, a cycle or a link to a task that is saving is refused, and its tooltip says why while it is drawn. |
 | Double-click a link | Deletes it, once the user confirms |
 | Point at a link | Shows what it joins |
 

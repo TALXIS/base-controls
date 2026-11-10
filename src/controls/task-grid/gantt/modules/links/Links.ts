@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import type { GanttStatic, Link } from "dhtmlx-gantt";
 import type { LabelsOf } from "@labels";
-import type { IDependencies, TaskDependencyType } from "../../../modules/dependencies";
+import type { IDependencies, TaskDependencyRefusal, TaskDependencyType } from "../../../modules/dependencies";
 import { extendTaskVisibility, GANTT_DRAG_MARKER_CLASS, GANTT_LINK_CONTROL_CLASS, GANTT_LINK_CONTROL_START_CLASS, GANTT_LINK_TOOLTIP_CLASS } from "../../chart";
 import { runQuietly } from "../../../runtime/runQuietly";
 import type { IGantt } from "../../interfaces";
@@ -51,6 +51,12 @@ interface ILinkDrop {
 
 //between the pointer and the tooltip of a link being drawn
 const LINK_DRAG_OFFSET = 14;
+
+const REFUSAL_LABELS = {
+    self: 'links.refusedSelf',
+    duplicate: 'links.refusedDuplicate',
+    cycle: 'links.refusedCycle',
+} as const satisfies Record<TaskDependencyRefusal, keyof typeof LINKS_LABELS.defaults>;
 
 const getDependencyType = (isFromStart: boolean, isToStart: boolean): TaskDependencyType => {
     return isFromStart ? (isToStart ? 'startToStart' : 'startToFinish') : (isToStart ? 'finishToStart' : 'finishToFinish');
@@ -119,7 +125,7 @@ export class Links implements ILinks {
             return getDragLinkTooltipHtml(source);
         }
         const type = this._labels.get(`links.${getDependencyType(isFromStart, drop.isToStart)}`);
-        return getDragLinkTooltipHtml(source, { type, target: this._getDragLinkEnd(chart, drop.targetId, drop.isToStart) });
+        return getDragLinkTooltipHtml(source, { type, target: this._getDragLinkEnd(chart, drop.targetId, drop.isToStart), refusal: this._getLinkRefusal(chart, sourceId, drop) });
     }
 
     private _getDragLinkEnd(chart: GanttStatic, taskId: string, isStart: boolean): IDragLinkTooltipEnd {
@@ -128,7 +134,7 @@ export class Links implements ILinks {
 
     private _getDragLinkClass(chart: GanttStatic, sourceId: string): string {
         const drop = this._linkDrop;
-        return getDragLinkTooltipClass(!!drop && !this._isLinkAllowed(chart, sourceId, drop));
+        return getDragLinkTooltipClass(!!drop && !!this._getLinkRefusal(chart, sourceId, drop));
     }
 
     private _onSurfaces = (surfaces: IGanttSurface[]): void => {
@@ -204,7 +210,7 @@ export class Links implements ILinks {
         const sourceId = chart.getState().link_source_id;
         const bar = drop && sourceId ? chart.getTaskNode(drop.targetId) : null;
         if (drop && bar && sourceId) {
-            const isAllowed = this._isLinkAllowed(chart, String(sourceId), drop);
+            const isAllowed = !this._getLinkRefusal(chart, String(sourceId), drop);
             bar.setAttribute(LINK_DROP_ATTRIBUTE, `${drop.isToStart ? 'start' : 'end'}${isAllowed ? '' : '-denied'}`);
         }
     }
@@ -214,12 +220,16 @@ export class Links implements ILinks {
     }
 
     //a task in a chain being saved stays as it is, links included
-    private _isLinkAllowed(chart: GanttStatic, sourceId: string, drop: ILinkDrop): boolean {
-        if (!this._dependencies.canCreateDependency(sourceId, drop.targetId) || this._dependencies.isDependencyLocked({ predecessorTaskId: sourceId, successorTaskId: drop.targetId })) {
-            return false;
+    private _getLinkRefusal(chart: GanttStatic, sourceId: string, drop: ILinkDrop): string | undefined {
+        const refusal = this._dependencies.getCreateDependencyRefusal(sourceId, drop.targetId);
+        if (refusal) {
+            return this._labels.get(REFUSAL_LABELS[refusal]);
+        }
+        if (this._dependencies.isDependencyLocked({ predecessorTaskId: sourceId, successorTaskId: drop.targetId })) {
+            return this._labels.get('links.refusedSaving');
         }
         const type = getDependencyType(!!chart.getState().link_from_start, drop.isToStart);
-        return chart.isLinkAllowed({ source: sourceId, target: drop.targetId, type: LINK_TYPES[type] });
+        return chart.isLinkAllowed({ source: sourceId, target: drop.targetId, type: LINK_TYPES[type] }) ? undefined : this._labels.get('links.refused');
     }
 
     //drawn from the dependencies every time so the chart holds no link they lack

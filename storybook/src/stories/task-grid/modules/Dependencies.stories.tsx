@@ -34,7 +34,7 @@ Every factory also takes \`reloadOnEditorClosed\`, to read a task's dependencies
 
 ## From your code
 
-\`taskRuntime.services.get('datasetControl').modules.find('dependencies')\` returns the module, with \`getPredecessors(taskId)\`, \`getSuccessors(taskId)\`, \`canCreateDependency(predecessorTaskId, successorTaskId)\`, \`createDependency(dependency)\`, \`updateDependency(dependencyId, { type })\` and \`deleteDependency(dependencyId)\`. \`events.onDependenciesChanged\` fires with the tasks whose dependencies changed.
+\`taskRuntime.services.get('datasetControl').modules.find('dependencies')\` returns the module, with \`getPredecessors(taskId)\`, \`getSuccessors(taskId)\`, \`canCreateDependency(predecessorTaskId, successorTaskId)\`, \`getCreateDependencyRefusal(predecessorTaskId, successorTaskId)\` (\`'self'\`, \`'duplicate'\` or \`'cycle'\`), \`createDependency(dependency)\`, \`updateDependency(dependencyId, { type })\` and \`deleteDependency(dependencyId)\`. \`events.onDependenciesChanged\` fires with the tasks whose dependencies changed.
 
 ## Changing how it looks
 

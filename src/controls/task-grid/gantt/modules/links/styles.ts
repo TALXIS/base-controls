@@ -17,7 +17,7 @@ import {
     GANTT_TASK_LINK_CLASS,
     GANTT_TASK_PROGRESS_WRAPPER_CLASS,
 } from "../../chart";
-import { LINK_DRAG_POINTER_VARIABLES, LINK_DRAG_TYPE_CLASS, LINK_DROP_ATTRIBUTE, LINK_SAVING_CLASS } from "./classNames";
+import { LINK_DRAG_POINTER_VARIABLES, LINK_DRAG_REFUSAL_CLASS, LINK_DRAG_TYPE_CLASS, LINK_DROP_ATTRIBUTE, LINK_SAVING_CLASS } from "./classNames";
 
 const LINK_TARGET_GLOW_SELECTOR = ['', GANTT_LINK_START_ALLOW_CLASS, GANTT_LINK_FINISH_ALLOW_CLASS, GANTT_LINK_START_DENY_CLASS, GANTT_LINK_FINISH_DENY_CLASS].map(className => `.${GANTT_LINK_TARGET_CLASS}${className && `.${className}`}`).join(', ');
 
@@ -110,7 +110,8 @@ export const getLinksStyles = (theme: ITheme): IStyle => ({
         marginBottom: 2,
         color: theme.semanticColors.bodySubtext,
     },
-    [`:global(.${GANTT_DRAG_MARKER_CLASS} .${GANTT_LINK_TOOLTIP_CLASS}.${GANTT_LINK_DENY_CLASS})`]: {
+    [`:global(.${LINK_DRAG_REFUSAL_CLASS})`]: {
+        marginTop: 4,
         color: theme.semanticColors.errorText,
     },
 });
