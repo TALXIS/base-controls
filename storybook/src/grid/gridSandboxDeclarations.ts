@@ -4131,15 +4131,19 @@ interface ITaskColumnMatcher {
 /** Holds the tasks back from the tree until it settles, such as values a filter on the module's column reads. */
 type TaskLoadWaiter = (params: { taskIds: string[] }) => Promise<void> | void;
 
+/** What the task provider raises as its tree changes, ahead of any save. */
 interface ITaskDataProviderEvents {
+    /** Fires when tasks join the tree, before the store has created a new one. */
     onTasksCreated: (records: IRecord[], parentId?: string) => void;
+    /** Fires when tasks leave the tree, deleted or never created. */
     onTasksDeleted: (taskIds: string[]) => void;
+    /** Fires when a task is placed, before its move saves. */
     onTaskMoved: (params: { movingRecord: IRecord; targetRecord: IRecord; position: string; parentRecord?: IRecord; stackRank: string }) => void;
-    /** Tasks whose data changed in place, whatever changed it. */
+    /** Fires when tasks take new values in place, whatever changed them. */
     onTasksUpdated: (records: IRecord[]) => void;
-    /** The editor the tasks were opened in outside the grid closed. */
+    /** Fires when the editor the tasks were opened in outside the grid closes. */
     onEditorClosed: (taskIds: string[]) => void;
-    /** The visible tree changed without new data. */
+    /** Fires when the visible tree changes without new data. */
     onTreeChanged: () => void;
 }
 

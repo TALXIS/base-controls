@@ -162,16 +162,19 @@ export interface ITaskStore {
     synchronize?(): Promise<ITaskChanges>;
 }
 
-/** What the task provider raises once an operation is done. */
+/** What the task provider raises as its tree changes, ahead of any save. */
 export interface ITaskDataProviderEvents {
+    /** Fires when tasks join the tree, before the store has created a new one. */
     onTasksCreated: (records: IRecord[], parentId?: string) => void;
+    /** Fires when tasks leave the tree, deleted or never created. */
     onTasksDeleted: (taskIds: string[]) => void;
+    /** Fires when a task is placed, before its move saves. */
     onTaskMoved: (parameters: ITaskMoveParameters) => void;
-    /** Tasks whose data changed in place, whatever changed it. */
+    /** Fires when tasks take new values in place, whatever changed them. */
     onTasksUpdated: (records: IRecord[]) => void;
-    /** The editor the tasks were opened in outside the grid closed. */
+    /** Fires when the editor the tasks were opened in outside the grid closes. */
     onEditorClosed: (taskIds: string[]) => void;
-    /** The visible tree changed without new data. */
+    /** Fires when the visible tree changes without new data. */
     onTreeChanged: () => void;
 }
 
