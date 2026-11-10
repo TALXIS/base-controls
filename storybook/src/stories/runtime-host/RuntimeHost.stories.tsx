@@ -75,7 +75,7 @@ To cover the control for work that does not run through \`execute\`, call \`runt
 | \`placeholder\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the runtime is ready |
 | \`mountError\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, or an error the control threw while it drew |
 | \`loadingOverlay\` | \`onRenderOverlay\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the control while \`runtime.loading\` is shown |
-| \`executeError\` | \`onRenderError\` | \`RuntimeExecuteErrorComponents\` | One failure of \`execute\`, given \`title\`, \`error\` and \`onDismiss\`, which shows the next one |
+| \`executeError\` | \`onRenderErrors\` | \`RuntimeExecuteErrorComponents\` | The failures of \`execute\` not yet dismissed, given \`failures\` and \`onDismiss(failure)\` |
 
 To change the wording of **Try again**, **Details** and the default title of a failed action, see [**Localization**](?path=/docs/concepts-localization--overview).
 
@@ -136,7 +136,7 @@ export const RunActions: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Adding a deal covers the summary until it is saved, and a failed send shows in a message bar instead of the error dialog. Try: press Add a 5,000 USD deal, then Send to finance.`,
+                story: `Adding a deal covers the summary until it is saved, and failed sends show in a notification bar instead of the error dialog, grouped once there are several. Try: press Add a 5,000 USD deal, then Send to finance twice.`,
             },
         },
     },

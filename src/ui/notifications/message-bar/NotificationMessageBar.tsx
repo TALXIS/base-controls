@@ -1,6 +1,6 @@
 import { useTheme } from '@theme';
-import React, { useMemo } from 'react';
-import { IMessageBarStyles, MessageBarType } from '@fluentui/react';
+import React, { useEffect, useMemo } from 'react';
+import { IMessageBarProps, IMessageBarStyles, MessageBarType } from '@fluentui/react';
 import { INotificationMessageBarComponents, NotificationMessageBarComponents } from "./components";
 import { getNotificationMessageBarStyles } from './styles';
 import { useLabels } from '@labels';
@@ -12,6 +12,8 @@ export interface INotificationMessage {
 	text: string;
 	/** How the message is drawn; the most severe one sets the bar's type. */
 	level: 'ERROR' | 'WARNING' | 'INFO';
+	/** Shows a close button on the message that calls it. */
+	onDismiss?: () => void;
 }
 
 export interface INotificationMessageBarProps {
@@ -36,6 +38,14 @@ export const NotificationMessageBar = (props: INotificationMessageBarProps) => {
 	const styles = useMemo(() => getNotificationMessageBarStyles(theme, isUnfolded), [theme, isUnfolded]);
 	const groupedNotificationRef = React.useRef<HTMLDivElement>(null);
 	const labels = useLabels(NOTIFICATION_MESSAGE_BAR_LABELS);
+	const isGrouped = messages.length > 1;
+
+	//a list left unfolded would open on its own the next time the bar groups
+	useEffect(() => {
+		if (!isGrouped) {
+			setIsUnfolded(false);
+		}
+	}, [isGrouped]);
 
 	const messageBarStyles: IMessageBarStyles = {
 		root: styles.notification,
@@ -48,12 +58,27 @@ export const NotificationMessageBar = (props: INotificationMessageBarProps) => {
 
 	const renderMessage = (message: INotificationMessage) => components.onRenderMessage({ dangerouslySetInnerHTML: { __html: message.text } });
 
+	//the click would also reach the grouped bar, which folds the list on a click
+	const getDismissProps = (message: INotificationMessage): Pick<IMessageBarProps, 'onDismiss'> => {
+		const { onDismiss } = message;
+		if (!onDismiss) {
+			return {};
+		}
+		return {
+			onDismiss: event => {
+				event?.stopPropagation();
+				onDismiss();
+			},
+		};
+	};
+
 	if (messages.length === 1) {
-		return components.onRenderMessageBar({ styles: messageBarStyles, messageBarType, children: renderMessage(messages[0]) });
+		return components.onRenderMessageBar({ variant: 'single', styles: messageBarStyles, messageBarType, ...getDismissProps(messages[0]), children: renderMessage(messages[0]) });
 	}
 
 	return <div ref={groupedNotificationRef} className={styles.groupedNotification} onClick={() => setIsUnfolded(!isUnfolded)}>
 		{components.onRenderMessageBar({
+			variant: 'group',
 			styles: { ...messageBarStyles, innerText: styles.groupedInnerText },
 			messageBarType,
 			actions: components.onRenderToggleButton({ styles: { root: styles.chevronBtn, icon: styles.chevronBtnIcon }, iconProps: { iconName: 'ChevronDown' } }) ?? undefined,
@@ -65,15 +90,17 @@ export const NotificationMessageBar = (props: INotificationMessageBarProps) => {
 				const index = parseInt(menuItemProps?.key || '0');
 				const message = messages[index];
 				return components.onRenderMessageBar({
+					variant: 'child',
 					className: index < messages.length - 1 ? styles.lastGroupedNotificationItem : undefined,
 					styles: messageBarStyles,
 					messageBarType: getMessageBarType([message]),
+					...getDismissProps(message),
 					children: renderMessage(message),
 				});
 			},
 			useTargetWidth: true,
-			target: groupedNotificationRef.current,
-			onDismiss: () => setIsUnfolded(!isUnfolded),
+			target: groupedNotificationRef,
+			onDismiss: () => setIsUnfolded(false),
 		})}
 	</div>;
 };

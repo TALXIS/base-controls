@@ -133,8 +133,8 @@ const GridExample = () => {
 }
 `
 
-const RUN_ACTIONS_CODE = `import { Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
-import { DefaultButton, getTheme, MessageBar, MessageBarType, PrimaryButton, Stack, Text } from '@fluentui/react'
+const RUN_ACTIONS_CODE = `import { NotificationMessageBar, Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
+import { DefaultButton, getTheme, PrimaryButton, Stack, Text } from '@fluentui/react'
 
 const theme = getTheme()
 
@@ -198,15 +198,21 @@ const DealSummary = () => {
     </>
 }
 
+//the bar draws its messages as HTML
+const escapeHtml = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
 const GridExample = () => (
     <RuntimeHost createRuntime={() => new DealSummaryRuntime()} components={{
         //the card is the host's box, so the spinner covers it and the failures show inside it
         container: { onRenderContainer: props => <div {...props} style={CARD_STYLE} /> },
-        //replaces the error dialog; onDismiss takes the failure away and shows the next one
+        //replaces the error dialog with one notification bar, which groups the failures once there are several
         executeError: {
-            onRenderError: ({ title, error, onDismiss }) => <MessageBar messageBarType={MessageBarType.error} isMultiline onDismiss={onDismiss}>
-                <b>{title}</b> {(error as Error).message}
-            </MessageBar>,
+            onRenderErrors: ({ failures, onDismiss }) => <NotificationMessageBar messages={failures.map(failure => ({
+                level: 'ERROR',
+                text: \`<b>\${escapeHtml(failure.title)}</b> \${escapeHtml((failure.error as Error).message)}\`,
+                //each message gets its own close button
+                onDismiss: () => onDismiss(failure),
+            }))} />,
         },
     }}>
         <DealSummary />

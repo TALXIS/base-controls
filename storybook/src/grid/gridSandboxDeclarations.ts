@@ -3366,10 +3366,16 @@ declare const NotificationCard: (props: INotificationCardProps) => JSX.Element;
 /** The defaults for the card's pieces. */
 declare const NotificationCardComponents: INotificationCardComponents;
 
+/** A bar the notification bar draws. */
+interface INotificationMessageBarRenderProps extends IMessageBarProps {
+    /** single for a lone message, group for the bar folding several, child for each one listed under it. */
+    variant: 'single' | 'group' | 'child';
+}
+
 /** The replaceable pieces of a notification bar. */
 interface INotificationMessageBarComponents {
     /** Every bar drawn: the single one, the grouped one and each message listed under it. */
-    onRenderMessageBar: (props: IMessageBarProps) => JSX.Element | null;
+    onRenderMessageBar: (props: INotificationMessageBarRenderProps) => JSX.Element | null;
     /** A message's text, handed over as \`dangerouslySetInnerHTML\`. */
     onRenderMessage: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** The chevron that unfolds the grouped messages. */
@@ -3379,8 +3385,8 @@ interface INotificationMessageBarComponents {
 }
 
 interface INotificationMessageBarProps {
-    /** Several messages fold into one bar. */
-    messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[];
+    /** Several messages fold into one bar; onDismiss gives a message a close button. */
+    messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO'; onDismiss?: () => void }[];
     components?: Partial<INotificationMessageBarComponents>;
 }
 
