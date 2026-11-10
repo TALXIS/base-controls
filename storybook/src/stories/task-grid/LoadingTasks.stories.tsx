@@ -66,7 +66,7 @@ After every save, creation and deletion, from a cell, a form, a move, a template
 
 ## Start from a task
 
-Return \`rootTaskId\` to show only the tasks under one task, such as one project's. It is read at mount: to change it, remount the control with a new \`key\`, as the example does.
+Return \`rootTaskId\` to show only the tasks under one task, such as one project's. The store has to load that task too, not only the tasks under it: without it, the tree is empty and *New* has no parent to create under. It is read at mount: to change it, remount the control with a new \`key\`, as the example does.
 
 {{story: Start from a task}}
 

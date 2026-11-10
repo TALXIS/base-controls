@@ -184,7 +184,7 @@ export interface ITaskDataProviderParameters {
     formatting?: IFormatting;
     /** `stateCode` defaults to `statecode`. */
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & Partial<Pick<IFieldMapping, 'stateCode'>>;
-    /** Scopes the tree to the subtree under this task. */
+    /** Scopes the tree to the subtree under this task, which the store has to load too. */
     rootTaskId?: string;
     /** Where a task created with no position of its own goes, `first` by default. */
     defaultCreatePosition?: TaskCreatePosition;

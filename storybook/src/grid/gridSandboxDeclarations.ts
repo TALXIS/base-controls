@@ -4236,7 +4236,7 @@ interface ITaskGridLoadResult {
     store: ITaskStore;
     /** \`stateCode\` defaults to \`statecode\`. */
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & { stateCode?: string };
-    /** Scopes the tree to the subtree under this task. */
+    /** Scopes the tree to the subtree under this task, which the store has to load too. */
     rootTaskId?: string;
     /** Hours in a day of a task's duration; 24 when left out. */
     hoursPerDay?: number;
