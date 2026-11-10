@@ -17,6 +17,8 @@ export const Panel = (props: IPanelProps & { children?: React.ReactNode }) => {
             theme={theme}
             styles={(styleProps: IPanelStyleProps) => concatStyleSetsWithProps<IPanelStyleProps, IPanelStyles>(styleProps, panelStyles, userStyles)}
             {...panelProps}
+            //Fluent's layer otherwise hides mouse events from document listeners
+            layerProps={{ eventBubblingEnabled: true, ...panelProps.layerProps }}
         >
             <ThemeProvider theme={theme} className={styles.body}>
                 {children}
