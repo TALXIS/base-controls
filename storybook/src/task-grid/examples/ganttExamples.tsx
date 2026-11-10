@@ -5,8 +5,8 @@ import { TASK_EXAMPLE_TABS, withTasks } from './shared'
 
 //what each package entry exports that these examples use
 const ENTRY_EXPORTS: [string, string[]][] = [
-    ['@talxis/base-controls', ['DatasetControl', 'TaskDatasetControl', 'TaskGrid', 'createRowSelectionModule', 'createTaskEditingModule', 'createMemoryProjectModule', 'createMemoryDependenciesModule']],
-    ['@talxis/base-controls/gantt', ['IGanttModule', 'IMarker', 'INonWorkingDay', 'TaskGantt', 'TaskTooltip', 'useMarker', 'createLibraryModule', 'createMemoryMarkersModule', 'createMemoryNonWorkingDaysModule', 'createBarDraggingModule', 'createTaskDrawingModule', 'createTaskSelectionModule', 'createTaskTooltipModule', 'createLinksModule']],
+    ['@talxis/base-controls', ['DatasetControl', 'TaskDatasetControl', 'TaskGrid', 'createRowSelectionModule', 'createTaskEditingModule', 'createMemoryProjectModule', 'createMemoryDependenciesModule', 'MemoryTable']],
+    ['@talxis/base-controls/gantt', ['IGanttModule', 'IMemoryMarker', 'IMemoryNonWorkingDay', 'TaskGantt', 'TaskTooltip', 'useMarker', 'createLibraryModule', 'createMemoryMarkersModule', 'createMemoryNonWorkingDaysModule', 'createBarDraggingModule', 'createTaskDrawingModule', 'createTaskSelectionModule', 'createTaskTooltipModule', 'createLinksModule']],
 ]
 
 //puts an import line for every entry the code uses on top of it
@@ -62,7 +62,12 @@ const GridExample = () => {
 `)
 
 const PROJECT = `
-        createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),`
+        createMemoryProjectModule({ projects, projectId: 'website' }),`
+
+//the table PROJECT reads, for the setup of the examples that use it
+const PROJECTS_SETUP = `
+const projects = new MemoryTable({ idKey: 'id', rows: [{ id: 'website', name: 'Website Redesign', startDate: '2025-10-01', endDate: '2026-01-31' }] })
+`
 
 const SHOWCASE_CODE = createGanttCode({
     header: { start: '<TaskGantt.ZoomSlider />', end: '<TaskDatasetControl.Ribbon />' },
@@ -97,16 +102,22 @@ const GridExample = () => {
 `)
 
 const MODULES_CODE = createGanttCode({
+    setup: `${PROJECTS_SETUP}
+//links drawn and deleted are kept in the table
+const dependencies = new MemoryTable({ idKey: 'id', rows: DEPENDENCIES })
+const markers = new MemoryTable({ idKey: 'id', rows: [{ id: 'beta', text: 'Beta', date: '2025-12-01' }] })
+const nonWorkingDays = new MemoryTable({ idKey: 'id', rows: NON_WORKING_DAYS })
+`,
     header: { start: '<TaskGantt.ZoomSlider />', end: `<TaskDatasetControl.Ribbon />
                 <TaskDatasetControl.Settings />` },
     controlProps: ' enableCreation enableEditing',
     controlModules: `${PROJECT}
-        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),`,
+        createMemoryDependenciesModule({ dependencies }),`,
     gridModules: `createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()`,
     ganttModules: `
         //a feature left out is not there at all
-        createMemoryMarkersModule({ markers: [{ id: 'beta', text: 'Beta', date: dayjs('2025-12-01') }] }),
-        createMemoryNonWorkingDaysModule({ nonWorkingDays: NON_WORKING_DAYS }),
+        createMemoryMarkersModule({ markers }),
+        createMemoryNonWorkingDaysModule({ nonWorkingDays }),
         createBarDraggingModule(),
         //Ctrl+drag over a row draws a new task
         createTaskDrawingModule(),
@@ -128,11 +139,13 @@ const EDITING_CODE = createGanttCode({
 })
 
 const MARKERS_CODE = createGanttCode({
-    setup: `
-const RELEASES: IMarker[] = [
-    { id: 'beta', text: 'Beta', date: dayjs('2025-12-01'), color: '#8764b8' },
-    { id: 'launch', text: 'Launch', date: dayjs('2026-04-01'), color: '#107c10' },
+    setup: `${PROJECTS_SETUP}
+//dates are ISO strings in the table; the module hands them out as dayjs
+const RELEASES: IMemoryMarker[] = [
+    { id: 'beta', text: 'Beta', date: '2025-12-01', color: '#8764b8' },
+    { id: 'launch', text: 'Launch', date: '2026-04-01', color: '#107c10' },
 ]
+const releases = new MemoryTable({ idKey: 'id', rows: RELEASES })
 
 //useMarker() returns the marker this chip draws
 const LaunchChip = (props: React.HTMLAttributes<HTMLDivElement>) => {
@@ -148,26 +161,27 @@ const LaunchChip = (props: React.HTMLAttributes<HTMLDivElement>) => {
         //its start and end are marked too${PROJECT}`,
     ganttModules: `
         createMemoryMarkersModule({
-            markers: RELEASES,
+            markers: releases,
             components: { chip: { onRenderChip: props => <LaunchChip {...props} /> } },
         }),`,
 })
 
 const NON_WORKING_DAYS_CODE = createGanttCode({
     setup: `
-const HOLIDAYS: INonWorkingDay[] = [
+const HOLIDAYS: IMemoryNonWorkingDay[] = [
     //endDate is the last day, included
-    { id: 'christmas', date: dayjs('2025-12-24'), endDate: dayjs('2025-12-26'), description: 'Christmas holidays', recurrence: 'FREQ=YEARLY' },
-    { id: 'newYearsDay', date: dayjs('2026-01-01'), description: "New Year's Day", recurrence: 'FREQ=YEARLY' },
+    { id: 'christmas', date: '2025-12-24', endDate: '2025-12-26', description: 'Christmas holidays', recurrence: 'FREQ=YEARLY' },
+    { id: 'newYearsDay', date: '2026-01-01', description: "New Year's Day", recurrence: 'FREQ=YEARLY' },
     //every month's first Friday
-    { id: 'teamDay', date: dayjs('2025-10-03'), description: 'Team day', recurrence: 'FREQ=MONTHLY;BYDAY=1FR' },
+    { id: 'teamDay', date: '2025-10-03', description: 'Team day', recurrence: 'FREQ=MONTHLY;BYDAY=1FR' },
 ]
+const holidays = new MemoryTable({ idKey: 'id', rows: HOLIDAYS })
 `,
     header: { start: '<TaskGantt.ZoomSlider />', end: '<TaskDatasetControl.Settings />' },
     controlProps: ' enableEditing',
     gridModules: 'createTaskEditingModule()',
     ganttModules: `
-        createMemoryNonWorkingDaysModule({ nonWorkingDays: HOLIDAYS }),
+        createMemoryNonWorkingDaysModule({ nonWorkingDays: holidays }),
         createBarDraggingModule(),`,
 })
 
@@ -195,10 +209,14 @@ const TOOLTIP_CODE = createGanttCode({
 })
 
 const LINKS_CODE = createGanttCode({
+    setup: `
+//links drawn and deleted are kept in the table
+const dependencies = new MemoryTable({ idKey: 'id', rows: DEPENDENCIES })
+`,
     controlProps: ' enableEditing',
     controlModules: `
         //the links module draws what this module holds
-        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),`,
+        createMemoryDependenciesModule({ dependencies }),`,
     ganttModules: `
         createLinksModule(),`,
 })

@@ -4275,8 +4275,13 @@ interface IProjectStore<TData = { [key: string]: unknown }> {
 
 /** The project the tasks belong to, loaded on every mount and kept on the task runtime as project. */
 declare const createProjectModule: <TData>(parameters: { createStore: (taskRuntime: ITaskRuntime) => IProjectStore<TData> }) => IProjectModule;
-/** The project module for a project held in memory. */
-declare const createMemoryProjectModule: <TData>(parameters: { project: IProjectData<TData> }) => IProjectModule;
+/** A project as a row of the \`projects\` table, its dates as ISO strings. */
+interface IMemoryProject<TData = { [key: string]: unknown }> extends Omit<IProjectData<TData>, 'startDate' | 'endDate'> {
+    startDate?: string;
+    endDate?: string;
+}
+/** The project module for a project kept in the \`projects\` table you pass. */
+declare const createMemoryProjectModule: <TData>(parameters: { projects: MemoryTable<IMemoryProject<TData>>; projectId: string }) => IProjectModule;
 
 interface ITaskDatasetControlProps extends Omit<IDatasetControlProps<ITaskViewData>, 'onLoad' | 'scope' | 'modules'> {
     /** The control's modules; read on every mount. */
@@ -4444,13 +4449,19 @@ declare const createLookupManyModule: <TColumn extends ILookupManyColumn>(parame
     createStore: (taskRuntime: ITaskRuntime) => ILookupManyStore<TColumn>;
 }) => IDatasetControlModule;
 
-/** Lookup-many columns over records held in memory, starting over on every mount like the memory tasks. */
+/** A task's references, by column name; the row of the \`values\` table. */
+interface IMemoryLookupManyValues {
+    taskId: string;
+    values: { [columnName: string]: ComponentFramework.EntityReference[] };
+}
+
+/** Lookup-many columns over records and references kept in the tables you pass. */
 declare const createMemoryLookupManyModule: (parameters: {
     /** The sources by entity name, matched against each column's entityName. */
-    sources: { [entityName: string]: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] } };
+    sources: { [entityName: string]: { records: MemoryTable<IRawRecord>; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] } };
     columns: { [columnName: string]: ILookupManyColumn };
-    /** The tasks' references, by task id and column name. */
-    values: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } };
+    /** The tasks' references, keyed by taskId. */
+    values: MemoryTable<IMemoryLookupManyValues>;
 }) => IDatasetControlModule;
 
 /** One Dataverse lookup-many column: the relationship it is reached through, and what it offers. */
@@ -4473,15 +4484,15 @@ declare const createDataverseLookupManyModule: (parameters: {
 }) => IDatasetControlModule;
 
 /** The people, tags and teams the sample tasks' lookup-many columns pick from. */
-declare const LOOKUP_MANY_SOURCES: { [entityName: string]: { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] } };
+declare const LOOKUP_MANY_SOURCES: { [entityName: string]: { records: MemoryTable<IRawRecord>; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] } };
 /** The sample tasks' lookup-many columns, as the module maps them. */
 declare const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn };
 /** The lookup-many columns as a view names them. */
 declare const LOOKUP_MANY_VIEW_COLUMNS: IColumn[];
-/** The sample tasks' lookup-many references. */
-declare const LOOKUP_MANY_VALUES: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } };
-/** Moves the tasks' lookup-many references out of the records, by task id, as the lookup-many module keeps them. */
-declare const takeLookupManyValues: (tasks: IRawRecord[]) => { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } };
+/** The sample tasks' lookup-many references, as rows of a \`values\` table. */
+declare const LOOKUP_MANY_VALUES: IMemoryLookupManyValues[];
+/** Moves the tasks' lookup-many references out of the records, as rows of a \`values\` table. */
+declare const takeLookupManyValues: (tasks: IRawRecord[]) => IMemoryLookupManyValues[];
 
 /** A task to create, with the tasks to create under it. */
 interface ICreateTaskTree {
@@ -4545,8 +4556,8 @@ interface IMemoryTemplate extends IMemoryTemplateTask {
     name: string;
 }
 
-/** Task templates kept in the \`templates\` table, for tasks loaded through \`MemoryTaskStore\`. */
-declare const createMemoryTemplatesModule: (parameters: { templates: MemoryTable<IMemoryTemplate> }) => IDatasetControlModule;
+/** Task templates kept in the \`templates\` table, creating their tasks in the \`tasks\` table. */
+declare const createMemoryTemplatesModule: (parameters: { tasks: MemoryTable<IRawRecord>; templates: MemoryTable<IMemoryTemplate> }) => IDatasetControlModule;
 
 /** The sample templates: a bug fix, a feature and a research spike. */
 declare const TEMPLATES: IMemoryTemplate[];
@@ -4566,17 +4577,21 @@ interface ITaskChecklistStore {
 
 /** Each task's checklist progress as done/total, in a column Edit columns offers. */
 declare const createTaskChecklistModule: (parameters: { createStore: (taskRuntime: ITaskRuntime, checklist: any) => ITaskChecklistStore }) => IDatasetControlModule;
-/** Checklists held in memory, by task id. */
-declare const createMemoryTaskChecklistModule: (parameters: { items: Record<string, ITaskChecklistItem[]> }) => IDatasetControlModule;
+/** A checklist item with the task it belongs to; the row of the \`items\` table. */
+interface IMemoryTaskChecklistItem extends ITaskChecklistItem {
+    taskId: string;
+}
+/** Checklists kept in the \`items\` table you pass. */
+declare const createMemoryTaskChecklistModule: (parameters: { items: MemoryTable<IMemoryTaskChecklistItem> }) => IDatasetControlModule;
 /** Checklists stored as JSON on each TALXIS task. */
 declare const createTalxisTaskChecklistModule: (parameters?: {}) => IDatasetControlModule;
 
-/** The checklists of the sample tasks. */
-declare const CHECKLIST_ITEMS: Record<string, ITaskChecklistItem[]>;
+/** The checklist items of the sample tasks, each with its taskId. */
+declare const CHECKLIST_ITEMS: IMemoryTaskChecklistItem[];
 /** The checklist column as a view lists it. */
 declare const CHECKLIST_COLUMN: IColumn;
 /** Checklists for generated tasks, ticked as far as each task's progress. */
-declare const createChecklistItems: (tasks: IRawRecord[]) => Record<string, ITaskChecklistItem[]>;
+declare const createChecklistItems: (tasks: IRawRecord[]) => IMemoryTaskChecklistItem[];
 
 /** How the two tasks of a dependency relate in time. */
 type TaskDependencyType = 'finishToStart' | 'startToStart' | 'finishToFinish' | 'startToFinish';
@@ -4610,8 +4625,8 @@ interface IDataverseDependenciesSchema {
 
 /** Holds the tasks' dependencies and shows their counts in the Predecessors and Successors columns. */
 declare const createDependenciesModule: (parameters: { createStore: (taskRuntime: ITaskRuntime, dependencies: any) => ITaskDependenciesStore }) => IDatasetControlModule;
-/** Dependencies held in memory, starting over on every mount like the memory tasks. */
-declare const createMemoryDependenciesModule: (parameters: { dependencies: ITaskDependency[] }) => IDatasetControlModule;
+/** Dependencies kept in the \`dependencies\` table you pass. */
+declare const createMemoryDependenciesModule: (parameters: { dependencies: MemoryTable<ITaskDependency> }) => IDatasetControlModule;
 /** Dependencies kept in a Dataverse table of two task lookups and a type. */
 declare const createDataverseDependenciesModule: (parameters: IDataverseDependenciesSchema) => IDatasetControlModule;
 /** Dependencies kept in TALXIS's task dependency table. */
@@ -4648,16 +4663,12 @@ interface ITaskStore {
 declare class MemoryTable<TRow extends object> {
     /** Rows are copied in and out, so no one holds the table's own. */
     constructor(parameters: { idKey: keyof TRow & string; rows?: TRow[] });
-    readonly events: IEventSubscriber<{ onChanged: () => void }>;
     getRow(id: string): TRow | undefined;
-    filter(predicate: (row: TRow) => boolean): TRow[];
+    /** Every row, or the ones predicate keeps, as plain data. */
+    getRows(predicate?: (row: TRow) => boolean): TRow[];
     insert(rows: TRow[]): void;
     update(id: string, values: Partial<TRow>): void;
     delete(ids: string[]): void;
-    /** Every row as plain data, to keep or to \`load\` again. */
-    dump(): TRow[];
-    /** Replaces every row. */
-    load(rows: TRow[]): void;
 }
 
 /** Tasks kept in a \`MemoryTable\`; opening one, or a record a lookup points to, shows an alert. */
@@ -4739,8 +4750,12 @@ declare const createLibraryModule: () => IGanttModule;
 declare const createProLibraryModule: (parameters: { Gantt: unknown }) => IGanttModule;
 /** Today, the project's start and end, and the store's own markers. */
 declare const createMarkersModule: (parameters?: IMarkersOptions & { createStore?: (taskRuntime: ITaskRuntime) => { loadMarkers(): Promise<IMarker[]> } }) => IGanttModule;
-/** Markers held in memory. */
-declare const createMemoryMarkersModule: (parameters: IMarkersOptions & { markers: IMarker[] }) => IGanttModule;
+/** A marker as a row of the \`markers\` table, its date as an ISO string. */
+interface IMemoryMarker extends Omit<IMarker, 'date'> {
+    date: string;
+}
+/** Markers kept in the \`markers\` table you pass. */
+declare const createMemoryMarkersModule: (parameters: IMarkersOptions & { markers: MemoryTable<IMemoryMarker> }) => IGanttModule;
 /** A day, or a run of days, on which tasks are not worked on. */
 interface INonWorkingDay {
     id: string;
@@ -4773,12 +4788,17 @@ interface INonWorkingDaysOptions {
 }
 
 /** Common holidays, plus a few company days, for the sample Gantt. */
-declare const NON_WORKING_DAYS: INonWorkingDay[];
+declare const NON_WORKING_DAYS: IMemoryNonWorkingDay[];
 
 /** Weekends and the store's days, shaded on the timeline and hidden from TaskDatasetControl.Settings. */
 declare const createNonWorkingDaysModule: (parameters?: INonWorkingDaysOptions & { createStore?: (taskRuntime: ITaskRuntime) => { loadNonWorkingDays(): Promise<INonWorkingDay[]> } }) => IGanttModule;
-/** Non-working days held in memory. */
-declare const createMemoryNonWorkingDaysModule: (parameters: INonWorkingDaysOptions & { nonWorkingDays: INonWorkingDay[] }) => IGanttModule;
+/** A non-working day as a row of the \`nonWorkingDays\` table, its dates as ISO strings. */
+interface IMemoryNonWorkingDay extends Omit<INonWorkingDay, 'date' | 'endDate'> {
+    date: string;
+    endDate?: string;
+}
+/** Non-working days kept in the \`nonWorkingDays\` table you pass. */
+declare const createMemoryNonWorkingDaysModule: (parameters: INonWorkingDaysOptions & { nonWorkingDays: MemoryTable<IMemoryNonWorkingDay> }) => IGanttModule;
 /** Moves and resizes bars, writing the dates once the bar is dropped. */
 declare const createBarDraggingModule: (parameters?: { enableMove?: boolean; enableResize?: boolean }) => IGanttModule;
 /** Ctrl+drag draws a new task; a drag along a dateless row draws its dates. */
@@ -4834,7 +4854,7 @@ declare namespace ComponentFramework {
 }
 declare module 'react-dom';
 declare module 'dhtmlx-gantt-pro';
-declare module '@talxis/base-controls/gantt' { export { TaskGantt, TaskTooltip, useMarker, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, IGanttModule, IMarker, INonWorkingDay } from '@talxis/base-controls'; export interface IGanttModuleMap {} }
+declare module '@talxis/base-controls/gantt' { export { TaskGantt, TaskTooltip, useMarker, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, IGanttModule, IMarker, INonWorkingDay, IMemoryMarker, IMemoryNonWorkingDay } from '@talxis/base-controls'; export interface IGanttModuleMap {} }
 
 /** The instances grid modules provide, by name; extend it for a module of your own. */
 interface IGridModuleMap {}

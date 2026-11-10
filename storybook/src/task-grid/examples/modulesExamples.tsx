@@ -36,7 +36,7 @@ const GridExample = () => {
 }
 `
 
-const LOOKUP_MANY_CODE = `import { createFilteringModule, createMemoryLookupManyModule, createTaskEditingModule, DatasetControl, ILookupManyColumn, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const LOOKUP_MANY_CODE = `import { createFilteringModule, createMemoryLookupManyModule, createTaskEditingModule, DatasetControl, ILookupManyColumn, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { IColumn } from '@talxis/client-libraries'
 import { createLoadTasks, createTaskTable } from './tasks'
 
@@ -54,8 +54,10 @@ const loadTasks = createLoadTasks(createTaskTable(), [
     { id: 'all', name: 'All tasks', resolve: () => ({ columns: [...getTaskColumns('subject', 'statuscode'), ...VIEW_COLUMNS] }) },
 ])
 
-//LOOKUP_MANY_SOURCES and LOOKUP_MANY_VALUES are the sample records of these docs
-const GridExample = () => <TaskDatasetControl modules={[createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: COLUMNS, values: LOOKUP_MANY_VALUES })]} enableEditing onLoad={loadTasks} height='480px'>
+//LOOKUP_MANY_SOURCES and LOOKUP_MANY_VALUES are the sample records of these docs; the picks the user makes are kept in values
+const values = new MemoryTable({ idKey: 'taskId', rows: LOOKUP_MANY_VALUES })
+
+const GridExample = () => <TaskDatasetControl modules={[createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: COLUMNS, values })]} enableEditing onLoad={loadTasks} height='480px'>
     <DatasetControl.Body>
         <TaskGrid modules={[createTaskEditingModule(), createFilteringModule()]} />
     </DatasetControl.Body>
@@ -65,7 +67,9 @@ const GridExample = () => <TaskDatasetControl modules={[createMemoryLookupManyMo
 const TEMPLATES_CODE = `import { createMemoryTemplatesModule, createRowSelectionModule, DatasetControl, IMemoryTemplate, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { createLoadTasks, createTaskTable } from './tasks'
 
-const loadTasks = createLoadTasks(createTaskTable())
+//the templates create their tasks in the table the task store reads
+const tasks = createTaskTable()
+const loadTasks = createLoadTasks(tasks)
 
 //listed under From template; select a task to save it as a template of your own
 const ONBOARDING: IMemoryTemplate = {
@@ -85,7 +89,7 @@ const ONBOARDING: IMemoryTemplate = {
 //kept outside the control, so the templates the user saves survive a view switch
 const templates = new MemoryTable<IMemoryTemplate>({ idKey: 'id', rows: [ONBOARDING] })
 
-const GridExample = () => <TaskDatasetControl modules={[createMemoryTemplatesModule({ templates })]} enableCreation onLoad={loadTasks} height='480px'>
+const GridExample = () => <TaskDatasetControl modules={[createMemoryTemplatesModule({ tasks, templates })]} enableCreation onLoad={loadTasks} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.End>
             <TaskDatasetControl.Ribbon />
@@ -97,7 +101,7 @@ const GridExample = () => <TaskDatasetControl modules={[createMemoryTemplatesMod
 </TaskDatasetControl>
 `
 
-const CHECKLIST_CODE = `import { createMemoryTaskChecklistModule, DatasetControl, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const CHECKLIST_CODE = `import { createMemoryTaskChecklistModule, DatasetControl, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { IColumn } from '@talxis/client-libraries'
 import { createLoadTasks, createTaskTable } from './tasks'
 
@@ -108,15 +112,17 @@ const loadTasks = createLoadTasks(createTaskTable(), [
     { id: 'all', name: 'All tasks', resolve: () => ({ columns: [...getTaskColumns('subject', 'percentcomplete'), CHECKLIST] }) },
 ])
 
-//CHECKLIST_ITEMS are the sample checklists of these docs, by task id
-const GridExample = () => <TaskDatasetControl modules={[createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS })]} onLoad={loadTasks} height='480px'>
+//CHECKLIST_ITEMS are the sample checklist items of these docs, each with its taskId
+const items = new MemoryTable({ idKey: 'id', rows: CHECKLIST_ITEMS })
+
+const GridExample = () => <TaskDatasetControl modules={[createMemoryTaskChecklistModule({ items })]} onLoad={loadTasks} height='480px'>
     <DatasetControl.Body>
         <TaskGrid />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `
 
-const DEPENDENCIES_CODE = `import { createMemoryDependenciesModule, createRowSelectionModule, DatasetControl, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const DEPENDENCIES_CODE = `import { createMemoryDependenciesModule, createRowSelectionModule, DatasetControl, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { IColumn } from '@talxis/client-libraries'
 import { createLoadTasks, createTaskTable } from './tasks'
 
@@ -130,8 +136,10 @@ const loadTasks = createLoadTasks(createTaskTable(), [
     { id: 'all', name: 'All tasks', resolve: () => ({ columns: [...getTaskColumns('subject'), ...COUNTS] }) },
 ])
 
-//DEPENDENCIES are the sample dependencies of these docs
-const GridExample = () => <TaskDatasetControl modules={[createMemoryDependenciesModule({ dependencies: DEPENDENCIES })]} enableDeletion onLoad={loadTasks} height='480px'>
+//DEPENDENCIES are the sample dependencies of these docs; links drawn and deleted are kept in the table
+const dependencies = new MemoryTable({ idKey: 'id', rows: DEPENDENCIES })
+
+const GridExample = () => <TaskDatasetControl modules={[createMemoryDependenciesModule({ dependencies })]} enableDeletion onLoad={loadTasks} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.End>
             <TaskDatasetControl.Ribbon />
@@ -158,7 +166,7 @@ const GridExample = () => {
         createTaskDraggingModule(),
         //the base factory makes your store on every mount
         createTaskChecklistModule({
-            createStore: () => ({ loadItems: async taskIds => new Map<string, ITaskChecklistItem[]>(taskIds.map(taskId => [taskId, CHECKLIST_ITEMS[taskId] ?? []])) }),
+            createStore: () => ({ loadItems: async taskIds => new Map<string, ITaskChecklistItem[]>(taskIds.map(taskId => [taskId, CHECKLIST_ITEMS.filter(item => item.taskId === taskId)])) }),
         }),
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'taskGridDocs.modules.views' }),
     ]
@@ -180,11 +188,13 @@ const GridExample = () => {
 }
 `
 
-const PROJECT_CODE = `import { createMemoryProjectModule, DatasetControl, IDatasetControl, IProject, ITaskViewData, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const PROJECT_CODE = `import { createMemoryProjectModule, DatasetControl, IDatasetControl, IProject, ITaskViewData, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { MessageBar } from '@fluentui/react'
 import { createLoadTasks, createTaskTable } from './tasks'
 
 const loadTasks = createLoadTasks(createTaskTable())
+//dates are ISO strings in the table; the module hands them out as dayjs
+const projects = new MemoryTable({ idKey: 'id', rows: [{ id: 'website', name: 'Website Redesign', startDate: '2025-10-01', endDate: '2026-01-31' }] })
 
 const GridExample = () => {
     const [project, setProject] = React.useState<IProject>()
@@ -196,7 +206,7 @@ const GridExample = () => {
     return <>
         {project && <MessageBar>{project.getName()}: {project.getStartDate()?.format('D MMM YYYY')} to {project.getEndDate()?.format('D MMM YYYY')}</MessageBar>}
         {/* loaded before the tasks, on every mount */}
-        <TaskDatasetControl modules={[createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } })]} onSetup={onSetup} onLoad={loadTasks} height='400px'>
+        <TaskDatasetControl modules={[createMemoryProjectModule({ projects, projectId: 'website' })]} onSetup={onSetup} onLoad={loadTasks} height='400px'>
             <DatasetControl.Body>
                 <TaskGrid />
             </DatasetControl.Body>

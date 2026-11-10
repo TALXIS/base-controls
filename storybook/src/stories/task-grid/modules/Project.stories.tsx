@@ -33,7 +33,7 @@ Tasks usually belong to a project, and several parts of a task grid need to know
 
 | Factory | Parameters |
 |---|---|
-| \`createMemoryProjectModule\` | \`project\`: the project above. |
+| \`createMemoryProjectModule\` | \`projects\`: a [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview) of projects as above, their dates as ISO strings; \`projectId\`: the one the grid shows. |
 | \`createDataverseProjectModule\` | \`entityName\` and \`id\` of the project's record, \`startDateColumn\` and \`endDateColumn\` for its dates, and \`columns\`, more columns to read into \`data\`. |
 | \`createProjectModule\` | \`createStore\`: a store with \`loadProject()\`, which returns the project. |
 

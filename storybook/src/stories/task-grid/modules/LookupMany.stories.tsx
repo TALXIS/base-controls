@@ -26,7 +26,7 @@ Clicking a pill opens its record through the task store's \`openRelatedRecord\` 
 
 | Factory | Keeps the values |
 |---|---|
-| \`createMemoryLookupManyModule\` | In memory. \`sources\` holds the records to pick from, by table: \`{ records, metadata, columns }\`. \`values\` holds each task's references, by task id and column name. |
+| \`createMemoryLookupManyModule\` | In [**\`MemoryTable\`s**](?path=/docs/controls-taskgrid-loading-tasks--overview) you keep. \`sources\` holds the records to pick from, by table: \`{ records, metadata, columns }\`, with \`records\` a table of its own. \`values\` is a table of each task's references, \`{ taskId, values }\` keyed by \`taskId\`, with \`values\` by column name. |
 | \`createDataverseLookupManyModule\` | In Dataverse, through each column's 1:N or N:N relationship. The example's *dataverse.ts* keeps the people assigned there. |
 | \`createLookupManyModule\` | In a store of yours: \`createStore\` returns an \`ILookupManyStore\`. |
 

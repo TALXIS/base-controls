@@ -1,15 +1,22 @@
+import type { MemoryTable } from "@core/state";
 import type { ITaskChecklistItem, ITaskChecklistStore } from "../TaskChecklist";
+import type { IMemoryTaskChecklistItem } from "./createMemoryTaskChecklistModule";
 import { simulateBackend } from "../../../runtime/data-sources/memory/simulateBackend";
 
 export class MemoryTaskChecklistStore implements ITaskChecklistStore {
-    private _items: Record<string, ITaskChecklistItem[]>;
+    private _items: MemoryTable<IMemoryTaskChecklistItem>;
 
-    constructor(items: Record<string, ITaskChecklistItem[]>) {
-        this._items = structuredClone(items);
+    constructor(items: MemoryTable<IMemoryTaskChecklistItem>) {
+        this._items = items;
     }
 
     public async loadItems(taskIds: string[]): Promise<Map<string, ITaskChecklistItem[]>> {
         await simulateBackend();
-        return new Map(taskIds.filter(taskId => this._items[taskId]).map(taskId => [taskId, structuredClone(this._items[taskId])]));
+        const itemsByTask = new Map<string, ITaskChecklistItem[]>();
+        const loadedTaskIds = new Set(taskIds);
+        for (const { taskId, ...item } of this._items.getRows(row => loadedTaskIds.has(row.taskId))) {
+            itemsByTask.set(taskId, [...itemsByTask.get(taskId) ?? [], item]);
+        }
+        return itemsByTask;
     }
 }

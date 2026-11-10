@@ -199,8 +199,8 @@ export const OpeningPlan = (props: { store: IRecord }) => {
         createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS }),
         //the Gantt's links draw these
         createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
-        //From template creates its tasks among the store's own tasks
-        createMemoryTemplatesModule({ templates }),
+        //From template creates its tasks in the store's own table
+        createMemoryTemplatesModule({ tasks, templates }),
         //Budget and Supplier in Edit columns, kept in the browser's IndexedDB
         createIndexedDbCustomColumnsModule({
             databaseName: 'introductionDocs.planColumns',
@@ -213,7 +213,7 @@ export const OpeningPlan = (props: { store: IRecord }) => {
     const ganttModules = [
         createLibraryModule(),
         //today is marked as well
-        createMemoryMarkersModule({ markers: openingDate.isValid() ? [{ id: 'opening', text: 'Opening', date: openingDate, color: '#107c10' }] : [] }),
+        createMemoryMarkersModule({ markers: new MemoryTable({ idKey: 'id', rows: openingDate.isValid() ? [{ id: 'opening', text: 'Opening', date: openingDate.format('YYYY-MM-DD'), color: '#107c10' }] : [] }) }),
         //weekends are shaded as well
         createMemoryNonWorkingDaysModule({ nonWorkingDays: HOLIDAYS }),
         //a dropped bar saves its dates through the task editing module
@@ -312,8 +312,8 @@ export const createStoresProvider = () => new MemoryDataProvider({
 
 const PLANS_FILE: IGridExampleFile = {
     name: 'plans.ts',
-    code: `import { ILookupManyColumn, IMemoryTemplate, ITaskChecklistItem, ITaskDependency, ITaskGridView, MemoryTable } from '@talxis/base-controls'
-import { INonWorkingDay } from '@talxis/base-controls/gantt'
+    code: `import { ILookupManyColumn, IMemoryLookupManyValues, IMemoryTaskChecklistItem, IMemoryTemplate, ITaskDependency, ITaskGridView, MemoryTable } from '@talxis/base-controls'
+import { IMemoryNonWorkingDay } from '@talxis/base-controls/gantt'
 import { DataTypes, IColumn, IRawRecord } from '@talxis/client-libraries'
 import { STORES } from './stores'
 
@@ -359,12 +359,12 @@ const PEOPLE = ['Sofia Berg', 'Lukas Weber', 'Amélie Laurent', 'Jonas Peeters',
 //what the Assigned to and Tags pickers offer, by entity
 export const LOOKUP_MANY_SOURCES = {
     person: {
-        records: PEOPLE,
+        records: new MemoryTable({ idKey: 'personid', rows: PEOPLE }),
         metadata: { PrimaryIdAttribute: 'personid', PrimaryNameAttribute: 'name', LogicalName: 'person', QuickFindColumns: ['name'] },
         columns: [{ name: 'name', displayName: 'Name', dataType: DataTypes.SingleLineText, isPrimary: true }],
     },
     tag: {
-        records: TAGS,
+        records: new MemoryTable({ idKey: 'tagid', rows: TAGS }),
         metadata: { PrimaryIdAttribute: 'tagid', PrimaryNameAttribute: 'name', LogicalName: 'tag', QuickFindColumns: ['name'] },
         columns: [{ name: 'name', displayName: 'Name', dataType: DataTypes.SingleLineText, isPrimary: true }, { name: 'color', displayName: 'Colour', dataType: DataTypes.SingleLineText, isHidden: true }],
     },
@@ -377,11 +377,11 @@ export const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn } = 
 }
 
 //public holidays in every country the chain opens in
-export const HOLIDAYS: INonWorkingDay[] = [
-    { id: 'newYear', date: dayjs('2025-01-01'), description: "New Year's Day", recurrence: 'FREQ=YEARLY' },
-    { id: 'labourDay', date: dayjs('2025-05-01'), description: 'Labour Day', recurrence: 'FREQ=YEARLY' },
-    { id: 'christmas', date: dayjs('2025-12-25'), description: 'Christmas Day', recurrence: 'FREQ=YEARLY' },
-]
+export const HOLIDAYS = new MemoryTable<IMemoryNonWorkingDay>({ idKey: 'id', rows: [
+    { id: 'newYear', date: '2025-01-01', description: "New Year's Day", recurrence: 'FREQ=YEARLY' },
+    { id: 'labourDay', date: '2025-05-01', description: 'Labour Day', recurrence: 'FREQ=YEARLY' },
+    { id: 'christmas', date: '2025-12-25', description: 'Christmas Day', recurrence: 'FREQ=YEARLY' },
+] })
 
 interface IStep {
     key: string
@@ -434,9 +434,9 @@ const tag = (tagid: string) => {
 export const PLAN_METADATA = { PrimaryIdAttribute: 'taskid', LogicalName: 'storetask' }
 //a table per store keeps the timeline on that store's tasks
 export const PLANS: { [storeId: string]: MemoryTable<IRawRecord> } = {}
-export const LOOKUP_MANY_VALUES: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } } = {}
-export const CHECKLIST_ITEMS: Record<string, ITaskChecklistItem[]> = {}
-export const DEPENDENCIES: ITaskDependency[] = []
+export const LOOKUP_MANY_VALUES = new MemoryTable<IMemoryLookupManyValues>({ idKey: 'taskId' })
+export const CHECKLIST_ITEMS = new MemoryTable<IMemoryTaskChecklistItem>({ idKey: 'id' })
+export const DEPENDENCIES = new MemoryTable<ITaskDependency>({ idKey: 'id' })
 
 for (const store of STORES) {
     const opening = dayjs(store.openingdate)
@@ -447,13 +447,13 @@ for (const store of STORES) {
         const start = opening.subtract(step.weeks[0], 'week').subtract(5, 'day')
         const end = opening.subtract(step.weeks[1], 'week').subtract(1, 'day')
         const percentcomplete = getProgress(start, end)
-        LOOKUP_MANY_VALUES[id] = { assignedto: step.people.map(name => person(name === 'manager' ? store.manager : name)), tags: step.tags.map(tag) }
+        LOOKUP_MANY_VALUES.insert([{ taskId: id, values: { assignedto: step.people.map(name => person(name === 'manager' ? store.manager : name)), tags: step.tags.map(tag) } }])
         if (step.checklist) {
             //ticked as far as the task has come
-            CHECKLIST_ITEMS[id] = step.checklist.map((name, item) => ({ id: id + '-' + item, name, isCompleted: item < Math.round(percentcomplete / 100 * step.checklist!.length) }))
+            CHECKLIST_ITEMS.insert(step.checklist.map((name, item) => ({ id: id + '-' + item, taskId: id, name, isCompleted: item < Math.round(percentcomplete / 100 * step.checklist!.length) })))
         }
         if (step.after) {
-            DEPENDENCIES.push({ id: taskId(step.after) + '-' + id, predecessorTaskId: taskId(step.after), successorTaskId: id, type: 'finishToStart' })
+            DEPENDENCIES.insert([{ id: taskId(step.after) + '-' + id, predecessorTaskId: taskId(step.after), successorTaskId: id, type: 'finishToStart' }])
         }
         //active (statecode 0), and ranked in the order of the steps
         return { taskid: id, parentid: step.parent ? [{ id: { guid: taskId(step.parent) }, etn: 'storetask' }] : null, stackrank: '0|' + (index + 1) + '00000:', statecode: 0, subject: step.subject, start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD'), percentcomplete }

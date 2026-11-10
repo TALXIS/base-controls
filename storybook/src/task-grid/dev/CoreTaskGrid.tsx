@@ -30,6 +30,9 @@ const VIEWS: ITaskGridView[] = [
 const GridExample = () => {
     const taskTable = React.useMemo(() => new MemoryTable({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: TASKS }), [])
     const templates = React.useMemo(() => new MemoryTable({ idKey: 'id', rows: TEMPLATES }), [])
+    const lookupManyValues = React.useMemo(() => new MemoryTable({ idKey: 'taskId', rows: LOOKUP_MANY_VALUES }), [])
+    const checklistItems = React.useMemo(() => new MemoryTable({ idKey: 'id', rows: CHECKLIST_ITEMS }), [])
+    const dependencies = React.useMemo(() => new MemoryTable({ idKey: 'id', rows: DEPENDENCIES }), [])
     const modules = React.useMemo(() => [
         createRowSelectionModule({ mode: 'multiple' }),
         createTaskEditingModule(),
@@ -38,7 +41,7 @@ const GridExample = () => {
     ], [])
     const datasetControlModules = React.useMemo(() => [
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devTasks.userViews' }),
-        createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),
+        createMemoryProjectModule({ projects: new MemoryTable({ idKey: 'id', rows: [{ id: 'website', name: 'Website Redesign', startDate: '2025-10-01', endDate: '2026-01-31' }] }), projectId: 'website' }),
         createTaskDraggingModule(),
         createIndexedDbCustomColumnsModule({
             databaseName: 'devTasks.customColumns',
@@ -46,10 +49,10 @@ const GridExample = () => {
             enableCreation: true,
             enableDeletion: true,
         }),
-        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: LOOKUP_MANY_VALUES }),
-        createMemoryTemplatesModule({ templates }),
-        createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS }),
-        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
+        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
+        createMemoryTemplatesModule({ tasks: taskTable, templates }),
+        createMemoryTaskChecklistModule({ items: checklistItems }),
+        createMemoryDependenciesModule({ dependencies }),
     ], [taskTable])
 
     const onLoad = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => {

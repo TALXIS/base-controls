@@ -1,27 +1,40 @@
 import { IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
+import type { MemoryTable } from "@core/state";
 import type { ILookupManyOptionsParameters, ILookupManyStore } from "../LookupMany";
 import { simulateBackend, SIMULATED_LOAD_DELAY_MS } from "../../../runtime/data-sources/memory/simulateBackend";
-import type { IMemoryLookupManyModuleParameters, IMemoryLookupManySource } from "./createMemoryLookupManyModule";
+import type { IMemoryLookupManySource, IMemoryLookupManyValues } from "./createMemoryLookupManyModule";
 
 type Reference = ComponentFramework.EntityReference;
 
+export interface IMemoryLookupManyStoreParameters {
+    sources: { [entityName: string]: IMemoryLookupManySource };
+    values: MemoryTable<IMemoryLookupManyValues>;
+}
+
 export class MemoryLookupManyStore implements ILookupManyStore {
     private _sources: { [entityName: string]: IMemoryLookupManySource };
-    private _values: { [taskId: string]: { [columnName: string]: Reference[] } };
+    private _values: MemoryTable<IMemoryLookupManyValues>;
 
-    constructor(parameters: Pick<IMemoryLookupManyModuleParameters, 'sources' | 'values'>) {
+    constructor(parameters: IMemoryLookupManyStoreParameters) {
         this._sources = parameters.sources;
-        this._values = structuredClone(parameters.values);
+        this._values = parameters.values;
     }
 
     public async loadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: Reference[] }>> {
         await simulateBackend(SIMULATED_LOAD_DELAY_MS);
-        return new Map(taskIds.filter(taskId => this._values[taskId]).map(taskId => [taskId, structuredClone(this._values[taskId])]));
+        const loadedTaskIds = new Set(taskIds);
+        return new Map(this._values.getRows(row => loadedTaskIds.has(row.taskId)).map(row => [row.taskId, row.values]));
     }
 
     public async saveValue(taskId: string, columnName: string, value: Reference[]): Promise<void> {
         await simulateBackend();
-        this._values[taskId] = { ...this._values[taskId], [columnName]: value };
+        const row = this._values.getRow(taskId);
+        if (row) {
+            this._values.update(taskId, { values: { ...row.values, [columnName]: value } });
+        }
+        else {
+            this._values.insert([{ taskId, values: { [columnName]: value } }]);
+        }
     }
 
     public createOptionsProvider(parameters: ILookupManyOptionsParameters): IDataProvider | undefined {
@@ -29,8 +42,7 @@ export class MemoryLookupManyStore implements ILookupManyStore {
         if (!source) {
             return undefined;
         }
-        //the provider writes into the records it is given
-        const provider = new MemoryDataProvider({ dataSource: structuredClone(source.records), metadata: source.metadata });
+        const provider = new MemoryDataProvider({ dataSource: source.records.getRows(), metadata: source.metadata });
         provider.setColumns(source.columns);
         return provider;
     }

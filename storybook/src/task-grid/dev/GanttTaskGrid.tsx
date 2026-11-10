@@ -122,6 +122,9 @@ const BetaCutoffLine = (props: React.HTMLAttributes<HTMLDivElement>) => {
 const GridExample = () => {
     const taskTable = React.useMemo(() => new MemoryTable({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: ${data.tasks} }), [])
     const templates = React.useMemo(() => new MemoryTable({ idKey: 'id', rows: TEMPLATES }), [])
+    const lookupManyValues = React.useMemo(() => new MemoryTable({ idKey: 'taskId', rows: LOOKUP_MANY_VALUES }), [])
+    const checklistItems = React.useMemo(() => new MemoryTable({ idKey: 'id', rows: CHECKLIST_ITEMS }), [])
+    const dependencies = React.useMemo(() => new MemoryTable({ idKey: 'id', rows: DEPENDENCIES }), [])
     const modules = React.useMemo(() => [
         createRowSelectionModule({ mode: 'multiple' }),
         createTaskEditingModule(),
@@ -130,7 +133,7 @@ const GridExample = () => {
     ], [])
     const datasetControlModules = React.useMemo(() => [
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: '${data.storageKey}.userViews' }),
-        createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),
+        createMemoryProjectModule({ projects: new MemoryTable({ idKey: 'id', rows: [{ id: 'website', name: 'Website Redesign', startDate: '2025-10-01', endDate: '2026-01-31' }] }), projectId: 'website' }),
         createTaskDraggingModule(),
         createIndexedDbCustomColumnsModule({
             databaseName: '${data.storageKey}.customColumns',
@@ -138,16 +141,16 @@ const GridExample = () => {
             enableCreation: true,
             enableDeletion: true,
         }),
-        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: LOOKUP_MANY_VALUES }),
-        createMemoryTemplatesModule({ templates }),
-        createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS }),
-        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
+        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
+        createMemoryTemplatesModule({ tasks: taskTable, templates }),
+        createMemoryTaskChecklistModule({ items: checklistItems }),
+        createMemoryDependenciesModule({ dependencies }),
     ], [taskTable])
     const ganttModules = React.useMemo(() => [
         createLibraryModule(),
         fiscalScaleModule,
         createMemoryMarkersModule({
-            markers: [{ id: 'betaCutoff', text: 'Beta cutoff', date: dayjs('2025-12-01'), color: '#8764b8' }],
+            markers: new MemoryTable({ idKey: 'id', rows: [{ id: 'betaCutoff', text: 'Beta cutoff', date: '2025-12-01', color: '#8764b8' }] }),
             project: { color: '#ca5010' },
             components: {
                 chip: { onRenderChip: props => <BetaCutoffChip {...props} /> },

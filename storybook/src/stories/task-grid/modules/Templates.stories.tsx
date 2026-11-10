@@ -18,7 +18,7 @@ With \`enableCreation\`, *From template* sits in the ribbon's *New* menu, for to
 
 | Factory | Keeps the templates |
 |---|---|
-| \`createMemoryTemplatesModule\` | In the \`templates\` [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview) you keep, the ones the user saves included. Their tasks are created through the grid's \`MemoryTaskStore\`, so load the tasks with it. |
+| \`createMemoryTemplatesModule\` | In the \`templates\` [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview) you keep, the ones the user saves included. Their tasks are created in the \`tasks\` table, the one the grid's \`MemoryTaskStore\` reads. |
 | \`createTemplatesModule\` | In a store of yours: \`createStore\` returns an \`ITemplatesStore\`. |
 
 A memory template is a task: \`data\` holds its column values, and \`children\` its subtasks, each with \`data\` and \`children\` of its own. The template's own task is named after it.

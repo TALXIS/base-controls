@@ -38,7 +38,7 @@ The days are shaded while the zoom shows single days, and pointing at one on the
 
 | Factory | Days |
 |---|---|
-| \`createMemoryNonWorkingDaysModule\` | \`nonWorkingDays\`: the days. |
+| \`createMemoryNonWorkingDaysModule\` | \`nonWorkingDays\`: a [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview) of the days, their dates as ISO strings. |
 | \`createNonWorkingDaysModule\` | Weekends only, or a store of yours: \`createStore\` returns a store with \`loadNonWorkingDays()\`, which returns the days. The chart does not wait for them. |
 
 The module's \`reload()\` reads the store again and redraws the chart: reach the module by its name, \`nonWorkingDays\`, as on [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview).

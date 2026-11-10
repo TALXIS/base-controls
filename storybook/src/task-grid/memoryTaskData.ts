@@ -1,6 +1,7 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import dayjs from "dayjs";
 import { LexoRank } from "lexorank";
+import type { IMemoryLookupManyValues } from "@talxis/base-controls";
 import { LOOKUP_MANY_COLUMNS, personRef, tagRef, teamRefs } from "./memoryLookupManyData";
 
 // ─── Column names ─────────────────────────────────────────────────────────────
@@ -1269,18 +1270,15 @@ for (const task of TASKS) {
 
 rollUpEfforts(['estimatedeffort', 'actualeffort']);
 
-/** Moves the tasks' lookup-many references out of the records, by task id, as the lookup-many module keeps them. */
-export const takeLookupManyValues = (tasks: IRawRecord[]): { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } } => {
-    const values: { [taskId: string]: { [columnName: string]: ComponentFramework.EntityReference[] } } = {};
-    for (const task of tasks) {
-        values[task[PRIMARY_ID] as string] = {};
-        for (const columnName of Object.keys(LOOKUP_MANY_COLUMNS)) {
-            values[task[PRIMARY_ID] as string][columnName] = task[columnName] ?? [];
-            delete task[columnName];
-        }
+/** Moves the tasks' lookup-many references out of the records, as rows of the lookup-many module's `values` table. */
+export const takeLookupManyValues = (tasks: IRawRecord[]): IMemoryLookupManyValues[] => tasks.map(task => {
+    const values: IMemoryLookupManyValues['values'] = {};
+    for (const columnName of Object.keys(LOOKUP_MANY_COLUMNS)) {
+        values[columnName] = task[columnName] ?? [];
+        delete task[columnName];
     }
-    return values;
-};
+    return { taskId: task[PRIMARY_ID] as string, values };
+});
 
 /** The sample tasks' lookup-many references. */
 export const LOOKUP_MANY_VALUES = takeLookupManyValues(TASKS);

@@ -21,7 +21,7 @@ The checklist module shows how far each task's checklist is done, as *done/total
 
 | Factory | Keeps the checklists |
 |---|---|
-| \`createMemoryTaskChecklistModule\` | In memory. \`items\` holds each task's items, by task id: \`{ id, name, isCompleted }\`. |
+| \`createMemoryTaskChecklistModule\` | In the \`items\` [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview) you keep: \`{ id, taskId, name, isCompleted }\`, keyed by \`id\`, in the order the task shows them. |
 | \`createTalxisTaskChecklistModule\` | As JSON in each TALXIS task's \`talxis_checklistjson\` column, read with the tasks. |
 | \`createTaskChecklistModule\` | In a store of yours: \`createStore\` returns an \`ITaskChecklistStore\` with \`loadItems(taskIds)\`, which returns the items by task id. A task left out has none. |
 

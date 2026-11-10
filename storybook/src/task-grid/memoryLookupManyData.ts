@@ -1,5 +1,5 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
-import type { ILookupManyColumn } from "@talxis/base-controls";
+import { ILookupManyColumn, MemoryTable } from "@talxis/base-controls";
 
 // ─── People entity ────────────────────────────────────────────────────────────
 
@@ -179,9 +179,9 @@ const TEAM_BY_TAG: { [tag: string]: string } = {
 };
 
 export const LOOKUP_MANY_SOURCES = {
-    [PEOPLE_ENTITY_NAME]: { records: PEOPLE, metadata: PEOPLE_METADATA, columns: PEOPLE_COLUMNS },
-    [TAGS_ENTITY_NAME]: { records: TAGS, metadata: TAGS_METADATA, columns: TAGS_COLUMNS },
-    [TEAMS_ENTITY_NAME]: { records: TEAMS, metadata: TEAMS_METADATA, columns: TEAMS_COLUMNS },
+    [PEOPLE_ENTITY_NAME]: { records: new MemoryTable({ idKey: PEOPLE_METADATA.PrimaryIdAttribute, rows: PEOPLE }), metadata: PEOPLE_METADATA, columns: PEOPLE_COLUMNS },
+    [TAGS_ENTITY_NAME]: { records: new MemoryTable({ idKey: TAGS_METADATA.PrimaryIdAttribute, rows: TAGS }), metadata: TAGS_METADATA, columns: TAGS_COLUMNS },
+    [TEAMS_ENTITY_NAME]: { records: new MemoryTable({ idKey: TEAMS_METADATA.PrimaryIdAttribute, rows: TEAMS }), metadata: TEAMS_METADATA, columns: TEAMS_COLUMNS },
 };
 
 /** The sample tasks' lookup-many columns, as the module maps them. */

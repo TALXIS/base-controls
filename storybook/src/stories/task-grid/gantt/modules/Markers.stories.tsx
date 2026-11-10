@@ -32,7 +32,7 @@ A marker is a date marked on the timeline with a line, and a chip on the scale t
 
 | Factory | Markers |
 |---|---|
-| \`createMemoryMarkersModule\` | \`markers\`: the markers. |
+| \`createMemoryMarkersModule\` | \`markers\`: a [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview) of the markers, their dates as ISO strings. |
 | \`createMarkersModule\` | Today and the project only, or a store of yours: \`createStore\` returns a store with \`loadMarkers()\`, which returns the markers. The chart does not wait for them. |
 
 The module's \`reload()\` reads the store again and redraws the markers: reach the module by its name, \`markers\`, as on [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview).

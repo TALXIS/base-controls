@@ -52,7 +52,7 @@ A \`MemoryTable\` is one table of plain rows that you create and keep, outside t
 
 {{story: Keep the tasks}}
 
-\`new MemoryTable({ idKey, rows })\` copies the rows in and hands out copies, so no one changes it behind its back. \`dump()\` returns every row as plain data, and \`load(rows)\` replaces them all, so a dump saved as JSON loads back as it was. \`getRow\`, \`filter\`, \`insert\`, \`update\` and \`delete\` read and write single rows, and \`events\` fires \`onChanged\` after each write. A control reads its tables when it loads: after writing one yourself, call \`reload()\` on the control to show it. Pass the same table to two controls and both read the same rows.
+\`new MemoryTable({ idKey, rows })\` copies the rows in and hands out copies, so no one changes it behind its back. \`getRows()\` returns every row as plain data, so rows saved as JSON start a new table as it was: give the control the new table and mount it anew, as the example does. \`getRows(predicate)\` returns only the rows it keeps, and \`getRow\`, \`insert\`, \`update\` and \`delete\` read and write single rows. A control reads its tables when it loads: after writing one yourself, call \`reload()\` on the control to show it. Pass the same table to two controls and both read the same rows.
 
 \`MemoryTaskStore\` takes the \`taskRuntime\`, the \`tasks\` table, the \`metadata\` whose \`PrimaryIdAttribute\` is the table's \`idKey\`, and the \`columns\` that views and *Edit columns* pick from. Creating and deleting pause briefly, as a server would, and opening a task shows an alert.
 

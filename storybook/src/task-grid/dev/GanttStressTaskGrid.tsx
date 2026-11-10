@@ -29,7 +29,7 @@ const VIEWS: ITaskGridView[] = [
 
 const GridExample = () => {
     const tasks = React.useMemo(() => createStressTasks(10000), [])
-    const lookupManyValues = React.useMemo(() => takeLookupManyValues(tasks), [tasks])
+    const lookupManyValues = React.useMemo(() => new MemoryTable({ idKey: 'taskId', rows: takeLookupManyValues(tasks) }), [tasks])
     const taskTable = React.useMemo(() => new MemoryTable({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: tasks }), [tasks])
     const templates = React.useMemo(() => new MemoryTable({ idKey: 'id', rows: TEMPLATES }), [])
     const modules = React.useMemo(() => [
@@ -40,7 +40,7 @@ const GridExample = () => {
     ], [])
     const datasetControlModules = React.useMemo(() => [
         createLocalStorageUserQueriesModule<ITaskViewData>({ storageKey: 'devGanttStressTasks.userViews' }),
-        createMemoryProjectModule({ project: { id: 'website', name: 'Website Redesign', startDate: dayjs('2025-10-01'), endDate: dayjs('2026-01-31') } }),
+        createMemoryProjectModule({ projects: new MemoryTable({ idKey: 'id', rows: [{ id: 'website', name: 'Website Redesign', startDate: '2025-10-01', endDate: '2026-01-31' }] }), projectId: 'website' }),
         createTaskDraggingModule(),
         createIndexedDbCustomColumnsModule({
             databaseName: 'devGanttStressTasks.customColumns',
@@ -49,14 +49,14 @@ const GridExample = () => {
             enableDeletion: true,
         }),
         createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
-        createMemoryTemplatesModule({ templates }),
-        createMemoryTaskChecklistModule({ items: createChecklistItems(tasks) }),
-        createMemoryDependenciesModule({ dependencies: createDependencies(tasks) }),
+        createMemoryTemplatesModule({ tasks: taskTable, templates }),
+        createMemoryTaskChecklistModule({ items: new MemoryTable({ idKey: 'id', rows: createChecklistItems(tasks) }) }),
+        createMemoryDependenciesModule({ dependencies: new MemoryTable({ idKey: 'id', rows: createDependencies(tasks) }) }),
     ], [taskTable])
     const ganttModules = React.useMemo(() => [
         createLibraryModule(),
         createMarkersModule(),
-        createMemoryNonWorkingDaysModule({ nonWorkingDays: NON_WORKING_DAYS }),
+        createMemoryNonWorkingDaysModule({ nonWorkingDays: new MemoryTable({ idKey: 'id', rows: NON_WORKING_DAYS }) }),
         createBarDraggingModule(),
         createTaskDrawingModule(),
         createTaskSelectionModule(),

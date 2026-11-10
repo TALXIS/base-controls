@@ -1,7 +1,7 @@
-import { DataTypes, IMemoryProviderEntityMetadata, MemoryDataProvider } from "@talxis/client-libraries";
+import { DataTypes, IMemoryProviderEntityMetadata, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import type { MemoryTable } from "@core/state";
 import type { ICreateTaskTree, ITasksCreateResult } from "../../../runtime/provider";
-import { MemoryTaskStore } from "../../../runtime/data-sources/memory/MemoryTaskStore";
+import { createMemoryTaskTrees } from "../../../runtime/data-sources/memory/createMemoryTaskTrees";
 import type { ITaskRuntime } from "../../../runtime";
 import type { ITemplate, ITemplatesStore, ITemplateTasksCreateParameters } from "../Templates";
 import { simulateBackend } from "../../../runtime/data-sources/memory/simulateBackend";
@@ -22,6 +22,8 @@ export interface IMemoryTemplate extends IMemoryTemplateTask {
 
 export interface IMemoryTemplatesStoreParameters {
     taskRuntime: ITaskRuntime;
+    /** Where a template's tasks are created, the table the grid's `MemoryTaskStore` reads. */
+    tasks: MemoryTable<IRawRecord>;
     /** Where the templates are kept, the ones the user saves included. */
     templates: MemoryTable<IMemoryTemplate>;
 }
@@ -33,18 +35,20 @@ const TEMPLATE_METADATA: IMemoryProviderEntityMetadata = {
     QuickFindColumns: ['name'],
 };
 
-/** Templates kept in a `MemoryTable`, creating their tasks through the grid's `MemoryTaskStore`. */
+/** Templates kept in a `MemoryTable`, creating their tasks in the tasks table. */
 export class MemoryTemplatesStore implements ITemplatesStore {
     private _taskRuntime: ITaskRuntime;
+    private _tasks: MemoryTable<IRawRecord>;
     private _templates: MemoryTable<IMemoryTemplate>;
 
     constructor(parameters: IMemoryTemplatesStoreParameters) {
         this._taskRuntime = parameters.taskRuntime;
+        this._tasks = parameters.tasks;
         this._templates = parameters.templates;
     }
 
     public createTemplatesProvider(): MemoryDataProvider {
-        const provider = new MemoryDataProvider({ dataSource: this._templates.dump().map(template => ({ id: template.id, name: template.name })), metadata: TEMPLATE_METADATA });
+        const provider = new MemoryDataProvider({ dataSource: this._templates.getRows().map(template => ({ id: template.id, name: template.name })), metadata: TEMPLATE_METADATA });
         provider.setColumns([{ name: 'name', displayName: this._taskRuntime.getLabels(TEMPLATES_LABELS).get('templates.name'), dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 200 }]);
         return provider;
     }
@@ -55,13 +59,9 @@ export class MemoryTemplatesStore implements ITemplatesStore {
         if (!template) {
             return null;
         }
-        const store = this._taskRuntime.getProvider().getStore();
-        if (!(store instanceof MemoryTaskStore)) {
-            throw new Error('Memory templates need the tasks loaded through MemoryTaskStore.');
-        }
         const subject = this._taskRuntime.getProvider().getFieldMapping().subject;
         const tree: ICreateTaskTree = { data: { ...template.data, [subject]: template.name }, children: template.children };
-        return { records: store.createTaskTrees([tree], parameters) };
+        return { records: createMemoryTaskTrees(this._tasks, this._taskRuntime, [tree], parameters) };
     }
 
     public async createTemplate(template: ITemplate): Promise<void> {

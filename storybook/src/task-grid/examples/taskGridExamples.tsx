@@ -10,6 +10,9 @@ import { createLoadTasks, createTaskTable, TASK_VIEWS } from './tasks'
 //tables outlive every mount, so what the user changes survives a view switch
 const tasks = createTaskTable()
 const templates = new MemoryTable<IMemoryTemplate>({ idKey: 'id', rows: TEMPLATES })
+const lookupManyValues = new MemoryTable({ idKey: 'taskId', rows: LOOKUP_MANY_VALUES })
+const checklistItems = new MemoryTable({ idKey: 'id', rows: CHECKLIST_ITEMS })
+const dependencies = new MemoryTable({ idKey: 'id', rows: DEPENDENCIES })
 
 //All tasks shows the modules' columns too and searches assignees and tags
 const VIEWS: ITaskGridView[] = [{
@@ -27,10 +30,10 @@ const GridExample = () => {
     const modules = [
         createTaskDraggingModule(),
         createIndexedDbCustomColumnsModule({ databaseName: 'taskGridDocs.showcase.columns', columns: [{ displayName: 'Risk', dataType: 'OptionSet', options: ['Low', 'Medium', 'High'] }], enableCreation: true }),
-        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: LOOKUP_MANY_VALUES }),
-        createMemoryTemplatesModule({ templates }),
-        createMemoryTaskChecklistModule({ items: CHECKLIST_ITEMS }),
-        createMemoryDependenciesModule({ dependencies: DEPENDENCIES }),
+        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
+        createMemoryTemplatesModule({ tasks, templates }),
+        createMemoryTaskChecklistModule({ items: checklistItems }),
+        createMemoryDependenciesModule({ dependencies }),
     ]
 
     //enableCreation adds the + at the start of a row, which adds a subtask
@@ -256,31 +259,31 @@ const GridExample = () => {
 }
 `
 
-const KEEP_TASKS_CODE = `import { createRowSelectionModule, DatasetControl, IDatasetControl, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const KEEP_TASKS_CODE = `import { createRowSelectionModule, DatasetControl, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { DefaultButton, Stack, Text } from '@fluentui/react'
+import type { IRawRecord } from '@talxis/client-libraries'
 import { createLoadTasks, createTaskTable } from './tasks'
 
-//the table outlives the control, so it can be read, kept and loaded at any time
-const tasks = createTaskTable()
-const loadTasks = createLoadTasks(tasks)
-
 const GridExample = () => {
-    const controlRef = React.useRef<IDatasetControl>()
+    //the table outlives every mount, so it can be read and kept at any time
+    const [tasks, setTasks] = React.useState(createTaskTable)
+    const loadTasks = React.useMemo(() => createLoadTasks(tasks), [tasks])
     const [copy, setCopy] = React.useState<string>()
+    const [mountKey, setMountKey] = React.useState(0)
 
-    const loadCopy = async () => {
-        tasks.load(JSON.parse(copy!))
-        //the control reads the table when it loads
-        await controlRef.current!.reload()
+    //the kept rows start a new table, and the control is mounted anew over it
+    const loadCopy = () => {
+        setTasks(new MemoryTable<IRawRecord>({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: JSON.parse(copy!) }))
+        setMountKey(key => key + 1)
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 8 }}>
-            <DefaultButton text='Keep a copy' onClick={() => setCopy(JSON.stringify(tasks.dump()))} />
+            <DefaultButton text='Keep a copy' onClick={() => setCopy(JSON.stringify(tasks.getRows()))} />
             <DefaultButton text='Load the copy' disabled={!copy} onClick={loadCopy} />
             {copy && <Text>{JSON.parse(copy).length} tasks kept</Text>}
         </Stack>
-        <TaskDatasetControl onSetup={control => { controlRef.current = control }} enableCreation enableDeletion onLoad={loadTasks} height='420px'>
+        <TaskDatasetControl key={mountKey} enableCreation enableDeletion onLoad={loadTasks} height='420px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.End>
                     <TaskDatasetControl.Ribbon />

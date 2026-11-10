@@ -25,7 +25,7 @@ A dependency joins two different tasks, once, without a cycle, and can change wh
 
 | Factory | Keeps the dependencies |
 |---|---|
-| \`createMemoryDependenciesModule\` | In memory. \`dependencies\` are the starting ones. |
+| \`createMemoryDependenciesModule\` | In the \`dependencies\` [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview) you keep, keyed by \`id\`. |
 | \`createDataverseDependenciesModule\` | In a Dataverse table of your own: two lookups to the task table, and an option set of the type. The example's *dataverse.ts* keeps them there. |
 | \`createTalxisDependenciesModule\` | In TALXIS's \`talxis_taskdependency\` table. |
 | \`createDependenciesModule\` | In a store of yours: \`createStore\` returns an \`IDependenciesStore\`. |

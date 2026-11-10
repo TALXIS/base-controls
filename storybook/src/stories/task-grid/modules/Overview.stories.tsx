@@ -35,7 +35,7 @@ A module that keeps data comes in variants: one per backend, and a base factory 
 | [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) | Which tasks wait on which. | \`createMemoryDependenciesModule\` | \`createDataverseDependenciesModule\` | \`createTalxisDependenciesModule\` | \`createDependenciesModule\` |
 | Dragging | Moving tasks by dragging their rows. See *Dragging* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). | | | | |
 
-*Memory* keeps the data in the page and starts over on every mount, pausing briefly like a server. *Dataverse* reads and writes tables you map to the module through the PCF context's Web API, and *TALXIS* is Dataverse with the TALXIS tables already mapped. User views come in the same variants: see *Where views are kept* on [**User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview).
+*Memory* keeps the data in the page, in [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview)s you create and keep, pausing briefly like a server. *Dataverse* reads and writes tables you map to the module through the PCF context's Web API, and *TALXIS* is Dataverse with the TALXIS tables already mapped. User views come in the same variants: see *Where views are kept* on [**User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview).
 
 ## Your own store
 
