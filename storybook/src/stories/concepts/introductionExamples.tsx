@@ -245,7 +245,7 @@ export const OpeningPlan = (props: { store: IRecord }) => {
             </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <TaskGantt.Split defaultGanttSize={40}>
+            <TaskGantt.Split defaultGanttSize={60}>
                 <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()]} />
                 <TaskGantt modules={ganttModules} />
             </TaskGantt.Split>
