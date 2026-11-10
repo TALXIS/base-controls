@@ -8,3 +8,4 @@ export const gantt = GANTT_LABELS;
 //members added by module augmentation
 export const userQueries = (runtime: IDatasetControlRuntime) => runtime.modules.get('userQueries').getManageProvider();
 export const filtering = (grid: IGrid) => grid.modules.get('filtering');
+export const focusedCell = (grid: IGrid) => grid.services.get('cells').events.addEventListener('onFocusedCellChanged', () => {});

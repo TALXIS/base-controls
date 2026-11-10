@@ -74,6 +74,7 @@ export interface IGridCellsHooks {
 
 /** Every cell the grid has on screen. */
 export interface IGridCells {
+    readonly events: IEventSubscriber<IGridCellsEvents>;
     /** Draws every cell on screen again, for a change their records do not carry. */
     render(parameters?: IGridCellsRenderParameters): void;
     /** Every cell on screen. */
@@ -85,7 +86,6 @@ export interface IGridCells {
 
 /** What the grid's own parts read of it. */
 export interface IGridCellsInternal extends IGridCells {
-    readonly events: IEventSubscriber<IGridCellsEvents>;
     /** A cell of this grid. */
     createCell(parameters: Omit<IGridCellParameters, 'services'>): IGridCell;
     /** Registers a cell as rendered. */
