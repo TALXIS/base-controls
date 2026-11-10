@@ -290,6 +290,26 @@ A column already says how it is grouped and totalled: \`grouping\` and \`aggrega
 - **A view's \`resolve\`** returns its totals and grouping with its columns, and nothing set beside them is lost.
 - **The grid:** \`TotalRow\`, behind the aggregation module's column menu, sets the columns instead of calling \`provider.aggregation.addAggregation\`; the grouping module and the client-side row model read \`getGroupBys()\` as they do now. What the user groups or totals is kept with the columns in a view's state.
 - **User views** save grouping and totals with the column layout they already save.
+
+## 11. Read a column the view does not have without throwing
+
+A part often names a column by itself, such as a map popup's or a Gantt tooltip's field row, and the view the user opens may not have it. Reading a record should answer for any column name, with nothing for one the provider does not have.
+
+### Today
+
+- **Two answers to one question.** \`record.getValue(columnName)\` returns \`null\` for a column the provider does not have, but \`record.getField(columnName)\` and \`record.getFormattedValue(columnName)\` throw \`ColumnDoesNotExists\` (client-libraries \`Record._getField\`).
+- **The throw changes the provider.** It is a \`DataProviderError\`, whose constructor puts the provider into an error state, so even a caught read can leave the provider failed.
+- **What it breaks:** \`Map.Popup.FieldRow\` and \`TaskTooltip.FieldRow\` call \`getFormattedValue\` with the column they are given, so naming one the open view lacks throws instead of drawing nothing.
+
+### What every provider should do
+
+- **Answer for any column name:** \`getFormattedValue\` returns \`null\`, as \`getValue\` does, and \`getField\` returns \`undefined\` for a column the provider does not have.
+- **Never fail the provider from a read:** reading a record raises no provider error, whatever column it names.
+
+### What would use it
+
+- **The map popup's and the Gantt tooltip's field rows** draw nothing for a column the view lacks, with no guard of their own.
+- **Anything that reads an optional column**, such as a module's own column, asks the record directly instead of checking the columns map first.
 `
 
 const meta = {
