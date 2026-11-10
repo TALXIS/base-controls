@@ -29,7 +29,7 @@ A task grid loads every task of the view at once from a *store*, such as one in 
 | \`parentId\` | Yes | The lookup to the parent task. Empty for a top-level task. |
 | \`subject\` | Yes | The task's name. Drawn with the tree's indent and arrow, pinned left, and searched by quick find when the view names no columns. |
 | \`stackRank\` | Yes | The task's place among its siblings: a LexoRank string, such as \`0\\|hzzzzz:\`. The grid writes it when a task is created or moved. \`StackRank.between(previous, next)\` makes one. |
-| \`stateCode\` | No, \`'statecode'\` | \`0\` is active. See *Inactive tasks* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). |
+| \`stateCode\` | No, \`'statecode'\` | \`0\` is active; any other value, or none, is inactive, so give every task one. See *Inactive tasks* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). |
 | \`percentComplete\` | No | Drawn as a progress bar. |
 | \`startDate\`, \`endDate\` | No | The task's dates. The [**Gantt**](?path=/docs/controls-taskgrid-gantt-get-started--overview) needs both. |
 | \`duration\` | No | Minutes, as a duration column holds them. A day holds \`hoursPerDay\` hours. |

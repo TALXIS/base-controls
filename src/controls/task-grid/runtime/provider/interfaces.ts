@@ -12,7 +12,7 @@ export interface IFieldMapping {
     subject: string;
     /** The order among siblings, compared as text. */
     stackRank: string;
-    /** Whether the task is active, `0` being active. */
+    /** Whether the task is active: `0` is, any other value or none is not. */
     stateCode: string;
     startDate?: string;
     endDate?: string;

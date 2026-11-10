@@ -111,7 +111,6 @@ it uses RuntimeHost, modules or `RuntimeLifecycle`, and never add roadmap notes 
 - `record.getValue()` returns choice (OptionSet) and Yes/No (TwoOptions) values as strings: `'3'`, `'0'`,
   `'1'`. Compare with `Number(record.getValue('stage')) === 3`.
 - `useGridModule()` throws when the module is not loaded; never write `useGridModule(...)?.`.
-- A memory task without a stateCode value counts as inactive, so give memory task records `statecode: 0`.
 - `destroyProviderOnUnmount` is a field of the `onLoad` result, not a DatasetControl prop.
 - The Storybook typecheck has 17 errors that predate any docs work (the model and FormXml builder panels,
   `grid/dev` mocks, `TaskColumnValues.ts`). Judge only the files you touched.

@@ -30,7 +30,7 @@ Deleting takes every subtask along. Tasks that could not be deleted are listed i
 
 ## Inactive tasks
 
-A task whose \`stateCode\` column is not \`0\` is inactive. It stays read-only, cannot be dragged, gets no **+**, and *Hide inactive tasks* in \`TaskDatasetControl.Settings\` hides it.
+A task whose \`stateCode\` column is not \`0\`, or is empty, is inactive. It stays read-only, cannot be dragged, gets no **+**, and *Hide inactive tasks* in \`TaskDatasetControl.Settings\` hides it.
 
 ## Dragging
 
