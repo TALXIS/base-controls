@@ -63,8 +63,9 @@ const GridExample = () => {
 
     //logs each failure beside the error dialog
     const onSetup = (control: IDatasetControl) => {
-        control.parts.observe('ribbon', ribbon => ribbon.events.addEventListener('onExecuteFailed', (command, error) => write(\`\${command.id}: \${(error as Error).message}\`)))
-        control.modules.observe('userQueries', userQueries => userQueries.events.addEventListener('onOperationFailed', (error: Error) => write(\`views: \${error.message}\`)))
+        //a failed view operation runs through the control's execute, a failed command through the ribbon's
+        control.executor.events.addEventListener('onExecuteFailed', error => write(\`views: \${(error as Error).message}\`))
+        control.parts.observe('ribbon', ribbon => ribbon.executor.events.addEventListener('onExecuteFailed', error => write(\`ribbon: \${(error as Error).message}\`)))
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>

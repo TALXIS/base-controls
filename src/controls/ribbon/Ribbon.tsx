@@ -1,6 +1,5 @@
 import { ICommandBarItemProps } from "@fluentui/react";
-import { useEventEmitter, useLatest, useRerender, ErrorHelper } from "@core";
-import { usePcfContext } from "@pcf";
+import { useEventEmitter, useLatest, useRerender } from "@core";
 import { ILoadingBoundaryComponents } from "@ui/loading-boundary";
 import { RuntimeHost, useRuntime } from "@controls/runtime-host";
 import { IRibbonCommand } from "./interfaces";
@@ -42,16 +41,9 @@ export const RibbonRoot = (props: IRibbonProps) => {
 const RibbonMount = (props: IRibbonProps) => {
     const runtime = useRuntime<RibbonRuntime>();
     const { rerender } = useRerender();
-    const pcfContext = usePcfContext();
     const { errorMessage, shimmer, ...commandBar } = props.components ?? {};
 
-    const openErrorDialog = (error: unknown) => {
-        pcfContext.navigation.openErrorDialog({ message: ErrorHelper.getMessageFromError(error), details: (error as { stack?: string } | undefined)?.stack });
-    };
-
     useEventEmitter<IRibbonEvents>(runtime.events, ['onCommandsChanged', 'onBeforeExecute', 'onAfterExecute'], rerender);
-    useEventEmitter<IRibbonEvents>(runtime.events, 'onExecuteFailed', (_command, error) => openErrorDialog(error));
-    useEventEmitter<IRibbonEvents>(runtime.events, 'onReloadFailed', openErrorDialog);
 
     const toItem = (command: IRibbonCommand): ICommandBarItemProps => {
         const item: ICommandBarItemProps = {

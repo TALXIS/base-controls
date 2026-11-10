@@ -3773,10 +3773,7 @@ type IRibbonCommand = IRibbonActionCommand | IRibbonMenuCommand;
 interface IRibbonEvents {
     /** The commands were loaded again, after init. */
     onCommandsChanged: () => void;
-    /** A reload failed; the commands before it stay. */
-    onReloadFailed: (error: unknown) => void;
     onBeforeExecute: (command: IRibbonActionCommand) => void;
-    onExecuteFailed: (command: IRibbonActionCommand, error: unknown) => void;
     onAfterExecute: (command: IRibbonActionCommand) => void;
 }
 

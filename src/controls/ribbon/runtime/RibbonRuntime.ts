@@ -6,11 +6,7 @@ import { IRibbonActionCommand, IRibbonCommand } from "../interfaces";
 export interface IRibbonEvents {
     /** The commands were loaded again, after init. */
     onCommandsChanged: () => void;
-    /** A reload failed; the commands before it stay. */
-    onReloadFailed: (error: unknown) => void;
     onBeforeExecute: (command: IRibbonActionCommand) => void;
-    /** Fires when `onExecute` throws, before `onAfterExecute`. */
-    onExecuteFailed: (command: IRibbonActionCommand, error: unknown) => void;
     /** Fires once `onExecute` settles, whether it resolved or threw. */
     onAfterExecute: (command: IRibbonActionCommand) => void;
 }
@@ -73,29 +69,17 @@ export class RibbonRuntime extends Runtime implements IRibbon {
         }
         const reload = this._loadCommands();
         this._latestReload = reload;
-        try {
-            const commands = await reload;
-            if (reload === this._latestReload && !this.lifecycle.isDestroyed()) {
-                this._commands = commands;
-                this.events.dispatchEvent('onCommandsChanged');
-            }
-        }
-        catch (error) {
-            if (reload === this._latestReload && !this.lifecycle.isDestroyed()) {
-                this.events.dispatchEvent('onReloadFailed', error);
-            }
+        const commands = await this.execute(() => reload, { loading: { show: false }, error: { rethrow: false } });
+        if (commands && reload === this._latestReload && !this.lifecycle.isDestroyed()) {
+            this._commands = commands;
+            this.events.dispatchEvent('onCommandsChanged');
         }
     }
 
     public async executeCommand(command: IRibbonActionCommand): Promise<void> {
         this._runningCommandIds.add(command.id);
         this.events.dispatchEvent('onBeforeExecute', command);
-        try {
-            await command.onExecute();
-        }
-        catch (error) {
-            this.events.dispatchEvent('onExecuteFailed', command, error);
-        }
+        await this.execute(() => command.onExecute(), { loading: { show: false }, error: { rethrow: false } });
         this._runningCommandIds.delete(command.id);
         this.events.dispatchEvent('onAfterExecute', command);
     }
