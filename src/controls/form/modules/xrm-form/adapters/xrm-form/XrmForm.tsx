@@ -23,6 +23,8 @@ export const XrmForm = (props: IXrmFormProps) => {
     const formXmlRef = React.useRef('');
 
     const onLoad = async () => {
+        //the next form context mounts fresh, so OnLoad fires on it
+        setForm(null);
         const result = await props.onLoad();
         formXmlRef.current = result.formXml;
         return result;
