@@ -1,11 +1,11 @@
 import { FetchXmlDataProvider, IDataProvider, IEntityReference, IRawRecord } from "@talxis/client-libraries";
-import { Liquid } from "liquidjs";
 import type { IPcfContext } from "@pcf/interfaces";
 import type { ITaskDataProvider } from "../../../runtime/provider";
 import type { ITaskRuntime } from "../../../runtime";
 import type { IDataverseHostRecord } from "../../../runtime/data-sources/dataverse/DataverseTaskStore";
 import type { ILookupManyColumn, ILookupManyOptionsParameters, ILookupManyStore } from "../LookupMany";
 import { retrieveInBatches } from "../../dataverse";
+import { renderFetchXml } from "../../../runtime/data-sources/dataverse/renderFetchXml";
 
 /** One Dataverse lookup-many column with the relationship it is reached through. */
 export interface IDataverseLookupManyColumn extends ILookupManyColumn {
@@ -46,9 +46,6 @@ interface IResolvedColumn {
 
 const ONE_TO_MANY = 0;
 const MANY_TO_MANY = 1;
-
-//the values land inside FetchXML attributes
-const LIQUID = new Liquid({ outputEscape: 'escape' });
 
 /** Loads and saves the lookup-many columns of Dataverse tasks through their relationships. */
 export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLookupManyColumn> {
@@ -108,14 +105,8 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
     //a column offers what its FetchXML selects, rendered for the task
     public createOptionsProvider(parameters: ILookupManyOptionsParameters<IDataverseLookupManyColumn>): IDataProvider {
         const { record, settings } = parameters;
-        const project = this._taskRuntime.services.get('datasetControl').modules.find('project');
-        return new FetchXmlDataProvider({
-            fetchXml: LIQUID.parseAndRenderSync(settings.fetchXml, {
-                task: record ? { id: record.getRecordId(), ...record.getRawData() } : {},
-                project: { id: project?.getId(), ...project?.getData() as object },
-                hostRecord: { id: this._hostRecord?.id, entityName: this._hostRecord?.entityName, ...this._hostRecord?.data },
-            }),
-        });
+        const task = record ? { id: record.getRecordId(), ...record.getRawData() } : {};
+        return new FetchXmlDataProvider({ fetchXml: renderFetchXml(settings.fetchXml, this._taskRuntime, this._hostRecord, { task }) });
     }
 
     private async _getTasks(taskIds: string[], primaryIdAttribute: string, resolved: IResolvedColumn[]): Promise<IRawRecord[]> {

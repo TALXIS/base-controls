@@ -1,9 +1,9 @@
 import { FetchXmlBuilder, FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { Liquid } from "liquidjs";
 import { IDeleteTasksResult, IOpenTasksResult, ITaskChanges, ITaskCreateResult, ITaskCreateParameters, ITaskDataProvider, ITaskDeleteParameters, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
 import type { IPcfContext } from "@pcf/interfaces";
 import type { ITaskRuntime } from "../..";
 import { TASK_GRID_LABELS } from "../../../labels";
+import { renderFetchXml } from "./renderFetchXml";
 
 /** A form the data source opens. */
 export type DataverseTaskFormOperation = 'edit' | 'bulkEdit' | 'open';
@@ -42,8 +42,6 @@ export interface IDataverseTaskStoreParameters {
 
 const SIDE_DIALOG: Xrm.Navigation.NavigationOptions = { target: 2, width: { value: 80, unit: '%' }, position: 1 };
 
-//the values land inside FetchXML attributes
-const LIQUID = new Liquid({ outputEscape: 'escape' });
 const MAX_IDS_PER_REQUEST = 800;
 const MODIFIED_ON_COLUMN_NAME = 'modifiedon';
 
@@ -165,12 +163,7 @@ export class DataverseTaskStore implements ITaskStore {
     }
 
     protected _renderFetchXml(): string {
-        const project = this._taskRuntime.services.get('datasetControl').modules.find('project');
-        const hostRecord = this._parameters.hostRecord;
-        return LIQUID.parseAndRenderSync(this._parameters.fetchXml, {
-            project: project && { id: project.getId(), name: project.getName(), entityName: project.getEntityName(), ...project.getData() as object },
-            hostRecord: hostRecord && { id: hostRecord.id, entityName: hostRecord.entityName, ...hostRecord.data },
-        });
+        return renderFetchXml(this._parameters.fetchXml, this._taskRuntime, this._parameters.hostRecord);
     }
 
     //the task lookup to the project's table
