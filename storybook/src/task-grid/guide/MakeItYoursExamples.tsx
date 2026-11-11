@@ -3,7 +3,7 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
 import { TASK_EXAMPLE_TABS, withTasks } from '../examples/shared'
 
-const STATUS_CODE = `import { DatasetControl, IGrid, ITaskGridComponents, TaskDatasetControl, TaskGrid, createTaskEditingModule, useGridCell } from '@talxis/base-controls'
+const STATUS_CODE = `import { DatasetControl, IGrid, IPercentCompleteCellComponents, ITreeCellComponents, TASK_GRID_PRIORITY, TaskDatasetControl, TaskGrid, createTaskEditingModule, useGridCell } from '@talxis/base-controls'
 import type { IRecord } from '@talxis/client-libraries'
 import { IProgressIndicatorProps, mergeStyleSets } from '@fluentui/react'
 import { IGanttModule, TaskGantt, createLibraryModule } from '@talxis/base-controls/gantt'
@@ -46,27 +46,39 @@ const ProgressBar = (props: IProgressIndicatorProps) => {
     </div>
 }
 
-const components: ITaskGridComponents = {
-    treeCell: {
-        //the subject as the grid draws it, with a badge after it on a late task
-        columnControl: {
-            onRender: (props, defaultRender) => <div className={styles.subject}>
-                <div className={styles.subjectText}>{defaultRender(props)}</div>
-                {isOverdue(props.parameters.Record.raw) && <span className={styles.badge}>Overdue</span>}
-            </div>,
-        },
+//the subject as the grid draws it, with a badge after it on a late task
+const subjectCell: ITreeCellComponents = {
+    columnControl: {
+        onRender: (props, defaultRender) => <div className={styles.subject}>
+            <div className={styles.subjectText}>{defaultRender(props)}</div>
+            {isOverdue(props.parameters.Record.raw) && <span className={styles.badge}>Overdue</span>}
+        </div>,
     },
-    //the bar the % Complete column draws, while the cell is not being edited
-    percentComplete: { progress: { onRender: props => <ProgressBar {...props} /> } },
 }
 
-//runs for every cell, and again when its task changes
-const onSetup = (grid: IGrid) => grid.services.get('cells').hooks.theme.add((builder, { record }) => {
-    const hue = getStatusHue(record)
-    if (hue) {
-        builder.tint(hue)
-    }
-})
+//the bar the % Complete column draws, while the cell is not being edited
+const percentCompleteCell: IPercentCompleteCellComponents = { progress: { onRender: props => <ProgressBar {...props} /> } }
+
+const CELLS: { [columnName: string]: ITreeCellComponents | IPercentCompleteCellComponents } = { subject: subjectCell, percentcomplete: percentCompleteCell }
+
+const onSetup = (grid: IGrid) => {
+    //after the task tree, which gives these columns their cells
+    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+        for (const colDef of columnDefs) {
+            const components = CELLS[colDef.colId!]
+            if (components) {
+                colDef.cellRendererParams = { ...colDef.cellRendererParams, components }
+            }
+        }
+    }, TASK_GRID_PRIORITY.tree + 1)
+    //runs for every cell, and again when its task changes
+    grid.services.get('cells').hooks.theme.add((builder, { record }) => {
+        const hue = getStatusHue(record)
+        if (hue) {
+            builder.tint(hue)
+        }
+    })
+}
 
 //a Gantt module: each bar takes the hue of its task's status
 const statusBarsModule: IGanttModule = {
@@ -83,7 +95,7 @@ const statusBarsModule: IGanttModule = {
 const GridExample = () => <TaskDatasetControl onLoad={loadTasks} enableEditing height='520px'>
     <DatasetControl.Body>
         <TaskGantt.Split defaultGanttSize={40}>
-            <TaskGrid components={components} onSetup={onSetup} modules={[createTaskEditingModule()]} />
+            <TaskGrid onSetup={onSetup} modules={[createTaskEditingModule()]} />
             <TaskGantt modules={[createLibraryModule(), statusBarsModule]} />
         </TaskGantt.Split>
     </DatasetControl.Body>

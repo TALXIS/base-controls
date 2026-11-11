@@ -10,13 +10,13 @@ Every part of the task grid and the Gantt can be drawn your own way. Each sectio
 
 ## Colours by status
 
-A slot in a \`components\` map, a hook on the grid's cells or a small Gantt module changes how one thing is drawn, and the rest keeps working. Every slot is under *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview), and how slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+A slot in a cell's \`components\`, a hook on the grid's cells or a small Gantt module changes how one thing is drawn, and the rest keeps working. Every slot is under *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview), and how slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | What | Where |
 |---|---|
 | The tint of a row | A \`theme\` hook on the grid's \`cells\` service, added in \`TaskGrid\`'s \`onSetup\` |
-| The *Overdue* badge | \`components.treeCell.columnControl\` on \`TaskGrid\` |
-| The progress bar | \`components.percentComplete.progress\` on \`TaskGrid\` |
+| The *Overdue* badge | \`columnControl\` in the subject column's \`cellRendererParams.components\`, set from a column definitions hook |
+| The progress bar | \`progress\` in the *% Complete* column's \`cellRendererParams.components\` |
 | The colour of a bar | A Gantt module with a \`task\` hook on the chart's \`tasks\` service |
 
 Try: set the *Status* of a task to *Waiting*, then set its *% Complete* to 100.

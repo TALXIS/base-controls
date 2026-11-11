@@ -1446,7 +1446,7 @@ interface IGridColDef {
     /** Defaults to the grid's cell bound to the column, or Grid.Cell.EmptyRenderer for an added column. */
     cellRenderer?: (props: IGridCellParams) => JSX.Element | null;
     /** The grid's cell renderers read theme and components from it. */
-    cellRendererParams?: { theme?: ITheme; components?: ICellRendererComponents | ICompletionCellComponents | INameCellComponents } & { [param: string]: any };
+    cellRendererParams?: { theme?: ITheme; components?: ICellRendererComponents | ICompletionCellComponents | INameCellComponents | ITreeCellComponents | IPercentCompleteCellComponents } & { [param: string]: any };
     cellRendererSelector?: (params: ICellRendererParams<IRecord>) => CellRendererSelectorResult | undefined;
     cellEditor?: any;
     cellEditorParams?: any;
@@ -4472,22 +4472,20 @@ interface IDatasetControlPartMap {
     taskSettings: ITaskSettings;
 }
 
-interface ITaskGridProps extends Omit<IGridProps, 'modules' | 'components'> {
+interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
     /** Read once, at mount; the task tree and the client-side row model are always added. */
     modules?: IGridModule[];
-    components?: ITaskGridComponents;
 }
 
-/** The replaceable pieces of what a task grid draws, the grid's own included. */
-interface ITaskGridComponents extends IGridComponents {
-    /** The subject cell: a cell's keys, plus indent and toggle. */
-    treeCell?: { [piece: string]: any };
-    /** Expand and collapse all, above the row commands. */
-    expansionHeader?: { [piece: string]: any };
-    /** The percent complete cell: a cell's keys, plus progress, the bar drawn while it is not edited. */
-    percentComplete?: { progress?: { onRender?: (props: import('@fluentui/react').IProgressIndicatorProps) => JSX.Element | null }; [piece: string]: any };
-    /** A task's row commands. */
-    taskCommands?: { [piece: string]: any };
+/** The subject cell's pieces: a cell's, plus its indent and chevron. */
+interface ITreeCellComponents extends ICellRendererComponents {
+    indent?: { [slot: string]: any };
+    toggle?: { [slot: string]: any };
+}
+
+/** The percent complete cell's pieces: a cell's, plus the bar drawn while it is not edited. */
+interface IPercentCompleteCellComponents extends ICellRendererComponents {
+    progress?: { onRender?: (props: import('@fluentui/react').IProgressIndicatorProps) => JSX.Element | null };
 }
 
 /** A label set's strings, as the nearest LabelsProvider gives them. */

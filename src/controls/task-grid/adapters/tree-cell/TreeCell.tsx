@@ -4,10 +4,8 @@ import { IRecord } from "@talxis/client-libraries";
 import { useRerender } from "@core";
 import { Grid, GroupingUi } from "@controls/grid";
 import { useTaskGridService } from "../../useTaskGridServices";
-import { useTaskGridContext } from "../../context";
 import { useTaskRuntime } from "../root/context";
 import { TaskGridUiTreeCellIndent } from "../../ui";
-import { mergeComponentNamespaces } from "../mergeComponentNamespaces";
 import { ITreeCellComponents } from "./components";
 
 export interface ITreeCellProps extends ICellRendererParams<IRecord> {
@@ -18,7 +16,7 @@ export interface ITreeCellProps extends ICellRendererParams<IRecord> {
 export const TreeCell = (props: ITreeCellProps) => {
     const expansion = useTaskGridService('taskExpansion');
     const runtime = useTaskRuntime();
-    const components = mergeComponentNamespaces(useTaskGridContext().components.treeCell, props.components);
+    const components = props.components ?? {};
     const { rerender } = useRerender();
     const node = props.node;
     const record = props.data!;

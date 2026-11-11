@@ -1,9 +1,7 @@
 import { IGridValueRenderer, Grid, useGridField } from "@controls/grid";
 import { ICellRendererParams } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
-import { useTaskGridContext } from "../../context";
 import { ITaskGridUiPercentCompleteComponents, TaskGridUiPercentComplete } from "../../ui";
-import { mergeComponentNamespaces } from "../mergeComponentNamespaces";
 import { IPercentCompleteCellComponents } from "./components";
 
 export interface IPercentCompleteCellProps extends ICellRendererParams<IRecord> {
@@ -21,7 +19,7 @@ const PercentCompleteProgress = (props: IPercentCompleteProgressProps) => {
 
 /** The percent complete cell, a progress bar edited as a number. */
 export const PercentCompleteCell = (props: IPercentCompleteCellProps) => {
-    const { progress, ...components } = mergeComponentNamespaces(useTaskGridContext().components.percentComplete, props.components);
+    const { progress, ...components } = props.components ?? {};
     const onRenderEditor = components.columnControl?.onRender ?? ((controlProps, defaultRender) => defaultRender(controlProps));
 
     const onRenderControl = (controlProps: IGridValueRenderer, defaultRender: (controlProps: IGridValueRenderer) => JSX.Element | null) => {

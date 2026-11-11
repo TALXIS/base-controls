@@ -25,7 +25,7 @@ Every other prop works as on a Grid: see [**Props and events**](?path=/docs/cont
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
 | \`modules\` | \`ITaskGridGridModule[]\` | None | At mount | Grid modules, loaded after the tree. \`createTaskEditingModule()\` takes the place of the Grid's editing module; grouping and totals are left out. |
-| \`components\` | \`ITaskGridComponents\` | Defaults | Live | The Grid's pieces, and the task grid's own cells. See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
+| \`components\` | \`IGridComponents\` | Defaults | Live | The Grid's overlays and rows. The task grid's own cells take theirs through \`cellRendererParams\`: see *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`enableZebra\` | \`boolean\` | \`false\` | At mount | Shades every other row. |
 | \`enableOptionSetColors\` | \`boolean\` | \`true\` | At mount | Draws options that have a colour as tags. |
 

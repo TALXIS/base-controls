@@ -43,11 +43,7 @@ Each task module comes for memory, Dataverse, TALXIS or a store of your own. The
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`TaskGrid\` | \`treeCell\` | A cell's keys, as on [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview), plus \`indent\` (\`onRender\`) and \`toggle\` (\`onRender\`, \`onRenderButton\`) | \`TaskGridUiTreeCellIndentComponents\`, \`GroupingUiToggleComponents\` | The subject cell, its indent and its chevron |
-| | \`percentComplete\` | A cell's keys, plus \`progress\` (\`onRender\`) | \`TaskGridUiPercentCompleteComponents\` | The progress bar |
-| | \`expansionHeader\` | \`expandCollapse\` (\`onRender\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\`) | \`GroupingUiExpandCollapseComponents\` | The buttons that open and close a level |
-| | \`taskCommands\` | An empty cell's keys | | The **+** and a row's other commands |
-| | \`overlays\`, \`rows\` | The Grid's, as on [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview) | | |
+| \`TaskGrid\` | \`overlays\`, \`rows\` | The Grid's, as on [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview) | | |
 | \`TaskDatasetControl.Settings\` | Top level | \`onRender\`, \`onRenderButton\` | \`TaskGridUiSettingsMenuComponents\` | The settings button and its menu |
 | \`TaskGantt\` | \`chart\` | \`onRender\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` has to pass on its \`ref\` |
 | | \`overlay\` | \`onRender\` | \`GanttUiOverlayComponents\` | The cover over the chart while the tasks load |
@@ -73,6 +69,15 @@ Each task module comes for memory, Dataverse, TALXIS or a store of your own. The
 | | \`dateRange\` | \`onRender\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`RecordCardDateRangeComponents\` | The dates and the duration |
 | Links module | \`tooltip.onRender\` | A link's whole tooltip, of \`LinkTooltip\`'s parts; \`useLinkTooltip()\` reads the link | | What a link says under the pointer |
 | | \`tooltip.callout\`, \`tooltip.header\`, \`tooltip.fieldRows\`, \`tooltip.predecessor\`, \`tooltip.successor\`, \`tooltip.dateRange\` | As the tooltip module's keys of the same kind | \`TooltipUiCalloutComponents\`, \`RecordCardFieldRowComponents\` and the like | The default link tooltip |
+
+The task grid's own cells take their slots like every grid cell: through \`cellRendererParams\`, or \`headerComponentParams\` for a header, set from a column definitions hook at \`TASK_GRID_PRIORITY.tree + 1\`, after the task tree gives the columns their cells (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)).
+
+| Column | Draws with | Slots | Default | Draws |
+|---|---|---|---|---|
+| The subject | \`TaskGrid.TreeCell\` | A cell's keys, plus \`indent\` (\`onRender\`) and \`toggle\` (\`onRender\`, \`onRenderButton\`) | \`TaskGridUiTreeCellIndentComponents\`, \`GroupingUiToggleComponents\` | The subject cell, its indent and its chevron |
+| The percent complete | \`TaskGrid.PercentCompleteCell\` | A cell's keys, plus \`progress\` (\`onRender\`) | \`TaskGridUiPercentCompleteComponents\` | The progress bar |
+| \`TASK_COMMANDS_COLUMN_KEY\` | \`TaskGrid.TaskCommandsCell\` | An empty cell's keys | | The **+** and a row's other commands |
+| | \`TaskGrid.ExpansionHeader\`, its header | \`expandCollapse\` (\`onRender\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\`) | \`GroupingUiExpandCollapseComponents\` | The buttons that open and close a level |
 
 To change the task grid's and the Gantt's strings, see [**Localization**](?path=/docs/concepts-localization--overview).
 

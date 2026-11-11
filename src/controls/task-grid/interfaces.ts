@@ -1,8 +1,7 @@
-import type { IGridComponents, IGridModule, IGridModuleMap, IGridProps } from "@controls/grid";
+import type { IGridModule, IGridModuleMap, IGridProps } from "@controls/grid";
 import type { ITaskRuntime } from "./runtime";
 import type { IDatasetControlView } from "@controls/dataset-control";
 import type { ITaskDataProvider, ITaskDataProviderParameters, ITaskStore, ITaskViewData } from "./runtime/provider";
-import type { ITreeCellComponents, IExpansionHeaderComponents, IPercentCompleteCellComponents, ITaskCommandsCellComponents } from "./adapters";
 
 /** The task grid's own variants of the grid modules it takes, by name. */
 export interface ITaskGridGridModuleMap { }
@@ -21,21 +20,8 @@ export interface ITaskGridLoadResult extends Pick<ITaskDataProviderParameters, '
     views?: ITaskGridView[];
 }
 
-/** The replaceable pieces of what a task grid draws, the grid's own included. */
-export interface ITaskGridComponents extends IGridComponents {
-    /** The subject cell, with the chevron. */
-    treeCell?: ITreeCellComponents;
-    /** Expand and collapse all, above the row commands. */
-    expansionHeader?: IExpansionHeaderComponents;
-    /** The percent complete cell, a bar until it is edited. */
-    percentComplete?: IPercentCompleteCellComponents;
-    /** A task's row commands, below expand and collapse all. */
-    taskCommands?: ITaskCommandsCellComponents;
-}
-
 /** The tasks of a `TaskDatasetControl`, drawn as a tree in its body. */
 export interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
     /** Read once, at mount, and loaded after the task tree. */
     modules?: ITaskGridGridModule[];
-    components?: ITaskGridComponents;
 }
