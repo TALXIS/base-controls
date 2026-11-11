@@ -38,6 +38,7 @@ declare namespace React {
     type CSSProperties = any;
     type HTMLAttributes<T> = any;
     type ComponentType<P = {}> = any;
+    type ComponentProps<T> = any;
     type FC<P = {}> = any;
 }
 
@@ -4942,7 +4943,7 @@ interface IGantt {
     render(): void;
 }
 
-interface IGanttModule {
+interface IGanttModule<TName extends string = string> {
     name: string;
     /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
     priority?: number;

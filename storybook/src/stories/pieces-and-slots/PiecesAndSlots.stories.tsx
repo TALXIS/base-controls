@@ -29,7 +29,7 @@ Spread the props you get: they carry the class names, handlers and refs that mak
 
 A *piece* is a key in the \`components\` map that names something inside the part and holds that thing's slots, as \`commandBar\` and \`shimmer\` do in the example. A piece merges over its default slot by slot, so a slot you leave out keeps its default.
 
-Each control lists its pieces and slots under *Changing how it looks*, or for DatasetControl under *Reference* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+Each control lists its pieces and slots under *Changing how it looks*, DatasetControl under *Reference* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview), and TaskGrid under *Slots* on [**Reference**](?path=/docs/controls-taskgrid-reference--overview).
 
 ## What slots do not change
 

@@ -31,6 +31,33 @@ every claim against `src/` before you write it.
 - The page ends with `## Where next` and `{{block: explore}}`: 2–3 ExploreCards, each titled with the exact
   title of the page it links to (for a `…/Get started` page, the control's name, such as "Ribbon").
 
+## Guide pages
+
+A control with a guide, such as TaskGrid, teaches it as one path through `…/Guide/<Stage>/<Step>` pages,
+listed in order with their stages in `storybook/src/task-grid/guide/GuideSteps.tsx`.
+
+- **One storyline:** every step runs on the same sample plan, such as the office move, and adds one thing
+  to what the reader built in the step before.
+- **Stages:** Basics, Features, Your data, Advanced. Each stage promises what the reader can do once it is
+  done; Basics alone is enough for a first use.
+- **Every step has the same rhythm:**
+  1. `{{block: progress}}`
+  2. a goal of one or two sentences
+  3. the live example, placed with `{{canvas: …}}`
+  4. `## How it works`
+  5. `## Try it`, a bullet list of actions and what happens
+  6. `## Remember`, two to four points
+  7. `{{block: navigation}}`
+- **New code is easy to find:** lines new in a step carry a `//new:` comment, and lines carried over stay
+  terse.
+- **Concepts arrive just in time:** each is defined in the step that first needs it. Later steps use the
+  same words and link back, never redefine.
+- **Where the rest goes:** the guide's overview holds the showcase, the anatomy, how the parts fit
+  together, the stage map (`GuideMap`) and a glossary. `…/Reference` holds every table a reader looks up,
+  slots included.
+- **Adding a step:** add it to `GuideSteps.tsx`, and report that it needs a place in the `storySort` of
+  `storybook/.storybook/preview.tsx`, which you do not edit.
+
 ## Writing
 
 - British spelling (behaviour, colour, customise, initialise), no contractions, no selling adjectives.
@@ -90,8 +117,9 @@ Each fact lives on one page; every other page links to it.
 | The unsaved-changes prompt | DatasetControl › Loading data |
 | Every DatasetControl slot | DatasetControl › Your own UI |
 | Grid props, defaults and save events | Grid › Props and events |
-| Reschedules | TaskGrid › Loading tasks |
-| `enable*` props and inactive tasks | TaskGrid › Working with tasks |
+| Dates the backend changes (`synchronize`) | TaskGrid › Guide › Your data › Your own backend |
+| `enable*` props and inactive tasks | TaskGrid › Guide › Basics › Let users plan |
+| Where each kind of module goes, and its backends | TaskGrid › Guide › Features › How modules work |
 | Labels and languages | Concepts › Localization |
 
 Building blocks only mentions the runtime; control pages keep what their runtime adds and link to RuntimeHost.

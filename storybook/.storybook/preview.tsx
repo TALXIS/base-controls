@@ -179,7 +179,16 @@ const preview: Preview = {
             [
               'Overview',
               'Guide',
-              ['Your first task grid', 'Your data', 'Planning', 'Task modules', 'The Gantt', 'Make it yours', 'From your code'],
+              [
+                'Basics',
+                ['Your first task grid', 'Let users plan', 'Views and the tree', 'The timeline'],
+                'Features',
+                ['How modules work', 'People and tags', 'Dependencies and links', 'Checklists and custom columns', 'Templates and the project', 'Dates on the timeline'],
+                'Your data',
+                ['Where tasks are kept', 'Your own backend'],
+                'Advanced',
+                ['Make it yours', 'From your code', 'Write a module'],
+              ],
               'Reference',
             ],
             'Checklist',
