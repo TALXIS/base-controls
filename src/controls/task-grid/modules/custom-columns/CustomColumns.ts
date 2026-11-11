@@ -158,7 +158,8 @@ export class CustomColumns implements ICustomColumns {
             if (!columnName) {
                 return;
             }
-            await this._reloadColumns();
+            //a new column holds no values yet, so they are not loaded again
+            this._columns = await this._store.loadColumns();
             const column = this._columns.find(column => column.name === columnName);
             if (column) {
                 session.addColumn(column);

@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
 import type { MemoryTable } from "@core/state";
-import { simulateBackend } from "../../../../runtime/data-sources/memory/simulateBackend";
 import type { IMarker, IMarkersParameters, IMarkersStore } from "../Markers";
 import { createMarkersModule, IMarkersModule } from "../createMarkersModule";
 
@@ -21,7 +20,6 @@ class MemoryMarkersStore implements IMarkersStore {
     }
 
     public async loadMarkers(): Promise<IMarker[]> {
-        await simulateBackend();
         return this._markers.getRows().map(marker => ({ ...marker, date: dayjs(marker.date) }));
     }
 }

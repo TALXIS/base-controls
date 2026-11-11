@@ -1,7 +1,6 @@
 import { IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
 import type { MemoryTable } from "@core/state";
 import type { ILookupManyOptionsParameters, ILookupManyStore } from "../LookupMany";
-import { simulateBackend, SIMULATED_LOAD_DELAY_MS } from "../../../runtime/data-sources/memory/simulateBackend";
 import type { IMemoryLookupManySource, IMemoryLookupManyValues } from "./createMemoryLookupManyModule";
 
 type Reference = ComponentFramework.EntityReference;
@@ -21,13 +20,11 @@ export class MemoryLookupManyStore implements ILookupManyStore {
     }
 
     public async loadValues(taskIds: string[]): Promise<Map<string, { [columnName: string]: Reference[] }>> {
-        await simulateBackend(SIMULATED_LOAD_DELAY_MS);
         const loadedTaskIds = new Set(taskIds);
         return new Map(this._values.getRows(row => loadedTaskIds.has(row.taskId)).map(row => [row.taskId, row.values]));
     }
 
     public async saveValue(taskId: string, columnName: string, value: Reference[]): Promise<void> {
-        await simulateBackend();
         const row = this._values.getRow(taskId);
         if (row) {
             this._values.update(taskId, { values: { ...row.values, [columnName]: value } });

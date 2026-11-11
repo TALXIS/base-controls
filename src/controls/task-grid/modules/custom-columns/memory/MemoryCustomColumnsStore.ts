@@ -4,7 +4,6 @@ import type { MemoryTable } from "@core/state";
 import type { ITaskRuntime } from "../../../runtime";
 import type { ICustomColumnsStore } from "../CustomColumns";
 import { CUSTOM_COLUMNS_LABELS } from "../labels";
-import { simulateBackend, SIMULATED_LOAD_DELAY_MS } from "../../../runtime/data-sources/memory/simulateBackend";
 
 /** What a custom column is. */
 export interface ICustomColumnDefinition {
@@ -45,20 +44,17 @@ export class MemoryCustomColumnsStore implements ICustomColumnsStore {
     }
 
     public async loadColumns(): Promise<IColumn[]> {
-        await simulateBackend(SIMULATED_LOAD_DELAY_MS);
         const rows = this._parameters.columns.getRows();
         return rows.sort((left, right) => (left.createdOn ?? 0) - (right.createdOn ?? 0)).map(row => this._toColumn(row));
     }
 
     public async loadValues(taskIds: string[]): Promise<Map<string, IRawRecord>> {
-        await simulateBackend(SIMULATED_LOAD_DELAY_MS);
         const taskIdSet = new Set(taskIds);
         const rows = this._parameters.values.getRows(row => taskIdSet.has(row.taskId));
         return new Map(rows.map(row => [row.taskId, row.values]));
     }
 
     public async saveValue(record: IRecord, column: IColumn, value: unknown): Promise<IRecordSaveOperationResult> {
-        await simulateBackend();
         const taskId = record.getRecordId();
         const stored = this._parameters.values.getRow(taskId);
         this._parameters.values.insert([{ taskId, values: { ...stored?.values, [column.name]: value } }]);
@@ -66,7 +62,6 @@ export class MemoryCustomColumnsStore implements ICustomColumnsStore {
     }
 
     public async createColumn(): Promise<string | null> {
-        await simulateBackend();
         const count = this._parameters.columns.getRows().length;
         const name = this._toColumnName(crypto.randomUUID());
         this._parameters.columns.insert([{ name, displayName: this._labels.get('customColumns.newColumnName', { number: count + 1 }), dataType: DataTypes.SingleLineText, createdOn: Date.now() }]);
@@ -79,7 +74,6 @@ export class MemoryCustomColumnsStore implements ICustomColumnsStore {
     }
 
     public async deleteColumn(columnName: string): Promise<string | null> {
-        await simulateBackend();
         const { columns, values } = this._parameters;
         columns.delete(columns.getRows(row => this._toColumnName(row.name) === columnName).map(row => row.name));
         values.insert(values.getRows(row => columnName in row.values).map(row => {

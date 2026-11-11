@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
 import type { MemoryTable } from "@core/state";
-import { simulateBackend } from "../../../../runtime/data-sources/memory/simulateBackend";
 import type { INonWorkingDay, INonWorkingDaysParameters, INonWorkingDaysStore } from "../NonWorkingDays";
 import { createNonWorkingDaysModule, INonWorkingDaysModule } from "../createNonWorkingDaysModule";
 
@@ -22,7 +21,6 @@ class MemoryNonWorkingDaysStore<TData> implements INonWorkingDaysStore<TData> {
     }
 
     public async loadNonWorkingDays(): Promise<INonWorkingDay<TData>[]> {
-        await simulateBackend();
         return this._nonWorkingDays.getRows().map(({ date, endDate, ...day }) => ({ ...day, date: dayjs(date), endDate: endDate ? dayjs(endDate) : undefined }));
     }
 }

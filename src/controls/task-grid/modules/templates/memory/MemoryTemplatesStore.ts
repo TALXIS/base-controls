@@ -4,7 +4,6 @@ import type { ICreateTaskTree, ITasksCreateResult } from "../../../runtime/provi
 import { createMemoryTaskTrees } from "../../../runtime/data-sources/memory/createMemoryTaskTrees";
 import type { ITaskRuntime } from "../../../runtime";
 import type { ITemplate, ITemplatesStore, ITemplateTasksCreateParameters } from "../Templates";
-import { simulateBackend } from "../../../runtime/data-sources/memory/simulateBackend";
 import { TEMPLATES_LABELS } from "../labels";
 
 /** One task of a memory template, with its subtree. */
@@ -54,7 +53,6 @@ export class MemoryTemplatesStore implements ITemplatesStore {
     }
 
     public async createTasks(parameters: ITemplateTasksCreateParameters): Promise<ITasksCreateResult | null> {
-        await simulateBackend();
         const template = this._templates.getRow(parameters.templateId);
         if (!template) {
             return null;
@@ -65,7 +63,6 @@ export class MemoryTemplatesStore implements ITemplatesStore {
     }
 
     public async createTemplate(template: ITemplate): Promise<void> {
-        await simulateBackend();
         this._templates.insert([{ ...template.tree, id: crypto.randomUUID(), name: template.name }]);
     }
 }

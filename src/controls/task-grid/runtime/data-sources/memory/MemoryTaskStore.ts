@@ -1,7 +1,6 @@
 import { IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { MemoryTable } from "@core/state";
 import type { ITaskRuntime } from "../..";
-import { simulateBackend } from "./simulateBackend";
 import { createMemoryTaskTrees } from "./createMemoryTaskTrees";
 import { IDeleteTasksResult, IOpenTasksResult, ITaskCreateResult, ITaskCreateParameters, ITaskDeleteParameters, ITaskLoadResult, ITaskStore } from "../../provider/interfaces";
 
@@ -40,7 +39,6 @@ export class MemoryTaskStore implements ITaskStore {
     }
 
     public async createTask(parameters: ITaskCreateParameters): Promise<ITaskCreateResult | null> {
-        await simulateBackend();
         const { tasks, taskRuntime, metadata } = this._parameters;
         const data = { ...parameters.data, ...parameters.taskId && { [metadata.PrimaryIdAttribute]: parameters.taskId } };
         const [record] = createMemoryTaskTrees(tasks, taskRuntime, [{ data }], parameters);
@@ -48,7 +46,6 @@ export class MemoryTaskStore implements ITaskStore {
     }
 
     public async deleteTasks(parameters: ITaskDeleteParameters): Promise<IDeleteTasksResult | null> {
-        await simulateBackend();
         this._parameters.tasks.delete(parameters.taskIds);
         return { success: true, deletedTaskIds: parameters.taskIds };
     }
@@ -64,7 +61,6 @@ export class MemoryTaskStore implements ITaskStore {
     }
 
     public async openTasks(taskIds: string[]): Promise<IOpenTasksResult | null> {
-        await simulateBackend();
         const subject = this._parameters.taskRuntime.getProvider().getFieldMapping().subject;
         const names = taskIds.map(taskId => this._parameters.tasks.getRow(taskId)?.[subject] ?? taskId).join(', ');
         await this._parameters.taskRuntime.services.get('pcfContext').navigation.openAlertDialog({ text: `Opening ${names}` });
@@ -72,7 +68,6 @@ export class MemoryTaskStore implements ITaskStore {
     }
 
     public async openRelatedRecord(reference: ComponentFramework.EntityReference): Promise<void> {
-        await simulateBackend();
         await this._parameters.taskRuntime.services.get('pcfContext').navigation.openAlertDialog({ text: `Opening ${reference.name ?? reference.id.guid}` });
     }
 }
