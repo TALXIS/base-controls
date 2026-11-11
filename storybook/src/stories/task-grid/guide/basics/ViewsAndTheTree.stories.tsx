@@ -29,13 +29,13 @@ The plan is the one from the last step, with a view switcher, a search box and a
 
 A switch mounts the control again, so \`onLoad\` runs again, and the table outside it keeps every change. How views work in any DatasetControl is on [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
 
-**Search keeps the context.** \`DatasetControl.QuickFind\` searches the names of the tasks. A task that matches stays under the tasks above it, and those are in italics because they do not match themselves. A filter works the same way.
+**Search keeps the context.** \`DatasetControl.QuickFind\` finds the tasks whose names start with what is typed, as on [**Data providers**](?path=/docs/concepts-data-providers--overview). A task that matches stays under the tasks above it, and those are in italics because they do not match themselves. A filter works the same way.
 
 **The flat list** shows the tasks that match on their own rows, without the tree. Its rows cannot be dragged and have no **+**, and the *Path* column, \`PATH_COLUMN_NAME\`, shows where each task sits in the tree.
 
 **The settings menu.** \`TaskDatasetControl.Settings\` holds two switches: *Show hierarchy* turns the flat list off and on, and *Hide inactive tasks* hides tasks such as *Sign the lease*.
 
-**What is remembered.** Each view keeps what the user did in it, such as the tasks they opened, the search and the flat list. With a \`stateKey\`, the control keeps all of it, and the view it is on, when it mounts again, for as long as its state store lasts: see [**State**](?path=/docs/controls-datasetcontrol-state--overview). Here, opening **Code** and coming back to **Preview** mounts it again.
+**What is remembered.** Each view keeps what the user did in it, such as the tasks they opened, the search and the flat list. With a \`stateKey\`, the control keeps all of it, and the view it is on, when it mounts again, for as long as its state store lasts: see [**State**](?path=/docs/controls-datasetcontrol-state--overview). Here, opening **Code** and coming back to **Preview** mounts it again. It also runs the code again, so the tasks start afresh, while what was open stays.
 
 **Start from one task.** Return a \`rootTaskId\` from \`onLoad\` and the tree shows only the tasks under that task.
 
@@ -45,7 +45,7 @@ A switch mounts the control again, so \`onLoad\` runs again, and the table outsi
 - Switch to *By effort* and open the plan the same way: under each task, the one with the most hours comes first.
 - Switch to *Every task*: all eleven tasks are in one list, with their *Path*. In the settings menu, turn on *Hide inactive tasks* to take *Sign the lease* out of the list, and *Show hierarchy* to get the tree back.
 - Switch back to *Whole plan*: the search and the open tasks are as you left them. Open **Code** and come back to **Preview**: they still are.
-- In **Code**, add \`rootTaskId: 'fitout'\` to what \`loadTasks\` returns: the tree starts with the three subtasks of *Fit out the space*.
+- Clear the search, then in **Code** add \`rootTaskId: 'fitout'\` to what \`loadTasks\` returns: the tree starts with the three subtasks of *Fit out the space*.
 
 ## Remember
 

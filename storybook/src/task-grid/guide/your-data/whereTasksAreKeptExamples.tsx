@@ -8,10 +8,10 @@ import { createOfficeTable, OFFICE_COLUMNS, OFFICE_METADATA } from './office'
 
 const tasks = createOfficeTable()
 
-//new: only what onLoad returns changes between backends
+//only what onLoad returns changes between backends
 const loadTasks = (taskRuntime: ITaskRuntime): ITaskGridLoadResult => ({
     store: new MemoryTaskStore({ taskRuntime, tasks, metadata: OFFICE_METADATA, columns: OFFICE_COLUMNS }),
-    //new: which of your columns hold the tree, the dates and the progress
+    //which of your columns hold the tree, the dates and the progress
     fieldMapping: {
         parentId: 'parentid',
         subject: 'subject',

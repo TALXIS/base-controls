@@ -22,7 +22,7 @@ This step adds three Gantt modules to the plan of [**The timeline**](?path=/docs
 |---|---|---|
 | \`createMemoryMarkersModule({ markers })\` | A line, with a chip on the scale, for today and for each marker | \`MILESTONES\`: an \`id\`, a \`text\` and a \`date\`, and optionally a \`color\` and a \`lineStyle\` |
 | \`createMemoryNonWorkingDaysModule({ nonWorkingDays })\` | Weekends and the days you list, shaded | \`HOLIDAYS\`: an \`id\` and a \`date\`, and optionally an \`endDate\`, a \`description\` and a \`recurrence\` such as \`FREQ=YEARLY\` |
-| \`createTaskTooltipModule({ statusColumnName })\` | The task's name, progress, dates and duration, under the pointer | The option set \`status\` of *office.ts*, drawn as a pill in its option's colour |
+| \`createTaskTooltipModule({ statusColumnName })\` | The task's name, progress, dates and duration, under the pointer | The option set \`status\` of *office.ts*, drawn as a pill in its option's colour; the view loads it as a hidden column |
 
 **Markers.** Today is marked unless \`today: { enableMarker: false }\` says otherwise, and so are the project's start and end once a project module is loaded, as in [**Templates and the project**](?path=/docs/controls-taskgrid-guide-features-templates-and-the-project--overview). *Go to today* scrolls to today's line.
 

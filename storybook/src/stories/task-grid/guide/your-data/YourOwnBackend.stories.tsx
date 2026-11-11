@@ -62,7 +62,7 @@ A task module's store may also have \`destroy()\`, which runs when the mount goe
 ## Try it
 
 - Open *Move to the new office* and *Fit out the space*, then double-click the *Due* of *Paint the meeting rooms* and set it to 6 March: once it saves, *Fit out the space* is due 6 March too.
-- Select *Move in*, press *Delete* and confirm: *Move to the new office* is due with *Book the movers*, on 6 March.
+- Click the row of *Move in*, so that only it is selected, press *Delete* and confirm: *Move to the new office* is due with *Book the movers*, on 6 March.
 - In *Stores for the modules*, set \`isCompleted\` of *Hand out the keys* to \`true\` in *checklists.ts*, then open *Move to the new office*: *Move in* shows 1/3.
 
 ## Remember

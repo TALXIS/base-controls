@@ -45,7 +45,7 @@ A Gantt module's \`onLoad(gantt)\` runs on every mount, before the chart is draw
 ## Try it
 
 - In *A task module*, open the plan, click the **+** of *Paint the meeting rooms* and pick *Duplicate*: *Paint the meeting rooms (copy)* appears right below it, with the same dates.
-- In *A grid module*, open *Move to the new office*, double-click the *Due* of *Book the movers* and pick 30 March: the date turns red. In **Code**, set \`MOVE_DEADLINE\` to \`'2026-03-20'\`, and *Move in* is late too.
+- In *A grid module*, open *Move to the new office*, double-click the *Due* of *Book the movers* and pick 30 March: the date turns red. In **Code**, set \`MOVE_DEADLINE\` to \`'2026-03-20'\`: the example starts again, and *Move to the new office* and *Move in* are late.
 - In *A Gantt module*, open the plan, right-click the bar of *Install the network* and pick *Show on timeline*: the timeline zooms to it. Right-click it again and pick *Add a subtask*: a new task opens under it, ready for its name.
 
 ## Remember

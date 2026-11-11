@@ -37,7 +37,7 @@ const ganttModules = [
 ]
 
 //new: the chart fills the height the control is given
-const GridExample = () => <TaskDatasetControl onLoad={loadTasks} modules={controlModules} enableCreation enableEditing enableDeletion height='480px'>
+const GridExample = () => <TaskDatasetControl onLoad={loadTasks} modules={controlModules} enableCreation enableEditing enableDeletion height='520px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             {/* new: zooms the timeline in and out */}

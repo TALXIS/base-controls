@@ -31,7 +31,7 @@ const values = new MemoryTable<IMemoryLookupManyValues>({
 
 const fieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', startDate: 'start', endDate: 'due', percentComplete: 'done' }
 
-//new: the two columns in place of the owner, sized to fit beside the chart
+//new: Task and the two new columns, sized to fit beside the chart
 const views: ITaskGridView[] = [
     { id: 'plan', name: 'Whole plan', resolve: () => ({ columns: [{ name: 'subject' }, { name: 'assignedto', visualSizeFactor: 110 }, { name: 'tags', visualSizeFactor: 140 }] }) },
 ]

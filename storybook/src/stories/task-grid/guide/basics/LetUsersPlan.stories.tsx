@@ -30,6 +30,8 @@ Three props say what the user may change, and each is off until you turn it on. 
 
 \`TaskDatasetControl.Ribbon\` in the header shows *New*, and *Edit* and *Delete* while tasks are selected; the memory store opens a task in an alert instead of a form. Some modules go in \`TaskGrid\` and others in \`TaskDatasetControl\`; [**How modules work**](?path=/docs/controls-taskgrid-guide-features-how-modules-work--overview) says which goes where.
 
+**Selecting tasks.** Clicking a row selects that task alone, and ticking a row's checkbox adds it to the tasks already selected. *Edit* and *Delete* act on every selected task.
+
 **Every change saves on its own.** An edited cell, a dragged row, a new task and a confirmed deletion go to the store at once, with no *Save* button.
 
 **Inactive tasks.** A task whose \`statecode\` is not \`0\` is inactive, like *Sign the lease* in *office.ts*. It is read-only: its cells do not open, its row does not drag, and it has no **+**. It can still be deleted. The field mapping's \`stateCode\` names this column, and is \`statecode\` unless you set it.
@@ -38,7 +40,7 @@ Three props say what the user may change, and each is off until you turn it on. 
 
 - Open *Move to the new office*, point at *Fit out the space* and press its **+**: a new task opens as its first subtask, named *(No Name)*. Click into the name, replace it with one of your own and press Enter.
 - Double-click the *Due* of *Book the movers* and pick another day: the new date saves at once.
-- Drag *Book the movers* onto *Fit out the space* and hold it there until the row is highlighted, then drop it: it is now the first subtask of *Fit out the space*.
+- Drag *Book the movers* onto *Fit out the space* and hold it there until the row is highlighted, then drop it: it moves under *Fit out the space*, above *Order desks and chairs*.
 - Double-click a cell of *Sign the lease*: it does not open, and the row shows a lock.
 
 ## Remember

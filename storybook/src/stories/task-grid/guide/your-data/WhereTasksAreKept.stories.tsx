@@ -39,7 +39,7 @@ So far the plan has lived in memory. This step moves it to where your tasks real
 
 ### Which tasks load
 
-The FetchXML selects which tasks load, through its entity and its filter. The columns come from the view and the field mapping, so it needs no attributes. It is a Liquid template over two records:
+The FetchXML selects which tasks load, through its entity and its filter. With views, the columns come from the view and the field mapping, so it needs no attributes; without views, the grid shows the attributes it lists. It is a Liquid template over two records:
 
 | Write | For | Comes from |
 |---|---|---|
@@ -89,8 +89,8 @@ The store loads every task of the view at once. Sorting, filtering, search and o
 
 - In the first example's **Code**, change \`subject: 'subject'\` to \`subject: 'owner'\`: the tree draws each task's owner beside the chevron, and *Task* becomes an ordinary column.
 - In *What reaches the store*, open *Move to the new office*: nothing reaches the store. Double-click the cell of *Book the movers* beside its name, rename it and press Enter: the log shows \`saveTask\` with \`subject\`, then \`synchronize\`.
-- Select *Fit out the space*, press *Delete* and confirm: \`deleteTasks\` runs for its three subtasks first, then for the task itself.
-- Switch to *By due date*: a new mount runs \`onLoad\` and \`load\`. Search for "paint": nothing reaches the store.
+- Click the row of *Fit out the space*, so that only it is selected, press *Delete* and confirm: \`deleteTasks\` runs for its three subtasks first, then for the task itself.
+- Switch to *By due date*: a new mount runs \`onLoad\` and \`load\`. Search for "plan": nothing reaches the store.
 
 ## Remember
 

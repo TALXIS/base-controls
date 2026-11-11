@@ -3,7 +3,7 @@ import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { TASK_EXAMPLE_TABS } from './shared'
 import { CALENDAR_FILE, CHECKLISTS_FILE, DEPENDENCIES_FILE, PEOPLE_FILE, TAGS_FILE, withOfficePlan } from '../guide/officePlanFiles'
 
-const OFFICE_MOVE_CODE = `import { createFilteringModule, createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ILookupManyColumn, IMemoryLookupManyValues, ITaskGridView, ITaskRuntime, MemoryTable, MemoryTaskStore, PATH_COLUMN_NAME, TASK_CHECKLIST_COLUMN_NAME, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const OFFICE_MOVE_CODE = `import { createFilteringModule, createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ILookupManyColumn, IMemoryLookupManyValues, ITaskGridView, ITaskRuntime, MemoryTable, MemoryTaskStore, TASK_CHECKLIST_COLUMN_NAME, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { createBarDraggingModule, createLibraryModule, createLinksModule, createMemoryMarkersModule, createMemoryNonWorkingDaysModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, TaskGantt } from '@talxis/base-controls/gantt'
 import { OFFICE_COLUMNS, OFFICE_METADATA, OFFICE_TASKS } from './office'
 import { ASSIGNMENTS, PEOPLE, PERSON_COLUMNS, PERSON_METADATA } from './people'
@@ -40,15 +40,21 @@ const views: ITaskGridView[] = [
         id: 'plan',
         name: 'Whole plan',
         resolve: () => ({ columns: [
-            { name: 'subject', visualSizeFactor: 270 },
-            { name: 'assignedto', visualSizeFactor: 74 },
-            { name: TASK_CHECKLIST_COLUMN_NAME, visualSizeFactor: 66 },
-            { name: 'tags', visualSizeFactor: 84 },
+            { name: 'subject', visualSizeFactor: 262 },
+            { name: 'assignedto', visualSizeFactor: 112 },
+            { name: 'tags', visualSizeFactor: 90 },
             //the tooltip's status pill fails unless the view loads this column
             { name: 'status', isHidden: true },
         ] }),
     },
-    { id: 'list', name: 'Every task', resolve: () => ({ columns: [{ name: 'subject' }, { name: PATH_COLUMN_NAME }, { name: 'status' }, { name: 'due' }], data: { isFlatList: true } }) },
+    {
+        id: 'list',
+        name: 'Every task',
+        resolve: () => ({
+            columns: [{ name: 'subject' }, { name: TASK_CHECKLIST_COLUMN_NAME, visualSizeFactor: 130 }, { name: 'due', visualSizeFactor: 100 }, { name: 'status', isHidden: true }],
+            data: { isFlatList: true },
+        }),
+    },
 ]
 
 const loadTasks = (taskRuntime: ITaskRuntime) => ({
@@ -93,7 +99,7 @@ const GridExample = () => <TaskDatasetControl onLoad={loadTasks} modules={contro
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <TaskGantt.Split defaultGanttSize={34}>
+        <TaskGantt.Split defaultGanttSize={38}>
             <TaskGrid modules={gridModules} />
             <TaskGantt modules={ganttModules} />
         </TaskGantt.Split>

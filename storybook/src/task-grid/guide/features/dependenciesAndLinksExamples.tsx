@@ -43,7 +43,6 @@ const GridExample = () => <TaskDatasetControl onLoad={loadTasks} modules={contro
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        {/* new: a wider grid, for the new columns */}
         <TaskGantt.Split defaultGanttSize={35}>
             <TaskGrid modules={gridModules} />
             <TaskGantt modules={ganttModules} />

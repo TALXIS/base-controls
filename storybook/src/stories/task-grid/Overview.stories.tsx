@@ -11,8 +11,6 @@ A task grid shows a plan as a tree of tasks, each task under the one it is part 
 
 {{canvas: The office move}}
 
-This is the office move the guide plans: it builds this plan one step at a time, from a read-only tree to the dates on the timeline.
-
 ## What you see
 
 | You see | Drawn by | Taught in |
@@ -23,7 +21,7 @@ This is the office move the guide plans: it builds this plan one step at a time,
 | The bars, the handle between the grid and the chart, the zoom slider, *Zoom to fit* and *Go to today* | \`TaskGantt\`, \`TaskGantt.Split\` and \`TaskGantt.ZoomSlider\` | [**The timeline**](?path=/docs/controls-taskgrid-guide-basics-the-timeline--overview) |
 | The pictures in *Assigned to* and the coloured pills in *Tags* | The lookup-many module | [**People and tags**](?path=/docs/controls-taskgrid-guide-features-people-and-tags--overview) |
 | The arrows between bars | The links module, over the dependencies module | [**Dependencies and links**](?path=/docs/controls-taskgrid-guide-features-dependencies-and-links--overview) |
-| The *done/total* in *Checklist* | The checklist module | [**Checklists and custom columns**](?path=/docs/controls-taskgrid-guide-features-checklists-and-custom-columns--overview) |
+| The *done/total* in *Checklist*, on the *Every task* view | The checklist module | [**Checklists and custom columns**](?path=/docs/controls-taskgrid-guide-features-checklists-and-custom-columns--overview) |
 | The lines of *Move-in day*, *Opening party* and today, the weekends and Easter days shaded once you zoom in to days, and the tooltip on a bar | The markers, non-working days and tooltip modules | [**Dates on the timeline**](?path=/docs/controls-taskgrid-guide-features-dates-on-the-timeline--overview) |
 
 ## How it fits together
@@ -39,6 +37,8 @@ This is the office move the guide plans: it builds this plan one step at a time,
 [**How modules work**](?path=/docs/controls-taskgrid-guide-features-how-modules-work--overview) says which module goes in which part.
 
 ## The guide
+
+The guide builds the office move above one step at a time, from a read-only tree to the dates on the timeline.
 
 {{block: guide}}
 
