@@ -219,10 +219,12 @@ export class TaskTree implements ITaskGridTree {
         if (treeRows !== this._treeRows) {
             const view = this._provider.getRecordTree().view;
             this._treeRows = treeRows;
-            const order = this._getTreeOrder();
-            this._flatRows = treeRows
-                .filter(record => view.isMatching(record.getRecordId()))
-                .sort((first, second) => (order.get(first.getRecordId()) ?? Infinity) - (order.get(second.getRecordId()) ?? Infinity));
+            this._flatRows = treeRows.filter(record => view.isMatching(record.getRecordId()));
+            //the rows come in the view's sort order
+            if (this._provider.getSorting().length === 0) {
+                const order = this._getTreeOrder();
+                this._flatRows.sort((first, second) => (order.get(first.getRecordId()) ?? Infinity) - (order.get(second.getRecordId()) ?? Infinity));
+            }
         }
         return this._flatRows;
     }

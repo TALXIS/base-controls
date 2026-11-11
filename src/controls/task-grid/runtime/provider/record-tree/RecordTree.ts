@@ -321,8 +321,9 @@ export class RecordTree implements IRecordTree {
         }
 
         const rootTaskId = this._provider.getRootTaskId();
-        const scopedRecords = rootTaskId
-            ? this._collectVisibleDescendants(rootTaskId, visibleChildrenByParent)
+        const scopedIds = rootTaskId && new Set(this._collectVisibleDescendants(rootTaskId, visibleChildrenByParent).map(record => record.getRecordId()));
+        const scopedRecords = scopedIds
+            ? records.filter(record => scopedIds.has(record.getRecordId()))
             : records.filter(record => !unreachable.has(record.getRecordId()) && resolveHasMatchingDescendant(record.getRecordId()));
         visibleChildrenByParent.set(null, visibleChildrenByParent.get(rootTaskId ?? null) ?? []);
 
