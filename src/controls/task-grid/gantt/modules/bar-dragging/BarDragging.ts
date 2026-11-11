@@ -121,6 +121,12 @@ export class BarDragging implements IBarDragging {
             return;
         }
         const schedule = this._gantt.services.get('schedule');
+        const record = this._gantt.services.get('tasks').getRecord(String(task.id));
+        const placement = record && schedule.getPlacement(record);
+        if (placement?.kind === 'milestone') {
+            task.start_date = task.end_date = schedule.snapMilestone(span.start, placement.edges, original.start);
+            return;
+        }
         const edge: GanttSpanEdge = drag.left ? 'start' : 'end';
         const snapped = mode === MOVE_MODE ? schedule.snapMove(span, original) : schedule.snapEdge(span, edge, original);
         task.start_date = snapped.start;

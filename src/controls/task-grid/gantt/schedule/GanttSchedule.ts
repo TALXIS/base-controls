@@ -74,6 +74,8 @@ export interface IGanttSchedule {
     snapMove(span: IGanttSpan, lengthOf: IGanttSpan): IGanttSpan;
     /** Snaps both edges, keeping at least one step between them. */
     snapSpan(span: IGanttSpan): IGanttSpan;
+    /** Snaps a moved milestone as the day its edges hold. */
+    snapMilestone(date: Date, edges: GanttSpanEdge[], original: Date): Date;
     /** The column values for a span, the duration among them when one is mapped. */
     getColumnValues(span: IGanttSpan, record?: IRecord): { [columnName: string]: unknown };
     /** Writes a span to its record, saved as an edit in the grid is. */
@@ -82,7 +84,7 @@ export interface IGanttSchedule {
     saveMilestone(record: IRecord, date: Date, edges: GanttSpanEdge[]): void;
     /** The span's start, end and range as the record shows them. */
     formatSpan(span: IGanttSpan): { start: string; end: string; range: string };
-    /** A date as the edge's column shows it. */
+    /** A date on the timeline as the edge's column shows it. */
     formatDate(date: Date, edge: GanttSpanEdge): string;
     /** Minutes as the duration column shows them. */
     formatDuration(duration: number): string;
@@ -136,7 +138,7 @@ export class GanttSchedule implements IGanttSchedule {
         const start = this.getDate(record, 'start');
         const end = this.getDate(record, 'end');
         if (start && end) {
-            const spanEnd = this._isDateOnly('end') ? dayjs(end).add(1, 'day').toDate() : end;
+            const spanEnd = this._toSpanEnd(end);
             if (spanEnd > start) {
                 return { kind: 'span', span: { start, end: spanEnd } };
             }
@@ -145,7 +147,7 @@ export class GanttSchedule implements IGanttSchedule {
         if (start) {
             return { kind: 'milestone', date: start, edges: ['start'] };
         }
-        return end && { kind: 'milestone', date: end, edges: ['end'] };
+        return end && { kind: 'milestone', date: this._toSpanEnd(end), edges: ['end'] };
     }
 
     public getSpan(record: IRecord): IGanttSpan | undefined {
@@ -198,6 +200,13 @@ export class GanttSchedule implements IGanttSchedule {
         return this._applySnapHooks(this._snapEdgeToScale({ start: this._snapDate(span.start, 'start'), end: span.end }, 'end'), { change: 'span' });
     }
 
+    public snapMilestone(date: Date, edges: GanttSpanEdge[], original: Date): Date {
+        const day = this._toMilestoneDay(date, edges);
+        const originalDay = this._toMilestoneDay(original, edges);
+        const snapped = this.snapMove({ start: day, end: day }, { start: originalDay, end: originalDay }).start;
+        return edges.includes('end') ? this._toSpanEnd(snapped) : snapped;
+    }
+
     public getColumnValues(span: IGanttSpan, record?: IRecord): { [columnName: string]: unknown } {
         const { start, end, duration } = this._columnNames;
         const values: { [columnName: string]: unknown } = { [start]: span.start, [end]: this._toRecordEnd(span.end) };
@@ -219,25 +228,27 @@ export class GanttSchedule implements IGanttSchedule {
         const fields = this._gantt.services.get('grid').services.get('fields');
         edges.forEach((edge, index) => {
             const columnName = this._columnNames[edge];
+            const value = edge === 'end' ? this._toRecordEnd(date) : date;
             //the last edge goes through the grid's field so the record saves once
             if (index === edges.length - 1) {
-                fields.get(record, columnName).setValue(date);
+                fields.get(record, columnName).setValue(value);
             }
             else {
-                record.setValue(columnName, date);
+                record.setValue(columnName, value);
             }
         });
     }
 
     public formatSpan(span: IGanttSpan): { start: string; end: string; range: string } {
         const start = this.formatDate(span.start, 'start');
-        const end = this.formatDate(this._toRecordEnd(span.end), 'end');
+        const end = this.formatDate(span.end, 'end');
         return { start, end, range: start === end ? start : `${start} – ${end}` };
     }
 
     public formatDate(date: Date, edge: GanttSpanEdge): string {
         const provider = this._gantt.getTaskRuntime().getProvider();
-        return provider.getFormatting().format({ value: date, column: provider.getColumnsMap()[this._columnNames[edge]] }) ?? '';
+        const value = edge === 'end' ? this._toRecordEnd(date) : date;
+        return provider.getFormatting().format({ value, column: provider.getColumnsMap()[this._columnNames[edge]] }) ?? '';
     }
 
     public formatDuration(duration: number): string {
@@ -284,6 +295,16 @@ export class GanttSchedule implements IGanttSchedule {
 
     private _toRecordEnd(end: Date): Date {
         return this._isDateOnly('end') ? dayjs(end).subtract(1, 'day').toDate() : end;
+    }
+
+    //a date-only end runs through its day
+    private _toSpanEnd(end: Date): Date {
+        return this._isDateOnly('end') ? dayjs(end).add(1, 'day').toDate() : end;
+    }
+
+    //the day the snap hooks check, not the end of it the chart draws
+    private _toMilestoneDay(date: Date, edges: GanttSpanEdge[]): Date {
+        return edges.includes('end') ? this._toRecordEnd(date) : date;
     }
 
     private _isDateOnly(edge: GanttSpanEdge): boolean {
