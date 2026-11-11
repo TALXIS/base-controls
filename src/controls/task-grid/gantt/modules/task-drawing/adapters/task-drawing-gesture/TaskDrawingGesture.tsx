@@ -168,18 +168,18 @@ export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
     }), [chart, dragging, taskDrawing]);
 
     useEffect(() => {
-        const windowListeners = new AbortController();
-        const { signal } = windowListeners;
+        const subscriptions = new AbortController();
+        const { signal } = subscriptions;
         window.addEventListener('keydown', listeners.onKeyDown, { signal });
         window.addEventListener('keyup', listeners.onKeyUp, { signal });
         window.addEventListener('mousemove', listeners.onMouseMove, { signal });
         window.addEventListener('mouseup', listeners.onMouseUp, { signal });
         window.addEventListener('blur', listeners.onBlur, { signal });
         //captured, ahead of the chart's own mousedown
-        chart.$root.addEventListener('mousedown', listeners.onMouseDown, true);
-        chart.$root.addEventListener('contextmenu', listeners.onContextMenu, true);
+        chart.$root.addEventListener('mousedown', listeners.onMouseDown, { capture: true, signal });
+        chart.$root.addEventListener('contextmenu', listeners.onContextMenu, { capture: true, signal });
         return () => {
-            windowListeners.abort();
+            subscriptions.abort();
             autoScroll.stop();
         };
     }, [chart, listeners]);

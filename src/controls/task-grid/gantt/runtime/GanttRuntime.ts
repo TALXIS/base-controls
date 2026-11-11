@@ -70,6 +70,8 @@ export class GanttRuntime implements IGantt {
         const overlay = new GanttOverlay(parameters.taskRuntime.getProvider());
         this.services.provide('overlay', overlay, { onDestroy: () => overlay.destroy() });
         this._unsubscribes.push(this._datasetControl.parts.observe('ribbon', ribbon => ribbon.hooks.commands.add(this._addCommands)));
+        //while the dataset control still holds what the chart's teardown reads
+        this._unsubscribes.push(this._datasetControl.lifecycle.events.addEventListener('onDestroyed', () => this.destroy()));
     }
 
     public getProps(): ITaskGanttProps {
@@ -109,6 +111,9 @@ export class GanttRuntime implements IGantt {
     }
 
     public destroy(): void {
+        if (this._isDestroyed) {
+            return;
+        }
         this._isDestroyed = true;
         this.events.dispatchEvent('onDestroyed');
         this._unsubscribes.forEach(unsubscribe => unsubscribe());

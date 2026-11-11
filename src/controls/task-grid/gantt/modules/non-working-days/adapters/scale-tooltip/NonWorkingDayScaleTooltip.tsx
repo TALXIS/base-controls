@@ -31,12 +31,11 @@ export const NonWorkingDayScaleTooltip = () => {
             setHovered(current => current?.cell === cell ? current : days.length > 0 ? { cell, days } : undefined);
         };
         const onMouseLeave = () => setHovered(undefined);
-        chart.$root.addEventListener('mousemove', onMouseMove);
-        chart.$root.addEventListener('mouseleave', onMouseLeave);
-        return () => {
-            chart.$root.removeEventListener('mousemove', onMouseMove);
-            chart.$root.removeEventListener('mouseleave', onMouseLeave);
-        };
+        //the chart may be destroyed first, and its teardown clears $root
+        const listeners = new AbortController();
+        chart.$root.addEventListener('mousemove', onMouseMove, { signal: listeners.signal });
+        chart.$root.addEventListener('mouseleave', onMouseLeave, { signal: listeners.signal });
+        return () => listeners.abort();
     }, [chart, timeline]);
 
     return hovered ? <NonWorkingDaysUiTooltip target={hovered.cell} days={hovered.days} components={nonWorkingDays.getComponents().tooltip} /> : null;

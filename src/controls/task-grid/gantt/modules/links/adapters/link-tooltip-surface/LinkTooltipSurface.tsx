@@ -36,12 +36,11 @@ export const LinkTooltipSurface = () => {
             setHovered(dependency ? { dependency, target: { x: event.clientX + 10, y: event.clientY + 12 } } : undefined);
         };
         const onMouseLeave = () => setHovered(undefined);
-        chart.$root.addEventListener('mousemove', onMouseMove);
-        chart.$root.addEventListener('mouseleave', onMouseLeave);
-        return () => {
-            chart.$root.removeEventListener('mousemove', onMouseMove);
-            chart.$root.removeEventListener('mouseleave', onMouseLeave);
-        };
+        //the chart may be destroyed first, and its teardown clears $root
+        const listeners = new AbortController();
+        chart.$root.addEventListener('mousemove', onMouseMove, { signal: listeners.signal });
+        chart.$root.addEventListener('mouseleave', onMouseLeave, { signal: listeners.signal });
+        return () => listeners.abort();
     }, [chart, dragging]);
 
     if (!tasks || !hovered) {
