@@ -135,7 +135,7 @@ export class DataverseTaskStore implements ITaskStore {
     public async openTasks(taskIds: string[]): Promise<IOpenTasksResult | null> {
         if (taskIds.length === 1) {
             await this._navigate('edit', {
-                pageInput: { pageType: 'entityrecord', entityName: this._entityName, entityId: taskIds[0], formId: this._parameters.form?.editId, data: { isEditingEnabled: this._isEditingEnabled() && this._taskRuntime.getProvider().isRecordActive(taskIds[0]) } },
+                pageInput: { pageType: 'entityrecord', entityName: this._entityName, entityId: taskIds[0], formId: this._parameters.form?.editId, data: { isEditingEnabled: this._isEditingEnabled() && !this._taskRuntime.isTaskLocked(taskIds[0]) } },
                 navigationOptions: SIDE_DIALOG,
             });
         }

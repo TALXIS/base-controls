@@ -110,6 +110,15 @@ export class TaskRuntime implements ITaskRuntime {
         return !!this._getProps().enableDeletion;
     }
 
+    public isTaskLocked(taskId: string): boolean {
+        const record = this.getProvider().getRecordsMap()[taskId];
+        if (!record) {
+            return true;
+        }
+        const locks = this.services.get('datasetControl').parts.find('grid')?.modules.find('editing')?.locks;
+        return locks ? locks.get({ record }).isLocked : !this.isEditingEnabled() || !record.isActive();
+    }
+
     public getHoursPerDay(): number {
         return this.getProvider().getHoursPerDay() ?? 24;
     }

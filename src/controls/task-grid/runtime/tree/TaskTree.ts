@@ -176,7 +176,7 @@ export class TaskTree implements ITaskGridTree {
         const recordId = record.getRecordId();
         //a pinned row is not one of the tasks
         const isTask = !!this._provider.getRecordsMap()[recordId];
-        if (columnName !== TASK_COMMANDS_COLUMN_KEY || !this._runtime.isCreationEnabled() || !isTask || !this._provider.isRecordActive(recordId) || this._provider.isTaskPending(recordId)) {
+        if (columnName !== TASK_COMMANDS_COLUMN_KEY || !this._runtime.isCreationEnabled() || !isTask || this._runtime.isTaskLocked(recordId) || this._provider.isTaskPending(recordId)) {
             return;
         }
         const label = this._runtime.getLabels(TASK_GRID_LABELS).get('taskGrid.addChild');

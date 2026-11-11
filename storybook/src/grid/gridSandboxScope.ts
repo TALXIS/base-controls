@@ -28,6 +28,7 @@ import { Checklist, CHECKLIST_LABELS, CompletionCell, NameCell, sortChecklistPro
 import { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker, useGantt, useGanttService, useGanttModule, useTaskTooltip, LinkTooltip, useLinkTooltip } from '@talxis/base-controls/controls/task-grid/gantt'
 import { PATH_COLUMN_NAME, PREDECESSORS_COLUMN_NAME, StackRank, SUCCESSORS_COLUMN_NAME, TASK_CHECKLIST_COLUMN_NAME, TASK_COMMANDS_COLUMN_KEY, TASK_GRID_PRIORITY } from '@talxis/base-controls'
 import { LookupManyUiPillsComponents, TemplatesUiRecordListComponents } from '@talxis/base-controls'
+import { LookupManyUiPill } from '@talxis/base-controls'
 import { DatasetConstants } from '@talxis/client-libraries'
 import { LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VIEW_COLUMNS } from '../task-grid/memoryLookupManyData'
 import { TEMPLATES } from '../task-grid/memoryTemplateData'
@@ -357,6 +358,7 @@ export const GRID_SANDBOX_SCOPE = {
     TextField,
     Toggle,
     TooltipHost,
+    LookupManyUiPill,
 }
 
 /** The packages a snippet may import by name, as real code would. */

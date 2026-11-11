@@ -9,7 +9,10 @@ const CONTRACTION = /\b(\w+n't|it's|you're|we're|that's|there's)\b/gi;
 //Localization is the title of a page, not a spelling choice
 const AMERICAN = /\b(customiz\w*|colors?\b|behaviors?\b|initializ\w*|organiz\w*|favorite|center\b|canceled|labeled|analyz\w*|normaliz\w*|optimiz\w*|recogniz\w*|serializ\w*|finaliz\w*|synchroniz\w*|visualiz\w*|prioritiz\w*|summariz\w*|minimiz\w*|maximiz\w*|(?!Localization)localiz\w*|personaliz\w*|categoriz\w*|authoriz\w*)/gi;
 
-const toDocsId = (title) => `docs/${title.toLowerCase().replace(/[ /]/g, '-')}--overview`;
+//as Storybook sanitises each title segment
+//the page a control's card leads to, titled with the control's name
+const ENTRY_PAGES = ['Get started', 'Overview', 'Build your task grid'];
+const toDocsId = (title) => `docs/${title.split('/').map(part => part.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')).join('-')}--overview`;
 const withoutCode = (text) => text.replace(/`[^`]*`/g, 'x');
 const countSentences = (text) => (text.match(/[.!?](\s|$)/g) ?? []).length;
 
@@ -30,7 +33,7 @@ const checkCards = (source, report) => {
         }
         const parts = target.split('/');
         const last = parts.at(-1);
-        const name = last === 'Get started' || last === 'Overview' ? parts.at(-2) : last;
+        const name = ENTRY_PAGES.includes(last) ? parts.at(-2) : last;
         if (cardTitle !== last && cardTitle !== name) {
             report(`card title "${cardTitle}" does not match the page "${target}"`);
         }
@@ -86,7 +89,7 @@ const checkDescription = (description, report) => {
 };
 
 let issueCount = 0;
-for (const { file, source } of pages) {
+for (const { file, title, source } of pages) {
     const issues = [];
     const report = (message) => issues.push(message);
     if (!source.includes('gridDocsPage(')) {
@@ -97,7 +100,10 @@ for (const { file, source } of pages) {
     }
     const description = source.match(/const DESCRIPTION = `\n([\s\S]*?)\n`/)?.[1];
     if (description) {
-        checkDescription(description, report);
+        //a reference page holds tables only
+        if (!title.endsWith('/Reference')) {
+            checkDescription(description, report);
+        }
     }
     else {
         report('no DESCRIPTION');

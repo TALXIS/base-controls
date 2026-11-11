@@ -96,7 +96,7 @@ export class TaskActions implements ITaskActions {
     }
 
     public async move(taskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null> {
-        if (!this._runtime.isEditingEnabled() || !this._provider.isRecordActive(taskId)) {
+        if (this._runtime.isTaskLocked(taskId)) {
             return null;
         }
         return this._execute(async () => {

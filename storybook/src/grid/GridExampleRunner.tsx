@@ -87,6 +87,9 @@ export interface IGridExampleRunnerProps {
     renderAbovePreview?: () => React.ReactNode
     /** The tabs shown; leave out `'data'` for an example that does not use the docs dataset. */
     tabs?: IRunnerTab[]
+    /** The tab shown first; the preview when omitted. */
+    defaultTab?: IRunnerTab
+    onTabChange?: (tab: IRunnerTab) => void
 }
 
 /** A live Grid with tabs for its preview, its editable code and the data it is handed. */
@@ -95,7 +98,7 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
     const theme = useTheme()
     const styles = React.useMemo(() => getStyles(theme), [theme])
     const tabs = props.tabs ?? ALL_TABS
-    const [tab, setTab] = React.useState<IRunnerTab>('preview')
+    const [tab, setTab] = React.useState<IRunnerTab>(props.defaultTab ?? 'preview')
     const seedFiles = React.useMemo(() => toFiles(props.seedCode), [props.seedCode])
     const [files, setFiles] = React.useState(seedFiles)
     const [activeFile, setActiveFile] = React.useState(seedFiles[0].name)
@@ -109,6 +112,11 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
     const [renderedProvider, setRenderedProvider] = React.useState<IDataProvider>()
     const isEdited = JSON.stringify(files) !== JSON.stringify(seedFiles)
     const syntaxError = React.useMemo(() => tab === 'code' ? getGridExampleSyntaxError(debouncedCode) : null, [tab, debouncedCode])
+
+    const selectTab = (selected: IRunnerTab) => {
+        setTab(selected)
+        props.onTabChange?.(selected)
+    }
 
     const reset = () => {
         setFiles(seedFiles)
@@ -152,7 +160,7 @@ export const GridExampleRunner = (props: IGridExampleRunnerProps) => {
 
     return <div className={styles.root}>
         <div className={styles.toolbar}>
-            <Pivot headersOnly selectedKey={tab} onLinkClick={item => setTab(item?.props.itemKey as IRunnerTab)}>
+            <Pivot headersOnly selectedKey={tab} onLinkClick={item => selectTab(item?.props.itemKey as IRunnerTab)}>
                 {tabs.includes('preview') && <PivotItem itemKey='preview' headerText='Preview' itemIcon='View' />}
                 {tabs.includes('code') && <PivotItem itemKey='code' headerText='Code' itemIcon='Code' />}
                 {tabs.includes('data') && <PivotItem itemKey='data' headerText='Data' itemIcon='Database' />}

@@ -5284,6 +5284,8 @@ declare const useForm: typeof import('@talxis/base-controls').useForm;
 declare const useValidationSummary: typeof import('@talxis/base-controls').useValidationSummary;
 type IFormApi = import('@talxis/base-controls').IFormApi;
 type ITabsComponentProps = import('@talxis/base-controls').ITabsComponentProps;
+/** One record of a lookup-many value, drawn as a pill with the option tag's slots. */
+declare const LookupManyUiPill: (props: ILookupManyUiPillProps & { components?: { onRender?: (props: any) => JSX.Element | null; onRenderLabel?: (props: any) => JSX.Element | null } }) => JSX.Element;
 `
 
 /** What only `import { … } from '@talxis/base-controls'` reaches, never a global. */

@@ -59,6 +59,8 @@ export interface ITaskRuntime extends IRuntime {
     isCreationEnabled(): boolean;
     isEditingEnabled(): boolean;
     isDeletionEnabled(): boolean;
+    /** Whether the task is closed to changes: the grid's record lock, or inactive while no grid is drawn. */
+    isTaskLocked(taskId: string): boolean;
     /** How many hours a day of a task's duration holds. */
     getHoursPerDay(): number;
     readonly hooks: ITaskRuntimeHooks;

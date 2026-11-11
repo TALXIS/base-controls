@@ -106,7 +106,7 @@ export class TaskDragging implements ITaskDragging {
 
     //a refused task snaps back
     private _canMoveTask(taskId: string): boolean {
-        return this._isEditingEnabled() && this._provider.isRecordActive(taskId);
+        return !this._taskRuntime.isTaskLocked(taskId);
     }
 
     private _canDrag(): boolean {
@@ -217,7 +217,7 @@ export class TaskDragging implements ITaskDragging {
         this._hoveredRow = row;
         window.clearTimeout(this._dropIntoTimer);
         this._setDropInto(undefined);
-        if (row && this._provider.isRecordActive(row.id!)) {
+        if (row && !this._taskRuntime.isTaskLocked(row.id!)) {
             this._dropIntoTimer = window.setTimeout(() => this._setDropInto(row), DROP_INTO_ON_HOVER_MS);
         }
     }

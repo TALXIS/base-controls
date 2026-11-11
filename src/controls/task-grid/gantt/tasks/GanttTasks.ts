@@ -112,8 +112,7 @@ export class GanttTasks implements IGanttTasks {
     }
 
     public isLocked(taskId: string): boolean {
-        const record = this.getRecord(taskId);
-        return !!record && !!this._gantt.services.get('grid').modules.find('editing')?.locks.get({ record }).isLocked;
+        return this._taskRuntime.isTaskLocked(taskId);
     }
 
     public isInSavingChain(taskId: string): boolean {
