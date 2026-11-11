@@ -6,46 +6,53 @@ import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
 import { ModulesExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-A task grid has the tree and its commands built in; everything beyond them, such as dragging, assignees, checklists, dependencies or templates, is a module you add. Each module brings one feature and, when it keeps data, reads and writes it in the backend you choose: memory, Dataverse, TALXIS or a store of your own. Try it below: drag a task onto another.
+A task grid draws the tasks as a tree, and everything else a plan needs, such as assignees, checklists, dependencies or templates, comes as a *module* you add. A module brings one feature and, when it keeps data, reads and writes it through a store: in memory, in Dataverse, in TALXIS or in a backend of your own. Try it below: drag a task onto another.
 
 {{canvas: Modules in both places}}
 
 ## Where modules go
 
-A task grid takes modules in two places, both read at mount:
+The modules on this page go in \`TaskDatasetControl\`'s \`modules\`, and every mount loads them anew, before \`onLoad\`. Which prop takes grid and Gantt modules is on [**How it works**](?path=/docs/controls-taskgrid-how-it-works--overview), under *Modules in three places*. Two modules keep no data: \`createTaskDraggingModule()\` moves tasks by dragging their rows, and \`createTaskEditingModule()\` edits cells in place; both are on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview).
 
-| Prop | Takes |
-|---|---|
-| \`TaskDatasetControl\`'s \`modules\` | The task modules below, and DatasetControl modules such as user views. |
-| \`TaskGrid\`'s \`modules\` | Grid modules (see the Grid's [**Modules**](?path=/docs/controls-grid-modules--overview)), with \`createTaskEditingModule()\` in place of the Grid's editing module. Grouping and totals are left out. |
+## Which factory to use
 
-The Gantt has modules of its own: see the Gantt's [**Modules**](?path=/docs/controls-taskgrid-gantt-modules--overview).
+Every module that keeps data comes as one factory per backend, and a base factory that takes a store of your own. The name is what \`modules.get(name)\` on the DatasetControl and \`useDatasetControlModule(name)\` find the module by (see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)).
 
-## The modules
-
-A module that keeps data comes in variants: one per backend, and a base factory for a store of your own.
-
-| Module | Description | Memory | Dataverse | TALXIS | Your own store |
+| Module | Name | Memory | Dataverse | TALXIS | Your own store |
 |---|---|---|---|---|---|
-| [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) | The project the tasks belong to. | \`createMemoryProjectModule\` | \`createDataverseProjectModule\` | | \`createProjectModule\` |
-| [**Custom columns**](?path=/docs/controls-taskgrid-modules-custom-columns--overview) | Columns users add to the tasks themselves. | \`createMemoryCustomColumnsModule\` | | \`createTalxisCustomColumnsModule\` | \`createCustomColumnsModule\` |
-| [**Lookup many**](?path=/docs/controls-taskgrid-modules-lookup-many--overview) | Columns of many related records, such as assignees and tags. | \`createMemoryLookupManyModule\` | \`createDataverseLookupManyModule\` | | \`createLookupManyModule\` |
-| [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) | Tasks created from a template, and saved as one. | \`createMemoryTemplatesModule\` | | | \`createTemplatesModule\` |
-| [**Checklist**](?path=/docs/controls-taskgrid-modules-checklist--overview) | Each task's checklist progress. | \`createMemoryTaskChecklistModule\` | | \`createTalxisTaskChecklistModule\` | \`createTaskChecklistModule\` |
-| [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) | Which tasks wait on which. | \`createMemoryDependenciesModule\` | \`createDataverseDependenciesModule\` | \`createTalxisDependenciesModule\` | \`createDependenciesModule\` |
-| Dragging | Moving tasks by dragging their rows. See *Dragging* on [**Working with tasks**](?path=/docs/controls-taskgrid-working-with-tasks--overview). | | | | |
+| [**Project**](?path=/docs/controls-taskgrid-modules-project--overview) | \`project\` | \`createMemoryProjectModule\` | \`createDataverseProjectModule\` | The Dataverse one | \`createProjectModule\` |
+| [**Custom columns**](?path=/docs/controls-taskgrid-modules-custom-columns--overview) | \`customColumns\` | \`createMemoryCustomColumnsModule\` | None | \`createTalxisCustomColumnsModule\` | \`createCustomColumnsModule\` |
+| [**Lookup many**](?path=/docs/controls-taskgrid-modules-lookup-many--overview) | \`lookupMany\` | \`createMemoryLookupManyModule\` | \`createDataverseLookupManyModule\` | The Dataverse one | \`createLookupManyModule\` |
+| [**Templates**](?path=/docs/controls-taskgrid-modules-templates--overview) | \`templates\` | \`createMemoryTemplatesModule\` | None | None | \`createTemplatesModule\` |
+| [**Checklist**](?path=/docs/controls-taskgrid-modules-checklist--overview) | \`taskChecklist\` | \`createMemoryTaskChecklistModule\` | None | \`createTalxisTaskChecklistModule\` | \`createTaskChecklistModule\` |
+| [**Dependencies**](?path=/docs/controls-taskgrid-modules-dependencies--overview) | \`dependencies\` | \`createMemoryDependenciesModule\` | \`createDataverseDependenciesModule\` | \`createTalxisDependenciesModule\` | \`createDependenciesModule\` |
 
-*Memory* keeps the data in the page, in [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview)s you create and keep, pausing briefly like a server. *Dataverse* reads and writes tables you map to the module through the PCF context's Web API, and *TALXIS* is Dataverse with the TALXIS tables already mapped. User views come in the same variants: see *Where views are kept* on [**User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview).
+The example's *dataverse.ts* builds the task modules of a model-driven app on TALXIS.
+
+## What each backend needs
+
+*Memory* keeps the data in [**\`MemoryTable\`s**](?path=/docs/controls-taskgrid-loading-tasks--overview) that you create and keep outside the control, so it outlives every mount; each module's page lists its tables. Loads and writes pause briefly, as a server would.
+
+*Dataverse* and *TALXIS* read and write through the PCF context's Web API, so they run in a PCF control, and the ones that keep data for each task need the tasks to come from Dataverse, such as through \`DataverseTaskStore\`. Each needs the tables below.
+
+| Factory | Needs |
+|---|---|
+| \`createDataverseProjectModule\` | The project's table and record id, and the columns of its dates. |
+| \`createDataverseLookupManyModule\` | For each column, a 1:N or N:N relationship of the task table, or a link table of your own, and FetchXML for the records offered. Saving through a relationship calls \`Xrm.WebApi\`, which a model-driven app provides. |
+| \`createDataverseDependenciesModule\` | A table of your own with two lookups to the task table and an option set of the type. |
+| \`createTalxisCustomColumnsModule\` | \`talxis_attributedefinition\` and \`talxis_attributevalue\`, a relationship from the task table to \`talxis_attributevalue\`, and \`Xrm\` of a model-driven app. |
+| \`createTalxisTaskChecklistModule\` | \`talxis_checklistjson\` on the task table. |
+| \`createTalxisDependenciesModule\` | \`talxis_taskdependency\`. |
 
 ## Your own store
 
-The base factory takes \`createStore\`, which the module calls with the task runtime on every mount; the checklist in the example uses one. A store implements the module's \`I…Store\`, listed on each module's page with its optional methods marked. Throw "Not implemented." from a required write your backend lacks; an optional \`destroy()\` runs when the module goes.
+Every base factory takes \`createStore\`, which the module calls with the task runtime on every mount. The store implements the module's interface, listed on the module's page, where an example has one of its own; its optional \`destroy()\` runs when the mount goes. Throw an error from a write your backend does not support.
 
 ## Columns from modules
 
-Lookup many, Checklist, Dependencies and Custom columns add columns whose values are kept apart from the tasks. They show in *Edit columns*, and a view shows them by listing them by name. Their values load after the tasks, and their cells show a loading state until they arrive. A sort, filter or search on one of them waits for its values first; the Checklist and Dependencies columns cannot be sorted or filtered.
+Lookup many, Custom columns, Checklist and Dependencies add columns. *Edit columns* offers them, and a view shows one when it lists it by name, as the example does; the module fills in the rest. Their values load after the tasks, while their cells show a loading state, and a sort, filter or search on one of them waits for its values. The Checklist and Dependencies columns cannot be sorted or filtered.
 
-Modules that draw something take \`components\` to change it (see *Changing how it looks* on each module's page), and every module's strings are labels (see [**Localization**](?path=/docs/concepts-localization--overview)).
+To change the texts the modules show, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 
@@ -53,9 +60,9 @@ Modules that draw something take \`components\` to change it (see *Changing how 
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Project', iconName: 'ProjectCollection', href: '?path=/docs/controls-taskgrid-modules-project--overview', text: 'The project the tasks belong to, read by the other modules and the Gantt.' },
     { title: 'Lookup many', iconName: 'People', href: '?path=/docs/controls-taskgrid-modules-lookup-many--overview', text: 'Assignees, tags and other columns of many related records.' },
     { title: 'Dependencies', iconName: 'Link', href: '?path=/docs/controls-taskgrid-modules-dependencies--overview', text: 'Which tasks wait on which, counted in the grid and drawn on the Gantt.' },
+    { title: 'Working with tasks', iconName: 'Edit', href: '?path=/docs/controls-taskgrid-working-with-tasks--overview', text: 'Editing in place and dragging, the two modules that keep no data.' },
 ]
 
 const meta = {

@@ -23,7 +23,7 @@ The switcher needs only a view's name; what the view shows is resolved when it o
 
 | \`resolve\` returns | Default | Description |
 |---|---|---|
-| \`columns\` | Required | The columns in order: \`name\`, plus any \`IColumn\` fields to override, such as \`aggregation\` for a total or \`grouping\`. The rest comes from the provider's available columns; a column the provider does not offer is used as given. |
+| \`columns\` | Required | The columns in order: \`name\`, plus any \`IColumn\` fields to override, such as \`aggregation\` for a total or \`grouping\`. The rest comes from the provider's available columns; a column the provider does not offer is used as given when it has a \`dataType\`, and left out otherwise. |
 | \`linking\` | The provider's own | The related entities its columns come from, as \`alias.column\`. |
 | \`data\` | None | Anything else the view carries, read through \`getView().data\`. Its type is the control's \`TData\`. |
 

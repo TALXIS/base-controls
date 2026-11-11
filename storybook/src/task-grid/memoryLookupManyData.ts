@@ -186,7 +186,7 @@ export const LOOKUP_MANY_SOURCES = {
 
 /** The sample tasks' lookup-many columns, as the module maps them. */
 export const LOOKUP_MANY_COLUMNS: { [columnName: string]: ILookupManyColumn } = {
-    assignedto: { displayName: 'Assigned To', entityName: PEOPLE_ENTITY_NAME, appearance: { type: 'people' } },
+    assignedto: { displayName: 'Assigned to', entityName: PEOPLE_ENTITY_NAME, appearance: { type: 'people' } },
     tags: { displayName: 'Tags', entityName: TAGS_ENTITY_NAME, appearance: { type: 'colorful' } },
     teams: { displayName: 'Teams', entityName: TEAMS_ENTITY_NAME },
 };

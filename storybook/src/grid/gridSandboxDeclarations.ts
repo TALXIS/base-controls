@@ -2234,7 +2234,8 @@ interface IModuleLoadParameters {
     signal: AbortSignal;
 }
 
-interface IGridModule {
+/** TName is the module's name in IGridModuleMap. */
+interface IGridModule<TName extends string = string> {
     /** Unique within the grid; what onLoad returns is provided under it. */
     name: string;
     /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
@@ -3576,8 +3577,8 @@ interface IViewSwitcherProps {
     children?: React.ReactNode;
 }
 
-/** A feature of the control, loaded on every mount. */
-interface IDatasetControlModule {
+/** A feature of the control, loaded on every mount; TName is its name in IDatasetControlModuleMap. */
+interface IDatasetControlModule<TName extends string = string> {
     /** Unique within the control; what onLoad returns is provided under it, for datasetControl.modules. */
     name: string;
     /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
@@ -4228,14 +4229,111 @@ interface ITaskDataProvider extends IDataProvider {
     isColumnQueried(columnName: string): boolean;
     /** Merges raw data into the loaded tasks by their primary id, keeping the user's unsaved edits, and redraws them. */
     updateTaskData(rawRecords: IRawRecord[]): void;
+    /** Every loaded task, whatever the view shows. */
+    getAllRecords(): IRecord[];
+    getRecordTree(): IRecordTree;
+    /** The task the tree is scoped to, if any. */
+    getRootTaskId(): string | undefined;
+    isRecordActive(recordId: string): boolean;
+    areInactiveTasksHidden(): boolean;
+    setInactiveTasksHidden(isHidden: boolean): Promise<void>;
+    /** Shows a new task under parentId at once and has the store create it; null under a task not created yet. */
+    createTask(parentId?: string, parameters?: { position?: TaskCreatePlacement; data?: { [columnName: string]: any } }): IRecord | null;
+    /** Whether the task is shown but the store has not created it yet. */
+    isTaskPending(taskId: string): boolean;
+    /** Resolves false when the store dropped the task and rejects when it failed. */
+    whenTaskCreated(taskId: string): Promise<boolean>;
+    /** Adds the tasks create makes in the backend under parentId. */
+    createTasksWith(parentId: string | undefined, create: (parameters: ITaskCreateParameters) => Promise<ITasksCreateResult | null>, options?: { position?: TaskCreatePlacement }): Promise<IRecord[] | null>;
+    /** Places the task by setting its parent and rank, null when it cannot go there; saving it is up to you. */
+    moveTask(movingTaskId: string, targetTaskId: string, position: 'above' | 'below' | 'child'): IRecord | null;
+    /** Applies what the store reports the backend changed. */
+    synchronize(): Promise<void>;
 }
+
+/** A new task's place among its siblings: at either end, or right before one of them. */
+type TaskCreatePlacement = TaskCreatePosition | { before: string };
+
+/** What a task store's load returns. */
+interface ITaskLoadResult {
+    /** Every task of the view, as plain rows. */
+    rawData: IRawRecord[];
+    /** PrimaryIdAttribute is required. */
+    metadata: IMemoryProviderEntityMetadata;
+    columns: IColumn[];
+}
+/** The task a store's createTask made. */
+interface ITaskCreateResult {
+    record: IRawRecord;
+}
+/** Tasks with no subtasks left to delete, with the whole tree they are in. */
+interface ITaskDeleteParameters {
+    taskIds: string[];
+    tree: IRecordTree;
+}
+/** Which tasks a delete removed, and which it could not. */
+type IDeleteTasksResult = { success: true; deletedTaskIds: string[] } | { success: false; deletedTaskIds: string[]; errors: { id: string; error: any }[] };
+/** How opening the tasks went. */
+type IOpenTasksResult = { success: true } | { success: false; errors: { id: string; error: any }[] };
+/** The tasks the backend changed since the store last read them. */
+interface ITaskChanges {
+    updatedRecords: IRawRecord[];
+}
+
+/** The tree as the grid shows it, filtered and scoped. */
+interface IRecordTreeView {
+    /** The children drawn under a record in order, the top level without an argument. */
+    getChildren(parentRecordId?: string | null): IRecord[];
+    /** Whether the record matches the filter and quick find or is new since the view loaded. */
+    isMatching(recordId: string): boolean;
+    /** Every record the view shows, in the order it shows them. */
+    getOrderedIds(): string[];
+}
+
+/** The whole tree, ignoring what the view hides. */
+interface IRecordStructure {
+    /** The children of a record in order, the top level without an argument. */
+    getChildren(parentRecordId?: string | null): IRecord[];
+    getParent(recordId: string): IRecord | null;
+    /** The ids from the top down to the record itself. */
+    getAncestorIds(recordId: string): string[];
+    /** Every descendant, depth first, in order. */
+    getDescendants(recordId: string): IRecord[];
+    /** The records either side of this one among its siblings, leaving exclude out. */
+    getNeighbours(recordId: string, options?: { exclude?: string }): { previous?: IRecord; next?: IRecord };
+}
+
+/** What the grid shows, and what is actually there. */
+interface IRecordTree {
+    readonly view: IRecordTreeView;
+    readonly structure: IRecordStructure;
+}
+
+/** The ranks the task grid orders siblings by. */
+declare class StackRank {
+    /** A rank between two neighbours; with one, a step beyond it; with neither, the middle. */
+    static between(previousRank?: string | null, nextRank?: string | null): string;
+    static compare(previousRank?: string | null, nextRank?: string | null): number;
+}
+/** Where the task grid's hooks run, after every grid module's. */
+declare const TASK_GRID_PRIORITY: { tree: number };
+/** The column holding expand and collapse all in its header, and each task's row commands. */
+declare const TASK_COMMANDS_COLUMN_KEY: string;
+/** The column a task's ancestor names are written to, when a view has it. */
+declare const PATH_COLUMN_NAME: string;
+/** The Predecessors column the dependencies module adds. */
+declare const PREDECESSORS_COLUMN_NAME: string;
+/** The Successors column the dependencies module adds. */
+declare const SUCCESSORS_COLUMN_NAME: string;
+/** The Checklist column the checklist module adds. */
+declare const TASK_CHECKLIST_COLUMN_NAME: string;
 
 /** One mount of a TaskDatasetControl: what its modules provide on and its parts read. */
 
 /** The task actions, each run with the grid loading and its error shown. */
 interface ITaskActions {
     /** The created task, or null when creation is off or the user cancelled. */
-    create(parentId?: string, options?: { position?: TaskCreatePosition; data?: { [columnName: string]: any } }): Promise<IRecord | null>;
+    create(parentId?: string, options?: { position?: TaskCreatePlacement; data?: { [columnName: string]: any } }): Promise<IRecord | null>;
     /** Opens the tasks in an editor outside the grid, such as a form. */
     open(taskIds: string[]): Promise<any>;
     /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
@@ -4259,6 +4357,11 @@ interface ITaskRuntime extends IRuntime {
     isDeletionEnabled(): boolean;
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
+    getFieldMapping(): IFieldMapping;
+    /** How many hours a day of a task's duration holds; 24 unless onLoad returned hoursPerDay. */
+    getHoursPerDay(): number;
+    /** Copies of the items with every ribbon command UI hook applied, menus included. */
+    getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[];
     /** Runs the operation with the grid loading, and shows its failure once. */
     execute<T>(operation: () => T | Promise<T>, options: IRuntimeExecuteParameters & { error: { rethrow: false } }): Promise<T | undefined>;
     execute<T>(operation: () => T | Promise<T>, options?: IRuntimeExecuteParameters): Promise<T>;
@@ -4369,9 +4472,22 @@ interface IDatasetControlPartMap {
     taskSettings: ITaskSettings;
 }
 
-interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
+interface ITaskGridProps extends Omit<IGridProps, 'modules' | 'components'> {
     /** Read once, at mount; the task tree and the client-side row model are always added. */
     modules?: IGridModule[];
+    components?: ITaskGridComponents;
+}
+
+/** The replaceable pieces of what a task grid draws, the grid's own included. */
+interface ITaskGridComponents extends IGridComponents {
+    /** The subject cell: a cell's keys, plus indent and toggle. */
+    treeCell?: { [piece: string]: any };
+    /** Expand and collapse all, above the row commands. */
+    expansionHeader?: { [piece: string]: any };
+    /** The percent complete cell: a cell's keys, plus progress, the bar drawn while it is not edited. */
+    percentComplete?: { progress?: { onRender?: (props: import('@fluentui/react').IProgressIndicatorProps) => JSX.Element | null }; [piece: string]: any };
+    /** A task's row commands. */
+    taskCommands?: { [piece: string]: any };
 }
 
 /** A label set's strings, as the nearest LabelsProvider gives them. */
@@ -4526,6 +4642,7 @@ declare const createMemoryLookupManyModule: (parameters: {
     columns: { [columnName: string]: ILookupManyColumn };
     /** The tasks' references, keyed by taskId. */
     values: MemoryTable<IMemoryLookupManyValues>;
+    components?: ILookupManyComponents;
 }) => IDatasetControlModule;
 
 /** One Dataverse lookup-many column: the relationship it is reached through, and what it offers. */
@@ -4581,6 +4698,8 @@ interface ITaskCreateParameters {
     stackRank: string;
     /** Column values the task starts with. */
     data?: { [columnName: string]: any };
+    /** The id of a single task the grid already shows. */
+    taskId?: string;
 }
 
 /** Where a template's tasks go: the template, and where its own task lands. */
@@ -4621,7 +4740,7 @@ interface IMemoryTemplate extends IMemoryTemplateTask {
 }
 
 /** Task templates kept in the \`templates\` table, creating their tasks in the \`tasks\` table. */
-declare const createMemoryTemplatesModule: (parameters: { tasks: MemoryTable<IRawRecord>; templates: MemoryTable<IMemoryTemplate> }) => IDatasetControlModule;
+declare const createMemoryTemplatesModule: (parameters: { tasks: MemoryTable<IRawRecord>; templates: MemoryTable<IMemoryTemplate>; components?: ITemplatesComponents }) => IDatasetControlModule;
 
 /** The sample templates: a bug fix, a feature and a research spike. */
 declare const TEMPLATES: IMemoryTemplate[];
@@ -4646,7 +4765,7 @@ interface IMemoryTaskChecklistItem extends ITaskChecklistItem {
     taskId: string;
 }
 /** Checklists kept in the \`items\` table you pass. */
-declare const createMemoryTaskChecklistModule: (parameters: { items: MemoryTable<IMemoryTaskChecklistItem> }) => IDatasetControlModule;
+declare const createMemoryTaskChecklistModule: (parameters: { items: MemoryTable<IMemoryTaskChecklistItem>; reloadOnEditorClosed?: boolean; components?: ITaskChecklistComponents }) => IDatasetControlModule;
 /** Checklists stored as JSON on each TALXIS task. */
 declare const createTalxisTaskChecklistModule: (parameters?: {}) => IDatasetControlModule;
 
@@ -4690,7 +4809,7 @@ interface IDataverseDependenciesSchema {
 /** Holds the tasks' dependencies and shows their counts in the Predecessors and Successors columns. */
 declare const createDependenciesModule: (parameters: { createStore: (taskRuntime: ITaskRuntime, dependencies: any) => ITaskDependenciesStore }) => IDatasetControlModule;
 /** Dependencies kept in the \`dependencies\` table you pass. */
-declare const createMemoryDependenciesModule: (parameters: { dependencies: MemoryTable<ITaskDependency> }) => IDatasetControlModule;
+declare const createMemoryDependenciesModule: (parameters: { dependencies: MemoryTable<ITaskDependency>; reloadOnEditorClosed?: boolean; components?: IDependenciesComponents }) => IDatasetControlModule;
 /** Dependencies kept in a Dataverse table of two task lookups and a type. */
 declare const createDataverseDependenciesModule: (parameters: IDataverseDependenciesSchema) => IDatasetControlModule;
 /** Dependencies kept in TALXIS's task dependency table. */
@@ -4702,6 +4821,48 @@ declare const DEPENDENCIES: ITaskDependency[];
 declare const DEPENDENCY_COLUMNS: IColumn[];
 /** Each task waiting on its previous sibling, under every other parent. */
 declare const createDependencies: (tasks: IRawRecord[]) => ITaskDependency[];
+/** Where dependencies are kept. */
+type IDependenciesStore = ITaskDependenciesStore;
+
+/** The ids the dataset providers reserve, such as the ending of every custom column's name. */
+declare const DatasetConstants: { CUSTOM_COLUMN_NAME_SUFFIX: string; [name: string]: unknown };
+
+/** One record of a lookup-many value, drawn as a pill. */
+interface ILookupManyUiPillProps {
+    reference: ComponentFramework.EntityReference;
+    /** Opens the record; plain text without it. */
+    onOpen?: (reference: ComponentFramework.EntityReference) => void;
+    /** Removes the record; no remove button without it. */
+    onRemove?: (reference: ComponentFramework.EntityReference) => void;
+    removeText?: string;
+    /** The colour it is tinted with, the theme's neutral one by default. */
+    color?: string;
+    className?: string;
+}
+/** The default slots of the records in a lookup-many cell. */
+declare const LookupManyUiPillsComponents: { onRenderPill: (props: ILookupManyUiPillProps) => JSX.Element };
+/** What the lookup-many columns draw, by piece. */
+interface ILookupManyComponents {
+    cell?: { onRenderPill?: (props: ILookupManyUiPillProps) => JSX.Element };
+    editor?: { onRender?: (props: any) => JSX.Element; onRenderPill?: (props: ILookupManyUiPillProps) => JSX.Element; onRenderOption?: (props: any) => JSX.Element };
+    editorPopup?: { onRender?: (props: any) => JSX.Element | null };
+    filter?: { [slot: string]: any };
+}
+/** The default slots of the template picker's list. */
+declare const TemplatesUiRecordListComponents: { onRenderRecord: (props: any) => JSX.Element | null };
+/** What the templates module draws, by piece. */
+interface ITemplatesComponents {
+    selector?: { onRender?: (props: any) => JSX.Element | null };
+    list?: { onRenderRecord?: (props: any) => JSX.Element | null };
+}
+/** What the checklist module draws, by piece. */
+interface ITaskChecklistComponents {
+    progress?: { onRender?: (props: any) => JSX.Element | null; onRenderIcon?: (props: any) => JSX.Element | null; onRenderText?: (props: any) => JSX.Element | null };
+}
+/** What the dependencies module draws, by piece. */
+interface IDependenciesComponents {
+    count?: { onRender?: (props: any) => JSX.Element | null; onRenderIcon?: (props: any) => JSX.Element | null; onRenderArrow?: (props: any) => JSX.Element | null; onRenderCount?: (props: any) => JSX.Element | null };
+}
 
 /** A DatasetControl of tasks, drawn as a tree in its body. */
 declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Element) & {
@@ -4711,6 +4872,7 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
         enableShowHierarchy?: boolean;
         /** The Hide inactive tasks toggle; on unless set to \`false\`. */
         enableHideInactiveTasks?: boolean;
+        components?: { onRender?: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element | null; onRenderButton?: (props: import('@fluentui/react').IButtonProps) => JSX.Element | null };
     }) => JSX.Element;
     /** DatasetControl.PageSizeSwitcher showing the task count, always disabled. */
     PageSizeSwitcher: (props: {}) => JSX.Element;
@@ -4757,11 +4919,36 @@ declare const DATE_TIME_TASK_COLUMNS: IColumn[];
 declare const getDateTimeTaskColumns: (...visibleColumnNames: string[]) => IColumn[];
 
 /** A feature of the Gantt, loaded on every mount before the chart is drawn. */
+/** One mount of a TaskGantt: what its modules load on and what its parts read. */
+interface IGantt {
+    /** onChartReady(chart), onTasksParsed(isFirstLoad) and onDestroyed. */
+    readonly events: { addEventListener(event: 'onChartReady' | 'onTasksParsed' | 'onDestroyed', listener: (...args: any[]) => void): () => void };
+    /** taskRuntime, schedule, theme, overlay, state and labels from the start; chart, timeline, dragging, zooming, grid and tasks once the chart is drawn. */
+    readonly services: { get(key: string): any; find(key: string): any; observe(key: string, effect: (service: any) => void | (() => void)): () => void };
+    /** The loaded modules, by name. */
+    readonly modules: { get(name: string): any; find(name: string): any; observe(name: string, effect: (module: any) => void | (() => void)): () => void };
+    /** What the modules draw over the chart. */
+    readonly surfaces: { readonly hooks: { readonly surfaces: IHookPoint<(surfaces: { key: string; onRender: () => JSX.Element | null }[]) => void> } };
+    /** The styles the chart is drawn with, nested under the chart. */
+    readonly theme: { readonly hooks: { readonly styles: IHookPoint<(result: { styles: any[] }, theme: ITheme) => void> } };
+    readonly hooks: {
+        /** Sets DHTMLX's config, templates and plugins before the chart is drawn. */
+        readonly chartConfig: IHookPoint<(chart: any) => void>;
+    };
+    getProps(): any;
+    getTaskRuntime(): ITaskRuntime;
+    getLabels(set: ILabelSet): ILabels;
+    /** The DHTMLX build the chart is drawn with. */
+    getLibrary(): { Gantt: any; isPro: boolean };
+    /** Redraws the chart, such as after a hook's answer changed. */
+    render(): void;
+}
+
 interface IGanttModule {
     name: string;
     /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
     priority?: number;
-    onLoad(gantt: any, context: IModuleLoadParameters): any;
+    onLoad(gantt: IGantt, context: IModuleLoadParameters): any;
     onDestroy?(instance: any): void;
 }
 
@@ -4796,11 +4983,69 @@ interface IMarkersOptions {
 
 /** The marker a slot is drawn for, inside a Gantt marker. */
 declare const useMarker: () => { marker: IMarker; left: number };
+/** Where the markers of your own come from: loadMarkers runs on every mount and on reload. */
+interface IMarkersStore {
+    loadMarkers(): Promise<IMarker[]>;
+}
+/** The Gantt of the enclosing TaskGantt, inside anything it draws. */
+declare const useGantt: () => IGantt;
+/** One of the Gantt's services; one that comes with the chart is undefined until it does. */
+declare const useGanttService: (key: string) => any;
+/** The module the Gantt loaded under name; throws when there is none. */
+declare const useGanttModule: (name: string) => any;
+/** Where a bar runs, its end exclusive. */
+interface IGanttSpan {
+    start: Date;
+    end: Date;
+}
+/** The task a tooltip part is drawn for. */
+declare const useTaskTooltip: () => {
+    gantt: IGantt;
+    record: IRecord;
+    /** The chart's task, whose dates run ahead of the record's while its bar is dragged. */
+    task: any;
+    target: { x: number; y: number };
+    /** Where the bar runs, ahead of the record while dragged; absent for a milestone. */
+    span?: IGanttSpan;
+    /** Where a milestone sits, and the columns its date came from. */
+    milestone?: { date: Date; edges: ('start' | 'end')[] };
+    /** In minutes; absent for a milestone. */
+    duration?: number;
+    /** The colour the bar is drawn in. */
+    color?: string;
+};
+/** The dependency a link tooltip part is drawn for. */
+declare const useLinkTooltip: () => { gantt: IGantt; dependency: ITaskDependency; predecessor?: IRecord; successor?: IRecord; target: { x: number; y: number } };
+/** The parts a link tooltip is composed of; the links module draws them for the hovered link. */
+declare const LinkTooltip: {
+    /** The default tooltip: the type, the two tasks and the dates the link joins. */
+    Renderer: (props: { components?: { [part: string]: unknown } }) => JSX.Element;
+    /** The callout next to the pointer: onRender, onRenderContainer. */
+    Callout: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The dependency's type, slots by part: header, headerStart, title. */
+    Header: (props: { components?: { [part: string]: TaskTooltipSlots } }) => JSX.Element | null;
+    /** Holds the rows: onRender. */
+    FieldRows: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The predecessor's name: onRender, onRenderIcon, onRenderLabel, onRenderValue. */
+    PredecessorRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The successor's name: onRender, onRenderIcon, onRenderLabel, onRenderValue. */
+    SuccessorRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    /** The dates the link joins: onRender, onRenderIcon, onRenderRange, onRenderDuration. */
+    DateRangeRow: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
+};
+interface IDatasetControlPartMap {
+    /** The TaskGantt in the body, while one is drawn. */
+    gantt: IGantt;
+}
 
 /** The tasks on a timeline, row for row with the TaskGrid beside it; needs startDate and endDate in the field mapping. */
 declare const TaskGantt: ((props: {
     modules: IGanttModule[];
     stateKey?: string;
+    /** How far the timeline scrolls, today ± 25 years by default, widened to fit the tasks. */
+    timelineLimits?: { start?: Dayjs; end?: Dayjs };
+    /** chart: onRender, onRenderChart; overlay: onRender; skeleton: onRender, onRenderSkeleton. */
+    components?: { [piece: string]: { [slot: string]: (props: any) => JSX.Element | null } };
 }) => JSX.Element) & {
     /** The Gantt's zoom; goes in the header. */
     ZoomSlider: (props: { components?: { [slot: string]: unknown } }) => JSX.Element;
@@ -4863,6 +5108,10 @@ interface IMemoryNonWorkingDay extends Omit<INonWorkingDay, 'date' | 'endDate'> 
 }
 /** Non-working days kept in the \`nonWorkingDays\` table you pass. */
 declare const createMemoryNonWorkingDaysModule: (parameters: INonWorkingDaysOptions & { nonWorkingDays: MemoryTable<IMemoryNonWorkingDay> }) => IGanttModule;
+/** Where the non-working days of your own come from: loadNonWorkingDays runs on every mount and on reload. */
+interface INonWorkingDaysStore {
+    loadNonWorkingDays(): Promise<INonWorkingDay[]>;
+}
 /** Moves and resizes bars, writing the dates once the bar is dropped. */
 declare const createBarDraggingModule: (parameters?: { enableMove?: boolean; enableResize?: boolean }) => IGanttModule;
 /** Ctrl+drag draws a new task; a drag along a dateless row draws its dates. */
@@ -4898,7 +5147,7 @@ declare const TaskTooltip: {
 /** What a bar says when the pointer is on it, composed from TaskTooltip's parts. */
 declare const createTaskTooltipModule: (parameters?: { components?: { onRender?: () => JSX.Element | null; [part: string]: unknown }; statusColumnName?: string }) => IGanttModule;
 /** Draws the dependencies module's dependencies between the bars. */
-declare const createLinksModule: (parameters?: {}) => IGanttModule;
+declare const createLinksModule: (parameters?: { components?: { tooltip?: { onRender?: () => JSX.Element | null; [part: string]: unknown } } }) => IGanttModule;
 
 declare namespace ComponentFramework {
     /** The lifecycle the host calls on a PCF control. */
@@ -4918,7 +5167,7 @@ declare namespace ComponentFramework {
 }
 declare module 'react-dom';
 declare module 'dhtmlx-gantt-pro';
-declare module '@talxis/base-controls/gantt' { export { TaskGantt, TaskTooltip, useMarker, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, IGanttModule, IMarker, INonWorkingDay, IMemoryMarker, IMemoryNonWorkingDay } from '@talxis/base-controls'; export interface IGanttModuleMap {} }
+declare module '@talxis/base-controls/gantt' { export { TaskGantt, TaskTooltip, useMarker, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, IGanttModule, IMarker, INonWorkingDay, IMemoryMarker, IMemoryNonWorkingDay, IGantt, IGanttSpan, IMarkersStore, INonWorkingDaysStore, useGantt, useGanttService, useGanttModule, useTaskTooltip, LinkTooltip, useLinkTooltip } from '@talxis/base-controls'; export interface IGanttModuleMap {} }
 
 /** The instances grid modules provide, by name; extend it for a module of your own. */
 interface IGridModuleMap {}

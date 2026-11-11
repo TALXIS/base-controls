@@ -25,7 +25,10 @@ import { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRig
 import { DataProvider, Dataset, DataTypes, MemoryDataProvider, Operators, TotalRow, Type } from '@talxis/client-libraries'
 import { createIsolatedComponent, createIsolatedHost, defineIsolatedContent, CZECH_LABELS, NOTIFICATION_MESSAGE_BAR_LABELS, PcfContextProvider, DatasetControlUiEmptyStateComponents, LocalStorageUserQueriesStore, LabelsProvider, DatasetControlUiPaginationComponents, DatasetControlUiQuickFindComponents, translateLabels, useLabels, useTaskRuntime } from '@talxis/base-controls'
 import { Checklist, CHECKLIST_LABELS, CompletionCell, NameCell, sortChecklistProvider, TaskDatasetControl, TaskGrid, MemoryTaskStore, MemoryTable, createProjectModule, createMemoryProjectModule, createTaskDraggingModule, createTaskEditingModule, createCustomColumnsModule, createMemoryCustomColumnsModule, createLookupManyModule, createMemoryLookupManyModule, createDataverseLookupManyModule, createTemplatesModule, createMemoryTemplatesModule, createTaskChecklistModule, createMemoryTaskChecklistModule, createTalxisTaskChecklistModule, createDependenciesModule, createMemoryDependenciesModule, createDataverseDependenciesModule, createTalxisDependenciesModule } from '@talxis/base-controls'
-import { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker } from '@talxis/base-controls/controls/task-grid/gantt'
+import { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker, useGantt, useGanttService, useGanttModule, useTaskTooltip, LinkTooltip, useLinkTooltip } from '@talxis/base-controls/controls/task-grid/gantt'
+import { PATH_COLUMN_NAME, PREDECESSORS_COLUMN_NAME, StackRank, SUCCESSORS_COLUMN_NAME, TASK_CHECKLIST_COLUMN_NAME, TASK_COMMANDS_COLUMN_KEY, TASK_GRID_PRIORITY } from '@talxis/base-controls'
+import { LookupManyUiPillsComponents, TemplatesUiRecordListComponents } from '@talxis/base-controls'
+import { DatasetConstants } from '@talxis/client-libraries'
 import { LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VIEW_COLUMNS } from '../task-grid/memoryLookupManyData'
 import { TEMPLATES } from '../task-grid/memoryTemplateData'
 import { NON_WORKING_DAYS } from '../task-grid/memoryNonWorkingDayData'
@@ -235,6 +238,16 @@ export const GRID_SANDBOX_SCOPE = {
     TaskDatasetControl,
     TaskGrid,
     useTaskRuntime,
+    StackRank,
+    TASK_GRID_PRIORITY,
+    TASK_COMMANDS_COLUMN_KEY,
+    PATH_COLUMN_NAME,
+    PREDECESSORS_COLUMN_NAME,
+    SUCCESSORS_COLUMN_NAME,
+    TASK_CHECKLIST_COLUMN_NAME,
+    LookupManyUiPillsComponents,
+    TemplatesUiRecordListComponents,
+    DatasetConstants,
     LabelsProvider,
     PcfContextProvider,
     CZECH_LABELS,
@@ -353,7 +366,7 @@ export const GRID_SANDBOX_PACKAGES: { [name: string]: { [name: string]: unknown 
     'react-leaflet': { CircleMarker, Popup },
     //the icons the examples use, so the whole icon set stays out of the bundle
     '@fluentui/react-icons': { ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular, DeleteRegular, DismissRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SaveEditRegular, SaveRegular, SearchRegular, SettingsRegular, TrophyRegular, WarningRegular },
-    '@talxis/base-controls/gantt': { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker },
+    '@talxis/base-controls/gantt': { TaskGantt, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, TaskTooltip, useMarker, useGantt, useGanttService, useGanttModule, useTaskTooltip, LinkTooltip, useLinkTooltip },
 }
 
 //importable from the package only, since a global `Map` would hide JavaScript's own

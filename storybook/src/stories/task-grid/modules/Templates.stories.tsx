@@ -3,44 +3,78 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
-import { TemplatesExample } from '../../../task-grid/examples/modulesExamples'
+import { TemplatesCallExample, TemplatesExample, TemplatesLookExample, TemplatesStoreExample } from '../../../task-grid/examples/modulesExamples'
 
 const DESCRIPTION = `
-A template is a task with subtasks, created again in one go. The templates module adds *From template* under *New*, and *Save as template* for a selected task. Try it below: open *New* and pick *From template*.
+A template is a task with its subtasks, kept so that the same work can be planned again in one go, such as onboarding a new colleague. The templates module adds *From template* to the ribbon's *New* and to each row's **+**, and *Save as template* for the selected task. Try it below: open *New* and pick *From template*.
 
 {{canvas: Create tasks from a template}}
 
 ## What the user can do
 
-With \`enableCreation\`, *From template* sits in the ribbon's *New* menu, for top-level tasks, and in the menu of a row's **+**, for subtasks; the user picks from a searchable list. *Save as template* in the ribbon, with one task selected, saves it and all its subtasks as a template named after it, when the store can save templates.
+| Command | Where | Needs | Does |
+|---|---|---|---|
+| *From template* | Under *New* in the ribbon | \`enableCreation\` | Creates a template's tasks at the top level, from a searchable list of the templates. |
+| *From template* | In the menu of an active task's **+** | \`enableCreation\` | Creates a template's tasks under that task. |
+| *Save as template* | In the ribbon, with one task selected | A store that saves templates | Saves the task and all its subtasks as a template named after it, with the values of the columns the view shows. |
 
-## Where templates are kept
+Both run under the loading overlay. Tasks created from a template show under their parent, which opens, and the grid scrolls to the first of them. To change the overlay's messages, see [**Localization**](?path=/docs/concepts-localization--overview).
 
-| Factory | Keeps the templates |
+## In memory
+
+\`createMemoryTemplatesModule\` keeps the templates in the \`templates\` [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview), keyed by \`id\`, the ones the user saves included. It creates their tasks in \`tasks\`, the table the grid's \`MemoryTaskStore\` reads. A template holds:
+
+| Field | Description |
 |---|---|
-| \`createMemoryTemplatesModule\` | In the \`templates\` [**\`MemoryTable\`**](?path=/docs/controls-taskgrid-loading-tasks--overview) you keep, the ones the user saves included. Their tasks are created in the \`tasks\` table, the one the grid's \`MemoryTaskStore\` reads. |
-| \`createTemplatesModule\` | In a store of yours: \`createStore\` returns an \`ITemplatesStore\`. |
+| \`id\` | Required. |
+| \`name\` | Required. Listed in the picker, and the subject of the template's own task. |
+| \`data\` | The column values of its own task, by column name. |
+| \`children\` | Its subtasks, each with \`data\` and \`children\` of its own. |
 
-A memory template is a task: \`data\` holds its column values, and \`children\` its subtasks, each with \`data\` and \`children\` of its own. The template's own task is named after it.
+## In Dataverse and TALXIS
+
+There is no templates module for Dataverse or TALXIS: write a store over the place your app keeps its templates, as below.
+
+## Your own store
+
+\`createTemplatesModule({ createStore })\` takes a store of yours, which lists the templates and creates their tasks. Without \`createTemplate\`, there is no *Save as template*.
+
+{{story: Templates from your own store}}
+
+## From your code
+
+\`useDatasetControlModule('templates')\`, or \`modules.get('templates')\` on the DatasetControl, returns the module. \`createTasksFromTemplate(templateId, parentId?)\` creates a template's tasks at the top level, or under a task, and returns them; it returns \`null\` while \`enableCreation\` is off. \`createTemplateFromTask(task)\` saves a task and its subtasks as a template.
+
+{{story: Create tasks from your code}}
 
 ## Changing how it looks
 
-\`createTemplatesModule\` and \`createMemoryTemplatesModule\` take \`components\`, read at mount. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+Every templates factory takes \`components\`, read at mount. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`selector\` | \`onRender\` | \`TemplatesUiRecordSelectorFrameComponents\` | The template picker's frame |
-| \`list\` | \`onRenderRecord\` | \`TemplatesUiRecordListComponents\` | A template in the picker's list |
+| \`selector\` | \`onRender\` | \`TemplatesUiRecordSelectorFrameComponents\` | The box the template picker is drawn in |
+| \`list\` | \`onRenderRecord\` | \`TemplatesUiRecordListComponents\` | The button of a template in the picker |
+
+{{story: Change the template list}}
 
 ## Reference
+
+| Factory | Parameter | Description |
+|---|---|---|
+| Every one | \`components\` | See *Changing how it looks* above. |
+| \`createMemoryTemplatesModule\` | \`templates\` | Required. The templates, keyed by \`id\`. |
+| | \`tasks\` | Required. The table the template's tasks are created in. |
+| \`createTemplatesModule\` | \`createStore\` | Required. Called with the task runtime on every mount. |
 
 ### Your own store
 
 | Method | Description |
 |---|---|
-| \`createTemplatesProvider()\` | A provider over the templates, searched by the picker. Created each time it opens. |
-| \`createTasks({ templateId, parentRecord, stackRank })\` | Creates the template's tasks, its own task under \`parentRecord\` at \`stackRank\`. Returns \`{ records }\` with every task created, or \`null\` when cancelled. |
-| \`createTemplate({ name, tree })\` | Optional. Saves a task and its subtasks as a template. Without it, there is no *Save as template*. |
+| \`createTemplatesProvider()\` | A provider over the templates, searched by the picker. Made each time the picker opens. |
+| \`createTasks({ templateId, parentRecord, stackRank })\` | Creates the template's tasks: its own task under \`parentRecord\`, or at the top level without it, at \`stackRank\`, and the rest under it. Returns \`{ records }\` with every task created, or \`null\` when there were none or the user cancelled. |
+| \`createTemplate({ name, tree })\` | Optional. Saves a task and its subtasks as a template: \`tree\` is \`{ data, children }\`, each child the same. |
+| \`destroy()\` | Optional. Called when the mount goes. |
 
 ## Where next
 
@@ -50,6 +84,7 @@ A memory template is a task: \`data\` holds its column values, and \`children\` 
 const EXPLORE: IExploreCard[] = [
     { title: 'Working with tasks', iconName: 'Edit', href: '?path=/docs/controls-taskgrid-working-with-tasks--overview', text: 'Create, edit, delete and move tasks one at a time.' },
     { title: 'Loading tasks', iconName: 'CloudDownload', href: '?path=/docs/controls-taskgrid-loading-tasks--overview', text: 'The memory tables the templates and their tasks are kept in.' },
+    { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-parts-ribbon--overview', text: 'The commands the ribbon shows, and how to add your own.' },
 ]
 
 const meta = {
@@ -71,4 +106,40 @@ type Story = StoryObj<typeof meta>
 export const CreateTasksFromATemplate: Story = {
     name: 'Create tasks from a template',
     render: () => renderStory(<TemplatesExample />),
+}
+
+export const TemplatesFromYourOwnStore: Story = {
+    name: 'Templates from your own store',
+    render: () => renderStory(<TemplatesStoreExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `Release checklists from a store of yours, each created as a release task with its steps under it. Try: open the menu of a row's **+** and pick *From template*.`,
+            },
+        },
+    },
+}
+
+export const CreateTasksFromYourCode: Story = {
+    name: 'Create tasks from your code',
+    render: () => renderStory(<TemplatesCallExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `A header button that creates a sprint from a template at the end of the tasks. Try: press *Plan a sprint*.`,
+            },
+        },
+    },
+}
+
+export const ChangeTheTemplateList: Story = {
+    name: 'Change the template list',
+    render: () => renderStory(<TemplatesLookExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The default template button with an icon of your own. Try: open *New* and pick *From template*.`,
+            },
+        },
+    },
 }

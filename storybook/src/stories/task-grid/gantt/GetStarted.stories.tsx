@@ -3,10 +3,10 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
 import { gridDocsPage } from '../../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../../grid/showcase/ExploreCards'
-import { GanttBasicExample, GanttShowcaseExample } from '../../../task-grid/examples/ganttExamples'
+import { GanttBasicExample, GanttLookExample, GanttShowcaseExample } from '../../../task-grid/examples/ganttExamples'
 
 const DESCRIPTION = `
-The Gantt draws the task grid's tasks on a timeline, row for row with the grid beside it: same order, same tree, same scroll. It is drawn with <a href="https://dhtmlx.com/docs/products/dhtmlxGantt/" target="_blank" rel="noreferrer">DHTMLX Gantt</a>, and dragging bars, drawing tasks, links, markers and tooltips each come from a module you add (see [**Modules**](?path=/docs/controls-taskgrid-gantt-modules--overview)). Try it below: drag a bar to another week.
+A Gantt chart shows when each task runs, as a bar along a timeline. The Gantt sits beside a task grid and shares its rows, its tree, its scroll and its editing, so a task changed in one changes in the other. Try it below: drag a bar to another week.
 
 {{canvas: Overview}}
 
@@ -14,45 +14,39 @@ The Gantt draws the task grid's tasks on a timeline, row for row with the grid b
 
 {{story: Bars beside the grid}}
 
-\`TaskGantt\` and its modules come from their own entry, \`@talxis/base-controls/gantt\`, the only one that loads DHTMLX; the rest comes from \`@talxis/base-controls\`. \`TaskGantt.Split\` puts the \`TaskGrid\` and the \`TaskGantt\` side by side in the body, and \`TaskGantt.ZoomSlider\` goes in the header. The Gantt needs \`startDate\` and \`endDate\` in the field mapping: see *Field mapping* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
+\`TaskGantt\` and its modules come from their own entry, \`@talxis/base-controls/gantt\`, the only one that loads <a href="https://dhtmlx.com/docs/products/dhtmlxGantt/" target="_blank" rel="noreferrer">DHTMLX Gantt</a>; the rest comes from \`@talxis/base-controls\`. Put the \`TaskGrid\` and the \`TaskGantt\` in \`TaskGantt.Split\` in the body of a \`TaskDatasetControl\`, and \`TaskGantt.ZoomSlider\` in its header if you want one.
+
+| The Gantt needs | Without it |
+|---|---|
+| \`startDate\` and \`endDate\` in the field mapping, as under *Field mapping* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview) | The whole control shows an error saying so. |
+| A library module, \`createLibraryModule()\` or \`createProLibraryModule({ Gantt })\`, in \`modules\` | The whole control shows an error saying so. |
+| A \`TaskGrid\` in the same \`TaskDatasetControl\` | The chart is not drawn. |
+
+Everything else the chart does, such as dragging bars, drawing links or marking holidays, comes from a module you add: see [**Modules**](?path=/docs/controls-taskgrid-gantt-modules--overview).
 
 ## What it draws
 
-| A task | Is drawn as |
-|---|---|
-| with a start and an end | a bar, filled as far as \`percentComplete\` |
-| that starts and ends at the same time | a milestone diamond |
-| with subtasks, while the tree is shown | a thinner summary bar |
-| missing a date, or ending before it starts | nothing, until the user draws its dates (see [**Editing on the timeline**](?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview)) |
+Each row of the grid has a row on the timeline, in the same order, and the task's name stays in the grid. A task is drawn as a bar, a milestone diamond or an empty row, depending on its dates: see [**Dates and bars**](?path=/docs/controls-taskgrid-gantt-dates-and-bars--overview). While the tree is shown, a task with subtasks is a thinner summary bar.
 
-With date-only columns, a task spans at least its one day, so it is never a diamond on its own. To draw such tasks as milestones, set the bar's \`type\` to \`'milestone'\` in a \`tasks\` hook of a module of yours (see [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview)).
+A bar fills as far as the task's \`percentComplete\`. Inactive, locked and saving tasks each have a look of their own, and the row under the pointer is highlighted on both sides.
 
-Names stay in the grid. Started, done, inactive, locked and saving tasks each have a look of their own.
-
-## Dates
-
-| Date columns | The end date is | Bars snap to | Zoom goes down to |
-|---|---|---|---|
-| both date only | the task's last day | whole days | days |
-| either with a time of day | the moment it ends | 15 minutes to a day, by zoom | hours |
-
-With \`duration\` mapped, the Gantt writes it along with the dates: the working minutes between them, with a day of the \`hoursPerDay\` hours that \`onLoad\` returns, and [**Non-working days**](?path=/docs/controls-taskgrid-gantt-modules-non-working-days--overview) left out. A change on the timeline saves as an edit in the grid does: see [**Editing on the timeline**](?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview) for what it needs. The Gantt does not schedule tasks itself: see *Rescheduled dates* on [**Loading tasks**](?path=/docs/controls-taskgrid-loading-tasks--overview).
-
-## Zoom and navigation
-
-Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty timeline to scroll it. The ribbon gains *Zoom to fit*, which fits the selected tasks or every task the grid shows, and *Go to today*, and the subject cell of every task with a date *Show on timeline*. To zoom to dates of your own, call \`zoomToRange({ start, end })\`, with two \`Date\`s, on the Gantt's \`zooming\` service: see [**Write a module**](?path=/docs/controls-taskgrid-gantt-write-a-module--overview). With a \`stateKey\` on \`TaskGantt\` and on \`TaskGantt.Split\`, the zoom and the split's width are kept per view, and user views save them.
+The user zooms and moves along the timeline with the slider, the wheel and the ribbon: see [**Zoom and navigation**](?path=/docs/controls-taskgrid-gantt-zoom-and-navigation--overview).
 
 ## Changing how it looks
 
-\`TaskGantt\`, \`TaskGantt.Split\` and \`TaskGantt.ZoomSlider\` take \`components\`, and so do the Gantt modules that draw something: see *Changing how it looks* on each module's page. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+\`TaskGantt\`, \`TaskGantt.Split\` and \`TaskGantt.ZoomSlider\` each take \`components\`; the modules that draw something take their own, listed on each module's page. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`TaskGantt\` | \`chart\` | \`onRender\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` must pass on its \`ref\` |
-| | \`overlay\` | \`onRender\` | \`GanttUiOverlayComponents\` | The overlay while the tasks load |
-| | \`skeleton\` | \`onRender\`, \`onRenderSkeleton\` | \`GanttUiSkeletonComponents\` | The placeholder before the chart is drawn |
+| \`TaskGantt\` | \`chart\` | \`onRender\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` has to pass on its \`ref\` |
+| | \`overlay\` | \`onRender\` | \`GanttUiOverlayComponents\` | The cover over the chart while the tasks load |
+| | \`skeleton\` | \`onRender\`, \`onRenderSkeleton\` | \`GanttUiSkeletonComponents\` | The placeholder until the chart is drawn |
 | \`TaskGantt.Split\` | Top level | \`onRender\`, \`onRenderGridPane\`, \`onRenderGanttPane\`, \`onRenderHandle\` | \`GridGanttUiSplitComponents\` | The two panes and the handle between them |
-| \`TaskGantt.ZoomSlider\` | Top level | \`onRender\`, \`onRenderSlider\`, \`onRenderZoomButton\` | \`GanttUiZoomSliderComponents\` | The slider and its buttons |
+| \`TaskGantt.ZoomSlider\` | Top level | \`onRender\`, \`onRenderSlider\`, \`onRenderZoomButton\` | \`GanttUiZoomSliderComponents\` | The slider and its zoom out and zoom in buttons |
+
+{{story: Zoom slider without buttons}}
+
+To change the Gantt's strings, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Reference
 
@@ -61,16 +55,14 @@ Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty ti
 | Component | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|---|
 | \`TaskGantt\` | \`modules\` | \`IGanttModule[]\` | Required | At mount | The Gantt's modules, a library module among them. |
-| | \`stateKey\` | \`string\` | None | At mount | Where the zoom is kept, per view. |
-| | \`timelineLimits\` | \`{ start?: Dayjs, end?: Dayjs }\` | Today ± 25 years | Live | How far the timeline scrolls. Widened to fit the tasks. |
+| | \`stateKey\` | \`string\` | None | At mount | Where the zoom is kept in each view. See [**Zoom and navigation**](?path=/docs/controls-taskgrid-gantt-zoom-and-navigation--overview). |
+| | \`timelineLimits\` | \`{ start?: Dayjs, end?: Dayjs }\` | Today ± 25 years | Live | How far the timeline scrolls, widened to fit the tasks. |
 | | \`components\` | \`ITaskGanttComponents\` | Defaults | Live | See *Changing how it looks* above. |
 | \`TaskGantt.Split\` | \`children\` | Two elements | Required | Live | The \`TaskGrid\`, then the \`TaskGantt\`. |
 | | \`defaultGanttSize\` | \`number\` | \`60\` | At mount | The Gantt's share of the width, in percent, until the user drags the handle. |
-| | \`stateKey\` | \`string\` | None | At mount | Where the user's width is kept, per view. |
+| | \`stateKey\` | \`string\` | None | At mount | Where the user's width is kept in each view. |
 | | \`components\` | \`Partial<IGridGanttUiSplitComponents>\` | Defaults | Live | See *Changing how it looks* above. |
 | \`TaskGantt.ZoomSlider\` | \`components\` | \`Partial<IGanttUiZoomSliderComponents>\` | Defaults | Live | See *Changing how it looks* above. |
-
-To change the Gantt's strings, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## Where next
 
@@ -78,9 +70,9 @@ To change the Gantt's strings, see [**Localization**](?path=/docs/concepts-local
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/controls-taskgrid-gantt-modules--overview', text: 'The library, and every feature on top: take only the ones you need.' },
-    { title: 'Editing on the timeline', iconName: 'Edit', href: '?path=/docs/controls-taskgrid-gantt-modules-editing-on-the-timeline--overview', text: 'Move and resize bars, draw new tasks, and select them from the chart.' },
-    { title: 'Write a module', iconName: 'Plug', href: '?path=/docs/controls-taskgrid-gantt-write-a-module--overview', text: 'Colour bars, relabel the scale, and draw over the chart.' },
+    { title: 'Dates and bars', iconName: 'CalendarSettings', href: '?path=/docs/controls-taskgrid-gantt-dates-and-bars--overview', text: 'Which tasks are bars, which are milestones, and how durations are counted.' },
+    { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/controls-taskgrid-gantt-modules--overview', text: 'Every Gantt feature, and where each one keeps its data.' },
+    { title: 'Write a module', iconName: 'Plug', href: '?path=/docs/controls-taskgrid-gantt-write-a-module--overview', text: 'Colour bars, add class names and styles, and draw over the chart.' },
 ]
 
 const meta = {
@@ -111,6 +103,18 @@ export const BarsBesideTheGrid: Story = {
         docs: {
             description: {
                 story: `The sample tasks with nothing but the library module. Try: drag the handle between the grid and the timeline.`,
+            },
+        },
+    },
+}
+
+export const ZoomSliderWithoutButtons: Story = {
+    name: 'Zoom slider without buttons',
+    render: () => renderStory(<GanttLookExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The zoom slider with its \`onRenderZoomButton\` slot drawing nothing. Try: delete \`components\` in **Code** to bring the buttons back.`,
             },
         },
     },

@@ -1,7 +1,6 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import type { IGridExampleFile } from '../../grid/GridLivePreview'
-import { TASK_EXAMPLE_TABS, withTasks } from './shared'
+import { TASK_EXAMPLE_TABS, withOffice, withTasks } from './shared'
 
 const SHOWCASE_CODE = `import { createFilteringModule, createMemoryCustomColumnsModule, createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createMemoryTemplatesModule, createRowSelectionModule, createSortingModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ICustomColumnRow, ICustomColumnValuesRow, IMemoryTemplate, ITaskGridView, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { createLoadTasks, createTaskTable, TASK_VIEWS } from './tasks'
@@ -28,375 +27,239 @@ const VIEWS: ITaskGridView[] = [{
 
 const loadTasks = createLoadTasks(tasks, VIEWS)
 
-const GridExample = () => {
-    const modules = [
-        createTaskDraggingModule(),
-        createMemoryCustomColumnsModule({ columns: customColumns, values: customColumnValues, enableCreation: true }),
-        createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
-        createMemoryTemplatesModule({ tasks, templates }),
-        createMemoryTaskChecklistModule({ items: checklistItems }),
-        createMemoryDependenciesModule({ dependencies }),
-    ]
-
-    //enableCreation adds the + at the start of a row, which adds a subtask
-    return <TaskDatasetControl modules={modules} enableCreation enableEditing enableDeletion onLoad={loadTasks} height='560px'>
-        <DatasetControl.Header>
-            <DatasetControl.Header.Start>
-                <DatasetControl.ViewSwitcher />
-            </DatasetControl.Header.Start>
-            <DatasetControl.Header.End>
-                <TaskDatasetControl.Ribbon />
-                {/* picks module columns or adds a custom one */}
-                <DatasetControl.EditColumns />
-                <DatasetControl.QuickFind />
-                <TaskDatasetControl.Settings />
-            </DatasetControl.Header.End>
-        </DatasetControl.Header>
-        <DatasetControl.Body>
-            <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule(), createSortingModule(), createFilteringModule()]} />
-        </DatasetControl.Body>
-    </TaskDatasetControl>
-}
-`
-
-const BASIC_CODE = `import { DatasetControl, ITaskGridLoadResult, ITaskRuntime, MemoryTable, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
-
-//TASKS, TASK_METADATA and TASK_COLUMNS are the sample tasks of these docs
-//keeps every change, so it is made once
-const tasks = new MemoryTable({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: TASKS })
-
-//the columns that make the tree
-const fieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank' }
-
-//returns where the tasks are kept and the field mapping
-const loadTasks = (taskRuntime: ITaskRuntime): ITaskGridLoadResult => ({
-    store: new MemoryTaskStore({ taskRuntime, tasks, metadata: TASK_METADATA, columns: TASK_COLUMNS }),
-    fieldMapping,
-})
-
-//the DatasetControl for tasks; creating, editing and deleting are off until turned on
-const GridExample = () => <TaskDatasetControl onLoad={loadTasks} enableCreation height='420px'>
-    <DatasetControl.Header>
-        <DatasetControl.Header.End>
-            <TaskDatasetControl.Ribbon />
-            <TaskDatasetControl.Settings />
-        </DatasetControl.Header.End>
-    </DatasetControl.Header>
-    <DatasetControl.Body>
-        {/* takes the Grid's props, and throws outside a TaskDatasetControl */}
-        <TaskGrid />
-    </DatasetControl.Body>
-</TaskDatasetControl>
-`
-
-const OWN_TASKS_CODE = `import { DatasetControl, ITaskGridLoadResult, ITaskRuntime, MemoryTable, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
-import { IColumn } from '@talxis/client-libraries'
-
-//a parent lookup holds { id: { guid }, etn, name }
-const parentOf = (id: string, name: string) => [{ id: { guid: id }, etn: 'officetask', name }]
-
-//statecode 0 is an active task
-const OFFICE_MOVE = [
-    { taskid: 'move', subject: 'Move to the new office', parentid: null, stackrank: '0|100000:', statecode: 0, owner: 'Jana', due: '2026-03-31' },
-    { taskid: 'lease', subject: 'Sign the lease', parentid: parentOf('move', 'Move to the new office'), stackrank: '0|100000:', statecode: 1, owner: 'Jana', due: '2026-01-15' },
-    { taskid: 'fitout', subject: 'Fit out the space', parentid: parentOf('move', 'Move to the new office'), stackrank: '0|200000:', statecode: 0, owner: 'Tomáš', due: '2026-02-28' },
-    { taskid: 'desks', subject: 'Order desks and chairs', parentid: parentOf('fitout', 'Fit out the space'), stackrank: '0|100000:', statecode: 0, owner: 'Petra', due: '2026-02-01' },
-    { taskid: 'network', subject: 'Install the network', parentid: parentOf('fitout', 'Fit out the space'), stackrank: '0|200000:', statecode: 0, owner: 'Martin', due: '2026-02-20' },
-    { taskid: 'movers', subject: 'Book the movers', parentid: parentOf('move', 'Move to the new office'), stackrank: '0|300000:', statecode: 0, owner: 'Tomáš', due: '2026-03-10' },
-    { taskid: 'party', subject: 'Plan the opening party', parentid: null, stackrank: '0|200000:', statecode: 0, owner: 'Lucie', due: '2026-04-10' },
+//the task modules go on the control
+const controlModules = [
+    createTaskDraggingModule(),
+    createMemoryCustomColumnsModule({ columns: customColumns, values: customColumnValues, enableCreation: true }),
+    createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: LOOKUP_MANY_COLUMNS, values: lookupManyValues }),
+    createMemoryTemplatesModule({ tasks, templates }),
+    createMemoryTaskChecklistModule({ items: checklistItems }),
+    createMemoryDependenciesModule({ dependencies }),
 ]
 
-//what the grid and Edit columns pick from
-const COLUMNS: IColumn[] = [
-    { name: 'subject', displayName: 'Task', dataType: 'SingleLine.Text', isPrimary: true, visualSizeFactor: 300 },
-    { name: 'owner', displayName: 'Owner', dataType: 'SingleLine.Text', visualSizeFactor: 140 },
-    { name: 'due', displayName: 'Due', dataType: 'DateAndTime.DateOnly', visualSizeFactor: 130 },
-    { name: 'taskid', displayName: 'ID', dataType: 'SingleLine.Text', isHidden: true },
-    { name: 'parentid', displayName: 'Parent', dataType: 'Lookup.Simple', isHidden: true },
-    { name: 'stackrank', displayName: 'Rank', dataType: 'SingleLine.Text', isHidden: true },
-    { name: 'statecode', displayName: 'State', dataType: 'Whole.None', isHidden: true },
-]
+//the grid modules go on the grid
+const gridModules = [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule(), createSortingModule(), createFilteringModule()]
 
-//the columns that make the tree
-const fieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank' }
-
-const metadata = { PrimaryIdAttribute: 'taskid', LogicalName: 'officetask' }
-
-//keeps every change, so it is made once
-const tasks = new MemoryTable({ idKey: 'taskid', rows: OFFICE_MOVE })
-
-//called on every mount
-const loadTasks = (taskRuntime: ITaskRuntime): ITaskGridLoadResult => ({
-    store: new MemoryTaskStore({ taskRuntime, tasks, metadata, columns: COLUMNS }),
-    fieldMapping,
-})
-
-const GridExample = () => <TaskDatasetControl onLoad={loadTasks} height='360px'>
-    <DatasetControl.Body>
-        <TaskGrid />
-    </DatasetControl.Body>
-</TaskDatasetControl>
-`
-
-const ROOT_TASK_CODE = `import { DatasetControl, ITaskGridLoadResult, ITaskRuntime, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
-import { Dropdown } from '@fluentui/react'
-import { createLoadTasks, createTaskTable } from './tasks'
-
-const loadAllTasks = createLoadTasks(createTaskTable())
-
-//the top-level sample tasks are the projects
-const PROJECTS = [
-    { key: '', text: 'Every project' },
-    ...TASKS.filter(task => !task.parentid).map(task => ({ key: task[TASK_METADATA.PrimaryIdAttribute], text: task.subject })),
-]
-
-const GridExample = () => {
-    const [rootTaskId, setRootTaskId] = React.useState('')
-
-    const loadTasks = async (taskRuntime: ITaskRuntime): Promise<ITaskGridLoadResult> => ({
-        ...await loadAllTasks(taskRuntime),
-        rootTaskId: rootTaskId || undefined,
-    })
-
-    return <>
-        <Dropdown label='Project' options={PROJECTS} selectedKey={rootTaskId} onChange={(_, option) => setRootTaskId(String(option!.key))} />
-        {/* the root is read at mount, so a new key mounts the control again */}
-        <TaskDatasetControl key={rootTaskId} enableCreation onLoad={loadTasks} height='420px'>
-            <DatasetControl.Header>
-                <DatasetControl.Header.End>
-                    <TaskDatasetControl.Ribbon />
-                </DatasetControl.Header.End>
-            </DatasetControl.Header>
-            <DatasetControl.Body>
-                <TaskGrid />
-            </DatasetControl.Body>
-        </TaskDatasetControl>
-    </>
-}
-`
-
-const VIEWS_CODE = `import { createFilteringModule, createSortingModule, DatasetControl, ITaskGridView, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
-import { createLoadTasks, createTaskTable } from './tasks'
-
-const COLUMNS = getTaskColumns('subject', 'statuscode', 'priority', 'scheduledstart', 'scheduledend')
-
-//each view sets the provider up as it opens
-const VIEWS: ITaskGridView[] = [
-    { id: 'all', name: 'All tasks', resolve: () => ({ columns: COLUMNS }) },
-    {
-        id: 'planning',
-        name: 'Planning',
-        resolve: provider => {
-            //sorts the tasks among their siblings
-            provider.setSorting([{ name: 'scheduledstart', sortDirection: 0 }])
-            return { columns: COLUMNS }
-        },
-    },
-    {
-        id: 'design',
-        name: 'Design work',
-        resolve: provider => {
-            //matches keep their ancestors
-            provider.setSearchQuery('design')
-            return { columns: COLUMNS }
-        },
-    },
-    //the task grid reads isFlatList from the view's data
-    { id: 'flat', name: 'Every task on its own', resolve: () => ({ columns: COLUMNS, data: { isFlatList: true } }) },
-]
-
-//the views come with the store
-const loadTasks = createLoadTasks(createTaskTable(), VIEWS)
-
-const GridExample = () => <TaskDatasetControl onLoad={loadTasks} height='480px'>
+const GridExample = () => <TaskDatasetControl modules={controlModules} enableCreation enableEditing enableDeletion onLoad={loadTasks} height='560px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>
+            <TaskDatasetControl.Ribbon />
+            {/* picks module columns or adds a custom one */}
+            <DatasetControl.EditColumns />
             <DatasetControl.QuickFind />
             <TaskDatasetControl.Settings />
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <TaskGrid modules={[createSortingModule(), createFilteringModule()]} />
+        <TaskGrid modules={gridModules} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `
 
-const WORKING_CODE = `import { createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ITaskRuntime, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
-import { MessageBar } from '@fluentui/react'
+const SMALLEST_CODE = `import { DatasetControl, ITaskGridLoadResult, ITaskRuntime, MemoryTable, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+
+//TASKS, TASK_METADATA and TASK_COLUMNS are the sample tasks of these docs
+//the table keeps every change, so it is made once
+const tasks = new MemoryTable({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: TASKS })
+
+//the columns that make the tree: each task's parent, its name, and its place among its siblings
+const fieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank' }
+
+//called on every mount: where the tasks are kept, and which columns make the tree
+const loadTasks = (taskRuntime: ITaskRuntime): ITaskGridLoadResult => ({
+    store: new MemoryTaskStore({ taskRuntime, tasks, metadata: TASK_METADATA, columns: TASK_COLUMNS }),
+    fieldMapping,
+})
+
+//the DatasetControl of tasks, with the grid that draws them in its body
+const GridExample = () => <TaskDatasetControl onLoad={loadTasks} height='420px'>
+    <DatasetControl.Body>
+        <TaskGrid />
+    </DatasetControl.Body>
+</TaskDatasetControl>
+`
+
+const PARTS_CODE = `import { createRowSelectionModule, DatasetControl, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { createLoadTasks, createTaskTable } from './tasks'
 
 const loadTasks = createLoadTasks(createTaskTable())
 
-const GridExample = () => {
-    const [message, setMessage] = React.useState('')
-
-    const onLoad = async (taskRuntime: ITaskRuntime) => {
-        //a new provider on every mount, so its listeners go with it
-        taskRuntime.services.observe('provider', provider => {
-            provider.taskEvents.addEventListener('onTasksCreated', records => setMessage('Created ' + records.map(record => record.getValue('subject')).join(', ')))
-            provider.taskEvents.addEventListener('onTasksDeleted', taskIds => setMessage('Tasks deleted: ' + taskIds.length))
-            provider.taskEvents.addEventListener('onTaskMoved', ({ movingRecord, position, targetRecord }) => setMessage('Moved ' + movingRecord.getValue('subject') + ' ' + position + ' ' + targetRecord.getValue('subject')))
-        })
-        return loadTasks(taskRuntime)
-    }
-
-    return <>
-        {message && <MessageBar>{message}</MessageBar>}
-        {/* the dragging module moves tasks by dragging their rows */}
-        <TaskDatasetControl modules={[createTaskDraggingModule()]} enableCreation enableEditing enableDeletion onLoad={onLoad} height='480px'>
-            <DatasetControl.Header>
-                <DatasetControl.Header.End>
-                    <TaskDatasetControl.Ribbon />
-                </DatasetControl.Header.End>
-            </DatasetControl.Header>
-            <DatasetControl.Body>
-                {/* Edit and Delete act on the selected rows */}
-                <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()]} />
-            </DatasetControl.Body>
-        </TaskDatasetControl>
-    </>
-}
+const GridExample = () => <TaskDatasetControl enableCreation enableEditing enableDeletion onLoad={loadTasks} height='520px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            {/* the views onLoad returns */}
+            <DatasetControl.ViewSwitcher />
+        </DatasetControl.Header.Start>
+        <DatasetControl.Header.End>
+            {/* New, Edit and Delete, ahead of your own commands */}
+            <TaskDatasetControl.Ribbon />
+            <DatasetControl.EditColumns />
+            <DatasetControl.QuickFind />
+            {/* Show hierarchy, Hide inactive tasks and what the modules add */}
+            <TaskDatasetControl.Settings />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Notifications />
+    <DatasetControl.Body>
+        {/* Edit and Delete act on the selected rows */}
+        <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' })]} />
+    </DatasetControl.Body>
+    <DatasetControl.Footer>
+        <DatasetControl.Footer.Start>
+            {/* how many tasks the tree shows */}
+            <TaskDatasetControl.PageSizeSwitcher />
+        </DatasetControl.Footer.Start>
+    </DatasetControl.Footer>
+</TaskDatasetControl>
 `
 
-const KEEP_TASKS_CODE = `import { createRowSelectionModule, DatasetControl, MemoryTable, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
-import { DefaultButton, Stack, Text } from '@fluentui/react'
-import type { IRawRecord } from '@talxis/client-libraries'
+const LOOKS_CODE = `import { DatasetControl, ITaskGridComponents, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { CommandBarButton, ProgressIndicator } from '@fluentui/react'
 import { createLoadTasks, createTaskTable } from './tasks'
 
-const GridExample = () => {
-    //the table outlives every mount, so it can be read and kept at any time
-    const [tasks, setTasks] = React.useState(createTaskTable)
-    const loadTasks = createLoadTasks(tasks)
-    const [copy, setCopy] = React.useState<string>()
-    const [mountKey, setMountKey] = React.useState(0)
+const loadTasks = createLoadTasks(createTaskTable())
 
-    //the kept rows start a new table, and the control is mounted anew over it
-    const loadCopy = () => {
-        setTasks(new MemoryTable<IRawRecord>({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: JSON.parse(copy!) }))
-        setMountKey(key => key + 1)
+const components: ITaskGridComponents = {
+    percentComplete: {
+        //the bar a percent complete cell draws: taller, and Done at 100%
+        progress: { onRender: props => <ProgressIndicator {...props} barHeight={8} description={props.percentComplete === 1 ? 'Done' : props.description} /> },
+    },
+}
+
+const GridExample = () => <TaskDatasetControl onLoad={loadTasks} height='440px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.End>
+            {/* the settings button without its text */}
+            <TaskDatasetControl.Settings components={{ onRenderButton: props => <CommandBarButton {...props} text={undefined} /> }} />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <TaskGrid components={components} />
+    </DatasetControl.Body>
+</TaskDatasetControl>
+`
+
+const STORE_LOG_CODE = `import { createRowSelectionModule, createSortingModule, createTaskEditingModule, DatasetControl, ITaskCreateParameters, ITaskDeleteParameters, ITaskGridLoadResult, ITaskGridView, ITaskRuntime, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import type { IRecord } from '@talxis/client-libraries'
+import { Stack, Text } from '@fluentui/react'
+import { createOfficeTable, OFFICE_COLUMNS, OFFICE_METADATA, officeFieldMapping } from './office'
+
+const tasks = createOfficeTable()
+
+//the memory store, reporting every call the task provider makes to it
+class LoggingStore extends MemoryTaskStore {
+    private _log: (line: string) => void
+
+    constructor(taskRuntime: ITaskRuntime, log: (line: string) => void) {
+        super({ taskRuntime, tasks, metadata: OFFICE_METADATA, columns: OFFICE_COLUMNS })
+        this._log = log
+    }
+
+    public async load() {
+        this._log('load: every task of the view, once per mount')
+        return super.load()
+    }
+
+    public async createTask(parameters: ITaskCreateParameters) {
+        this._log('createTask: the new row waits for the store')
+        const result = await super.createTask(parameters)
+        this._log('createTask: done')
+        return result
+    }
+
+    public async saveTask(task: IRecord) {
+        this._log(\`saveTask: \${task.getValue('subject')}\`)
+        return super.saveTask(task)
+    }
+
+    public async deleteTasks(parameters: ITaskDeleteParameters) {
+        this._log(\`deleteTasks: \${parameters.taskIds.length}\`)
+        return super.deleteTasks(parameters)
+    }
+
+    //asked after every write for what the backend changed on its own
+    public async synchronize() {
+        this._log('synchronize')
+        return { updatedRecords: [] }
+    }
+}
+
+const VIEWS: ITaskGridView[] = [
+    { id: 'all', name: 'All tasks', resolve: () => ({ columns: OFFICE_COLUMNS }) },
+    {
+        id: 'due',
+        name: 'By due date',
+        resolve: provider => {
+            provider.setSorting([{ name: 'due', sortDirection: 0 }])
+            return { columns: OFFICE_COLUMNS }
+        },
+    },
+]
+
+const GridExample = () => {
+    const [lines, setLines] = React.useState<string[]>([])
+    const log = (line: string) => setLines(previous => [line, ...previous].slice(0, 8))
+
+    //every mount gets a new task runtime, and returns a new store
+    const loadTasks = (taskRuntime: ITaskRuntime): ITaskGridLoadResult => {
+        log('onLoad: a new mount')
+        return { store: new LoggingStore(taskRuntime, log), fieldMapping: officeFieldMapping, views: VIEWS }
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <Stack horizontal verticalAlign='center' tokens={{ childrenGap: 8 }}>
-            <DefaultButton text='Keep a copy' onClick={() => setCopy(JSON.stringify(tasks.getRows()))} />
-            <DefaultButton text='Load the copy' disabled={!copy} onClick={loadCopy} />
-            {copy && <Text>{JSON.parse(copy).length} tasks kept</Text>}
-        </Stack>
-        <TaskDatasetControl key={mountKey} enableCreation enableDeletion onLoad={loadTasks} height='420px'>
+        <TaskDatasetControl enableCreation enableEditing enableDeletion onLoad={loadTasks} height='360px'>
             <DatasetControl.Header>
+                <DatasetControl.Header.Start>
+                    <DatasetControl.ViewSwitcher />
+                </DatasetControl.Header.Start>
                 <DatasetControl.Header.End>
                     <TaskDatasetControl.Ribbon />
+                    <DatasetControl.QuickFind />
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' })]} />
+                <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule(), createSortingModule()]} />
             </DatasetControl.Body>
         </TaskDatasetControl>
+        {/* the newest call first */}
+        <Stack>
+            {lines.map((line, index) => <Text key={index} variant='small'>{line}</Text>)}
+        </Stack>
     </Stack>
 }
 `
 
-const TALKING_CODE = `import { createRowSelectionModule, DatasetControl, IDatasetControl, ITaskRuntime, ITaskViewData, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
-import { DefaultButton, Stack } from '@fluentui/react'
+const THREE_PLACES_CODE = `import { createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { createBarDraggingModule, createLibraryModule, TaskGantt } from '@talxis/base-controls/gantt'
 import { createLoadTasks, createTaskTable } from './tasks'
 
 const loadTasks = createLoadTasks(createTaskTable())
 
-const GridExample = () => {
-    const runtimeRef = React.useRef<ITaskRuntime>()
-    const [showButtons, setShowButtons] = React.useState(true)
-    //the settings hook reads the latest value when the menu opens
-    const showButtonsRef = React.useRef(showButtons)
-    showButtonsRef.current = showButtons
+//the control's modules work with the tasks, whatever draws them
+const controlModules = [createTaskDraggingModule()]
 
-    //called on every mount with its new control, before its modules load
-    const onSetup = (control: IDatasetControl<ITaskViewData>) => {
-        control.modules.observe('taskRuntime', (taskRuntime: ITaskRuntime) => {
-            runtimeRef.current = taskRuntime
-        })
-        //the part exists once TaskDatasetControl.Settings mounts
-        control.parts.observe('taskSettings', settings => settings.hooks.settings.add(items => items.push({
-            key: 'showButtons',
-            label: 'Show the buttons',
-            isChecked: showButtonsRef.current,
-            onChange: setShowButtons,
-        })))
-    }
+//the grid's modules change what the grid does
+const gridModules = [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()]
 
-    const addTask = async () => {
-        await runtimeRef.current!.tasks.create(undefined, { data: { subject: 'Review the budget', priority: 2 } })
-    }
+//the Gantt's modules change what the timeline does; the library module is required
+const ganttModules = [createLibraryModule(), createBarDraggingModule()]
 
-    const completeSelected = async () => {
-        const runtime = runtimeRef.current!
-        const provider = runtime.getProvider()
-        const records = provider.getSelectedRecordIds().map(id => provider.getRecordsMap()[id])
-        //runs behind the loading overlay
-        await runtime.execute(async () => {
-            for (const record of records) {
-                record.setValue('percentcomplete', 100)
-                await record.save()
-            }
-        }, { loading: { message: 'Completing tasks...' }, error: { title: 'The tasks could not be completed.' } })
-    }
-
-    const toggleHierarchy = () => {
-        const runtime = runtimeRef.current!
-        runtime.setFlatList(!runtime.isFlatList())
-    }
-
-    return <>
-        {showButtons && <Stack horizontal tokens={{ childrenGap: 8 }}>
-            <DefaultButton text='Add a task' onClick={addTask} />
-            <DefaultButton text='Complete the selected' onClick={completeSelected} />
-            <DefaultButton text='Toggle the hierarchy' onClick={toggleHierarchy} />
-        </Stack>}
-        <TaskDatasetControl enableCreation onSetup={onSetup} onLoad={loadTasks} height='440px'>
-            <DatasetControl.Header>
-                <DatasetControl.Header.End>
-                    <TaskDatasetControl.Settings />
-                </DatasetControl.Header.End>
-            </DatasetControl.Header>
-            <DatasetControl.Body>
-                <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' })]} />
-            </DatasetControl.Body>
-        </TaskDatasetControl>
-    </>
-}
+const GridExample = () => <TaskDatasetControl modules={controlModules} enableEditing onLoad={loadTasks} height='480px'>
+    <DatasetControl.Body>
+        <TaskGantt.Split>
+            <TaskGrid modules={gridModules} />
+            <TaskGantt modules={ganttModules} />
+        </TaskGantt.Split>
+    </DatasetControl.Body>
+</TaskDatasetControl>
 `
 
-const DATAVERSE_TASKS_FILE: IGridExampleFile = {
-    name: 'dataverse.ts',
-    code: `import { DataverseTaskStore, ITaskGridLoadResult, ITaskRuntime } from '@talxis/base-controls'
-
-//in a model-driven app, load the tasks this way instead of from the memory table in GridExample.tsx
-const TASKS_FETCH_XML = \`<fetch>
-    <entity name="task">
-        <attribute name="subject" />
-        <attribute name="parentid" />
-        <attribute name="stackrank" />
-        <attribute name="statecode" />
-        <filter>
-            <condition attribute="projectid" operator="eq" value="{{ project.id }}" />
-        </filter>
-    </entity>
-</fetch>\`
-
-export const loadTasks = (taskRuntime: ITaskRuntime): ITaskGridLoadResult => ({
-    store: new DataverseTaskStore({ taskRuntime, fetchXml: TASKS_FETCH_XML }),
-    fieldMapping: { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank' },
-})
-`,
-}
-
 export const TaskGridShowcaseExample = () => <GridExampleRunner seedCode={withTasks(SHOWCASE_CODE)} tabs={TASK_EXAMPLE_TABS} />
-export const BasicTaskGridExample = () => <GridExampleRunner seedCode={BASIC_CODE} tabs={TASK_EXAMPLE_TABS} />
-export const OwnTasksExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: OWN_TASKS_CODE }, DATAVERSE_TASKS_FILE]} tabs={TASK_EXAMPLE_TABS} />
-export const RootTaskExample = () => <GridExampleRunner seedCode={withTasks(ROOT_TASK_CODE)} tabs={TASK_EXAMPLE_TABS} />
-export const TaskViewsExample = () => <GridExampleRunner seedCode={withTasks(VIEWS_CODE)} tabs={TASK_EXAMPLE_TABS} />
-export const WorkingWithTasksExample = () => <GridExampleRunner seedCode={withTasks(WORKING_CODE)} tabs={TASK_EXAMPLE_TABS} />
-export const KeepTheTasksExample = () => <GridExampleRunner seedCode={withTasks(KEEP_TASKS_CODE)} tabs={TASK_EXAMPLE_TABS} />
-export const TalkingToTheTaskGridExample = () => <GridExampleRunner seedCode={withTasks(TALKING_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const SmallestTaskGridExample = () => <GridExampleRunner seedCode={SMALLEST_CODE} tabs={TASK_EXAMPLE_TABS} />
+export const TaskGridPartsExample = () => <GridExampleRunner seedCode={withTasks(PARTS_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const TaskGridLooksExample = () => <GridExampleRunner seedCode={withTasks(LOOKS_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const StoreLogExample = () => <GridExampleRunner seedCode={withOffice(STORE_LOG_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const ThreePlacesExample = () => <GridExampleRunner seedCode={withTasks(THREE_PLACES_CODE)} tabs={TASK_EXAMPLE_TABS} />
