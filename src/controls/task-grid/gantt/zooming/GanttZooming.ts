@@ -163,10 +163,9 @@ export class GanttZooming implements IGanttZooming {
     }
 
     public showTask(record: IRecord): void {
-        const date = this._schedule.getDate(record, 'start') ?? this._schedule.getDate(record, 'end');
-        const span = this._schedule.getSpan(record) ?? (date && { start: date, end: new Date(+date + MILLISECONDS_PER_DAY) });
-        if (span) {
-            this.zoomToRange(span);
+        const placement = this._schedule.getPlacement(record);
+        if (placement) {
+            this.zoomToRange(placement.kind === 'span' ? placement.span : { start: placement.date, end: new Date(+placement.date + MILLISECONDS_PER_DAY) });
         }
     }
 

@@ -14,7 +14,7 @@ export interface IBarDraggingParameters {
     enableResize?: boolean;
 }
 
-/** The `barDragging` module: moves and resizes bars, writing the dates once the bar is dropped. */
+/** The `barDragging` module: moves and resizes bars and moves milestones, writing the dates once dropped. */
 export interface IBarDragging { }
 
 export class BarDragging implements IBarDragging {
@@ -131,8 +131,16 @@ export class BarDragging implements IBarDragging {
         const taskId = String(id);
         const span = toSpan(this._gantt.services.get('chart').getTask(taskId));
         const record = this._gantt.services.get('tasks').getRecord(taskId);
-        if (record && span) {
-            this._gantt.services.get('schedule').save(record, span);
+        if (!record || !span) {
+            return;
+        }
+        const schedule = this._gantt.services.get('schedule');
+        const placement = schedule.getPlacement(record);
+        if (placement?.kind === 'milestone') {
+            schedule.saveMilestone(record, span.start, placement.edges);
+        }
+        else {
+            schedule.save(record, span);
         }
     };
 }

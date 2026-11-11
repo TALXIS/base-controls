@@ -9,10 +9,11 @@ export interface ITaskTooltipEndDateRowProps {
 
 /** The task's end as the timeline draws it, not as the record holds it. */
 export const TaskTooltipEndDateRow = (props: ITaskTooltipEndDateRowProps) => {
-    const { gantt, span } = useTaskTooltip();
-    if (!span) {
+    const { gantt, span, milestone } = useTaskTooltip();
+    const schedule = gantt.services.get('schedule');
+    const text = span ? schedule.formatSpan(span).end : milestone?.edges.includes('end') && schedule.formatDate(milestone.date, 'end');
+    if (!text) {
         return null;
     }
-    const schedule = gantt.services.get('schedule');
-    return <RecordCardFieldRow label={schedule.getColumnLabels().end} iconName={props.iconName ?? 'CalendarReply'} components={props.components}>{schedule.formatSpan(span).end}</RecordCardFieldRow>;
+    return <RecordCardFieldRow label={schedule.getColumnLabels().end} iconName={props.iconName ?? 'CalendarReply'} components={props.components}>{text}</RecordCardFieldRow>;
 };

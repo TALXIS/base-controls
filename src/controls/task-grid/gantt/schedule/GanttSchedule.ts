@@ -13,6 +13,12 @@ export interface IGanttSpan {
 
 export type GanttSpanEdge = 'start' | 'end';
 
+/** How a task sits on the timeline: a bar over its span, or a milestone where its dates make no span. */
+export type GanttPlacement =
+    | { kind: 'span'; span: IGanttSpan }
+    /** `edges` are the columns the date came from, the ones a move writes. */
+    | { kind: 'milestone'; date: Date; edges: GanttSpanEdge[] };
+
 export interface IGanttDurationHookParameters {
     span: IGanttSpan;
     /** Absent for a task still being drawn. */
@@ -45,11 +51,13 @@ export interface IGanttSchedule {
     getColumnLabels(): { start: string; end: string };
     /** Whether either date column holds a time of day. */
     hasTimeOfDay(): boolean;
-    /** Where the record's bar runs, or `undefined` while it has no valid dates. */
+    /** Where the task sits, or `undefined` while it is unscheduled: no dates, or an end before its start. */
+    getPlacement(record: IRecord): GanttPlacement | undefined;
+    /** Where the record's bar runs, or `undefined` while it has no span. */
     getSpan(record: IRecord): IGanttSpan | undefined;
     /** The record's start or end, or `undefined` while that column holds no valid date. */
     getDate(record: IRecord, edge: GanttSpanEdge): Date | undefined;
-    /** From the earliest start to the latest end. */
+    /** From the earliest start to the latest end, milestones counted at their date. */
     getRange(records: IRecord[]): IGanttSpan | undefined;
     /** The task's duration in minutes, mapped or else calculated. */
     getDuration(record: IRecord): number | undefined;
@@ -70,8 +78,12 @@ export interface IGanttSchedule {
     getColumnValues(span: IGanttSpan, record?: IRecord): { [columnName: string]: unknown };
     /** Writes a span to its record, saved as an edit in the grid is. */
     save(record: IRecord, span: IGanttSpan): void;
+    /** Writes a milestone's date to the edges it came from, saved as an edit in the grid is. */
+    saveMilestone(record: IRecord, date: Date, edges: GanttSpanEdge[]): void;
     /** The span's start, end and range as the record shows them. */
     formatSpan(span: IGanttSpan): { start: string; end: string; range: string };
+    /** A date as the edge's column shows it. */
+    formatDate(date: Date, edge: GanttSpanEdge): string;
     /** Minutes as the duration column shows them. */
     formatDuration(duration: number): string;
 }
@@ -120,19 +132,32 @@ export class GanttSchedule implements IGanttSchedule {
         return !this._isDateOnly('start') || !this._isDateOnly('end');
     }
 
-    public getSpan(record: IRecord): IGanttSpan | undefined {
+    public getPlacement(record: IRecord): GanttPlacement | undefined {
         const start = this.getDate(record, 'start');
         const end = this.getDate(record, 'end');
-        if (!start || !end || end < start) {
-            return undefined;
+        if (start && end) {
+            const spanEnd = this._isDateOnly('end') ? dayjs(end).add(1, 'day').toDate() : end;
+            if (spanEnd > start) {
+                return { kind: 'span', span: { start, end: spanEnd } };
+            }
+            return +end === +start ? { kind: 'milestone', date: start, edges: ['start', 'end'] } : undefined;
         }
-        return { start, end: this._isDateOnly('end') ? dayjs(end).add(1, 'day').toDate() : end };
+        if (start) {
+            return { kind: 'milestone', date: start, edges: ['start'] };
+        }
+        return end && { kind: 'milestone', date: end, edges: ['end'] };
+    }
+
+    public getSpan(record: IRecord): IGanttSpan | undefined {
+        const placement = this.getPlacement(record);
+        return placement?.kind === 'span' ? placement.span : undefined;
     }
 
     public getRange(records: IRecord[]): IGanttSpan | undefined {
         let range: IGanttSpan | undefined;
         for (const record of records) {
-            const span = this.getSpan(record);
+            const placement = this.getPlacement(record);
+            const span = placement && (placement.kind === 'span' ? placement.span : { start: placement.date, end: placement.date });
             if (span) {
                 range = range ? { start: span.start < range.start ? span.start : range.start, end: span.end > range.end ? span.end : range.end } : span;
             }
@@ -190,13 +215,29 @@ export class GanttSchedule implements IGanttSchedule {
         this._gantt.services.get('grid').services.get('fields').get(record, endColumnName).setValue(end);
     }
 
+    public saveMilestone(record: IRecord, date: Date, edges: GanttSpanEdge[]): void {
+        const fields = this._gantt.services.get('grid').services.get('fields');
+        edges.forEach((edge, index) => {
+            const columnName = this._columnNames[edge];
+            //the last edge goes through the grid's field so the record saves once
+            if (index === edges.length - 1) {
+                fields.get(record, columnName).setValue(date);
+            }
+            else {
+                record.setValue(columnName, date);
+            }
+        });
+    }
+
     public formatSpan(span: IGanttSpan): { start: string; end: string; range: string } {
-        const provider = this._gantt.getTaskRuntime().getProvider();
-        const columns = provider.getColumnsMap();
-        const formatting = provider.getFormatting();
-        const start = formatting.format({ value: span.start, column: columns[this._columnNames.start] }) ?? '';
-        const end = formatting.format({ value: this._toRecordEnd(span.end), column: columns[this._columnNames.end] }) ?? '';
+        const start = this.formatDate(span.start, 'start');
+        const end = this.formatDate(this._toRecordEnd(span.end), 'end');
         return { start, end, range: start === end ? start : `${start} – ${end}` };
+    }
+
+    public formatDate(date: Date, edge: GanttSpanEdge): string {
+        const provider = this._gantt.getTaskRuntime().getProvider();
+        return provider.getFormatting().format({ value: date, column: provider.getColumnsMap()[this._columnNames[edge]] }) ?? '';
     }
 
     public formatDuration(duration: number): string {

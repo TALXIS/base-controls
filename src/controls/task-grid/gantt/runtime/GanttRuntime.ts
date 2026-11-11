@@ -155,10 +155,8 @@ export class GanttRuntime implements IGantt {
         gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
     }
 
-    //a task with either date has somewhere on the timeline to show
     private _onCellCommands: GridCellCommandsHook = (result, { record, columnName }) => {
-        const schedule = this.services.get('schedule');
-        if (columnName !== this._taskRuntime.getFieldMapping().subject || !this._taskRuntime.getProvider().getRecordsMap()[record.getRecordId()] || (!schedule.getDate(record, 'start') && !schedule.getDate(record, 'end'))) {
+        if (columnName !== this._taskRuntime.getFieldMapping().subject || !this._taskRuntime.getProvider().getRecordsMap()[record.getRecordId()] || !this.services.get('schedule').getPlacement(record)) {
             return;
         }
         const label = this.getLabels(GANTT_LABELS).get('gantt.showTask');

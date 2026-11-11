@@ -67,6 +67,34 @@ const getHideErrorMessageStyles = (theme: ITheme) => {
         '&.ms-ComboBox-container .ms-ComboBox:not(:focus-within):hover::after': {
             borderColor: inputBorderHovered,
         },
+        //each outranks the component's own `--has-error` rule
+        '&&&[class*="--has-error"] .ms-ComboBox::after': {
+            borderColor: inputBorder,
+        },
+        '&&&[class*="--has-error"] .ms-ComboBox:hover::after': {
+            borderColor: inputBorderHovered,
+        },
+        '&&&[class*="--has-error"] .ms-ComboBox:focus-within::after': {
+            borderColor: inputFocusBorderAlt,
+        },
+        '&&&[class*="has-error"].is-open .ms-TextField-fieldGroup': {
+            borderColor: inputFocusBorderAlt,
+            '::after': {
+                borderColor: inputFocusBorderAlt,
+            },
+        },
+        '&&&[class*="--underlined"][class*="has-error"] .ms-TextField-fieldGroup::after': {
+            borderBottomColor: inputFocusBorderAlt,
+        },
+        '&&[class*="--has-error"] .ms-BasePicker-text': {
+            borderColor: inputBorder,
+            '::after': {
+                borderColor: inputFocusBorderAlt,
+            },
+        },
+        '&&[class*="--has-error"] .ms-BasePicker-text:hover': {
+            borderColor: inputBorderHovered,
+        },
     });
 }
 

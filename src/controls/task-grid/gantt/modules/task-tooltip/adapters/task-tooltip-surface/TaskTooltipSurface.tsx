@@ -63,10 +63,12 @@ export const TaskTooltipSurface = () => {
         return null;
     }
     const task = chart.getTask(hovered.taskId);
-    const span = task.start_date && task.end_date ? { start: task.start_date, end: task.end_date } : undefined;
+    const placement = schedule.getPlacement(record);
+    const milestone = placement?.kind === 'milestone' && task.start_date ? { date: task.start_date, edges: placement.edges } : undefined;
+    const span = !milestone && task.start_date && task.end_date ? { start: task.start_date, end: task.end_date } : undefined;
     const calculatedDuration = span && schedule.calculateDuration(span, record);
-    const duration = draggedTaskIdRef.current === hovered.taskId ? calculatedDuration : schedule.getDuration(record) ?? calculatedDuration;
-    const context = { gantt, record, task, span, target: hovered.target, duration, color: getBarColor(chart.getTaskNode(hovered.taskId)) };
+    const duration = !span || draggedTaskIdRef.current === hovered.taskId ? calculatedDuration : schedule.getDuration(record) ?? calculatedDuration;
+    const context = { gantt, record, task, span, milestone, target: hovered.target, duration, color: getBarColor(chart.getTaskNode(hovered.taskId)) };
     return <TaskTooltipContext.Provider value={context}>
         {onRender ? onRender() : <TaskTooltipRenderer components={parts} />}
     </TaskTooltipContext.Provider>;

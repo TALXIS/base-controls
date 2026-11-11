@@ -7,12 +7,12 @@ export interface ITaskTooltipDateRangeRowProps {
 
 /** The task's start, end and duration as the timeline draws them, not as the record holds them. */
 export const TaskTooltipDateRangeRow = (props: ITaskTooltipDateRangeRowProps) => {
-    const { gantt, span, duration } = useTaskTooltip();
-    if (!span) {
+    const { gantt, span, milestone, duration } = useTaskTooltip();
+    const schedule = gantt.services.get('schedule');
+    const range = span ? schedule.formatSpan(span).range : milestone && schedule.formatDate(milestone.date, milestone.edges[0]);
+    if (!range) {
         return null;
     }
-    const schedule = gantt.services.get('schedule');
-    const range = schedule.formatSpan(span).range;
-    const formattedDuration = duration ? schedule.formatDuration(duration) : undefined;
+    const formattedDuration = duration !== undefined ? schedule.formatDuration(duration) : undefined;
     return <RecordCardDateRange range={range} duration={formattedDuration} components={props.components} />;
 };

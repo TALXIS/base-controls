@@ -28,7 +28,7 @@ export interface ILinksComponents {
     tooltip?: ILinkTooltipComponents;
 }
 
-/** The `links` module: the `dependencies` module's dependencies drawn between the bars. */
+/** The `links` module: the `dependencies` module's dependencies drawn between tasks, hidden at an unscheduled one. */
 export interface ILinks {
     /** Whether links can be drawn and deleted on the chart. */
     isEditable(): boolean;

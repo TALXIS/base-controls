@@ -12,8 +12,11 @@ export const LinkTooltipDateRangeRow = (props: ILinkTooltipDateRangeRowProps) =>
     const { gantt, dependency, predecessor, successor } = useLinkTooltip();
     const schedule = gantt.services.get('schedule');
     const formatEdge = (record: IRecord | undefined, edge: GanttSpanEdge) => {
-        const span = record && schedule.getSpan(record);
-        return span && schedule.formatSpan(span)[edge];
+        const placement = record && schedule.getPlacement(record);
+        if (!placement) {
+            return undefined;
+        }
+        return placement.kind === 'span' ? schedule.formatSpan(placement.span)[edge] : schedule.formatDate(placement.date, placement.edges[0]);
     };
     const from = formatEdge(predecessor, dependency.type === 'finishToStart' || dependency.type === 'finishToFinish' ? 'end' : 'start');
     const to = formatEdge(successor, dependency.type === 'finishToStart' || dependency.type === 'startToStart' ? 'start' : 'end');

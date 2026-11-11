@@ -26,11 +26,8 @@ export const DateTime = (componentProps: IDateTime) => {
     const { height, width, fillsAvailableSpace } = useControlSizing(componentProps.context.mode, componentProps.parameters);
     const lastInputedTimeString = useRef<string>();
 
-    const isAutoFocused = componentProps.parameters.AutoFocus?.raw === true;
-
     useEffect(() => {
-        if (isAutoFocused) {
-            ref.current?.querySelector('input')?.focus();
+        if (componentProps.parameters.AutoFocus?.raw === true) {
             datePickerRef.current?.showDatePickerPopup();
         }
     }, []);
@@ -59,8 +56,6 @@ export const DateTime = (componentProps: IDateTime) => {
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
         fillAvailableSpace: fillsAvailableSpace,
         keepCalendarOpenAfterDaySelect: isDateTime,
-        //an editor opened by typing keeps the keys in its input
-        calloutProps: isAutoFocused ? { setInitialFocus: false } : undefined,
         readOnly: context.mode.isControlDisabled,
         //@ts-ignore - this is a hack to close the calendar when dates get selected on date only fields
         onSelectDate: isDateTime ? undefined : onSelectDate,

@@ -36,6 +36,27 @@ const VIEWS: ITaskGridView[] = [
     taskView('flat', 'Every task on its own', ${data.getColumns}('subject', 'statuscode').concat(LOOKUP_MANY_VIEW_COLUMNS.filter(column => column.name === 'assignedto')), { isFlatList: true }, provider => provider.setQuickFindColumns(['subject', 'description', 'assignedto'])),
 ]
 
+const ONE_DATE_TASKS = [
+    { subject: 'Kick-off workshop', scheduledstart: '2025-09-15' },
+    { subject: 'Security audit due', scheduledend: '2025-12-19' },
+    { subject: 'Customer advisory board', scheduledstart: '2026-02-09' },
+    { subject: 'Vendor contract renewal', scheduledend: '2026-03-31' },
+]
+
+//each one-date task goes right after every other epic
+const withOneDateTasks = (tasks: IRawRecord[]): IRawRecord[] => {
+    const epics = tasks.filter(task => !task.parentid)
+    return tasks.concat(ONE_DATE_TASKS.map((task, index) => ({
+        [TASK_METADATA.PrimaryIdAttribute]: '99000000-0000-0000-0000-00000000000' + index,
+        parentid: null,
+        stackrank: epics[index * 2].stackrank + 'i',
+        statecode: 0,
+        statuscode: 1,
+        percentcomplete: 0,
+        ...task,
+    })))
+}
+
 const betaCutoffStyles = mergeStyleSets({
     chip: {
         display: 'flex',
@@ -120,7 +141,7 @@ const BetaCutoffLine = (props: React.HTMLAttributes<HTMLDivElement>) => {
 }
 
 const GridExample = () => {
-    const taskTable = React.useMemo(() => new MemoryTable({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: ${data.tasks} }), [])
+    const taskTable = React.useMemo(() => new MemoryTable({ idKey: TASK_METADATA.PrimaryIdAttribute, rows: withOneDateTasks(${data.tasks}) }), [])
     const templates = React.useMemo(() => new MemoryTable({ idKey: 'id', rows: TEMPLATES }), [])
     const lookupManyValues = React.useMemo(() => new MemoryTable({ idKey: 'taskId', rows: LOOKUP_MANY_VALUES }), [])
     const checklistItems = React.useMemo(() => new MemoryTable({ idKey: 'id', rows: CHECKLIST_ITEMS }), [])

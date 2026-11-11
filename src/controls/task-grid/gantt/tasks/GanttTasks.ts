@@ -261,17 +261,18 @@ export class GanttTasks implements IGanttTasks {
 
     private _toTask(record: IRecord, node?: IRowNode<IRecord>): Task {
         const taskId = record.getRecordId();
-        const span = this._schedule.getSpan(record);
+        const placement = this._schedule.getPlacement(record);
+        const [start, end] = placement?.kind === 'span' ? [placement.span.start, placement.span.end] : [placement?.date, placement?.date];
         const task = {
             id: taskId,
             text: record.getNamedReference().name ?? '',
-            start_date: span?.start,
-            end_date: span?.end,
-            unscheduled: !span,
+            start_date: start,
+            end_date: end,
+            unscheduled: !placement,
             progress: this._getProgress(record),
             row_height: node?.rowHeight ?? undefined,
             bar_height: this._isSummary(taskId) ? SUMMARY_BAR_HEIGHT : TASK_BAR_HEIGHT,
-            type: span && +span.end === +span.start ? 'milestone' : 'task',
+            type: placement?.kind === 'milestone' ? 'milestone' : 'task',
         } as Task;
         this.hooks.task.apply(task, { record });
         return task;
@@ -283,7 +284,7 @@ export class GanttTasks implements IGanttTasks {
         return parentId !== undefined && this._taskIndexes.has(parentId) ? parentId : undefined;
     }
 
-    //a parent spans its children and is drawn as a slim bar over them
+    //a parent is drawn as a slim bar over its own dates
     private _isSummary(taskId: string): boolean {
         return !this._taskRuntime.isFlatList() && this._taskRuntime.getProvider().getRecordTree().view.hasChildren(taskId);
     }

@@ -22,8 +22,8 @@ const SHOW_NON_WORKING_DAYS_STATE_KEY = 'showNonWorkingDays';
 //a year of non-working days in a row is a calendar to give up on
 const MAX_DAYS_SEARCHED = 366;
 
-//the end is exclusive so the last day worked is the one before it
-const getLastDay = (span: IGanttSpan): Date => new Date(+span.end - 1);
+//the end is exclusive so the last day worked is the one before it, unless the span is a milestone
+const getLastDay = (span: IGanttSpan): Date => new Date(Math.max(+span.start, +span.end - 1));
 //a Saturday so the weekly rule lands on every weekend
 const FIRST_WEEKEND = dayjs('1970-01-03');
 

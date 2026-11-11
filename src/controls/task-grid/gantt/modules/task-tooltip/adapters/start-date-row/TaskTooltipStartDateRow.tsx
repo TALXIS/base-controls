@@ -9,10 +9,11 @@ export interface ITaskTooltipStartDateRowProps {
 
 /** The task's start as the timeline draws it, not as the record holds it. */
 export const TaskTooltipStartDateRow = (props: ITaskTooltipStartDateRowProps) => {
-    const { gantt, span } = useTaskTooltip();
-    if (!span) {
+    const { gantt, span, milestone } = useTaskTooltip();
+    const schedule = gantt.services.get('schedule');
+    const text = span ? schedule.formatSpan(span).start : milestone?.edges.includes('start') && schedule.formatDate(milestone.date, 'start');
+    if (!text) {
         return null;
     }
-    const schedule = gantt.services.get('schedule');
-    return <RecordCardFieldRow label={schedule.getColumnLabels().start} iconName={props.iconName ?? 'Calendar'} components={props.components}>{schedule.formatSpan(span).start}</RecordCardFieldRow>;
+    return <RecordCardFieldRow label={schedule.getColumnLabels().start} iconName={props.iconName ?? 'Calendar'} components={props.components}>{text}</RecordCardFieldRow>;
 };
