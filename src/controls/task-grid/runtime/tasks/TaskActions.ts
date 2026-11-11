@@ -16,7 +16,7 @@ export interface ITaskActions {
     open(taskIds: string[]): Promise<IOpenTasksResult | null>;
     /** Confirms, deletes the tasks with their subtrees, and reports any it could not delete. */
     delete(taskIds: string[]): Promise<void>;
-    /** Places the task and saves it, or returns `null` when it cannot go there. */
+    /** Places the task and saves it, or returns `null` when it cannot be moved there. */
     move(taskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null>;
     /** Opens the task, or the record its lookup points to when `columnName` is another column. */
     openRecord(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void>;
@@ -96,6 +96,9 @@ export class TaskActions implements ITaskActions {
     }
 
     public async move(taskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null> {
+        if (!this._runtime.isEditingEnabled() || !this._provider.isRecordActive(taskId)) {
+            return null;
+        }
         return this._execute(async () => {
             const task = this._provider.moveTask(taskId, targetTaskId, position);
             if (!task) {
