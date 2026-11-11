@@ -18,7 +18,7 @@ The root sets up what every control reads: the *PCF context*, which connects the
 
 | To show | Use |
 |---|---|
-| A list of records | A data provider, loaded by a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) and drawn by a [**Grid**](?path=/docs/controls-grid-get-started--overview), [**TaskGrid**](?path=/docs/controls-taskgrid-build-your-task-grid--overview) or [**Checklist**](?path=/docs/controls-checklist-get-started--overview) |
+| A list of records | A data provider, loaded by a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) and drawn by a [**Grid**](?path=/docs/controls-grid-get-started--overview), [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview) or [**Checklist**](?path=/docs/controls-checklist-get-started--overview) |
 | A single record | A [**Form**](?path=/docs/controls-form-get-started--overview) |
 | Records with a position | A [**Map**](?path=/docs/controls-map-get-started--overview) |
 

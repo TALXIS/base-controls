@@ -18,7 +18,7 @@ const controlModules = [createMemoryDependenciesModule({ dependencies }), create
 
 //one feature a line: delete a line and the feature is gone
 const ganttModules = [
-    //the free build of DHTMLX Gantt, which draws the chart; pro.ts holds the PRO one
+    //the free build of DHTMLX Gantt, which draws the chart
     createLibraryModule(),
     //drag a bar to move its task, or one of its ends to change that date
     createBarDraggingModule(),
@@ -72,6 +72,128 @@ export const libraryModule = createProLibraryModule({ Gantt })
 `,
 }
 
+const SETUP_CODE = `import { DatasetControl, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+import { TaskGantt, createLibraryModule } from '@talxis/base-controls/gantt'
+import { createLoadTasks, createTaskTable } from './tasks'
+
+const tasks = createTaskTable()
+
+//the free build of DHTMLX Gantt, which draws the chart; pro.ts holds the PRO one
+const ganttModules = [createLibraryModule()]
+
+//the field mapping in tasks.ts names startDate and endDate, which the chart reads
+const GridExample = () => <TaskDatasetControl onLoad={createLoadTasks(tasks)} height='480px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.Start>
+            <TaskGantt.ZoomSlider />
+        </DatasetControl.Header.Start>
+        <DatasetControl.Header.End>
+            {/* the Gantt adds Zoom to fit and Go to today */}
+            <TaskDatasetControl.Ribbon />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        {/* the grid first, then the chart */}
+        <TaskGantt.Split>
+            <TaskGrid />
+            <TaskGantt modules={ganttModules} />
+        </TaskGantt.Split>
+    </DatasetControl.Body>
+</TaskDatasetControl>
+`
+
+const EDITING_CODE = `import { DatasetControl, TaskDatasetControl, TaskGrid, createRowSelectionModule, createTaskEditingModule } from '@talxis/base-controls'
+import { TaskGantt, createBarDraggingModule, createLibraryModule, createTaskDrawingModule, createTaskSelectionModule } from '@talxis/base-controls/gantt'
+import { createLoadTasks, createTaskTable } from './tasks'
+
+const tasks = createTaskTable()
+
+//a dropped bar saves as an edit in the grid does; the grid shows the bars selected
+const gridModules = [createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()]
+
+const ganttModules = [
+    createLibraryModule(),
+    //drag a bar to move its task, or one of its ends to change that date
+    createBarDraggingModule(),
+    //Ctrl+drag along a row draws a new task; Alt+drag along an empty row draws its dates
+    createTaskDrawingModule(),
+    //click, Ctrl+click and Shift+drag select bars; a double-click opens the task
+    createTaskSelectionModule(),
+]
+
+//enableCreation lets the user draw new tasks, enableEditing lets them move bars
+const GridExample = () => <TaskDatasetControl onLoad={createLoadTasks(tasks)} enableCreation enableEditing height='480px'>
+    <DatasetControl.Body>
+        <TaskGantt.Split>
+            <TaskGrid modules={gridModules} />
+            <TaskGantt modules={ganttModules} />
+        </TaskGantt.Split>
+    </DatasetControl.Body>
+</TaskDatasetControl>
+`
+
+const DECORATIONS_CODE = `import { DatasetControl, MemoryTable, TaskDatasetControl, TaskGrid, createMemoryProjectModule } from '@talxis/base-controls'
+import { TaskGantt, createLibraryModule, createMemoryMarkersModule, createMemoryNonWorkingDaysModule, createTaskTooltipModule } from '@talxis/base-controls/gantt'
+import { createLoadTasks, createTaskTable } from './tasks'
+
+//NON_WORKING_DAYS are sample holidays of these docs
+const tasks = createTaskTable()
+const projects = new MemoryTable({ idKey: 'id', rows: [{ id: 'website', name: 'Website Redesign', startDate: '2025-10-01', endDate: '2026-01-31' }] })
+const releases = new MemoryTable({ idKey: 'id', rows: [{ id: 'beta', text: 'Beta', date: '2025-12-01', color: '#8764b8' }] })
+const holidays = new MemoryTable({ idKey: 'id', rows: NON_WORKING_DAYS })
+
+//the markers read the project's start and end from the project module
+const controlModules = [createMemoryProjectModule({ projects, projectId: 'website' })]
+
+const ganttModules = [
+    createLibraryModule(),
+    //the task's name, status, progress and dates under the pointer
+    createTaskTooltipModule({ statusColumnName: 'statuscode' }),
+    //today, the project's start and end, and the releases
+    createMemoryMarkersModule({ markers: releases }),
+    //weekends and holidays, shaded and left out of durations
+    createMemoryNonWorkingDaysModule({ nonWorkingDays: holidays }),
+]
+
+const GridExample = () => <TaskDatasetControl modules={controlModules} onLoad={createLoadTasks(tasks)} height='480px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.End>
+            {/* the non-working days module adds Hide non-working days */}
+            <TaskDatasetControl.Settings />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <TaskGantt.Split>
+            <TaskGrid />
+            <TaskGantt modules={ganttModules} />
+        </TaskGantt.Split>
+    </DatasetControl.Body>
+</TaskDatasetControl>
+`
+
+const LINKS_CODE = `import { DatasetControl, MemoryTable, TaskDatasetControl, TaskGrid, createMemoryDependenciesModule } from '@talxis/base-controls'
+import { TaskGantt, createLibraryModule, createLinksModule } from '@talxis/base-controls/gantt'
+import { createLoadTasks, createTaskTable } from './tasks'
+
+//DEPENDENCIES are sample dependencies of these docs
+const tasks = createTaskTable()
+const dependencies = new MemoryTable({ idKey: 'id', rows: DEPENDENCIES })
+
+//the links module draws what the dependencies module holds, and saves there what the user draws
+const controlModules = [createMemoryDependenciesModule({ dependencies })]
+const ganttModules = [createLibraryModule(), createLinksModule()]
+
+//without enableEditing, the links are only shown
+const GridExample = () => <TaskDatasetControl modules={controlModules} onLoad={createLoadTasks(tasks)} enableEditing height='480px'>
+    <DatasetControl.Body>
+        <TaskGantt.Split>
+            <TaskGrid />
+            <TaskGantt modules={ganttModules} />
+        </TaskGantt.Split>
+    </DatasetControl.Body>
+</TaskDatasetControl>
+`
+
 const DATES_CODE = `import { DatasetControl, ITaskGridLoadResult, ITaskRuntime, MemoryTable, MemoryTaskStore, TaskDatasetControl, TaskGrid, createTaskEditingModule } from '@talxis/base-controls'
 import { TaskGantt, createBarDraggingModule, createLibraryModule, createTaskDrawingModule, createTaskTooltipModule } from '@talxis/base-controls/gantt'
 
@@ -108,5 +230,9 @@ const GridExample = () => <TaskDatasetControl onLoad={loadTasks} enableEditing h
 </TaskDatasetControl>
 `
 
-export const GanttPlanExample = () => <GridExampleRunner seedCode={withTasks(PLAN_CODE, PRO_FILE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttPlanExample = () => <GridExampleRunner seedCode={withTasks(PLAN_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttSetupExample = () => <GridExampleRunner seedCode={withTasks(SETUP_CODE, PRO_FILE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttEditingExample = () => <GridExampleRunner seedCode={withTasks(EDITING_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttDecorationsExample = () => <GridExampleRunner seedCode={withTasks(DECORATIONS_CODE)} tabs={TASK_EXAMPLE_TABS} />
+export const GanttLinksExample = () => <GridExampleRunner seedCode={withTasks(LINKS_CODE)} tabs={TASK_EXAMPLE_TABS} />
 export const GanttDatesExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: DATES_CODE }]} tabs={TASK_EXAMPLE_TABS} />

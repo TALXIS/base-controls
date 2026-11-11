@@ -11,7 +11,7 @@ const AMERICAN = /\b(customiz\w*|colors?\b|behaviors?\b|initializ\w*|organiz\w*|
 
 //as Storybook sanitises each title segment
 //the page a control's card leads to, titled with the control's name
-const ENTRY_PAGES = ['Get started', 'Overview', 'Build your task grid'];
+const ENTRY_PAGES = ['Get started', 'Overview'];
 const toDocsId = (title) => `docs/${title.split('/').map(part => part.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')).join('-')}--overview`;
 const withoutCode = (text) => text.replace(/`[^`]*`/g, 'x');
 const countSentences = (text) => (text.match(/[.!?](\s|$)/g) ?? []).length;
@@ -40,7 +40,7 @@ const checkCards = (source, report) => {
     }
 };
 
-const checkDescription = (description, report) => {
+const checkShape = (description, report) => {
     //a notice quoted above the lead is not the lead
     const [lead, afterLead] = description.trim().replace(/^>[^\n]*\n\n/, '').split('\n\n');
     if (lead.startsWith('{{') || lead.startsWith('#')) {
@@ -61,12 +61,16 @@ const checkDescription = (description, report) => {
     if (!description.includes('## Where next')) {
         report('no Where next');
     }
+};
+
+const isSentenceCase = (heading) => heading.split(/\s+/).every((word, index) => index === 0 || !/^[A-Z]/.test(word) || PROPER_NOUN.test(word.replace(/^[`*]+|[`*]+$/g, '')));
+
+const checkText = (description, report) => {
     if (description.includes('```')) {
         report('code fence in the markdown');
     }
     for (const [, heading] of description.matchAll(/^##+ (.*)$/gm)) {
-        const isSentenceCase = heading.split(/\s+/).every((word, index) => index === 0 || !/^[A-Z]/.test(word) || PROPER_NOUN.test(word.replace(/^[`*]+|[`*]+$/g, '')));
-        if (!isSentenceCase) {
+        if (!isSentenceCase(heading)) {
             report(`heading not in sentence case? "${heading}"`);
         }
     }
@@ -100,10 +104,11 @@ for (const { file, title, source } of pages) {
     }
     const description = source.match(/const DESCRIPTION = `\n([\s\S]*?)\n`/)?.[1];
     if (description) {
-        //a reference page holds tables only
-        if (!title.endsWith('/Reference')) {
-            checkDescription(description, report);
+        //a reference page holds tables only, and a guide page opens with its step and ends with the next one
+        if (!title.endsWith('/Reference') && !title.includes('/Guide/')) {
+            checkShape(description, report);
         }
+        checkText(description, report);
     }
     else {
         report('no DESCRIPTION');

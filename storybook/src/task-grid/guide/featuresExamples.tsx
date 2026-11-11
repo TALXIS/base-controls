@@ -2,38 +2,6 @@ import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import { TASK_EXAMPLE_TABS, withTasks } from '../examples/shared'
 
-const FEATURES_CODE = `import { createMemoryDependenciesModule, createMemoryLookupManyModule, createMemoryTaskChecklistModule, createTaskEditingModule, DatasetControl, MemoryTable, PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME, TASK_CHECKLIST_COLUMN_NAME, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
-import { IColumn } from '@talxis/client-libraries'
-import { createLoadTasks, createTaskTable } from './tasks'
-
-//each memory module keeps its data in a table of yours, here filled with sample data
-const assignments = new MemoryTable({ idKey: 'taskId', rows: LOOKUP_MANY_VALUES })
-const checklistItems = new MemoryTable({ idKey: 'id', rows: CHECKLIST_ITEMS })
-const dependencies = new MemoryTable({ idKey: 'id', rows: DEPENDENCIES })
-
-//task modules go on the control, and every mount loads them anew
-const TASK_MODULES = [
-    createMemoryLookupManyModule({ sources: LOOKUP_MANY_SOURCES, columns: { assignedto: LOOKUP_MANY_COLUMNS.assignedto }, values: assignments }),
-    createMemoryTaskChecklistModule({ items: checklistItems }),
-    createMemoryDependenciesModule({ dependencies }),
-]
-
-//a view shows a module's column by naming it; the module fills in the rest
-const byName = (name: string): IColumn => ({ name, dataType: 'Lookup.Simple' })
-
-const loadTasks = createLoadTasks(createTaskTable(), [{
-    id: 'all',
-    name: 'All tasks',
-    resolve: () => ({ columns: [...getTaskColumns('subject', 'statuscode'), ...['assignedto', TASK_CHECKLIST_COLUMN_NAME, PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME].map(byName)] }),
-}])
-
-const GridExample = () => <TaskDatasetControl modules={TASK_MODULES} enableEditing onLoad={loadTasks} height='480px'>
-    <DatasetControl.Body>
-        <TaskGrid modules={[createTaskEditingModule()]} />
-    </DatasetControl.Body>
-</TaskDatasetControl>
-`
-
 const PROJECT_CODE = `import { createMemoryProjectModule, DatasetControl, IMemoryProject, MemoryTable, TaskDatasetControl, TaskGrid, useDatasetControlModule } from '@talxis/base-controls'
 import { Text } from '@fluentui/react'
 import { createLoadTasks, createTaskTable } from './tasks'
@@ -251,7 +219,6 @@ const GridExample = () => <TaskDatasetControl modules={[createTaskChecklistModul
 
 const runner = (code: string) => () => <GridExampleRunner seedCode={withTasks(code)} tabs={TASK_EXAMPLE_TABS} />
 
-export const FeaturesExample = runner(FEATURES_CODE)
 export const ProjectExample = runner(PROJECT_CODE)
 export const CustomColumnsExample = runner(CUSTOM_COLUMNS_CODE)
 export const LookupManyExample = runner(LOOKUP_MANY_CODE)

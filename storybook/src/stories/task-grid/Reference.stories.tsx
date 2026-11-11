@@ -25,7 +25,7 @@ Every other prop works as on a Grid: see [**Props and events**](?path=/docs/cont
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
 | \`modules\` | \`ITaskGridGridModule[]\` | None | At mount | Grid modules, loaded after the tree. \`createTaskEditingModule()\` takes the place of the Grid's editing module; grouping and totals are left out. |
-| \`components\` | \`ITaskGridComponents\` | Defaults | Live | The Grid's pieces, and the task grid's own cells. See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| \`components\` | \`ITaskGridComponents\` | Defaults | Live | The Grid's pieces, and the task grid's own cells. See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`enableZebra\` | \`boolean\` | \`false\` | At mount | Shades every other row. |
 | \`enableOptionSetColors\` | \`boolean\` | \`true\` | At mount | Draws options that have a colour as tags. |
 
@@ -38,12 +38,12 @@ Every other prop works as on a Grid: see [**Props and events**](?path=/docs/cont
 | \`TaskGantt\` | \`modules\` | \`IGanttModule[]\` | Required | At mount | The Gantt's modules, a library module among them. |
 | | \`stateKey\` | \`string\` | None | At mount | Where the zoom is kept in each view. |
 | | \`timelineLimits\` | \`{ start?: Dayjs, end?: Dayjs }\` | Today ± 25 years | Live | How far the timeline scrolls, widened to fit the tasks. |
-| | \`components\` | \`ITaskGanttComponents\` | Defaults | Live | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| | \`components\` | \`ITaskGanttComponents\` | Defaults | Live | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`TaskGantt.Split\` | \`children\` | Two elements | Required | Live | The \`TaskGrid\`, then the \`TaskGantt\`. |
 | | \`defaultGanttSize\` | \`number\` | \`60\` | At mount | The Gantt's share of the width, in percent, until the user drags the handle. |
 | | \`stateKey\` | \`string\` | None | At mount | Where the user's width is kept in each view. |
-| | \`components\` | \`Partial<IGridGanttUiSplitComponents>\` | Defaults | Live | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
-| \`TaskGantt.ZoomSlider\` | \`components\` | \`Partial<IGanttUiZoomSliderComponents>\` | Defaults | Live | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| | \`components\` | \`Partial<IGridGanttUiSplitComponents>\` | Defaults | Live | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
+| \`TaskGantt.ZoomSlider\` | \`components\` | \`Partial<IGanttUiZoomSliderComponents>\` | Defaults | Live | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 
 ## What onLoad returns
 
@@ -192,7 +192,7 @@ The parameters of the user views factories are on [**User views**](?path=/docs/c
 | Factory | Parameter | Type | Default | Description |
 |---|---|---|---|---|
 | Every one | \`columns\` | \`{ [columnName]: ILookupManyColumn }\` | Required | The lookup-many columns by name. |
-| | \`components\` | \`ILookupManyComponents\` | Defaults | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| | \`components\` | \`ILookupManyComponents\` | Defaults | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`createMemoryLookupManyModule\` | \`sources\` | \`{ [entityName]: { records, metadata, columns } }\` | Required | The records to pick from, by table name; \`records\` is a \`MemoryTable\`. |
 | | \`values\` | \`MemoryTable<IMemoryLookupManyValues>\` | Required | Each task's picks, as \`{ taskId, values }\` keyed by \`taskId\`, \`values\` by column name. |
 | \`createDataverseLookupManyModule\` | \`hostRecord\` | \`{ entityName, id?, data? }\` | None | The record the grid sits on, as \`hostRecord\` in each column's FetchXML. |
@@ -219,7 +219,7 @@ The parameters of the user views factories are on [**User views**](?path=/docs/c
 
 | Factory | Parameter | Type | Default | Description |
 |---|---|---|---|---|
-| Every one | \`components\` | \`ITemplatesComponents\` | Defaults | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| Every one | \`components\` | \`ITemplatesComponents\` | Defaults | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`createMemoryTemplatesModule\` | \`templates\` | \`MemoryTable<IMemoryTemplate>\` | Required | The templates, keyed by \`id\`: \`{ id, name, data?, children? }\`, each child \`{ data?, children? }\`. |
 | | \`tasks\` | \`MemoryTable<IRawRecord>\` | Required | The table the template's tasks are created in, the one \`MemoryTaskStore\` reads. |
 | \`createTemplatesModule\` | \`createStore\` | \`(taskRuntime) => ITemplatesStore\` | Required | Called on every mount. |
@@ -236,7 +236,7 @@ The parameters of the user views factories are on [**User views**](?path=/docs/c
 | Factory | Parameter | Type | Default | Description |
 |---|---|---|---|---|
 | Every one | \`reloadOnEditorClosed\` | \`boolean\` | \`false\`; \`true\` for TALXIS | Reads a task's items again once its form closes. |
-| | \`components\` | \`ITaskChecklistComponents\` | Defaults | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| | \`components\` | \`ITaskChecklistComponents\` | Defaults | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`createMemoryTaskChecklistModule\` | \`items\` | \`MemoryTable<IMemoryTaskChecklistItem>\` | Required | The items, \`{ id, taskId, name, isCompleted }\`, keyed by \`id\`. |
 | \`createTalxisTaskChecklistModule\` | | | | Reads each task's \`talxis_checklistjson\`, a JSON array of \`{ id, name, isCompleted }\`. |
 | \`createTaskChecklistModule\` | \`createStore\` | \`(taskRuntime) => ITaskChecklistStore\` | Required | Called on every mount; the store's \`loadItems(taskIds)\` returns the items by task id, and its optional \`destroy()\` runs when the mount goes. |
@@ -246,7 +246,7 @@ The parameters of the user views factories are on [**User views**](?path=/docs/c
 | Factory | Parameter | Type | Default | Description |
 |---|---|---|---|---|
 | Every one | \`reloadOnEditorClosed\` | \`boolean\` | \`false\`; \`true\` for Dataverse and TALXIS | Reads a task's dependencies again once its form closes. |
-| | \`components\` | \`IDependenciesComponents\` | Defaults | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| | \`components\` | \`IDependenciesComponents\` | Defaults | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`createMemoryDependenciesModule\` | \`dependencies\` | \`MemoryTable<ITaskDependency>\` | Required | The dependencies, keyed by \`id\`. |
 | \`createDataverseDependenciesModule\` | \`entityName\` | \`string\` | Required | The dependency table. |
 | | \`predecessorAttribute\`, \`successorAttribute\` | \`string\` | Required | Its two lookups to the task table. |
@@ -292,20 +292,20 @@ Gantt modules come from \`@talxis/base-controls/gantt\` and go in \`TaskGantt\`'
 | \`createProLibraryModule\` | \`Gantt\` | \`GanttEnterprise\` | Required | The PRO build's \`Gantt\` export. |
 | \`createBarDraggingModule\` | \`enableMove\` | \`boolean\` | \`true\` | Dragging a bar to other dates. |
 | | \`enableResize\` | \`boolean\` | \`true\` | Dragging a bar's ends. |
-| \`createTaskDrawingModule\` | \`components\` | \`ITaskDrawingComponents\` | Defaults | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| \`createTaskDrawingModule\` | \`components\` | \`ITaskDrawingComponents\` | Defaults | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`createTaskSelectionModule\` | \`enableSelectionBox\` | \`boolean\` | \`true\` | Shift+drag selects the bars under a band. |
 | \`createTaskTooltipModule\` | \`statusColumnName\` | \`string\` | None | An option set column the header shows as a pill in its option's colour. |
-| | \`components\` | \`ITaskTooltipComponents\` | Defaults | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
-| \`createLinksModule\` | \`components\` | \`ILinksComponents\` | Defaults | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| | \`components\` | \`ITaskTooltipComponents\` | Defaults | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
+| \`createLinksModule\` | \`components\` | \`ILinksComponents\` | Defaults | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`createMarkersModule\`, \`createMemoryMarkersModule\` | \`today\` | \`{ enableMarker?, color?, lineStyle? }\` | \`{ enableMarker: true }\` | Today's marker. |
 | | \`project\` | \`{ enableMarkers?, color?, lineStyle? }\` | \`{ enableMarkers: true }\` | The project's start and end. |
-| | \`components\` | \`IMarkersComponents\` | Defaults | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| | \`components\` | \`IMarkersComponents\` | Defaults | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`createMarkersModule\` | \`createStore\` | \`(taskRuntime) => IMarkersStore\` | None | A store whose \`loadMarkers()\` returns markers of your own. |
 | \`createMemoryMarkersModule\` | \`markers\` | \`MemoryTable<IMemoryMarker>\` | Required | The markers, their dates as ISO strings. |
 | \`createNonWorkingDaysModule\`, \`createMemoryNonWorkingDaysModule\` | \`enableWeekends\` | \`boolean\` | \`true\` | Saturdays and Sundays are non-working days. |
 | | \`isVisibleByDefault\` | \`boolean\` | \`true\` | Shows the days until the user hides them. |
 | | \`enableDropOnNonWorkingDays\` | \`boolean\` | \`false\` | Lets a dragged or drawn bar start or end on a non-working day. |
-| | \`components\` | \`INonWorkingDaysComponents\` | Defaults | See [**Make it yours**](?path=/docs/controls-taskgrid-guide-make-it-yours--overview). |
+| | \`components\` | \`INonWorkingDaysComponents\` | Defaults | See *Changing how it looks* on [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview). |
 | \`createNonWorkingDaysModule\` | \`createStore\` | \`(taskRuntime) => INonWorkingDaysStore\` | None | A store whose \`loadNonWorkingDays()\` returns days of your own. |
 | \`createMemoryNonWorkingDaysModule\` | \`nonWorkingDays\` | \`MemoryTable<IMemoryNonWorkingDay>\` | Required | The days, their dates as ISO strings. |
 

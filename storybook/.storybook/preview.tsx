@@ -177,9 +177,9 @@ const preview: Preview = {
             ],
             'TaskGrid',
             [
-              'Build your task grid',
+              'Overview',
               'Guide',
-              ['Your first task grid', 'Connect your data', 'Views, tree and editing', 'Features', 'The Gantt', 'Make it yours', 'From your code'],
+              ['Your first task grid', 'Your data', 'Planning', 'Task modules', 'The Gantt', 'Make it yours', 'From your code'],
               'Reference',
             ],
             'Checklist',
