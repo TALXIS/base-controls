@@ -33,7 +33,7 @@ declare module "@controls/dataset-control/modules/user-queries/interfaces" {
     }
 }
 
-/** The values a task view starts the provider with, as a user view saves them. */
+/** What a task view carries, of which the task grid reads only `isFlatList`. */
 export interface ITaskViewData extends Partial<IUserQuerySavedValueMap> { }
 
 /** A view of the tasks, user views included. */
