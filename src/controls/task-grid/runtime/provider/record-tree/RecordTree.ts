@@ -265,17 +265,33 @@ export class RecordTree implements IRecordTree {
 
     //the structure keeps the stack order whatever the view sorts by
     private _sortForDisplay(index: IHierarchyIndex, sortingMap: { [recordId: string]: number }): Pick<IHierarchyIndex, 'records' | 'childrenByParent'> {
-        //a new task stays at the end it asked for
-        const getGroup = (record: IRecord): number => {
-            const position = this._provider.getNewTaskPosition(record.getRecordId());
-            return position === 'first' ? 0 : position === 'last' ? 2 : 1;
+        const sortRecords = (records: IRecord[]): IRecord[] => {
+            const keys = this._getDisplayKeys(records, sortingMap);
+            return [...records].sort((a, b) => {
+                const [left, right] = [keys.get(a.getRecordId())!, keys.get(b.getRecordId())!];
+                const index = left.findIndex((value, index) => value !== right[index]);
+                return index === -1 ? 0 : left[index] - right[index];
+            });
         };
-        const byDisplayOrder = (a: IRecord, b: IRecord): number => {
-            const group = getGroup(a);
-            return (group - getGroup(b)) || (group === 1 ? (sortingMap[a.getRecordId()] ?? Number.MAX_SAFE_INTEGER) - (sortingMap[b.getRecordId()] ?? Number.MAX_SAFE_INTEGER) : 0);
-        };
-        const childrenByParent = new Map([...index.childrenByParent].map(([parentId, children]) => [parentId, [...children].sort(byDisplayOrder)]));
-        return { records: [...index.records].sort(byDisplayOrder), childrenByParent };
+        const childrenByParent = new Map([...index.childrenByParent].map(([parentId, children]) => [parentId, sortRecords(children)]));
+        return { records: sortRecords(index.records), childrenByParent };
+    }
+
+    //a new task stays at the end it asked for, and one drawn before a task stays right above it
+    private _getDisplayKeys(records: IRecord[], sortingMap: { [recordId: string]: number }): Map<string, number[]> {
+        const stackIndex = new Map(records.map((record, index) => [record.getRecordId(), index]));
+        return new Map(records.map(record => {
+            let anchorId = record.getRecordId();
+            let position = this._provider.getNewTaskPosition(anchorId);
+            while (typeof position === 'object' && stackIndex.has(position.before)) {
+                anchorId = position.before;
+                position = this._provider.getNewTaskPosition(anchorId);
+            }
+            const group = position === 'first' ? 0 : position === 'last' ? 2 : 1;
+            const anchorOrder = group === 1 ? sortingMap[anchorId] ?? Number.MAX_SAFE_INTEGER : stackIndex.get(anchorId)!;
+            const isAnchor = anchorId === record.getRecordId() ? 1 : 0;
+            return [record.getRecordId(), [group, anchorOrder, isAnchor, sortingMap[record.getRecordId()] ?? Number.MAX_SAFE_INTEGER]];
+        }));
     }
 
     private _project(index: IHierarchyIndex, matchingIds: Set<string>): IViewProjection {

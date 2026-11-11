@@ -2,7 +2,7 @@ import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IFormatting, IAvai
 import { HookRegistry } from "@core";
 import { StackRank } from "@core/stack-rank";
 import { IRecordTree, RecordTree } from "./record-tree";
-import { ITaskDataProviderParameters, INewTaskParameters, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskCreateParameters, ITaskCreateResult, ITasksCreateResult, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParameters, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
+import { ITaskDataProviderParameters, INewTaskParameters, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskCreateParameters, ITaskCreateResult, ITasksCreateResult, TaskCreatePlacement, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParameters, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
 
 const ACTIVE_STATE_CODE = 0;
 
@@ -19,7 +19,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _defaultCreatePosition: TaskCreatePosition;
     private _tree: RecordTree;
     private _hasLoaded = false;
-    private _newTaskPositions = new Map<string, TaskCreatePosition>();
+    private _newTaskPositions = new Map<string, TaskCreatePlacement>();
     private _definitions = new Map<string, IColumn>();
     private _declaredColumns: IColumn[] = [];
     public readonly hooks = {
@@ -207,7 +207,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         if (resolvedParentId && this.isTaskPending(resolvedParentId)) {
             return null;
         }
-        const position = parameters?.position ?? this._defaultCreatePosition;
+        const position = this._resolvePlacement(resolvedParentId, parameters?.position);
         const params = { ...this._resolveCreate(resolvedParentId, position), data: parameters?.data, taskId: crypto.randomUUID() };
         const fieldMapping = this.getFieldMapping();
         const [record] = this._addTasks([{
@@ -221,9 +221,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return record;
     }
 
-    public async createTasksWith(parentId: string | undefined, create: (parameters: ITaskCreateParameters) => Promise<ITasksCreateResult | null>, options?: { position?: TaskCreatePosition }): Promise<IRecord[] | null> {
+    public async createTasksWith(parentId: string | undefined, create: (parameters: ITaskCreateParameters) => Promise<ITasksCreateResult | null>, options?: { position?: TaskCreatePlacement }): Promise<IRecord[] | null> {
         const resolvedParentId = parentId ?? this._rootTaskId;
-        const position = options?.position ?? this._defaultCreatePosition;
+        const position = this._resolvePlacement(resolvedParentId, options?.position);
         const result = await create(this._resolveCreate(resolvedParentId, position));
         if (!result) {
             return null;
@@ -245,7 +245,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return outcome.isCreated;
     }
 
-    public getNewTaskPosition(taskId: string): TaskCreatePosition | undefined {
+    public getNewTaskPosition(taskId: string): TaskCreatePlacement | undefined {
         return this._newTaskPositions.get(taskId);
     }
 
@@ -513,7 +513,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return outcome;
     }
 
-    private _addTasks(rawRecords: IRawRecord[], parentId: string | undefined, position: TaskCreatePosition): IRecord[] {
+    private _addTasks(rawRecords: IRawRecord[], parentId: string | undefined, position: TaskCreatePlacement): IRecord[] {
         const primaryIdAttribute = this.getMetadata().PrimaryIdAttribute!;
         const records = rawRecords.map(rawData => this.newRecord({ rawData, recordId: rawData[primaryIdAttribute] }));
         if (records.length > 0) {
@@ -583,14 +583,25 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             && condition.conditionOperator === Operators.Equal.Value && condition.value === `${ACTIVE_STATE_CODE}`);
     }
 
-    private _resolveCreate(parentId: string | undefined, position: TaskCreatePosition): ITaskCreateParameters {
+    //a sibling that is not under the parent leaves the default
+    private _resolvePlacement(parentId: string | undefined, position: TaskCreatePlacement | undefined): TaskCreatePlacement {
+        if (typeof position === 'object') {
+            const isSibling = this._tree.structure.getChildren(parentId ?? null).some(sibling => sibling.getRecordId() === position.before);
+            return isSibling ? position : this._defaultCreatePosition;
+        }
+        return position ?? this._defaultCreatePosition;
+    }
+
+    private _resolveCreate(parentId: string | undefined, position: TaskCreatePlacement): ITaskCreateParameters {
         const siblings = this._tree.structure.getChildren(parentId ?? null);
         const { stackRank } = this.getFieldMapping();
+        const beforeIndex = typeof position === 'object' ? siblings.findIndex(sibling => sibling.getRecordId() === position.before) : -1;
+        const [previousSibling, nextSibling] = typeof position === 'object' ? [siblings[beforeIndex - 1], siblings[beforeIndex]]
+            : position === 'last' ? [siblings[siblings.length - 1], undefined]
+            : [undefined, siblings[0]];
         return {
             parentRecord: parentId ? this.getRecordsMap()[parentId] : undefined,
-            stackRank: position === 'first'
-                ? StackRank.between(undefined, siblings[0]?.getValue(stackRank))
-                : StackRank.between(siblings[siblings.length - 1]?.getValue(stackRank), undefined),
+            stackRank: StackRank.between(previousSibling?.getValue(stackRank), nextSibling?.getValue(stackRank)),
         };
     }
 

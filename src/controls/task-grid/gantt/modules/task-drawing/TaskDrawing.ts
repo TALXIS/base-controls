@@ -20,7 +20,7 @@ export interface ITaskDrawingParameters {
 export interface ITaskDrawing {
     /** Whether tasks can be created at all. */
     isEnabled(): boolean;
-    /** Creates a task under the row's parent at the default position, over the span. */
+    /** Creates a task over the span, right before the row's task under the same parent. */
     create(rowTaskId: string, span: IGanttSpan): Promise<void>;
     /** Whether a drag on the task's row can draw its dates. */
     canDrawDates(taskId: string): boolean;
@@ -47,7 +47,7 @@ export class TaskDrawing implements ITaskDrawing {
     public async create(rowTaskId: string, span: IGanttSpan): Promise<void> {
         const taskRuntime = this._gantt.getTaskRuntime();
         const parentId = taskRuntime.getProvider().getRecordTree().structure.getParent(rowTaskId)?.getRecordId();
-        await runQuietly(() => taskRuntime.tasks.create(parentId, { data: this._gantt.services.get('schedule').getColumnValues(span) }));
+        await runQuietly(() => taskRuntime.tasks.create(parentId, { position: { before: rowTaskId }, data: this._gantt.services.get('schedule').getColumnValues(span) }));
     }
 
     public canDrawDates(taskId: string): boolean {

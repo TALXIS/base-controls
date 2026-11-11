@@ -75,6 +75,9 @@ export type IOpenTasksResult =
 /** Where among its parent's children a new task goes. */
 export type TaskCreatePosition = 'first' | 'last';
 
+/** A new task's place among its siblings: at either end, or right before one of them. */
+export type TaskCreatePlacement = TaskCreatePosition | { before: string };
+
 /** Where a new task lands, and what it starts with. */
 export interface ITaskCreateParameters {
     /** None for the top level. */
@@ -117,8 +120,8 @@ export interface ITaskDeleteParameters {
 
 /** Where a created task lands among its siblings, and what it starts with. */
 export interface INewTaskParameters {
-    /** The provider's default when left out. */
-    position?: TaskCreatePosition;
+    /** The provider's default when left out; a sibling that is not under the parent falls back to it too. */
+    position?: TaskCreatePlacement;
     data?: { [columnName: string]: any };
 }
 
@@ -248,9 +251,9 @@ export interface ITaskDataProvider extends IDataProvider {
     /** Resolves `false` when the store dropped the task and rejects when it failed. */
     whenTaskCreated(taskId: string): Promise<boolean>;
     /** Adds the tasks `create` makes in the backend under `parentId`. */
-    createTasksWith(parentId: string | undefined, create: (parameters: ITaskCreateParameters) => Promise<ITasksCreateResult | null>, options?: { position?: TaskCreatePosition }): Promise<IRecord[] | null>;
-    /** The position a task created since the view last loaded asked for. */
-    getNewTaskPosition(taskId: string): TaskCreatePosition | undefined;
+    createTasksWith(parentId: string | undefined, create: (parameters: ITaskCreateParameters) => Promise<ITasksCreateResult | null>, options?: { position?: TaskCreatePlacement }): Promise<IRecord[] | null>;
+    /** The place a task created since the view last loaded asked for. */
+    getNewTaskPosition(taskId: string): TaskCreatePlacement | undefined;
     getDeletion(taskIds: string[]): ITaskDeletion;
     /** Deletes the tasks and their subtrees bottom-up. */
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
