@@ -18,7 +18,7 @@ export const NonWorkingDaysUiTooltip = (props: INonWorkingDaysUiTooltipProps) =>
     const appTheme = useAppTheme();
     const styles = useMemo(() => getNonWorkingDaysUiTooltipStyles(appTheme), [appTheme]);
 
-    return components.onRenderCallout({
+    return components.onRender({
         target: props.target,
         directionalHint: DirectionalHint.bottomCenter,
         isBeakVisible: false,

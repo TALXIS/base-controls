@@ -54,7 +54,7 @@ export const CellUiResizeGrip = (props: ICellUiResizeGripProps) => {
         gripRef.current?.addEventListener('pointerdown', onPointerDown);
     }, []);
 
-    return components.onRenderContainer({
+    return components.onRender({
         ref: rootRef,
         className: getClassNames([styles.gripRoot, props.className]),
         children: <>

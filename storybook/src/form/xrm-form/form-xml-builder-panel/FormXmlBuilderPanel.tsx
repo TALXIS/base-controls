@@ -225,11 +225,11 @@ export const FormXmlBuilderPanel = ({
                         // The builder measures every tab header's real DOM position to draw its
                         // drag/edit overlay; Fluent's overflow menu would collapse overflowing tabs
                         // out of the layout entirely, so disable it here (builder-only override).
-                        onRenderTabs: (tabsProps: ITabsComponentProps) => (
+                        onRender: (tabsProps: ITabsComponentProps) => (
                             <FormUiPivot
                                 {...tabsProps}
                                 components={{
-                                    onRenderPivot: (pivotProps) => <FluentPivot {...pivotProps} overflowBehavior="none" />,
+                                    onRender: (pivotProps) => <FluentPivot {...pivotProps} overflowBehavior="none" />,
                                 }}
                             />
                         ),

@@ -21,7 +21,7 @@ export const ColumnHeaderUiMenu = (props: IColumnHeaderUiMenuProps) => {
     if (!props.items?.length) {
         return null;
     }
-    return components.onRenderContextualMenu({
+    return components.onRender({
         ...menuProps,
         items: props.items,
         calloutProps: { preventDismissOnEvent: preventDismissOnEvent, className: styles.menu, ...props.calloutProps },

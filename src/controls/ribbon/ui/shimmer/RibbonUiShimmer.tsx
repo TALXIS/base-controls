@@ -18,7 +18,7 @@ export interface IRibbonUiShimmerProps {
 export const RibbonUiShimmer = (props: IRibbonUiShimmerProps) => {
     const components = { ...RibbonUiShimmerComponents, ...props.components };
     const styles = useMemo(() => getRibbonUiShimmerStyles(props.align ?? 'start'), [props.align]);
-    return components.onRenderShimmer({
+    return components.onRender({
         width: SHIMMER_WIDTH,
         className: getClassNames([styles.ribbonShimmer, props.className]),
         styles: { shimmerWrapper: styles.shimmerWrapper },

@@ -19,13 +19,13 @@ A \`Form.Cell\` outside a \`Form.Field\` holds content of your own beside its \`
 
 ## Your own tabs
 
-\`onRenderTabs\` of \`Form.Tabs\` draws the headers and the open tab. It gets the \`Form.Tab\` elements as \`children\`, with \`expandedTab\` and \`onTabChange\`: draw the child whose \`id\` is \`expandedTab\`, and call \`onTabChange\` with a tab's \`id\` to open it.
+\`onRender\` of \`Form.Tabs\` draws the headers and the open tab. It gets the \`Form.Tab\` elements as \`children\`, with \`expandedTab\` and \`onTabChange\`: draw the child whose \`id\` is \`expandedTab\`, and call \`onTabChange\` with a tab's \`id\` to open it.
 
 {{story: Tabs as steps}}
 
 ## The ribbon and the notifications
 
-\`onRenderCommandBar\` of \`Form.Ribbon\` gets the props of Fluent's \`CommandBar\`: \`items\` holds **Save**, and \`farItems\` holds *Unsaved changes* while there are any, so spread them and add commands of your own. \`onRenderNotifications\` of \`Form.Notifications\` gets the \`messages\`, the validation summary included; the default draws them with the exported \`NotificationMessageBar\`.
+\`onRender\` of \`Form.Ribbon\` gets the props of Fluent's \`CommandBar\`: \`items\` holds **Save**, and \`farItems\` holds *Unsaved changes* while there are any, so spread them and add commands of your own. \`onRender\` of \`Form.Notifications\` gets the \`messages\`, the validation summary included; the default draws them with the exported \`NotificationMessageBar\`.
 
 The ribbon's slot in the example returns a component of your own, so it can call \`useForm()\`. To change the ribbon's wording, see [**Localization**](?path=/docs/concepts-localization--overview).
 
@@ -48,9 +48,9 @@ Every slot gets the props its default would, so another design system can draw t
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
 | \`Form.Control\` | Top level | \`onRenderControl\`, with \`{ id, disabled }\` | \`ControlComponents\` | The field's control |
-| \`Form.Tabs\` | Top level | \`onRenderTabs\`, with \`{ children, expandedTab, onTabChange }\` | \`FormUiTabComponents\` | The tab headers and the open tab |
-| \`Form.Ribbon\` | Top level | \`onRenderCommandBar\`, with \`ICommandBarProps\` | | **Save** and *Unsaved changes* |
-| \`Form.Notifications\` | Top level | \`onRenderNotifications\`, with \`INotificationMessageBarProps\` | | Your messages and the validation summary |
+| \`Form.Tabs\` | Top level | \`onRender\`, with \`{ children, expandedTab, onTabChange }\` | \`FormUiTabComponents\` | The tab headers and the open tab |
+| \`Form.Ribbon\` | Top level | \`onRender\`, with \`ICommandBarProps\` | | **Save** and *Unsaved changes* |
+| \`Form.Notifications\` | Top level | \`onRender\`, with \`INotificationMessageBarProps\` | | Your messages and the validation summary |
 
 A blank default is not exported.
 

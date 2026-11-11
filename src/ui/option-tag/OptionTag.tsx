@@ -27,7 +27,7 @@ export const OptionTag = (props: IOptionTagProps) => {
     const styles = useMemo(() => getOptionTagStyles(theme, color), [theme, color]);
     const components = { ...OptionTagComponents, ...props.components };
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: mergeStyles(styles.optionTag, props.className),
         children: components.onRenderLabel({ className: styles.label, title: props.label, children: props.label }),
     });

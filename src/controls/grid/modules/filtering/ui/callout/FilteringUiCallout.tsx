@@ -18,7 +18,7 @@ export const FilteringUiCallout = (props: IFilteringUiCalloutProps) => {
     const components = { ...FilteringUiCalloutComponents, ...props.components };
     const styles = useMemo(() => getFilteringUiCalloutStyles(), []);
 
-    return components.onRenderCallout({
+    return components.onRender({
         target: props.target,
         onDismiss: props.onDismiss,
         calloutWidth: 230,

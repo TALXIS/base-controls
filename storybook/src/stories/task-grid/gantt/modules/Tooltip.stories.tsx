@@ -40,12 +40,12 @@ The date rows show the dates as the timeline draws them, so they follow a bar wh
 
 | Part | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`TaskTooltip.Callout\` | \`callout\` | \`onRenderCallout\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the bar |
-| \`TaskTooltip.Header\` | \`header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRenderContainer\`; \`status\`: \`onRenderContainer\`, \`onRenderLabel\` | \`RecordCardHeaderComponents\`, \`RecordCardHeaderStartComponents\`, \`RecordCardHeaderEndComponents\`, \`RecordCardTitleComponents\`, \`OptionTagComponents\` | The name and the status pill |
-| \`TaskTooltip.ProgressRow\` | \`progress\` | \`onRenderContainer\`, \`onRenderTrack\`, \`onRenderFill\`, \`onRenderText\` | \`RecordCardProgressComponents\` | The progress bar |
-| \`TaskTooltip.DateRangeRow\` | \`dateRange\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`RecordCardDateRangeComponents\` | The dates and the duration |
-| \`TaskTooltip.FieldRows\` | | \`onRenderContainer\` | \`RecordCardFieldRowsComponents\` | The box the field rows sit in |
-| \`TaskTooltip.FieldRow\`, \`StartDateRow\`, \`EndDateRow\`, \`DurationRow\` | | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`RecordCardFieldRowComponents\` | One row of the tooltip |
+| \`TaskTooltip.Callout\` | \`callout\` | \`onRender\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the bar |
+| \`TaskTooltip.Header\` | \`header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRender\`; \`status\`: \`onRender\`, \`onRenderLabel\` | \`RecordCardHeaderComponents\`, \`RecordCardHeaderStartComponents\`, \`RecordCardHeaderEndComponents\`, \`RecordCardTitleComponents\`, \`OptionTagComponents\` | The name and the status pill |
+| \`TaskTooltip.ProgressRow\` | \`progress\` | \`onRender\`, \`onRenderTrack\`, \`onRenderFill\`, \`onRenderText\` | \`RecordCardProgressComponents\` | The progress bar |
+| \`TaskTooltip.DateRangeRow\` | \`dateRange\` | \`onRender\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`RecordCardDateRangeComponents\` | The dates and the duration |
+| \`TaskTooltip.FieldRows\` | | \`onRender\` | \`RecordCardFieldRowsComponents\` | The box the field rows sit in |
+| \`TaskTooltip.FieldRow\`, \`StartDateRow\`, \`EndDateRow\`, \`DurationRow\` | | \`onRender\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`RecordCardFieldRowComponents\` | One row of the tooltip |
 
 ## Where next
 

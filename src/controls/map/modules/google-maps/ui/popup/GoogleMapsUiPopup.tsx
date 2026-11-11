@@ -22,7 +22,7 @@ export const GoogleMapsUiPopup = (props: IGoogleMapsUiPopupProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getGoogleMapsUiPopupStyles(theme), [theme]);
     //the card's header fills the corner Google's close button sits in
-    return components.onRenderContainer({
+    return components.onRender({
         anchor: props.anchor,
         headerDisabled: true,
         onClose: props.onClose,

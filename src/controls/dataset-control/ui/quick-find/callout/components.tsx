@@ -13,7 +13,7 @@ export interface IQuickFindCalloutColumnProps {
 /** The replaceable pieces of the quick find callout. */
 export interface IDatasetControlUiQuickFindCalloutComponents {
     /** The callout itself. */
-    onRenderCallout: (props: ICalloutProps) => JSX.Element | null;
+    onRender: (props: ICalloutProps) => JSX.Element | null;
     /** Shown instead of the description and columns while the query starts with a wildcard. */
     onRenderLikeWarning: (props: { text: string }) => JSX.Element | null;
     /** The sentence above the columns. */
@@ -28,7 +28,7 @@ const styles = getDatasetControlUiQuickFindCalloutStyles();
 
 /** The defaults for {@link IDatasetControlUiQuickFindCalloutComponents}. */
 export const DatasetControlUiQuickFindCalloutComponents: IDatasetControlUiQuickFindCalloutComponents = {
-    onRenderCallout: props => <Callout {...props} />,
+    onRender: props => <Callout {...props} />,
     onRenderLikeWarning: props => <Text><FontIcon className={styles.warningIcon} iconName="Warning" />{props.text}</Text>,
     onRenderDescription: props => <Text>{props.columnsHintStart} <span className={styles.bold}>{props.columnsHintOperator}</span> {props.columnsHintEnd}</Text>,
     onRenderColumns: props => <div {...props} />,

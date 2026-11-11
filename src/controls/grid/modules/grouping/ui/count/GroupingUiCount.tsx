@@ -16,5 +16,5 @@ export const GroupingUiCount = (props: IGroupingUiCountProps) => {
     const styles = useMemo(() => getGroupingUiCountStyles(alignment), [alignment]);
     const components = { ...GroupingUiCountComponents, ...props.components };
 
-    return components.onRenderCount({ className: styles.count, children: `(${props.count})` });
+    return components.onRender({ className: styles.count, children: `(${props.count})` });
 };

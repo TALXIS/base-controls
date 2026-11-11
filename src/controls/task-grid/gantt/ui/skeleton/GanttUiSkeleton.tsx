@@ -13,5 +13,5 @@ export const GanttUiSkeleton = (props: IGanttUiSkeletonProps) => {
     const components = { ...GanttUiSkeletonComponents, ...componentsProp };
     const styles = useMemo(() => getGanttUiSkeletonStyles(), []);
 
-    return components.onRenderContainer({ className: styles.root, children: components.onRenderSkeleton(shimmerProps) });
+    return components.onRender({ className: styles.root, children: components.onRenderSkeleton(shimmerProps) });
 };

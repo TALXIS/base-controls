@@ -91,9 +91,9 @@ The row selection module takes no \`components\` option. Its checkbox column dra
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`SelectionCell\` | \`container\` | \`onRenderContainer\` | | The cell the checkbox is drawn in |
-| | \`checkbox\` | \`onRenderContainer\`, \`onRenderCheckbox\` | \`RowSelectionUiCheckboxComponents\` | A row's checkbox. The container takes the click, so keep its \`onClick\`; the checkbox gets \`checked\`, \`indeterminate\`, \`disabled\` and \`styles\` |
-| \`SelectionHeader\` | \`headerCheckbox\` | \`onRenderContainer\`, \`onRenderCheckbox\` | \`RowSelectionUiHeaderCheckboxComponents\` | The checkbox that selects every row, with \`checked\`, \`indeterminate\` and \`onChange\` |
+| \`SelectionCell\` | \`container\` | \`onRender\` | | The cell the checkbox is drawn in |
+| | \`checkbox\` | \`onRender\`, \`onRenderCheckbox\` | \`RowSelectionUiCheckboxComponents\` | A row's checkbox. The container takes the click, so keep its \`onClick\`; the checkbox gets \`checked\`, \`indeterminate\`, \`disabled\` and \`styles\` |
+| \`SelectionHeader\` | \`headerCheckbox\` | \`onRender\`, \`onRenderCheckbox\` | \`RowSelectionUiHeaderCheckboxComponents\` | The checkbox that selects every row, with \`checked\`, \`indeterminate\` and \`onChange\` |
 
 With the editing module on, the column draws its cells with \`RecordSaveSelectionCell\`, which takes the same \`checkbox\` key: \`cellRendererParams\` reach it too, while a \`cellRenderer\` of your own replaces the save status (see *Changing how it looks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview)).
 

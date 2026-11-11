@@ -26,7 +26,7 @@ export const ChecklistUiCompletionCheckbox = (props: IChecklistUiCompletionCheck
         props.onToggle();
     };
 
-    return components.onRenderButton({
+    return components.onRender({
         type: 'button',
         role: 'checkbox',
         'aria-checked': props.isChecked,

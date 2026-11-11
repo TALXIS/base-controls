@@ -24,11 +24,11 @@ export const RecordSaveUiIndicator = (props: IRecordSaveUiIndicatorProps) => {
     const [isErrorCalloutVisible, setIsErrorCalloutVisible] = useState<boolean>(false);
 
     if (state === 'saving') {
-        return components.onRenderContainer({ ref: rootRef, className: styles.root, children: components.onRenderSpinner({ size: SpinnerSize.small }) });
+        return components.onRender({ ref: rootRef, className: styles.root, children: components.onRenderSpinner({ size: SpinnerSize.small }) });
     }
     const isSuccess = state === 'succeeded';
 
-    return components.onRenderContainer({
+    return components.onRender({
         ref: rootRef,
         className: styles.root,
         children: <>

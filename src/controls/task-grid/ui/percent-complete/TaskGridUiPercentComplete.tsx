@@ -12,7 +12,7 @@ export interface ITaskGridUiPercentCompleteProps {
 export const TaskGridUiPercentComplete = (props: ITaskGridUiPercentCompleteProps) => {
     const components = { ...TaskGridUiPercentCompleteComponents, ...props.components };
     const styles = useMemo(() => getTaskGridUiPercentCompleteStyles(), []);
-    return components.onRenderProgress({
+    return components.onRender({
         className: styles.progress,
         styles: { itemProgress: styles.itemProgress },
         barHeight: 5,

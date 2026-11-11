@@ -18,12 +18,12 @@ Every column draws its header with \`Grid.ColumnHeader.Renderer\`. To change a c
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`container\` | \`onRenderButton\` | | The button the header is, which opens the menu |
-| \`prefix\`, \`suffix\` | \`onRenderContainer\` | | The icons before and after the name |
-| \`content\` | \`onRenderContainer\` | | What holds the name and the required marker |
-| \`label\` | \`onRenderText\` | | The column's name |
-| \`requiredMarker\` | \`onRenderText\` | | The \`*\` of a required column |
-| \`menu\` | \`onRenderContextualMenu\` | | The column's menu |
+| \`container\` | \`onRender\` | | The button the header is, which opens the menu |
+| \`prefix\`, \`suffix\` | \`onRender\` | | The icons before and after the name |
+| \`content\` | \`onRender\` | | What holds the name and the required marker |
+| \`label\` | \`onRender\` | | The column's name |
+| \`requiredMarker\` | \`onRender\` | | The \`*\` of a required column |
+| \`menu\` | \`onRender\` | | The column's menu |
 
 The icons in \`prefix\` and \`suffix\` are adornments that modules and \`headers.hooks.adornments\` add, and the menu's items come from \`headers.hooks.menuSections\`: see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview). The checkbox column and the grouping expansion column draw headers of their own: see [**Selection and clipboard**](?path=/docs/controls-grid-modules-selection-and-clipboard--overview) and [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 

@@ -29,6 +29,6 @@ const LookupManyCellPills = () => {
 /** A lookup-many cell with its records on one line and the rest in a hoverable `+N`. */
 export const LookupManyCell = (props: IGridCellParams) => {
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
-        <Grid.Cell.Renderer {...props} components={{ columnControl: { onRenderControl: () => <LookupManyCellPills /> } }} />
+        <Grid.Cell.Renderer {...props} components={{ columnControl: { onRender: () => <LookupManyCellPills /> } }} />
     </Grid.Cell.Field>;
 };

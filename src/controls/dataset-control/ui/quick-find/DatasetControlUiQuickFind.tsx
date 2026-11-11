@@ -74,7 +74,7 @@ export const DatasetControlUiQuickFind = (props: IDatasetControlUiQuickFindProps
     };
 
     if (isCompact && !isExpanded) {
-        return components.onRenderContainer({
+        return components.onRender({
             className: styles.compactQuickFind,
             children: <DatasetControlUiQuickFindCompactButton
                 text={props.placeholder}
@@ -86,7 +86,7 @@ export const DatasetControlUiQuickFind = (props: IDatasetControlUiQuickFindProps
     }
 
 
-    return components.onRenderContainer({
+    return components.onRender({
         id,
         className: styles.datasetControlQuickFind,
         onBlur,

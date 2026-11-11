@@ -25,7 +25,7 @@ export const GoogleMapsUiRoot = (props: IGoogleMapsUiProps) => {
     const components = { ...GoogleMapsUiComponents, ...props.components };
     const theme = useTheme();
     const styles = useMemo(() => getGoogleMapsUiStyles(), []);
-    return components.onRenderMap({
+    return components.onRender({
         className: getClassNames([styles.map, props.className]),
         defaultCenter: { lat: props.defaultCenter.latitude, lng: props.defaultCenter.longitude },
         defaultZoom: props.defaultZoom,

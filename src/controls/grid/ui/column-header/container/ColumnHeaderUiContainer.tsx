@@ -13,7 +13,7 @@ export const ColumnHeaderUiContainer = (props: IColumnHeaderUiContainerProps) =>
     const components = { ...ColumnHeaderUiContainerComponents, ...props.components };
     const styles = useMemo(() => getColumnHeaderUiContainerStyles(), []);
 
-    return components.onRenderButton({
+    return components.onRender({
         ...buttonProps,
         styles: concatStyleSets({ root: styles.containerRoot, flexContainer: styles.containerFlexContainer }, props.styles),
     });

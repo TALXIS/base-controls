@@ -15,5 +15,5 @@ export const ColumnHeaderUiContent = (props: IColumnHeaderUiContentProps) => {
     const components = { ...ColumnHeaderUiContentComponents, ...props.components };
     const styles = useMemo(() => getColumnHeaderUiContentStyles(alignment), [alignment]);
 
-    return components.onRenderContainer({ ...divProps, className: getClassNames([styles.content, className]) });
+    return components.onRender({ ...divProps, className: getClassNames([styles.content, className]) });
 };

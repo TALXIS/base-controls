@@ -17,5 +17,5 @@ export interface IDatasetControlUiFooterStartProps {
 export const DatasetControlUiFooterStart = (props: IDatasetControlUiFooterStartProps) => {
     const components = { ...DatasetControlUiFooterStartComponents, ...props.components };
     const styles = useMemo(() => getDatasetControlUiFooterStartStyles(), []);
-    return components.onRenderContainer({ className: getClassNames([styles.datasetControlFooterStart, props.className]), children: props.children });
+    return components.onRender({ className: getClassNames([styles.datasetControlFooterStart, props.className]), children: props.children });
 };

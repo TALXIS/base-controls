@@ -17,7 +17,7 @@ export const FormUiPivot = (props: IPivotProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getFormUiPivotStyles(theme), [theme]);
 
-    return components.onRenderPivot({
+    return components.onRender({
         overflowBehavior: 'menu',
         selectedKey: props.expandedTab,
         className: styles.pivotContainer,

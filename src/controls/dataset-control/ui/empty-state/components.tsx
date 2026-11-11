@@ -3,7 +3,7 @@ import { Icon, IIconProps, ITextProps, Text } from "@fluentui/react";
 /** The replaceable pieces of the empty state. */
 export interface IDatasetControlUiEmptyStateComponents {
     /** What the icon and the message are drawn in. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** What is drawn above the message. */
     onRenderIcon: (props: IIconProps) => JSX.Element | null;
     /** What says there is nothing to show. */
@@ -12,7 +12,7 @@ export interface IDatasetControlUiEmptyStateComponents {
 
 /** The defaults for {@link IDatasetControlUiEmptyStateComponents}. */
 export const DatasetControlUiEmptyStateComponents: IDatasetControlUiEmptyStateComponents = {
-    onRenderContainer: props => <div {...props} />,
+    onRender: props => <div {...props} />,
     onRenderIcon: props => <Icon {...props} />,
     onRenderText: props => <Text {...props} />,
 };

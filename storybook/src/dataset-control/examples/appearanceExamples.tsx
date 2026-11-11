@@ -9,7 +9,7 @@ const GridExample = () => <DatasetControl onLoad={loadDeals} height='480px'>
         <DatasetControl.Header.Start>
             {/* wraps the default button */}
             <DatasetControl.ViewSwitcher components={{
-                onRenderButton: props => <TooltipHost content='Switch between views of the deals'>{DatasetControlUiViewSwitcherComponents.onRenderButton(props)}</TooltipHost>,
+                onRender: props => <TooltipHost content='Switch between views of the deals'>{DatasetControlUiViewSwitcherComponents.onRender(props)}</TooltipHost>,
             }} />
         </DatasetControl.Header.Start>
         <DatasetControl.Header.End>

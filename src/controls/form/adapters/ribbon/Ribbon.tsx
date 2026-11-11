@@ -138,7 +138,7 @@ export const Ribbon = (props: IFormRibbonProps) => {
         };
     };
 
-    return components.onRenderCommandBar({
+    return components.onRender({
         items: getItems(),
         farItems: getFarItems(),
         styles: {

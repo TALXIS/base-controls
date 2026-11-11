@@ -99,12 +99,12 @@ The editing module takes no \`components\` option. It draws two columns of its o
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`RecordSaveIndicatorCell\` | \`container\` | \`onRenderContainer\` | | The save status column's cell (\`RECORD_SAVE_COLUMN_KEY\`) |
-| | \`indicator\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderButton\` (with \`state\`), \`onRenderErrorCallout\` | \`RecordSaveUiIndicatorComponents\` | The spinner, check or error icon |
-| | \`errorCallout\` | \`onRenderCallout\`, \`onRenderHeader\`, \`onRenderIcon\`, \`onRenderTitle\`, \`onRenderFields\`, \`onRenderField\`, \`onRenderFieldName\`, \`onRenderMessage\`, \`onRenderFooter\`, \`onRenderDismissButton\` | \`RecordSaveUiErrorCalloutComponents\` | Why a save failed |
-| \`RecordLockIndicatorCell\` | \`container\` | \`onRenderContainer\` | | The lock column's cell (\`RECORD_LOCK_COLUMN_KEY\`) |
-| | \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | | The lock of a locked record |
-| \`RecordSaveSelectionCell\` | the keys of \`RecordSaveIndicatorCell\`, and \`checkbox\` | \`checkbox\`: \`onRenderContainer\`, \`onRenderCheckbox\` | \`RowSelectionUiCheckboxComponents\` | The checkbox column's cell (\`SELECTION_COLUMN_KEY\`) with row selection on |
+| \`RecordSaveIndicatorCell\` | \`container\` | \`onRender\` | | The save status column's cell (\`RECORD_SAVE_COLUMN_KEY\`) |
+| | \`indicator\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderButton\` (with \`state\`), \`onRenderErrorCallout\` | \`RecordSaveUiIndicatorComponents\` | The spinner, check or error icon |
+| | \`errorCallout\` | \`onRender\`, \`onRenderHeader\`, \`onRenderIcon\`, \`onRenderTitle\`, \`onRenderFields\`, \`onRenderField\`, \`onRenderFieldName\`, \`onRenderMessage\`, \`onRenderFooter\`, \`onRenderDismissButton\` | \`RecordSaveUiErrorCalloutComponents\` | Why a save failed |
+| \`RecordLockIndicatorCell\` | \`container\` | \`onRender\` | | The lock column's cell (\`RECORD_LOCK_COLUMN_KEY\`) |
+| | \`lockIcon\` | \`onRender\`, \`onRenderIcon\` | | The lock of a locked record |
+| \`RecordSaveSelectionCell\` | the keys of \`RecordSaveIndicatorCell\`, and \`checkbox\` | \`checkbox\`: \`onRender\`, \`onRenderCheckbox\` | \`RowSelectionUiCheckboxComponents\` | The checkbox column's cell (\`SELECTION_COLUMN_KEY\`) with row selection on |
 
 The lock in a locked column's header is an adornment keyed \`'lock'\`, which you replace or remove in a \`headers.hooks.adornments\` hook at \`GRID_MODULE_PRIORITY.editing + 1\` (see *Extend the header* on [**Columns**](?path=/docs/controls-grid-columns--overview)). The lock in a locked cell is the cell's own \`lockIcon\` piece: see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview).
 

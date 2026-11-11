@@ -13,5 +13,5 @@ export interface IRuntimeHostUiContainerProps {
 export const RuntimeHostUiContainer = (props: IRuntimeHostUiContainerProps) => {
     const components = { ...RuntimeHostUiContainerComponents, ...props.components };
     const styles = useMemo(() => getRuntimeHostUiContainerStyles(), []);
-    return components.onRenderContainer({ className: getClassNames([styles.runtime, props.className]), children: props.children });
+    return components.onRender({ className: getClassNames([styles.runtime, props.className]), children: props.children });
 };

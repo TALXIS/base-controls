@@ -15,5 +15,5 @@ export interface IMapUiContainerProps {
 export const MapUiContainer = (props: IMapUiContainerProps) => {
     const components = { ...MapUiContainerComponents, ...props.components };
     const styles = useMemo(() => getMapUiContainerStyles(props.height), [props.height]);
-    return components.onRenderContainer({ className: getClassNames([styles.container, props.className]), children: props.children });
+    return components.onRender({ className: getClassNames([styles.container, props.className]), children: props.children });
 };

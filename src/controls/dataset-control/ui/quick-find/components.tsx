@@ -17,7 +17,7 @@ export interface IDatasetControlUiQuickFindLabels {
 /** The replaceable pieces of the quick find. */
 export interface IDatasetControlUiQuickFindComponents {
     /** The box around the field, which the callout points at. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** The search field. */
     onRenderTextField: (props: ITextFieldProps) => JSX.Element | null;
     /** The search button drawn in place of the field while the quick find is compact. */
@@ -28,6 +28,6 @@ export interface IDatasetControlUiQuickFindComponents {
 
 /** The defaults for {@link IDatasetControlUiQuickFindComponents}. */
 export const DatasetControlUiQuickFindComponents: IDatasetControlUiQuickFindComponents = {
-    onRenderContainer: props => <div {...props} />,
+    onRender: props => <div {...props} />,
     onRenderTextField: props => <TextField {...props} />,
 };

@@ -22,7 +22,7 @@ export interface ILeafletUiProps {
 export const LeafletUiRoot = (props: ILeafletUiProps) => {
     const components = { ...LeafletUiComponents, ...props.components };
     const styles = useMemo(() => getLeafletUiStyles(), []);
-    return components.onRenderMap({
+    return components.onRender({
         className: getClassNames([styles.map, props.className]),
         center: [props.defaultCenter.latitude, props.defaultCenter.longitude],
         zoom: props.defaultZoom,

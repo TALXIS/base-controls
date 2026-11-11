@@ -33,7 +33,7 @@ const ScratchRibbon = () => {
     return <DatasetControl.Ribbon enableRefresh onLoad={onLoad} />
 }
 
-const ViewSwitcherWithCommand = (props: IButtonProps) => DatasetControlUiViewSwitcherComponents.onRenderButton({
+const ViewSwitcherWithCommand = (props: IButtonProps) => DatasetControlUiViewSwitcherComponents.onRender({
     ...props,
     menuProps: {
         ...props.menuProps!,
@@ -73,7 +73,7 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
         <DatasetControl key={mountKey} stateKey='scratch-deals' onLoad={onLoad} onSetup={onSetup} height="640px">
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
-                    <DatasetControl.ViewSwitcher components={props.overrideSlots ? { onRenderButton: buttonProps => <ViewSwitcherWithCommand {...buttonProps} /> } : undefined} />
+                    <DatasetControl.ViewSwitcher components={props.overrideSlots ? { onRender: buttonProps => <ViewSwitcherWithCommand {...buttonProps} /> } : undefined} />
                 </DatasetControl.Header.Start>
                 <DatasetControl.Header.End>
                     <ScratchRibbon />

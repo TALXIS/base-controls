@@ -41,7 +41,7 @@ export const DatasetControlUiPagination = (props: IDatasetControlUiPaginationPro
     const components = { ...DatasetControlUiPaginationComponents, ...props.components };
     const theme = useTheme();
     const styles = useMemo(() => getDatasetControlUiPaginationStyles(theme, props.align ?? 'end'), [theme, props.align]);
-    return components.onRenderCommandBar({
+    return components.onRender({
         className: styles.datasetControlPagination,
         styles: { primarySet: styles.buttons },
         items: [

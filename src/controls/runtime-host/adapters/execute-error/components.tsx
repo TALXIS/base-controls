@@ -2,10 +2,10 @@ import { IRuntimeHostUiErrorDialogProps, RuntimeHostUiErrorDialog } from "../../
 
 export interface IRuntimeExecuteErrorComponents {
     /** How the failures of `execute` are shown. */
-    onRenderErrors: (props: IRuntimeHostUiErrorDialogProps) => JSX.Element | null;
+    onRender: (props: IRuntimeHostUiErrorDialogProps) => JSX.Element | null;
 }
 
 /** The defaults for {@link IRuntimeExecuteErrorComponents}. */
 export const RuntimeExecuteErrorComponents: IRuntimeExecuteErrorComponents = {
-    onRenderErrors: props => <RuntimeHostUiErrorDialog {...props} />,
+    onRender: props => <RuntimeHostUiErrorDialog {...props} />,
 };

@@ -23,7 +23,7 @@ export const DatasetControlUiQuickFindCompactButton = (props: IDatasetControlUiQ
     const components = { ...DatasetControlUiQuickFindCompactButtonComponents, ...props.components };
     const theme = useTheme();
     const styles = useMemo(() => getDatasetControlUiQuickFindCompactButtonStyles(theme), [theme]);
-    return components.onRenderButton({
+    return components.onRender({
         className: props.hasValue ? styles.hasValue : undefined,
         iconProps: { iconName: 'Search' },
         title: props.text,

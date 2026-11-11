@@ -8,6 +8,6 @@ export type ITaskRibbonProps = IDatasetControlRibbonProps;
 /** `DatasetControl.Ribbon`, its items passed through the task grid's ribbon command UI hooks. */
 export const Ribbon = (props: ITaskRibbonProps) => {
     const runtime = useTaskRuntime();
-    const components = { ...RibbonUiCommandBarComponents, ...props.components };
-    return <DatasetControl.Ribbon {...props} components={{ ...components, onRenderCommandBar: commandBarProps => components.onRenderCommandBar({ ...commandBarProps, items: runtime.getRibbonCommandItems(commandBarProps.items) }) }} />;
+    const commandBar = { ...RibbonUiCommandBarComponents, ...props.components?.commandBar };
+    return <DatasetControl.Ribbon {...props} components={{ ...props.components, commandBar: { ...commandBar, onRender: commandBarProps => commandBar.onRender({ ...commandBarProps, items: runtime.getRibbonCommandItems(commandBarProps.items) }) } }} />;
 };

@@ -21,5 +21,5 @@ export const ColumnHeaderUiRequiredMarker = (props: IColumnHeaderUiRequiredMarke
     if (!isRequired) {
         return null;
     }
-    return components.onRenderText({ ...textProps, className: getClassNames([styles.requiredMarker, className]), children: '*' });
+    return components.onRender({ ...textProps, className: getClassNames([styles.requiredMarker, className]), children: '*' });
 };

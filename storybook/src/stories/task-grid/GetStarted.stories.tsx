@@ -22,11 +22,11 @@ Where the tasks come from, and which columns make the tree, is on [**Loading tas
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`TaskGrid\` | \`treeCell\` | A cell's keys (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)), plus \`indent\` (\`onRenderIndent\`) and \`toggle\` (\`onRenderContainer\`, \`onRenderButton\`) | \`TaskGridUiTreeCellIndentComponents\`, \`GroupingUiToggleComponents\` | The subject cell, its indent and its chevron |
-| | \`percentComplete\` | A cell's keys, plus \`progress\` (\`onRenderProgress\`) | \`TaskGridUiPercentCompleteComponents\` | The progress bar |
-| | \`expansionHeader\` | \`expandCollapse\` (\`onRenderContainer\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\`) | \`GroupingUiExpandCollapseComponents\` | The buttons that open and close a level |
+| \`TaskGrid\` | \`treeCell\` | A cell's keys (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)), plus \`indent\` (\`onRender\`) and \`toggle\` (\`onRender\`, \`onRenderButton\`) | \`TaskGridUiTreeCellIndentComponents\`, \`GroupingUiToggleComponents\` | The subject cell, its indent and its chevron |
+| | \`percentComplete\` | A cell's keys, plus \`progress\` (\`onRender\`) | \`TaskGridUiPercentCompleteComponents\` | The progress bar |
+| | \`expansionHeader\` | \`expandCollapse\` (\`onRender\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\`) | \`GroupingUiExpandCollapseComponents\` | The buttons that open and close a level |
 | | \`taskCommands\` | An empty cell's keys | | The **+** and a row's commands |
-| \`TaskDatasetControl.Settings\` | Top level | \`onRenderButton\`, \`onRenderTooltip\` | \`TaskGridUiSettingsMenuComponents\` | The settings button and its menu |
+| \`TaskDatasetControl.Settings\` | Top level | \`onRenderButton\`, \`onRender\` | \`TaskGridUiSettingsMenuComponents\` | The settings button and its menu |
 
 ## Reference
 

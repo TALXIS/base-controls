@@ -46,6 +46,6 @@ const LookupManyCellSelect = (props: ILookupManyCellSelectProps) => {
 export const LookupManyCellEditor = (props: IGridCellParams & Pick<ICellEditorParams, 'eventKey'>) => {
     const cellWidth = props.column?.getActualWidth() ?? 0;
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
-        <EditingCell.Editor {...props} components={{ columnControl: { onRenderControl: () => <LookupManyCellSelect eventKey={props.eventKey} cellWidth={cellWidth} /> } }} />
+        <EditingCell.Editor {...props} components={{ columnControl: { onRender: () => <LookupManyCellSelect eventKey={props.eventKey} cellWidth={cellWidth} /> } }} />
     </Grid.Cell.Field>;
 };

@@ -22,9 +22,9 @@ export const TemplatesUiRecordSelectorFrame = (props: ITemplatesUiRecordSelector
     const components = { ...TemplatesUiRecordSelectorFrameComponents, ...props.components };
     const styles = useMemo(() => getTemplatesUiRecordSelectorFrameStyles(), []);
     const parts = useMemo((): IRecordSelectorFrameParts => ({
-        header: { onRenderContainer: containerProps => <WrapCompactProvider {...containerProps} className={getClassNames([containerProps.className, styles.header])} /> },
-        quickFind: { onRenderContainer: containerProps => <div {...containerProps} className={getClassNames([containerProps.className, styles.quickFind])} /> },
+        header: { onRender: containerProps => <WrapCompactProvider {...containerProps} className={getClassNames([containerProps.className, styles.header])} /> },
+        quickFind: { onRender: containerProps => <div {...containerProps} className={getClassNames([containerProps.className, styles.quickFind])} /> },
     }), [styles]);
 
-    return components.onRenderContainer({ className: styles.root, children: props.children(parts) });
+    return components.onRender({ className: styles.root, children: props.children(parts) });
 };

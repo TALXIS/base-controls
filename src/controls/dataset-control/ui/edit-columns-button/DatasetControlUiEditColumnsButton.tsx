@@ -20,7 +20,7 @@ export const DatasetControlUiEditColumnsButton = (props: IDatasetControlUiEditCo
     const styles = useMemo(() => getDatasetControlUiEditColumnsButtonStyles(), []);
     const isCompact = useCompact();
     //always wrapped, so the button is not remounted when it turns compact
-    return components.onRenderTooltip({
+    return components.onRender({
         content: isCompact ? props.text : undefined,
         setAriaDescribedBy: false,
         hostClassName: styles.tooltipHost,

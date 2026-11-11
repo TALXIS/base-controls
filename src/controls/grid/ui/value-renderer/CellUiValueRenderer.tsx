@@ -58,7 +58,7 @@ export const CellUiValueRenderer = (props: ICellUiValueRendererProps) => {
         }
     };
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: getClassNames([styles.valueRendererUi, props.className]),
         children: <>
             {props.prefixIconName && components.onRenderPrefixIcon({ iconName: props.prefixIconName })}

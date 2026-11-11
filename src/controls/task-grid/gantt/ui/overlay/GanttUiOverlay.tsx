@@ -14,5 +14,5 @@ export const GanttUiOverlay = (props: IGanttUiOverlayProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getGanttUiOverlayStyles(theme), [theme]);
 
-    return components.onRenderContainer({ className: styles.root });
+    return components.onRender({ className: styles.root });
 };

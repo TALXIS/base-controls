@@ -5,7 +5,7 @@ import { TooltipHost } from "../surfaces";
 /** The replaceable pieces of the error message bar. */
 export interface IErrorMessageBarComponents {
     /** The bar; `children` holds the title, `actions` the command bar. */
-    onRenderMessageBar: (props: IMessageBarProps) => JSX.Element | null;
+    onRender: (props: IMessageBarProps) => JSX.Element | null;
     /** Wraps the title; its `children` are the title. */
     onRenderTooltip: (props: ITooltipHostProps) => JSX.Element | null;
     onRenderTitle: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
@@ -15,7 +15,7 @@ export interface IErrorMessageBarComponents {
 
 /** The defaults for {@link IErrorMessageBarComponents}. */
 export const ErrorMessageBarComponents: IErrorMessageBarComponents = {
-    onRenderMessageBar: props => <MessageBar {...props} />,
+    onRender: props => <MessageBar {...props} />,
     onRenderTooltip: props => <TooltipHost {...props} />,
     onRenderTitle: props => <span {...props} />,
     onRenderCommandBar: props => <CommandBar {...props} />,

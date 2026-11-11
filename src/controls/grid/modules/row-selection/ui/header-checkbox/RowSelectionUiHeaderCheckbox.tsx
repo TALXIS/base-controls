@@ -15,7 +15,7 @@ export const RowSelectionUiHeaderCheckbox = (props: IRowSelectionUiHeaderCheckbo
     const styles = useMemo(() => getRowSelectionUiHeaderCheckboxStyles(), []);
     const components = { ...RowSelectionUiHeaderCheckboxComponents, ...props.components };
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.container,
         children: props.isCheckboxVisible && components.onRenderCheckbox({
             checked: props.state === 'checked',

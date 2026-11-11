@@ -29,7 +29,7 @@ export const RecordSaveUiErrorCallout = (props: IRecordSaveUiErrorCalloutProps) 
     const styles = useMemo(() => getRecordSaveUiErrorCalloutStyles(theme), [theme]);
     const components = { ...RecordSaveUiErrorCalloutComponents, ...props.components };
 
-    return components.onRenderCallout({
+    return components.onRender({
         target: props.target,
         onDismiss: props.onDismiss,
         styles: { calloutMain: styles.errorCallout },

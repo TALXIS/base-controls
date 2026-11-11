@@ -16,17 +16,17 @@ The pins and the popups they open are drawn through slots you can replace, so a 
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| All three | Top level | \`onRenderContainer\` | \`MapUiContainerComponents\` | The map's box, which holds the library's map, the loading state and a failed load. |
-| All three | \`loading\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the map has loaded. |
-| All three | \`errorMessage\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, such as a map without a library. |
-| \`LeafletMap\` | \`map\` | \`onRenderMap\`, \`onRenderTileLayer\` | \`LeafletUiComponents\` | The react-leaflet map and its tiles. |
-| \`GoogleMap\` | \`map\` | \`onRenderMap\` | \`GoogleMapsUiComponents\` | The vis.gl map. |
-| Both | \`marker.pin\` | \`onRenderContainer\`, \`onRenderPin\`, \`onRenderDot\` | \`MapUiMarkerComponents\` | Each pin, \`Map.Ui.Marker\`: its box, the teardrop, and the white dot in it. A \`color\` in \`onRenderPin\`'s props fills the teardrop. |
+| All three | \`container\` | \`onRender\` | \`MapUiContainerComponents\` | The map's box, which holds the library's map, the loading state and a failed load. |
+| All three | \`loading\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the map has loaded. |
+| All three | \`errorMessage\` | \`onRender\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, such as a map without a library. |
+| \`LeafletMap\` | \`map\` | \`onRender\`, \`onRenderTileLayer\` | \`LeafletUiComponents\` | The react-leaflet map and its tiles. |
+| \`GoogleMap\` | \`map\` | \`onRender\` | \`GoogleMapsUiComponents\` | The vis.gl map. |
+| Both | \`marker.pin\` | \`onRender\`, \`onRenderPin\`, \`onRenderDot\` | \`MapUiMarkerComponents\` | Each pin, \`Map.Ui.Marker\`: its box, the teardrop, and the white dot in it. A \`color\` in \`onRenderPin\`'s props fills the teardrop. |
 | Both | \`marker.popup\` | \`onRender\`, with no props | \`Map.Popup.Renderer\` | The whole content of the popup a pin opens: see *Your own popup*. |
-| Both | \`marker.popup.card\` | \`onRenderContainer\` | \`RecordCardComponents\` | The default popup's card. |
-| Both | \`marker.popup.header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRenderContainer\`; \`status\`: \`onRenderContainer\`, \`onRenderLabel\` | \`RecordCardHeaderComponents\`, \`RecordCardHeaderStartComponents\`, \`RecordCardHeaderEndComponents\`, \`RecordCardTitleComponents\`, \`OptionTagComponents\` | The default popup's header, with the record's name. |
-| \`LeafletMap\` | \`marker.popup.container\` | \`onRenderContainer\`, with react-leaflet's \`Popup\` props | \`LeafletUiPopupComponents\` | Leaflet's popup, drawn as a Fluent callout. |
-| \`GoogleMap\` | \`marker.popup.container\` | \`onRenderContainer\`, with vis.gl's \`InfoWindow\` props | \`GoogleMapsUiPopupComponents\` | Google's info window, drawn as a Fluent callout. |
+| Both | \`marker.popup.card\` | \`onRender\` | \`RecordCardComponents\` | The default popup's card. |
+| Both | \`marker.popup.header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRender\`; \`status\`: \`onRender\`, \`onRenderLabel\` | \`RecordCardHeaderComponents\`, \`RecordCardHeaderStartComponents\`, \`RecordCardHeaderEndComponents\`, \`RecordCardTitleComponents\`, \`OptionTagComponents\` | The default popup's header, with the record's name. |
+| \`LeafletMap\` | \`marker.popup.container\` | \`onRender\`, with react-leaflet's \`Popup\` props | \`LeafletUiPopupComponents\` | Leaflet's popup, drawn as a Fluent callout. |
+| \`GoogleMap\` | \`marker.popup.container\` | \`onRender\`, with vis.gl's \`InfoWindow\` props | \`GoogleMapsUiPopupComponents\` | Google's info window, drawn as a Fluent callout. |
 
 To change the wording of the loading state and the error, see [**Localization**](?path=/docs/concepts-localization--overview).
 

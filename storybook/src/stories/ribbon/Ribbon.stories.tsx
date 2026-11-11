@@ -73,10 +73,10 @@ When the first load throws, the error shows in place of the commands, with **Det
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| Top level | \`onRenderCommandBar\`, with the commands as \`items\` | \`RibbonUiCommandBarComponents\` | The command bar |
-| \`shimmer\` | \`onRenderShimmer\` | \`RibbonUiShimmerComponents\` | The shimmer before the first load |
-| \`mountError\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed first load |
-| \`executeError\` | \`onRenderErrors\` | \`RuntimeExecuteErrorComponents\` | A failed reload or command; the error dialog by default |
+| \`commandBar\` | \`onRender\`, with the commands as \`items\` | \`RibbonUiCommandBarComponents\` | The command bar |
+| \`shimmer\` | \`onRender\` | \`RibbonUiShimmerComponents\` | The shimmer before the first load |
+| \`mountError\` | \`onRender\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed first load |
+| \`executeError\` | \`onRender\` | \`RuntimeExecuteErrorComponents\` | A failed reload or command; the error dialog by default |
 | \`container\`, \`loadingOverlay\` | As on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) | \`RuntimeHostUiContainerComponents\`, \`LoadingOverlayComponents\` | The ribbon's box, and what covers it while \`ribbon.loading\` is shown |
 
 The same UI is exported as plain components that take only props, for a bar with no \`onLoad\` behind it: \`Ribbon.Ui.CommandBar\`, given Fluent's command bar \`items\`, and \`Ribbon.Ui.Shimmer\`.

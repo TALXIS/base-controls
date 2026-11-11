@@ -41,5 +41,5 @@ export const DatasetControlUiPageSizeSwitcher = (props: IDatasetControlUiPageSiz
             })),
         ],
     });
-    return components.onRenderButton({ text: props.text, disabled: props.disabled, menuProps, styles: { root: styles.datasetControlPageSizeSwitcher } });
+    return components.onRender({ text: props.text, disabled: props.disabled, menuProps, styles: { root: styles.datasetControlPageSizeSwitcher } });
 };

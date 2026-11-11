@@ -20,7 +20,7 @@ export const UserQueriesUiManageViewsPanel = (props: IUserQueriesUiManageViewsPa
     const components = { ...UserQueriesUiManageViewsPanelComponents, ...props.components };
     const styles = useMemo(() => getUserQueriesUiManageViewsPanelStyles(), []);
 
-    return components.onRenderPanel({
+    return components.onRender({
         isOpen: true,
         type: PanelType.medium,
         headerText: props.title,

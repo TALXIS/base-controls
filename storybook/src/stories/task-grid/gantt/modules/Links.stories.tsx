@@ -34,11 +34,11 @@ Drawing and deleting links needs \`enableEditing\`. While a link saves, its task
 
 | Part | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`LinkTooltip.Callout\` | \`tooltip.callout\` | \`onRenderCallout\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the link |
-| \`LinkTooltip.Header\` | \`tooltip.header\` | \`header\`, \`headerStart\`, \`title\`: \`onRenderContainer\` | \`RecordCardHeaderComponents\`, \`RecordCardHeaderStartComponents\`, \`RecordCardTitleComponents\` | The dependency's type |
-| \`LinkTooltip.FieldRows\` | \`tooltip.fieldRows\` | \`onRenderContainer\` | \`RecordCardFieldRowsComponents\` | The box the rows sit in |
-| \`LinkTooltip.PredecessorRow\`, \`SuccessorRow\` | \`tooltip.predecessor\`, \`tooltip.successor\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`RecordCardFieldRowComponents\` | The two tasks |
-| \`LinkTooltip.DateRangeRow\` | \`tooltip.dateRange\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`RecordCardDateRangeComponents\` | The dates the link joins |
+| \`LinkTooltip.Callout\` | \`tooltip.callout\` | \`onRender\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the link |
+| \`LinkTooltip.Header\` | \`tooltip.header\` | \`header\`, \`headerStart\`, \`title\`: \`onRender\` | \`RecordCardHeaderComponents\`, \`RecordCardHeaderStartComponents\`, \`RecordCardTitleComponents\` | The dependency's type |
+| \`LinkTooltip.FieldRows\` | \`tooltip.fieldRows\` | \`onRender\` | \`RecordCardFieldRowsComponents\` | The box the rows sit in |
+| \`LinkTooltip.PredecessorRow\`, \`SuccessorRow\` | \`tooltip.predecessor\`, \`tooltip.successor\` | \`onRender\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`RecordCardFieldRowComponents\` | The two tasks |
+| \`LinkTooltip.DateRangeRow\` | \`tooltip.dateRange\` | \`onRender\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`RecordCardDateRangeComponents\` | The dates the link joins |
 
 ## Where next
 

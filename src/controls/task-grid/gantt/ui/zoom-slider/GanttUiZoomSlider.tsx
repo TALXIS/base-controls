@@ -73,7 +73,7 @@ export const GanttUiZoomSlider = (props: IGanttUiZoomSliderProps) => {
         };
     }, []);
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.root,
         children: <>
             {components.onRenderZoomButton({

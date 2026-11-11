@@ -81,7 +81,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 12 }} styles={{ root: { maxWidth: 480 } }}>
         <Toggle label='Service unavailable' inlineLabel onChange={(_, checked) => { isServiceDown.current = !!checked }} />
         {/* the card is the host's box, so the loading state and a failed load show inside it */}
-        <RuntimeHost createRuntime={() => new DealSummaryRuntime(() => isServiceDown.current)} onSetup={onSetup} components={{ container: { onRenderContainer: props => <div {...props} style={CARD_STYLE} /> } }}>
+        <RuntimeHost createRuntime={() => new DealSummaryRuntime(() => isServiceDown.current)} onSetup={onSetup} components={{ container: { onRender: props => <div {...props} style={CARD_STYLE} /> } }}>
             <DealSummary />
         </RuntimeHost>
         <EventLog entries={entries} />
@@ -149,7 +149,7 @@ const DealSummary = () => {
 const GridExample = () => {
     //outlives every runtime, so the next mount opens on the owner this one stored
     const store = useControlStateStore('dealSummary')
-    return <RuntimeHost createRuntime={() => new DealSummaryRuntime(store)} components={{ placeholder: { onRenderContainer: () => <LoadingDeals /> } }}>
+    return <RuntimeHost createRuntime={() => new DealSummaryRuntime(store)} components={{ placeholder: { onRender: () => <LoadingDeals /> } }}>
         <DealSummary />
     </RuntimeHost>
 }
@@ -222,7 +222,7 @@ const DealSummary = () => {
 
 const GridExample = () => (
     //the card is the host's box, so the spinner covers it
-    <RuntimeHost createRuntime={() => new DealSummaryRuntime()} components={{ container: { onRenderContainer: props => <div {...props} style={CARD_STYLE} /> } }}>
+    <RuntimeHost createRuntime={() => new DealSummaryRuntime()} components={{ container: { onRender: props => <div {...props} style={CARD_STYLE} /> } }}>
         <DealSummary />
     </RuntimeHost>
 )
@@ -314,10 +314,10 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 12 }} styles={{ root: { maxWidth: 480 } }}>
         <Toggle label='Service unavailable' inlineLabel onChange={(_, checked) => { isServiceDown.current = !!checked }} />
         <RuntimeHost createRuntime={() => new DealSummaryRuntime(() => isServiceDown.current)} components={{
-            container: { onRenderContainer: props => <div {...props} style={CARD_STYLE} /> },
-            placeholder: { onRenderContainer: () => <SummarySkeleton /> },
+            container: { onRender: props => <div {...props} style={CARD_STYLE} /> },
+            placeholder: { onRender: () => <SummarySkeleton /> },
             mountError: {
-                onRenderMessageBar: props => <ErrorCard {...props} />,
+                onRender: props => <ErrorCard {...props} />,
                 //the items are Details and Try again, each with its onClick
                 onRenderCommandBar: props => <Stack horizontal tokens={{ childrenGap: 8 }}>
                     {props.items.map(item => <DefaultButton key={item.key} text={item.text} iconProps={item.iconProps} onClick={() => item.onClick?.()} />)}
@@ -327,7 +327,7 @@ const GridExample = () => {
             loadingOverlay: { onRenderSpinner: () => <ProgressIndicator styles={{ root: { width: 200 } }} /> },
             //one notification bar in place of the error dialog, grouping the failures once there are several
             executeError: {
-                onRenderErrors: ({ failures, onDismiss }) => <NotificationMessageBar messages={failures.map(failure => ({
+                onRender: ({ failures, onDismiss }) => <NotificationMessageBar messages={failures.map(failure => ({
                     level: 'ERROR',
                     text: \`<b>\${escapeHtml(failure.title)}</b> \${escapeHtml((failure.error as Error).message)}\`,
                     onDismiss: () => onDismiss(failure),

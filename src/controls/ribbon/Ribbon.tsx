@@ -30,7 +30,7 @@ export const RibbonRoot = (props: IRibbonProps) => {
 
     const { shimmer, container, mountError, loadingOverlay, executeError } = props.components ?? {};
     const placeholder: Partial<ILoadingBoundaryComponents> = {
-        onRenderContainer: () => <RibbonUiShimmer align={props.align} components={shimmer} />,
+        onRender: () => <RibbonUiShimmer align={props.align} components={shimmer} />,
     };
 
     return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} className={props.className} components={{ container, mountError, placeholder, loadingOverlay, executeError }}>
@@ -42,7 +42,6 @@ export const RibbonRoot = (props: IRibbonProps) => {
 const RibbonMount = (props: IRibbonProps) => {
     const runtime = useRuntime<RibbonRuntime>();
     const { rerender } = useRerender();
-    const { shimmer, container, mountError, loadingOverlay, executeError, ...commandBar } = props.components ?? {};
 
     useEventEmitter<IRibbonEvents>(runtime.events, ['onCommandsChanged', 'onBeforeExecute', 'onAfterExecute'], rerender);
 
@@ -59,5 +58,5 @@ const RibbonMount = (props: IRibbonProps) => {
         return { ...item, disabled: props.disabled || command.disabled || runtime.isRunning(command.id), onClick: () => { runtime.executeCommand(command); } };
     };
 
-    return <RibbonUiCommandBar items={(runtime.getCommands() ?? []).map(toItem)} align={props.align} components={commandBar} />;
+    return <RibbonUiCommandBar items={(runtime.getCommands() ?? []).map(toItem)} align={props.align} components={props.components?.commandBar} />;
 };

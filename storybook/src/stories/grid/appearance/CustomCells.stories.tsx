@@ -18,16 +18,16 @@ Every column of the provider draws its cells with \`Grid.Cell.Renderer\`, bound 
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`columnControl\` | \`onRenderControl(props, defaultRender)\` | \`CellColumnControlComponents\` | The value. The only slot handed a \`defaultRender\`, to fall back to the grid's drawing for some records |
-| \`control\` | \`onRenderContainer\` | | The room the value is drawn in |
-| \`container\` | \`onRenderContainer\` | | The whole cell |
-| \`loading\` | \`onRenderShimmer\` | | The shimmer while the cell waits |
-| \`commands\` | \`onRenderContainer\`, \`onRenderCommandBar\` | \`CellUiCommandsComponents\` | The column's commands |
+| \`columnControl\` | \`onRender(props, defaultRender)\` | \`CellColumnControlComponents\` | The value. The only slot handed a \`defaultRender\`, to fall back to the grid's drawing for some records |
+| \`control\` | \`onRender\` | | The room the value is drawn in |
+| \`container\` | \`onRender\` | | The whole cell |
+| \`loading\` | \`onRender\` | | The shimmer while the cell waits |
+| \`commands\` | \`onRender\`, \`onRenderCommandBar\` | \`CellUiCommandsComponents\` | The column's commands |
 | \`fieldError\` | \`onRenderOutline\`, \`onRenderTooltip\`, \`onRenderIcon\` | | The validation outline and message. Keep the \`className\` \`onRenderOutline\` gets: the grid hides an invalid cell's focus border by it |
-| \`resizeGrip\` | \`onRenderContainer\`, \`onRenderGrip\` | | The grip a row is dragged taller by |
-| \`lockIcon\` | \`onRenderTooltip\`, \`onRenderIcon\` | | The lock of a locked cell, with the editing module |
+| \`resizeGrip\` | \`onRender\`, \`onRenderGrip\` | | The grip a row is dragged taller by |
+| \`lockIcon\` | \`onRender\`, \`onRenderIcon\` | | The lock of a locked cell, with the editing module |
 
-To restyle only the value, render \`<GridValueRenderer {...props} components={…} />\` in \`columnControl.onRenderControl\`. Its slots are \`onRenderContainer\`, \`onRenderText\`, \`onRenderPlaceholder\`, \`onRenderLink\`, \`onRenderLookup\`, \`onRenderOptions\`, \`onRenderFile\`, \`onRenderPrefixIcon\` and \`onRenderSuffixIcon\`, with defaults in \`CellUiValueRendererComponents\`.
+To restyle only the value, render \`<GridValueRenderer {...props} components={…} />\` in \`columnControl.onRender\`. Its slots are \`onRender\`, \`onRenderText\`, \`onRenderPlaceholder\`, \`onRenderLink\`, \`onRenderLookup\`, \`onRenderOptions\`, \`onRenderFile\`, \`onRenderPrefixIcon\` and \`onRenderSuffixIcon\`, with defaults in \`CellUiValueRendererComponents\`.
 
 The editor takes \`container\`, \`loading\`, \`control\`, \`columnControl\` and \`resizeGrip\`, and in an editor \`columnControl\` draws the input, as the example's rich text editor does. Group rows and totals draw their own cells, restyled through their modules: see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
 
@@ -51,7 +51,7 @@ To lay out the cell yourself, compose it from \`Grid.Cell\`'s parts. Each brings
 | \`Loading\` | The shimmer while the cell waits, in place of what it wraps |
 | \`LockIcon\` | The lock of a locked cell, with the editing module; inside \`Loading\`, before \`Control\` |
 | \`Control\` | The room the value is drawn in; the commands, error icon and lock keep to its edge |
-| \`ColumnControl\` | The value: \`GridValueRenderer\`, a PCF control the column names, or your \`onRenderControl\`; inside \`Control\` |
+| \`ColumnControl\` | The value: \`GridValueRenderer\`, a PCF control the column names, or your \`columnControl.onRender\`; inside \`Control\` |
 | \`Commands\` | The column's commands, while the row is hovered, focused or selected |
 | \`FieldError\` | The validation outline and its message |
 

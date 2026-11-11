@@ -42,7 +42,7 @@ Every dependencies factory takes \`components\`, read at mount. How slots work: 
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`count\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderArrow\`, \`onRenderCount\` | \`DependenciesUiCountComponents\` | The count in the *Predecessors* and *Successors* cells |
+| \`count\` | \`onRender\`, \`onRenderIcon\`, \`onRenderArrow\`, \`onRenderCount\` | \`DependenciesUiCountComponents\` | The count in the *Predecessors* and *Successors* cells |
 
 ## Reference
 

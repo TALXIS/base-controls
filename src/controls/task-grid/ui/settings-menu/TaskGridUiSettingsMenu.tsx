@@ -22,7 +22,7 @@ export const TaskGridUiSettingsMenu = (props: ITaskGridUiSettingsMenuProps) => {
     const isCompact = useCompact();
     const menuProps = useSurfaceMenuProps({ items: props.items });
 
-    return components.onRenderTooltip({
+    return components.onRender({
         content: isCompact ? props.text : undefined,
         setAriaDescribedBy: false,
         hostClassName: styles.tooltipHost,

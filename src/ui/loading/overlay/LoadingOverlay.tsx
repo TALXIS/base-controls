@@ -21,7 +21,7 @@ export const LoadingOverlay = (props: ILoadingOverlayProps) => {
     if (!props.isLoading) {
         return null;
     }
-    return components.onRenderOverlay({
+    return components.onRender({
         className: styles.overlay,
         children: <>
             {components.onRenderSpinner({ size: SpinnerSize.large })}

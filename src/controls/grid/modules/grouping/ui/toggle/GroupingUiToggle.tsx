@@ -17,7 +17,7 @@ export const GroupingUiToggle = (props: IGroupingUiToggleProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getGroupingUiToggleStyles(theme), [theme]);
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: getClassNames([GROUPING_TOGGLE_CLASS, styles.container]),
         children: components.onRenderButton({
             isExpanded: props.isExpanded,

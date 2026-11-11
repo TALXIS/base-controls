@@ -14,7 +14,7 @@ export const RowUiError = (props: IRowUiErrorProps) => {
     const components = { ...RowUiErrorComponents, ...props.components };
     const styles = useMemo(() => getRowUiErrorStyles(), []);
 
-    return components.onRenderMessageBar({
+    return components.onRender({
         messageBarType: MessageBarType.error,
         styles: { root: styles.messageBarRoot },
         children: props.message,

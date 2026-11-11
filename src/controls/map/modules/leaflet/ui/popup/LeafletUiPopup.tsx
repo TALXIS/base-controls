@@ -18,5 +18,5 @@ export const LeafletUiPopup = (props: ILeafletUiPopupProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getLeafletUiPopupStyles(theme), [theme]);
     //the card's header fills the corner Leaflet's close button sits in
-    return components.onRenderContainer({ className: getClassNames([styles.popup, props.className]), closeButton: false, children: props.children });
+    return components.onRender({ className: getClassNames([styles.popup, props.className]), closeButton: false, children: props.children });
 };

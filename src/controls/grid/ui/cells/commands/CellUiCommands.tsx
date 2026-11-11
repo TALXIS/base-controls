@@ -20,7 +20,7 @@ export const CellUiCommands = (props: ICellUiCommandsProps) => {
         return null;
     }
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: getClassNames([CELL_COMMANDS_CLASS, styles.commandsRoot, className]),
         children: components.onRenderCommandBar({
             ...commandBarProps,

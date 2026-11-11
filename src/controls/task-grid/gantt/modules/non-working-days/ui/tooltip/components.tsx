@@ -14,7 +14,7 @@ export interface INonWorkingDaysUiTooltipDescriptionProps extends React.HTMLAttr
 
 /** The replaceable pieces of a non-working day's tooltip. */
 export interface INonWorkingDaysUiTooltipComponents {
-    onRenderCallout: (props: ICalloutProps) => JSX.Element | null;
+    onRender: (props: ICalloutProps) => JSX.Element | null;
     /** Holds the descriptions, inside the callout. */
     onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderDescription: (props: INonWorkingDaysUiTooltipDescriptionProps) => JSX.Element | null;
@@ -22,7 +22,7 @@ export interface INonWorkingDaysUiTooltipComponents {
 
 /** The defaults for {@link INonWorkingDaysUiTooltipComponents}. */
 export const NonWorkingDaysUiTooltipComponents: INonWorkingDaysUiTooltipComponents = {
-    onRenderCallout: props => <Callout {...props} />,
+    onRender: props => <Callout {...props} />,
     onRenderContainer: props => <div {...props} />,
     onRenderDescription: ({ day, ...props }) => <span {...props} />,
 };

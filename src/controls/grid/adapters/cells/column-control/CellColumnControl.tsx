@@ -26,6 +26,6 @@ export const CellColumnControl = (props: ICellColumnControlProps) => {
 
     return <GridControlContext.Provider value={control}>
         {/* keyed: `AutoFocus` only affects a control's first render */}
-        <Fragment key={`${cell.isBeingEdited()}`}>{components.onRenderControl(controlProps, onRenderDefault)}</Fragment>
+        <Fragment key={`${cell.isBeingEdited()}`}>{components.onRender(controlProps, onRenderDefault)}</Fragment>
     </GridControlContext.Provider>;
 };

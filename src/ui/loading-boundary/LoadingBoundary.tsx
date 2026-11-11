@@ -21,7 +21,7 @@ export const LoadingBoundary = (props: ILoadingBoundaryProps) => {
     if (!props.isLoading) {
         return <>{props.children}</>;
     }
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.loadingBoundary,
         children: <>
             {components.onRenderSpinner({ size: SpinnerSize.small })}

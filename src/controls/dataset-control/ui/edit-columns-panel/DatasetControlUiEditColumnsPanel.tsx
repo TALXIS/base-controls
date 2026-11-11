@@ -39,7 +39,7 @@ export const DatasetControlUiEditColumnsPanel = (props: IDatasetControlUiEditCol
         }
     };
 
-    return components.onRenderPanel({
+    return components.onRender({
         headerText: props.title,
         isOpen: true,
         //Escape would drop the edit without asking

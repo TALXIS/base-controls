@@ -16,7 +16,7 @@ export const TooltipUiCallout = (props: ITooltipUiCalloutProps) => {
     const appTheme = useAppTheme();
     const styles = useMemo(() => getTooltipUiCalloutStyles(appTheme), [appTheme]);
 
-    return components.onRenderCallout({
+    return components.onRender({
         target: props.target,
         directionalHint: DirectionalHint.bottomLeftEdge,
         isBeakVisible: false,

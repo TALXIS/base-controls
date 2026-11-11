@@ -25,7 +25,7 @@ export const Notifications = (props: INotificationsProps) => {
 
     const allMessages = [...messages, ...notifications.getMessages()];
 
-    return components.onRenderNotifications({
+    return components.onRender({
         ...notificationsProps,
         messages: allMessages,
     });

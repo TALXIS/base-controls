@@ -718,7 +718,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                         <DatasetControl.Header.Start>
                             <DatasetControl.Ribbon
                                 onLoad={loadFieldCommands}
-                                components={{ onRenderCommandBar: props => <CommandBar {...props} items={[addFieldCommandBarItem, ...props.items]} /> }} />
+                                components={{ commandBar: { onRender: props => <CommandBar {...props} items={[addFieldCommandBarItem, ...props.items]} /> } }} />
                         </DatasetControl.Header.Start>
                         <DatasetControl.Header.End>
                             <DatasetControl.QuickFind />
@@ -759,7 +759,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                         <Form.Notifications messages={panelNotificationMessages} />
                         <Form.Ribbon
                             components={{
-                                onRenderCommandBar: (commandBarProps) => (
+                                onRender: (commandBarProps) => (
                                     <CommandBar
                                         {...commandBarProps}
                                         items={[

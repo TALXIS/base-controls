@@ -20,6 +20,6 @@ const TaskChecklistCellProgress = () => {
 /** A checklist cell with the task's progress as `done/total`. */
 export const TaskChecklistCell = (props: IGridCellParams) => {
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
-        <Grid.Cell.Renderer {...props} components={{ columnControl: { onRenderControl: () => <TaskChecklistCellProgress /> } }} />
+        <Grid.Cell.Renderer {...props} components={{ columnControl: { onRender: () => <TaskChecklistCellProgress /> } }} />
     </Grid.Cell.Field>;
 };

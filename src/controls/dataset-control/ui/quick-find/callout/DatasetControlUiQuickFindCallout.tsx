@@ -25,7 +25,7 @@ export const DatasetControlUiQuickFindCallout = (props: IDatasetControlUiQuickFi
     const components = { ...DatasetControlUiQuickFindCalloutComponents, ...props.components };
     const styles = useMemo(() => getDatasetControlUiQuickFindCalloutStyles(), []);
 
-    return components.onRenderCallout({
+    return components.onRender({
         target: props.target,
         calloutMaxWidth: 250,
         styles: { calloutMain: styles.calloutMain },

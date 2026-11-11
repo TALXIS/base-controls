@@ -154,7 +154,7 @@ const GridExample = () => {
             project: { color: '#ca5010' },
             components: {
                 chip: { onRenderChip: props => <BetaCutoffChip {...props} /> },
-                line: { onRenderContainer: props => <BetaCutoffLine {...props} /> },
+                line: { onRender: props => <BetaCutoffLine {...props} /> },
             },
         }),
         createBarDraggingModule(),

@@ -21,7 +21,7 @@ export const RuntimeExecuteError = (props: IRuntimeExecuteErrorProps) => {
         setFailures(failures => [...failures, { title: title ?? labels.get('runtimeExecuteError.title'), error }]);
     });
 
-    return components.onRenderErrors({
+    return components.onRender({
         failures,
         onDismiss: failure => setFailures(failures => failures.filter(other => other !== failure)),
     });

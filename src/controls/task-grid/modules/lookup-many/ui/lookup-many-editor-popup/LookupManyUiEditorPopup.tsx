@@ -35,5 +35,5 @@ export const LookupManyUiEditorPopup = (props: ILookupManyUiEditorPopupProps) =>
         popup.style.transform = `translate(${shift.x}px, ${shift.y}px)`;
     });
 
-    return components.onRenderContainer({ ref: rootRef, className: styles.root, children: props.children });
+    return components.onRender({ ref: rootRef, className: styles.root, children: props.children });
 };

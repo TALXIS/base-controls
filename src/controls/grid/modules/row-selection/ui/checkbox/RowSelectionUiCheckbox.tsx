@@ -23,7 +23,7 @@ export const RowSelectionUiCheckbox = (props: IRowSelectionUiCheckboxProps) => {
         }
     };
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.container,
         onClick: onClick,
         children: components.onRenderCheckbox({

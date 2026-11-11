@@ -14,5 +14,5 @@ export const ChecklistUiNameCell = (props: IChecklistUiNameCellProps) => {
     const { isCompleted, components: componentsProp, ...divProps } = props;
     const components = { ...ChecklistUiNameCellComponents, ...componentsProp };
     const styles = useMemo(() => getChecklistUiNameCellStyles(), []);
-    return components.onRenderContainer({ ...divProps, className: getClassNames([divProps.className, isCompleted ? styles.completed : undefined]) });
+    return components.onRender({ ...divProps, className: getClassNames([divProps.className, isCompleted ? styles.completed : undefined]) });
 };

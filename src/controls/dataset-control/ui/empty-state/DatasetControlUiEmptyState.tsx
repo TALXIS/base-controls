@@ -18,7 +18,7 @@ export const DatasetControlUiEmptyState = (props: IDatasetControlUiEmptyStatePro
     const components = { ...DatasetControlUiEmptyStateComponents, ...props.components };
     const styles = useMemo(() => getDatasetControlUiEmptyStateStyles(), []);
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: getClassNames([styles.datasetControlEmptyState, props.className]),
         children: <>
             {components.onRenderIcon({ className: styles.icon, iconName: 'SearchAndApps' })}

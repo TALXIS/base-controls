@@ -80,7 +80,7 @@ const GridExample = () => {
     const [tab, setTab] = React.useState('general')
 
     return <Form.Root onLoad={async () => ({ record })} enableAutoSave>
-        <Form.Ribbon components={{ onRenderCommandBar: props => <DemoRibbon {...props} /> }} />
+        <Form.Ribbon components={{ onRender: props => <DemoRibbon {...props} /> }} />
         <Form.Notifications />
         <Form.Tabs expandedTab={tab} onTabChange={setTab}>
             <Form.Tab id='general' label='General'>

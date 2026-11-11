@@ -12,14 +12,14 @@ Every part of a control draws its UI through small functions you can replace, so
 
 ## Slots
 
-A *slot* is a function named \`onRender…\`. It gets the props its default draws with and returns an element, or \`null\`. A part's own slots sit directly in its \`components\` map, as the ribbon's \`onRenderCommandBar\` does in the example.
+A *slot* is a function named \`onRender…\`. It gets the props its default draws with and returns an element, or \`null\`. A part's own slots sit directly in its \`components\` map, and the slot that draws a part's outermost element is named \`onRender\`, as in the example.
 
 Most defaults are exported, named after the UI they belong to, such as \`RibbonUiCommandBarComponents\` or \`LoadingBoundaryComponents\`, so a slot can still draw the default:
 
 | To | Write |
 |---|---|
-| Change one prop of the default | \`props => RibbonUiCommandBarComponents.onRenderCommandBar({ ...props, align: 'end' })\` |
-| Wrap the default | \`props => <TooltipHost content='Views'>{DatasetControlUiViewSwitcherComponents.onRenderButton(props)}</TooltipHost>\` |
+| Change one prop of the default | \`props => RibbonUiCommandBarComponents.onRender({ ...props, align: 'end' })\` |
+| Wrap the default | \`props => <TooltipHost content='Views'>{DatasetControlUiViewSwitcherComponents.onRender(props)}</TooltipHost>\` |
 | Replace it | \`props => <SearchBox {...props} />\` |
 | Remove it | \`() => null\` |
 
@@ -27,7 +27,7 @@ Spread the props you get: they carry the class names, handlers and refs that mak
 
 ## Pieces
 
-A *piece* is a key in the \`components\` map that names something inside the part and holds that thing's slots, as \`shimmer\` does in the example. A piece merges over its default slot by slot, so a slot you leave out keeps its default.
+A *piece* is a key in the \`components\` map that names something inside the part and holds that thing's slots, as \`commandBar\` and \`shimmer\` do in the example. A piece merges over its default slot by slot, so a slot you leave out keeps its default.
 
 Each control lists its pieces and slots under *Changing how it looks*, or for DatasetControl under *Reference* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
 

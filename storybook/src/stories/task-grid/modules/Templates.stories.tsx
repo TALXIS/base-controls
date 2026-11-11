@@ -29,7 +29,7 @@ A memory template is a task: \`data\` holds its column values, and \`children\` 
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`selector\` | \`onRenderContainer\` | \`TemplatesUiRecordSelectorFrameComponents\` | The template picker's frame |
+| \`selector\` | \`onRender\` | \`TemplatesUiRecordSelectorFrameComponents\` | The template picker's frame |
 | \`list\` | \`onRenderRecord\` | \`TemplatesUiRecordListComponents\` | A template in the picker's list |
 
 ## Reference

@@ -8,7 +8,7 @@ import { FieldFile, IFieldFileProps } from "./field-file";
 /** The replaceable pieces of a value. */
 export interface ICellUiValueRendererComponents {
     /** The box the value sits in; its `children` are the icons and the value. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderText: (props: IFieldTextProps) => JSX.Element;
     /** What an empty value shows in place of itself. */
     onRenderPlaceholder: (props: IFieldTextProps) => JSX.Element;
@@ -24,7 +24,7 @@ export interface ICellUiValueRendererComponents {
 
 /** The defaults for {@link ICellUiValueRendererComponents}. */
 export const CellUiValueRendererComponents: ICellUiValueRendererComponents = {
-    onRenderContainer: props => <div {...props} />,
+    onRender: props => <div {...props} />,
     onRenderText: props => <FieldText {...props} />,
     onRenderPlaceholder: props => <FieldText {...props} isPlaceholder />,
     onRenderLink: props => <FieldLink {...props} />,

@@ -15,5 +15,5 @@ export const ColumnHeaderUiLabel = (props: IColumnHeaderUiLabelProps) => {
     const components = { ...ColumnHeaderUiLabelComponents, ...props.components };
     const styles = useMemo(() => getColumnHeaderUiLabelStyles(), []);
 
-    return components.onRenderText({ ...textProps, styles: concatStyleSets({ root: styles.label }, textStyles), children: name });
+    return components.onRender({ ...textProps, styles: concatStyleSets({ root: styles.label }, textStyles), children: name });
 };

@@ -7,9 +7,9 @@ export interface ITabsComponentProps {
 }
 
 export interface IFormUiTabsComponents {
-    onRenderTabs: (props: ITabsComponentProps) => JSX.Element;
+    onRender: (props: ITabsComponentProps) => JSX.Element;
 }
 
 export const FormUiTabComponents: IFormUiTabsComponents = {
-    onRenderTabs: FormUiPivot
+    onRender: FormUiPivot
 };

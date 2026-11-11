@@ -121,7 +121,7 @@ const CaptionedLabel = (props: ITextProps) => {
 }
 
 const CAPTIONED_HEADER: IColumnHeaderRendererComponents = {
-    label: { onRenderText: props => <CaptionedLabel {...props} /> },
+    label: { onRender: props => <CaptionedLabel {...props} /> },
 }
 
 const onSetup = (grid: IGrid) => {
@@ -258,7 +258,7 @@ const styles = mergeStyleSets({
 const COMPONENTS: IGridComponents = {
     overlays: {
         loading: {
-            onRenderContainer: props => <div {...props} className={styles.card} />,
+            onRender: props => <div {...props} className={styles.card} />,
             onRenderSpinner: () => <>
                 <Icon iconName='DeliveryTruck' className={styles.truck} />
                 <ProgressIndicator className={styles.progress} />
@@ -288,7 +288,7 @@ const styles = mergeStyleSets({
 const COMPONENTS: IGridComponents = {
     rows: {
         loading: {
-            onRenderShimmer: () => <div className={styles.loadingRow}>
+            onRender: () => <div className={styles.loadingRow}>
                 <Spinner />
                 <span>Fetching this category's products from the warehouse…</span>
             </div>,
@@ -321,7 +321,7 @@ const RetryMessageBar = (props: IMessageBarProps) => {
 const COMPONENTS: IGridComponents = {
     rows: {
         error: {
-            onRenderMessageBar: props => <RetryMessageBar {...props} />,
+            onRender: props => <RetryMessageBar {...props} />,
         },
     },
 }
@@ -442,11 +442,11 @@ const RichTextInput = () => {
 }
 
 const HTML_RENDERER: ICellRendererComponents = {
-    columnControl: { onRenderControl: () => <HtmlValue /> },
+    columnControl: { onRender: () => <HtmlValue /> },
 }
 
 const HTML_EDITOR: IEditingCellEditorComponents = {
-    columnControl: { onRenderControl: () => <RichTextInput /> },
+    columnControl: { onRender: () => <RichTextInput /> },
 }
 
 const onSetup = (grid: IGrid) => {

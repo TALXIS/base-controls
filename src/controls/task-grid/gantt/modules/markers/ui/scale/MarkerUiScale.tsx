@@ -14,5 +14,5 @@ export const MarkerUiScale = (props: IMarkerUiScaleProps) => {
     const components = { ...MarkerUiScaleComponents, ...props.components };
     const styles = useMemo(() => getMarkerUiScaleStyles(), []);
 
-    return components.onRenderContainer({ className: styles.scale, style: { height: props.scaleHeight }, children: props.children });
+    return components.onRender({ className: styles.scale, style: { height: props.scaleHeight }, children: props.children });
 };

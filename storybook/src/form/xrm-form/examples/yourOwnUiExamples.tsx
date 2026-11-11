@@ -30,7 +30,7 @@ const GridExample = () => {
     return <XrmForm onLoad={loadAccount} onFormReady={params => setFormContext(params.formContext)} components={{
         ribbon: {
             //keeps Save and adds a command of your own
-            onRenderCommandBar: props => <CommandBar {...props} items={[...props.items, {
+            onRender: props => <CommandBar {...props} items={[...props.items, {
                 key: 'releaseHold',
                 text: 'Release credit hold',
                 iconProps: { iconName: 'Unlock' },

@@ -20,5 +20,5 @@ export const MarkerUiLine = (props: IMarkerUiLineProps) => {
     //the colour its chip is filled with
     const color = getTintColors(props.color, theme, 'solid').background;
     const background = props.lineStyle === 'solid' ? color : `repeating-linear-gradient(to bottom, ${color} 0 6px, transparent 6px 11px)`;
-    return components.onRenderContainer({ className: styles.line, style: { background } });
+    return components.onRender({ className: styles.line, style: { background } });
 };

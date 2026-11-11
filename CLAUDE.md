@@ -187,7 +187,8 @@ Ask who calls it and when:
 |---|---|
 | Plugged into another object's lifecycle, run once at a fixed point | `on<Stage>`: `onSetup`, `onLoad`, `onInit`, `onDestroy` |
 | Notified that something happened; the return value is ignored | `on<Event>` |
-| A render slot | `onRender<Slot>` |
+| The render slot that draws a part's own root element | `onRender` |
+| A render slot that draws a piece inside the part | `onRender<Piece>`, named after what it draws |
 | A method of an object you implement, called on request | a plain verb: `load`, `saveTask`, `deleteTasks` |
 | Answers a question | `get…`, `is…`, `can…` |
 | Makes something | `create…` |
@@ -289,6 +290,8 @@ export * from './ComponentName';
 - When used, define `I<ComponentName>Components` and its defaults in a `components.tsx` next to the component.
 - Export it from the component folder's `index.ts`.
 - Merge default and user-provided component mappings in the component body.
+- The slot whose call is the component's returned element is `onRender`; a widget nests a part's slots under a
+  key, so `components.skeleton.onRender`, never `components.skeleton.onRenderSkeleton`.
 - Do not add `onRender...` callback scaffolding unless explicitly requested.
 
 ### Event handlers

@@ -29,7 +29,7 @@ export const AggregateCell = (props: IAggregateCellProps) => {
     //the aggregation module is loaded wherever this cell draws
     const aggregation = useGridModule('aggregation');
     const components = { ...aggregation.components.aggregateCell, ...props.components };
-    const onRenderControl = components.columnControl?.onRenderControl ?? CellColumnControlComponents.onRenderControl;
+    const onRenderControl = components.columnControl?.onRender ?? CellColumnControlComponents.onRender;
     //the selector draws this only for a group row, so the record is there
     const record = props.data!;
 
@@ -43,7 +43,7 @@ export const AggregateCell = (props: IAggregateCellProps) => {
                 <CellContainer components={components.container}>
                     <CellLoading components={components.loading}>
                         <CellControl components={components.control}>
-                            <CellColumnControl components={{ onRenderControl: onRenderRightAligned }} />
+                            <CellColumnControl components={{ onRender: onRenderRightAligned }} />
                         </CellControl>
                         <CellCommands components={components.commands} />
                     </CellLoading>

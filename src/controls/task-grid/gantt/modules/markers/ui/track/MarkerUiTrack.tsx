@@ -14,5 +14,5 @@ export const MarkerUiTrack = (props: IMarkerUiTrackProps) => {
     const components = { ...MarkerUiTrackComponents, ...props.components };
     const styles = useMemo(() => getMarkerUiTrackStyles(), []);
 
-    return components.onRenderContainer({ className: styles.track, style: { top: props.scaleHeight }, children: props.children });
+    return components.onRender({ className: styles.track, style: { top: props.scaleHeight }, children: props.children });
 };

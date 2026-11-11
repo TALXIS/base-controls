@@ -94,10 +94,10 @@ const INTENTS = { ERROR: 'error', WARNING: 'warning', INFO: 'info' } as const
 /** The components of each part, drawn with Fluent UI v9. */
 export const V9 = {
     control: { onRenderControl: (props: { disabled?: boolean }) => <V9Control disabled={props.disabled} /> },
-    ribbon: { onRenderCommandBar: (props: ICommandBarProps) => <V9Ribbon {...props} /> },
-    tabs: { onRenderTabs: (props: ITabsComponentProps) => <V9Tabs {...props} /> },
+    ribbon: { onRender: (props: ICommandBarProps) => <V9Ribbon {...props} /> },
+    tabs: { onRender: (props: ITabsComponentProps) => <V9Tabs {...props} /> },
     //a field's message names the field in <strong>
-    notifications: { onRenderNotifications: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[] }) => <MessageBarGroup>
+    notifications: { onRender: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO' }[] }) => <MessageBarGroup>
         {props.messages?.map((message, index) => <MessageBar key={index} intent={INTENTS[message.level]}>
             <MessageBarBody>
                 <span dangerouslySetInnerHTML={{ __html: message.text }} />

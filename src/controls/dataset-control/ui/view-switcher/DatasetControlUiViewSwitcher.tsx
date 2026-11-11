@@ -29,7 +29,7 @@ export const DatasetControlUiViewSwitcher = (props: IDatasetControlUiViewSwitche
     const items = props.items.map(item => item.key === props.selectedKey ? { ...item, className: getClassNames([item.className, styles.selectedItem]) } : item);
     const menuProps = useSurfaceMenuProps({ items: getGroupSections(items), className: styles.menu });
 
-    return components.onRenderButton({
+    return components.onRender({
         text: props.text,
         title: props.text,
         menuProps,

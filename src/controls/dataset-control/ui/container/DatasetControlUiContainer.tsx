@@ -19,5 +19,5 @@ export interface IDatasetControlUiContainerProps {
 export const DatasetControlUiContainer = (props: IDatasetControlUiContainerProps) => {
     const components = { ...DatasetControlUiContainerComponents, ...props.components };
     const styles = useMemo(() => getDatasetControlUiContainerStyles(props.height), [props.height]);
-    return components.onRenderContainer({ className: getClassNames([styles.datasetControlContainer, props.className]), children: props.children });
+    return components.onRender({ className: getClassNames([styles.datasetControlContainer, props.className]), children: props.children });
 };

@@ -92,10 +92,10 @@ Both modules take \`components\` (see *Options*). How slots work: [**Pieces and 
 | Module | Key | Slots | Default | Draws |
 |---|---|---|---|---|
 | Grouping | \`groupingIcon\` | \`onRenderIcon\` | \`GridGroupingIconComponents\` | The icon of a grouped column |
-| | \`groupCell.toggle\` | \`onRenderContainer\`, \`onRenderButton\` (with \`isExpanded\`) | \`GroupingUiToggleComponents\` | The chevron of a group |
-| | \`groupCell.count\` | \`onRenderCount\` | \`GroupingUiCountComponents\` | How many records the group holds |
+| | \`groupCell.toggle\` | \`onRender\`, \`onRenderButton\` (with \`isExpanded\`) | \`GroupingUiToggleComponents\` | The chevron of a group |
+| | \`groupCell.count\` | \`onRender\` | \`GroupingUiCountComponents\` | How many records the group holds |
 | | \`groupCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell (see [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview)) | | The rest of a group's cell |
-| Aggregation | \`totalCell.totalValue\` | \`onRenderContainer\`, \`onRenderLabel\`, \`onRenderValue\` | \`AggregationUiTotalValueComponents\` | A total and its label in the totals row |
+| Aggregation | \`totalCell.totalValue\` | \`onRender\`, \`onRenderLabel\`, \`onRenderValue\` | \`AggregationUiTotalValueComponents\` | A total and its label in the totals row |
 | | \`totalCell.container\`, \`loading\`, \`commands\` | As in any cell | | The rest of a total's cell |
 | | \`aggregateCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell | | A total in a group row |
 
@@ -103,7 +103,7 @@ Both modules take \`components\` (see *Options*). How slots work: [**Pieces and 
 
 The cells are \`GroupCell\`, \`TotalCell\` and \`AggregateCell\`, and a key in their own \`components\` prop replaces the module's for that key. To draw one column's group rows or totals your own way, set its \`cellRendererSelector\` on its definition, as the totals example below does. It replaces the module's for that column, so return \`undefined\` for the rows it should leave to \`cellRenderer\`, and draw a grouped column's records empty.
 
-The expansion column's header is \`GroupExpansionHeader\`: pass \`headerComponentParams: { components: { expandCollapse } }\` on \`GROUP_EXPANSION_COLUMN_KEY\`, with the slots \`onRenderContainer\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\` (default \`GroupingUiExpandCollapseComponents\`). To change one column's grouping icon, replace the header adornment keyed \`'grouping'\` in a \`headers.hooks.adornments\` hook at \`GRID_MODULE_PRIORITY.grouping + 1\` that checks the column. The alert for a refused selection is the host's own dialog and has no slots.
+The expansion column's header is \`GroupExpansionHeader\`: pass \`headerComponentParams: { components: { expandCollapse } }\` on \`GROUP_EXPANSION_COLUMN_KEY\`, with the slots \`onRender\`, \`onRenderExpandButton\` and \`onRenderCollapseButton\` (default \`GroupingUiExpandCollapseComponents\`). To change one column's grouping icon, replace the header adornment keyed \`'grouping'\` in a \`headers.hooks.adornments\` hook at \`GRID_MODULE_PRIORITY.grouping + 1\` that checks the column. The alert for a refused selection is the host's own dialog and has no slots.
 
 {{story: Make totals read at a glance}}
 

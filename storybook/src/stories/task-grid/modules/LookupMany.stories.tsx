@@ -37,8 +37,8 @@ Clicking a pill opens its record through the task store's \`openRelatedRecord\` 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
 | \`cell\` | \`onRenderPill\` | \`LookupManyUiPillsComponents\` | The pills in a cell |
-| \`editor\` | \`onRenderSelect\`, \`onRenderPill\`, \`onRenderOption\` | \`LookupManyUiSelectComponents\` | The picker in the editor |
-| \`editorPopup\` | \`onRenderContainer\` | \`LookupManyUiEditorPopupComponents\` | The pop-out the editor sits in |
+| \`editor\` | \`onRender\`, \`onRenderPill\`, \`onRenderOption\` | \`LookupManyUiSelectComponents\` | The picker in the editor |
+| \`editorPopup\` | \`onRender\` | \`LookupManyUiEditorPopupComponents\` | The pop-out the editor sits in |
 | \`filter\` | \`onRenderContainer\`, \`onRenderValue\`, \`onRenderButtons\`, \`onRenderApplyButton\`, \`onRenderClearButton\`; \`callout\` and \`select\` | \`LookupManyUiFilterComponents\` | The column's filter callout |
 
 An \`appearance\` draws its pills and options first, and \`cell\`, \`editor\` and \`filter.select\` go over them.

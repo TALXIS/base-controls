@@ -30,9 +30,9 @@ Each slot gets what the same slot of \`Form\` gets, as [**Your own UI**](?path=/
 | Key | Slots | Default | Draws |
 |---|---|---|---|
 | \`control\` | \`onRenderControl\` | \`ControlComponents\` | Each control |
-| \`tabs\` | \`onRenderTabs\` | \`FormUiTabComponents\` | The tab headers and the open tab |
-| \`ribbon\` | \`onRenderCommandBar\` | | **Save** and *Unsaved changes* |
-| \`notifications\` | \`onRenderNotifications\` | | The notifications and the validation errors |
+| \`tabs\` | \`onRender\` | \`FormUiTabComponents\` | The tab headers and the open tab |
+| \`ribbon\` | \`onRender\` | | **Save** and *Unsaved changes* |
+| \`notifications\` | \`onRender\` | | The notifications and the validation errors |
 
 A blank default is not exported.
 

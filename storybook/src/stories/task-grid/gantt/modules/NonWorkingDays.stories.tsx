@@ -49,7 +49,7 @@ The module's \`reload()\` reads the store again and redraws the chart: reach the
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`tooltip\` | \`onRenderCallout\`, \`onRenderContainer\`, \`onRenderDescription\` (with the day's \`id\` and \`description\` as \`day\`) | \`NonWorkingDaysUiTooltipComponents\` | What a shaded day on the scale says when pointed at |
+| \`tooltip\` | \`onRender\`, \`onRenderContainer\`, \`onRenderDescription\` (with the day's \`id\` and \`description\` as \`day\`) | \`NonWorkingDaysUiTooltipComponents\` | What a shaded day on the scale says when pointed at |
 
 ## Where next
 

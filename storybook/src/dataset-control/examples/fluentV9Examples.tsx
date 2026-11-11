@@ -300,7 +300,7 @@ const PanelDrawer = (props: IPanelProps & { children?: React.ReactNode, keepOpen
 
 //a failed load of the control, the ribbon or the column editor
 const errorBar: Partial<IErrorMessageBarComponents> = {
-    onRenderMessageBar: props => <MessageBar intent='error' style={{ margin: 8 }}>
+    onRender: props => <MessageBar intent='error' style={{ margin: 8 }}>
         <MessageBarBody>{props.children}</MessageBarBody>
         <MessageBarActions>{props.actions}</MessageBarActions>
     </MessageBar>,
@@ -320,14 +320,14 @@ const V9Container = (props: JSX.IntrinsicElements['div']) => {
 /** The pieces of every part, drawn with Fluent UI v9. */
 export const V9 = {
     control: {
-        onRenderContainer: props => <V9Container {...props} />,
+        container: { onRender: props => <V9Container {...props} /> },
         mountError: errorBar,
     },
     viewSwitcher: {
-        onRenderButton: props => <MenuFromButton {...props} />,
+        onRender: props => <MenuFromButton {...props} />,
     },
     ribbon: {
-        onRenderCommandBar: props => <CommandToolbar {...props} />,
+        commandBar: { onRender: props => <CommandToolbar {...props} /> },
         mountError: errorBar,
     },
     quickFind: {
@@ -347,11 +347,11 @@ export const V9 = {
                 <Button size='small' appearance='transparent' icon={<SearchRegular />} onClick={props.suffixItems?.[0]?.onClick} />
             </>} />,
         compact: {
-            onRenderButton: props => withTooltip(props.title, <Button appearance='subtle' icon={<SearchRegular />} aria-label={props.ariaLabel} disabled={props.disabled} onClick={props.onClick as any} />),
+            onRender: props => withTooltip(props.title, <Button appearance='subtle' icon={<SearchRegular />} aria-label={props.ariaLabel} disabled={props.disabled} onClick={props.onClick as any} />),
         },
         callout: {
             //a v9 popover positioned on the field the quick find hands it
-            onRenderCallout: props => <Popover open positioning={{ target: document.querySelector(props.target as string) as HTMLElement, position: 'below', align: 'start' }} onOpenChange={(_, data) => !data.open && props.onDismiss?.()}>
+            onRender: props => <Popover open positioning={{ target: document.querySelector(props.target as string) as HTMLElement, position: 'below', align: 'start' }} onOpenChange={(_, data) => !data.open && props.onDismiss?.()}>
                 <PopoverSurface style={{ maxWidth: 300, display: 'grid', gap: 8 }}>{props.children}</PopoverSurface>
             </Popover>,
             onRenderLikeWarning: props => <MessageBar intent='warning'><MessageBarBody>{props.text}</MessageBarBody></MessageBar>,
@@ -363,11 +363,11 @@ export const V9 = {
     editColumns: {
         button: {
             onRenderButton: props => <Button appearance='subtle' icon={toIcon(props.iconProps)} aria-label={props.ariaLabel} disabled={props.disabled} onClick={props.onClick as any}>{props.text}</Button>,
-            onRenderTooltip: props => withTooltip(typeof props.content === 'string' ? props.content : undefined, <span>{props.children}</span>),
+            onRender: props => withTooltip(typeof props.content === 'string' ? props.content : undefined, <span>{props.children}</span>),
         },
         panel: {
             //Escape would drop the edit without asking
-            onRenderPanel: props => <PanelDrawer {...props} keepOpenOnEscape />,
+            onRender: props => <PanelDrawer {...props} keepOpenOnEscape />,
             onRenderFooter: props => <>
                 <Button appearance='primary' disabled={props.isSaveDisabled} onClick={props.onSave}>{props.saveText}</Button>
                 <Button onClick={props.onCancel}>{props.cancelText}</Button>
@@ -377,23 +377,23 @@ export const V9 = {
         errorMessage: errorBar,
     },
     notifications: {
-        onRenderNotifications: props => <Notifications {...props} />,
+        onRender: props => <Notifications {...props} />,
     },
     emptyState: {
         onRenderIcon: () => <DocumentSearchRegular fontSize={48} />,
         onRenderText: props => <Subtitle2>{props.children}</Subtitle2>,
     },
     pagination: {
-        onRenderCommandBar: props => <CommandToolbar {...props} align='end' />,
+        onRender: props => <CommandToolbar {...props} align='end' />,
     },
     pageSizeSwitcher: {
-        onRenderButton: props => <MenuFromButton {...props} />,
+        onRender: props => <MenuFromButton {...props} />,
     },
     //the user queries' panel, and the control inside it, drawn the same way
     get userQueries() {
         return {
             manageViewsPanel: {
-                onRenderPanel: (props: IPanelProps) => <PanelDrawer {...props} fill />,
+                onRender: (props: IPanelProps) => <PanelDrawer {...props} fill />,
                 onRenderCloseButton: (props: IButtonProps) => <Button onClick={props.onClick as any}>{props.text}</Button>,
             },
             manageViews: {
@@ -403,7 +403,7 @@ export const V9 = {
                     quickFind: V9.quickFind,
                     pagination: V9.pagination,
                     //the body's slot draws v9's DataGrid in place of the grid
-                    body: { onRenderContainer: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}><RecordDataGrid editable /></div> },
+                    body: { onRender: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}><RecordDataGrid editable /></div> },
                 },
             },
         }

@@ -15,7 +15,7 @@ export const FormUiTabs = (props: IFormTabsProps) => {
     const { expandedTab, children, onTabChange } = props;
     const components = { ...FormUiTabComponents, ...props.components };
 
-    return components.onRenderTabs({
+    return components.onRender({
         expandedTab,
         children,
         onTabChange,

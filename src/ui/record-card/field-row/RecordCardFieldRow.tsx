@@ -18,7 +18,7 @@ export const RecordCardFieldRow = (props: IRecordCardFieldRowProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getRecordCardFieldRowStyles(theme), [theme]);
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.fieldRow,
         children: <>
             {props.iconName && components.onRenderIcon({ iconName: props.iconName, className: styles.icon })}

@@ -15,5 +15,5 @@ export const CellUiControl = (props: ICellUiControlProps) => {
     const components = { ...CellUiControlComponents, ...props.components };
     const styles = useMemo(() => getCellUiControlStyles(alignment), [alignment]);
 
-    return components.onRenderContainer({ ...divProps, className: getClassNames([styles.control, className]) });
+    return components.onRender({ ...divProps, className: getClassNames([styles.control, className]) });
 };

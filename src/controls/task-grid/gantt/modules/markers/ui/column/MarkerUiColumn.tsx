@@ -15,5 +15,5 @@ export const MarkerUiColumn = (props: IMarkerUiColumnProps) => {
     const components = { ...MarkerUiColumnComponents, ...props.components };
     const styles = useMemo(() => getMarkerUiColumnStyles(), []);
 
-    return components.onRenderContainer({ className: styles.column, style: { left: props.left }, children: props.children });
+    return components.onRender({ className: styles.column, style: { left: props.left }, children: props.children });
 };

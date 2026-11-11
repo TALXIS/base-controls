@@ -3,10 +3,10 @@ import type { ReactNode } from "react";
 /** The replaceable pieces of the map's box. */
 export interface IMapUiContainerComponents {
     /** The box the adapter draws in. */
-    onRenderContainer: (props: { className?: string; children: ReactNode }) => JSX.Element | null;
+    onRender: (props: { className?: string; children: ReactNode }) => JSX.Element | null;
 }
 
 /** The defaults for {@link IMapUiContainerComponents}. */
 export const MapUiContainerComponents: IMapUiContainerComponents = {
-    onRenderContainer: props => <div className={props.className}>{props.children}</div>,
+    onRender: props => <div className={props.className}>{props.children}</div>,
 };

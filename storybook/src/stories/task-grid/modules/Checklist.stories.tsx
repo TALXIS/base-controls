@@ -33,7 +33,7 @@ Every checklist factory takes \`components\`, read at mount. How slots work: [**
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`progress\` | \`onRenderContainer\`, \`onRenderIcon\`, \`onRenderText\` | \`TaskChecklistUiProgressComponents\` | The *done/total* in a cell |
+| \`progress\` | \`onRender\`, \`onRenderIcon\`, \`onRenderText\` | \`TaskChecklistUiProgressComponents\` | The *done/total* in a cell |
 
 ## Where next
 

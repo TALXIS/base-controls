@@ -7,12 +7,12 @@ export interface IGroupingUiToggleButtonProps extends IButtonProps {
 
 /** The replaceable pieces of what opens and closes one group. */
 export interface IGroupingUiToggleComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderButton: (props: IGroupingUiToggleButtonProps) => JSX.Element | null;
 }
 
 /** The defaults for {@link IGroupingUiToggleComponents}. */
 export const GroupingUiToggleComponents: IGroupingUiToggleComponents = {
-    onRenderContainer: props => <div {...props} />,
+    onRender: props => <div {...props} />,
     onRenderButton: ({ isExpanded, ...props }) => <IconButton {...props} />,
 };

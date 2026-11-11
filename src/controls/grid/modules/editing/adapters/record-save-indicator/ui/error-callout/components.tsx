@@ -4,7 +4,7 @@ import { Callout } from "@ui";
 /** The replaceable pieces of what a row says when its record refused to save. */
 export interface IRecordSaveUiErrorCalloutComponents {
     /** What everything is drawn in, pointed at the indicator. */
-    onRenderCallout: (props: ICalloutProps) => JSX.Element | null;
+    onRender: (props: ICalloutProps) => JSX.Element | null;
     /** What the icon and the title are drawn in. */
     onRenderHeader: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderIcon: (props: IIconProps) => JSX.Element | null;
@@ -23,7 +23,7 @@ export interface IRecordSaveUiErrorCalloutComponents {
 
 /** The defaults for {@link IRecordSaveUiErrorCalloutComponents}. */
 export const RecordSaveUiErrorCalloutComponents: IRecordSaveUiErrorCalloutComponents = {
-    onRenderCallout: props => <Callout {...props} />,
+    onRender: props => <Callout {...props} />,
     onRenderHeader: props => <div {...props} />,
     onRenderIcon: props => <Icon {...props} />,
     onRenderTitle: props => <Text {...props} />,

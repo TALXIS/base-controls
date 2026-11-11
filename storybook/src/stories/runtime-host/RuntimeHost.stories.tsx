@@ -73,11 +73,11 @@ To cover the control for work that does not run through \`execute\`, call \`runt
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`container\` | \`onRenderContainer\` | \`RuntimeHostUiContainerComponents\` | The box the host draws everything in; a control can draw its own root here |
-| \`placeholder\` | \`onRenderContainer\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the runtime is ready |
-| \`mountError\` | \`onRenderMessageBar\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, or an error the control threw while it drew |
-| \`loadingOverlay\` | \`onRenderOverlay\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the control while \`runtime.loading\` is shown, such as while \`execute\` runs |
-| \`executeError\` | \`onRenderErrors\` | \`RuntimeExecuteErrorComponents\` | The failures of \`execute\` not yet dismissed, given \`failures\` and \`onDismiss(failure)\` |
+| \`container\` | \`onRender\` | \`RuntimeHostUiContainerComponents\` | The box the host draws everything in; a control can draw its own root here |
+| \`placeholder\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the runtime is ready |
+| \`mountError\` | \`onRender\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, or an error the control threw while it drew |
+| \`loadingOverlay\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the control while \`runtime.loading\` is shown, such as while \`execute\` runs |
+| \`executeError\` | \`onRender\` | \`RuntimeExecuteErrorComponents\` | The failures of \`execute\` not yet dismissed, given \`failures\` and \`onDismiss(failure)\` |
 
 {{story: Your own loading and errors}}
 

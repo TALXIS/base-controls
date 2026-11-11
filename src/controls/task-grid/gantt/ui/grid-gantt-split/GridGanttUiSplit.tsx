@@ -19,7 +19,7 @@ export const GridGanttUiSplit = (props: IGridGanttUiSplitProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getGridGanttUiSplitStyles(theme), [theme]);
 
-    return components.onRenderContainer({
+    return components.onRender({
         direction: 'horizontal',
         className: styles.root,
         onLayout: sizes => props.onGanttSizeChanged(sizes[1]),

@@ -11,5 +11,5 @@ export interface IDatasetControlUiSkeletonProps extends IDatasetControlUiSkeleto
 export const DatasetControlUiSkeleton = (props: IDatasetControlUiSkeletonProps) => {
     const { components: componentsProp, ...shimmerProps } = props;
     const components = { ...DatasetControlUiSkeletonComponents, ...componentsProp };
-    return components.onRenderSkeleton(shimmerProps);
+    return components.onRender(shimmerProps);
 };

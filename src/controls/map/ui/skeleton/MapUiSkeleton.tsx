@@ -5,7 +5,7 @@ import { EDIT_COLUMNS_WIDTH, QUICK_FIND_WIDTH, RIBBON_WIDTH, VIEW_SWITCHER_WIDTH
 import { getDatasetControlUiSkeletonStyles } from "@controls/dataset-control/ui/skeleton/styles";
 import { getMapUiSkeletonStyles } from "./styles";
 
-/** What the placeholder is shaped like; fits `DatasetControl`'s `components.skeleton.onRenderSkeleton`. */
+/** What the placeholder is shaped like; fits `DatasetControl`'s `components.skeleton.onRender`. */
 export interface IMapUiSkeletonProps {
     /** Container height. Left unset, the map placeholder is 400px tall. */
     height?: string;

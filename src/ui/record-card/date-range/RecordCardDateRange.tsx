@@ -17,7 +17,7 @@ export const RecordCardDateRange = (props: IRecordCardDateRangeProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getRecordCardDateRangeStyles(theme), [theme]);
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.dateRange,
         children: <>
             {components.onRenderIcon({ iconName: 'Calendar', className: styles.icon })}

@@ -20,7 +20,7 @@ export const DependenciesUiCount = (props: IDependenciesUiCountProps) => {
     if (count === 0) {
         return null;
     }
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.root,
         children: <>
             {components.onRenderIcon({ iconName: 'Link', className: styles.icon })}

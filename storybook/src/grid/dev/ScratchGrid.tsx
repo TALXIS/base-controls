@@ -130,7 +130,7 @@ const JsonValue = (props: { value: unknown }) => {
 const PayloadCell = (props: IGridCellParams) => <Grid.Cell.Field record={props.data} name={props.colDef!.colId!}>
     <Grid.Cell.Renderer {...props} components={{
         columnControl: {
-            onRenderControl: controlProps => {
+            onRender: controlProps => {
                 const payload = controlProps.parameters.Record.raw.getValue(PAYLOAD_COLUMN)
                 if (typeof payload !== 'string') {
                     return null
@@ -303,7 +303,7 @@ const payloadHeaderStyles = mergeStyleSets({
 const PayloadHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Root {...props}>
     <Grid.ColumnHeader.Theme>
         <Grid.ColumnHeader.Container components={{
-            onRenderButton: buttonProps => <CommandBarButton {...buttonProps} className={payloadHeaderStyles.container} />,
+            onRender: buttonProps => <CommandBarButton {...buttonProps} className={payloadHeaderStyles.container} />,
         }}>
             <Grid.ColumnHeader.Prefix />
             <span className={payloadHeaderStyles.braces}>{'{ }'}</span>
@@ -321,7 +321,7 @@ const PayloadHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.
 /** The summary column's header: its name, marked as what a model writes. */
 const SummaryHeader = (props: IColumnHeaderRendererProps) => <Grid.ColumnHeader.Renderer {...props} components={{
     label: {
-        onRenderText: textProps => <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+        onRender: textProps => <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
             <Icon iconName='Sparkle' style={{ color: '#8764b8' }} />
             <Text {...textProps} />
         </span>,

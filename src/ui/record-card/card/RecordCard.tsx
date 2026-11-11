@@ -17,5 +17,5 @@ export const RecordCard = (props: IRecordCardProps) => {
     const components = { ...RecordCardComponents, ...props.components };
     const theme = useTheme();
     const styles = useMemo(() => getRecordCardStyles(theme), [theme]);
-    return components.onRenderContainer({ className: getClassNames([styles.card, props.className]), children: props.children });
+    return components.onRender({ className: getClassNames([styles.card, props.className]), children: props.children });
 };

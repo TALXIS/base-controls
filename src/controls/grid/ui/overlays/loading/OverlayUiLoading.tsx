@@ -14,7 +14,7 @@ export const OverlayUiLoading = (props: IOverlayUiLoadingProps) => {
     const components = { ...OverlayUiLoadingComponents, ...props.components };
     const styles = useMemo(() => getOverlayUiLoadingStyles(), []);
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.root,
         children: <>
             {components.onRenderSpinner({ size: SpinnerSize.large })}

@@ -40,7 +40,7 @@ export const NotificationCard = (props: INotificationCardProps) => {
             })}
     </Fragment>;
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.root,
         children: <>
             {title && components.onRenderTitle({ className: styles.title, variant: message ? 'xLarge' : undefined, children: title })}

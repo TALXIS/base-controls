@@ -11,5 +11,5 @@ export const RowUiLoading = (props: IRowUiLoadingProps) => {
     const components = { ...RowUiLoadingComponents, ...props.components };
     const styles = useMemo(() => getRowUiLoadingStyles(), []);
 
-    return components.onRenderShimmer({ styles: { root: styles.root, shimmerWrapper: styles.shimmerWrapper } });
+    return components.onRender({ styles: { root: styles.root, shimmerWrapper: styles.shimmerWrapper } });
 };

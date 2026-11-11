@@ -43,9 +43,9 @@ The module's \`reload()\` reads the store again and redraws the markers: reach t
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
-| \`chip\` | \`onRenderChip\`, \`onRenderTooltip\` | \`MarkerUiChipComponents\` | A marker's chip on the scale, and what it says when pointed at |
-| \`line\` | \`onRenderContainer\` | \`MarkerUiLineComponents\` | A marker's line over the chart |
-| \`scale\`, \`track\`, \`column\`, \`layer\` | \`onRenderContainer\` | \`MarkerUiScaleComponents\`, \`MarkerUiTrackComponents\`, \`MarkerUiColumnComponents\`, \`MarkerUiLayerComponents\` | The boxes the chips and lines sit in |
+| \`chip\` | \`onRenderChip\`, \`onRender\` | \`MarkerUiChipComponents\` | A marker's chip on the scale, and what it says when pointed at |
+| \`line\` | \`onRender\` | \`MarkerUiLineComponents\` | A marker's line over the chart |
+| \`scale\`, \`track\`, \`column\`, \`layer\` | \`onRender\` | \`MarkerUiScaleComponents\`, \`MarkerUiTrackComponents\`, \`MarkerUiColumnComponents\`, \`MarkerUiLayerComponents\` | The boxes the chips and lines sit in |
 
 Inside a slot, \`useMarker()\` returns the \`marker\` it draws and its \`left\` position, to change only some of them, as \`LaunchChip\` in the example does.
 

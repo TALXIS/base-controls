@@ -438,7 +438,7 @@ const TripRibbon = () => {
 }
 
 //a map in place of the table while the control loads
-const GridExample = () => <DatasetControl onLoad={loadTrip} height='560px' components={{ skeleton: { onRenderSkeleton: props => <Map.Ui.Skeleton {...props} /> } }}>
+const GridExample = () => <DatasetControl onLoad={loadTrip} height='560px' components={{ skeleton: { onRender: props => <Map.Ui.Skeleton {...props} /> } }}>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />

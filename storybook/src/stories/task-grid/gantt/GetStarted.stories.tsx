@@ -48,11 +48,11 @@ Zoom with \`TaskGantt.ZoomSlider\`, Ctrl+wheel or a pinch, and drag the empty ti
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`TaskGantt\` | \`chart\` | \`onRenderContainer\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` must pass on its \`ref\` |
-| | \`overlay\` | \`onRenderContainer\` | \`GanttUiOverlayComponents\` | The overlay while the tasks load |
-| | \`skeleton\` | \`onRenderContainer\`, \`onRenderSkeleton\` | \`GanttUiSkeletonComponents\` | The placeholder before the chart is drawn |
-| \`TaskGantt.Split\` | Top level | \`onRenderContainer\`, \`onRenderGridPane\`, \`onRenderGanttPane\`, \`onRenderHandle\` | \`GridGanttUiSplitComponents\` | The two panes and the handle between them |
-| \`TaskGantt.ZoomSlider\` | Top level | \`onRenderContainer\`, \`onRenderSlider\`, \`onRenderZoomButton\` | \`GanttUiZoomSliderComponents\` | The slider and its buttons |
+| \`TaskGantt\` | \`chart\` | \`onRender\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` must pass on its \`ref\` |
+| | \`overlay\` | \`onRender\` | \`GanttUiOverlayComponents\` | The overlay while the tasks load |
+| | \`skeleton\` | \`onRender\`, \`onRenderSkeleton\` | \`GanttUiSkeletonComponents\` | The placeholder before the chart is drawn |
+| \`TaskGantt.Split\` | Top level | \`onRender\`, \`onRenderGridPane\`, \`onRenderGanttPane\`, \`onRenderHandle\` | \`GridGanttUiSplitComponents\` | The two panes and the handle between them |
+| \`TaskGantt.ZoomSlider\` | Top level | \`onRender\`, \`onRenderSlider\`, \`onRenderZoomButton\` | \`GanttUiZoomSliderComponents\` | The slider and its buttons |
 
 ## Reference
 

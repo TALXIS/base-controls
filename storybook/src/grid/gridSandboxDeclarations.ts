@@ -2284,26 +2284,26 @@ declare const GRID_GROUPING_LABELS: ILabelSet;
 declare const GRID_AGGREGATION_LABELS: ILabelSet;
 
 interface ICellUiContainerComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
 interface ICellUiControlComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
 interface ICellUiLoadingComponents {
-    onRenderShimmer: (props: IShimmerProps) => JSX.Element | null;
+    onRender: (props: IShimmerProps) => JSX.Element | null;
 }
 
 interface ICellUiCommandsComponents {
     /** What the bar is drawn in, measured as the row resizes. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderCommandBar: (props: ICommandBarProps) => JSX.Element | null;
 }
 
 interface ICellUiLockIconComponents {
     /** What carries the message and holds the icon. */
-    onRenderTooltip: (props: ITooltipHostProps) => JSX.Element | null;
+    onRender: (props: ITooltipHostProps) => JSX.Element | null;
     onRenderIcon: (props: IIconProps) => JSX.Element | null;
 }
 
@@ -2315,7 +2315,7 @@ interface ICellUiFieldErrorComponents {
 }
 
 interface ICellUiResizeGripComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
     /** What the drag is started from. */
     onRenderGrip: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
 }
@@ -2430,7 +2430,7 @@ interface IOptionSetRendererProps {
 /** The replaceable pieces of how a value is drawn. */
 interface ICellUiValueRendererComponents {
     /** The box the value sits in; its \`children\` are the icons and the value. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderText: (props: IFieldTextProps) => JSX.Element;
     /** What an empty value shows in place of itself. */
     onRenderPlaceholder: (props: IFieldTextProps) => JSX.Element;
@@ -2487,7 +2487,7 @@ declare const OptionSetRenderer: (props: IOptionSetRendererProps) => JSX.Element
 
 interface ICellColumnControlComponents {
     /** What draws the value, handed the default as defaultRender. */
-    onRenderControl: (props: IGridValueRenderer, defaultRender: (props: IGridValueRenderer) => JSX.Element | null) => JSX.Element | null;
+    onRender: (props: IGridValueRenderer, defaultRender: (props: IGridValueRenderer) => JSX.Element | null) => JSX.Element | null;
 }
 
 /** The replaceable pieces of a cell, drawn whether it is being edited or not. */
@@ -2615,7 +2615,7 @@ interface IGridCellNamespace {
     LockIcon: (props: ICellLockIconProps) => JSX.Element | null;
     /** The room the value is drawn in; whatever is inside it keeps the cell's layout. */
     Control: (props: ICellControlProps) => JSX.Element | null;
-    /** Decides what the column draws for the cell's value: its control, a PCF control or onRenderControl. */
+    /** Decides what the column draws for the cell's value: its control, a PCF control or its onRender slot. */
     ColumnControl: (props: ICellColumnControlProps) => JSX.Element;
     /** Shown while the row is hovered, focused or selected. */
     Commands: (props: ICellCommandsProps) => JSX.Element | null;
@@ -2632,31 +2632,31 @@ interface IGridCellNamespace {
 
 interface IColumnHeaderUiContainerComponents {
     /** What the header is drawn in and clicked to open its menu. */
-    onRenderButton: (props: IButtonProps) => JSX.Element | null;
+    onRender: (props: IButtonProps) => JSX.Element | null;
 }
 
 interface IColumnHeaderUiContentComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
 interface IColumnHeaderUiLabelComponents {
-    onRenderText: (props: ITextProps) => JSX.Element | null;
+    onRender: (props: ITextProps) => JSX.Element | null;
 }
 
 interface IColumnHeaderUiRequiredMarkerComponents {
-    onRenderText: (props: ITextProps) => JSX.Element | null;
+    onRender: (props: ITextProps) => JSX.Element | null;
 }
 
 interface IColumnHeaderUiPrefixComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
 interface IColumnHeaderUiSuffixComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
 interface IColumnHeaderUiMenuComponents {
-    onRenderContextualMenu: (props: IContextualMenuProps) => JSX.Element | null;
+    onRender: (props: IContextualMenuProps) => JSX.Element | null;
 }
 
 type IColumnHeaderUiContainerProps = IButtonProps & {
@@ -2796,14 +2796,14 @@ interface IGridColumnHeaderNamespace {
 }
 
 interface IOverlayUiLoadingComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderSpinner: (props: ISpinnerProps) => JSX.Element | null;
     /** Drawn only while there is a message. */
     onRenderText: (props: ITextProps) => JSX.Element | null;
 }
 
 interface IDatasetControlUiEmptyStateComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderIcon: (props: IIconProps) => JSX.Element | null;
     onRenderText: (props: ITextProps) => JSX.Element | null;
 }
@@ -2834,11 +2834,11 @@ interface IGridOverlayNamespace {
 }
 
 interface IRowUiLoadingComponents {
-    onRenderShimmer: (props: IShimmerProps) => JSX.Element | null;
+    onRender: (props: IShimmerProps) => JSX.Element | null;
 }
 
 interface IRowUiErrorComponents {
-    onRenderMessageBar: (props: IMessageBarProps) => JSX.Element | null;
+    onRender: (props: IMessageBarProps) => JSX.Element | null;
 }
 
 interface IRowUiLoadingProps {
@@ -2875,7 +2875,7 @@ interface IRecordSaveUiError {
 }
 
 interface IRecordSaveUiErrorCalloutComponents {
-    onRenderCallout: (props: ICalloutProps) => JSX.Element | null;
+    onRender: (props: ICalloutProps) => JSX.Element | null;
     onRenderHeader: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderIcon: (props: IIconProps) => JSX.Element | null;
     onRenderTitle: (props: ITextProps) => JSX.Element | null;
@@ -2907,7 +2907,7 @@ type IRecordSaveUiIndicatorButtonProps = IButtonProps & {
 
 interface IRecordSaveUiIndicatorComponents {
     /** The element the error callout points at. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderSpinner: (props: ISpinnerProps) => JSX.Element | null;
     /** Opens the error callout after a failed save. */
     onRenderButton: (props: IRecordSaveUiIndicatorButtonProps) => JSX.Element | null;
@@ -3032,13 +3032,13 @@ declare const Grid: ((props: IGridProps) => JSX.Element) & IGridParts;
 
 interface IRowSelectionUiCheckboxComponents {
     /** What the checkbox is drawn in, and what takes the click. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderCheckbox: (props: ICheckboxProps) => JSX.Element | null;
 }
 
 interface IRowSelectionUiHeaderCheckboxComponents {
     /** Drawn even while the checkbox is not. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderCheckbox: (props: ICheckboxProps) => JSX.Element | null;
 }
 
@@ -3111,7 +3111,7 @@ interface IGridFilteringIconComponents {
 
 interface IFilteringUiCalloutComponents {
     /** What everything is drawn in, pointed at the column's header. */
-    onRenderCallout: (props: ICalloutProps) => JSX.Element | null;
+    onRender: (props: ICalloutProps) => JSX.Element | null;
     onRenderHeader: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderTitle: (props: ITextProps) => JSX.Element | null;
     onRenderCloseButton: (props: IButtonProps) => JSX.Element | null;
@@ -3137,16 +3137,16 @@ type IGroupingUiToggleButtonProps = IButtonProps & {
 };
 
 interface IGroupingUiToggleComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderButton: (props: IGroupingUiToggleButtonProps) => JSX.Element | null;
 }
 
 interface IGroupingUiCountComponents {
-    onRenderCount: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
 }
 
 interface IGroupingUiExpandCollapseComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderExpandButton: (props: IButtonProps) => JSX.Element | null;
     onRenderCollapseButton: (props: IButtonProps) => JSX.Element | null;
 }
@@ -3188,7 +3188,7 @@ interface IGroupingModuleParameters {
 }
 
 interface IAggregationUiTotalValueComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** Drawn only where there is a label. */
     onRenderLabel: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
     onRenderValue: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
@@ -3344,7 +3344,7 @@ interface INotificationCardAction {
 /** The replaceable pieces of a notification card. */
 interface INotificationCardComponents {
     /** The card; its \`children\` are the title, the message and the actions. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderTitle: (props: ITextProps) => JSX.Element | null;
     onRenderMessage: (props: ITextProps) => JSX.Element | null;
     /** The row of actions; its \`children\` are the buttons or the links. */
@@ -3478,7 +3478,7 @@ declare const NOTIFICATION_MESSAGE_BAR_LABELS: ILabelSet;
 /** The replaceable pieces of the completion checkbox. */
 interface IChecklistUiCompletionCheckboxComponents {
     /** The button; its \`children\` are the check. */
-    onRenderButton: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => JSX.Element | null;
+    onRender: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => JSX.Element | null;
     onRenderCheck: (props: ICheckProps) => JSX.Element | null;
 }
 
@@ -3500,7 +3500,7 @@ declare const CompletionCell: (props: ICellRendererParams & { components?: IComp
 /** The replaceable pieces of an item's name. */
 interface IChecklistUiNameCellComponents {
     /** The box the name is drawn in; its \`className\` carries the strike-through. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
 /** The name cell's pieces: the cell's own, and the struck-through name under \`name\`. */
@@ -3571,7 +3571,7 @@ interface IDatasetControlViewSwitcher {
 }
 
 interface IViewSwitcherProps {
-    components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
+    components?: Partial<{ onRender: (props: IButtonProps) => JSX.Element | null }>;
     /** What adds to the switcher, such as DatasetControl.UserQueries. */
     children?: React.ReactNode;
 }
@@ -3805,9 +3805,10 @@ interface IRibbonProps {
     /** Called with the runtime of each mount, before its init; add hooks and subscribe here. */
     onSetup?: (ribbon: IRibbon) => void;
     components?: {
-        onRenderCommandBar?: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null;
+        /** The commands' bar. */
+        commandBar?: Partial<{ onRender: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null }>;
         /** The shimmer that stands in for the commands until the first load finishes. */
-        shimmer?: Partial<{ onRenderShimmer: (props: import('@fluentui/react').IShimmerProps) => JSX.Element | null }>;
+        shimmer?: Partial<{ onRender: (props: import('@fluentui/react').IShimmerProps) => JSX.Element | null }>;
     } & Partial<Omit<import('@talxis/base-controls').IRuntimeHostComponents, 'placeholder'>>;
 }
 
@@ -3832,15 +3833,15 @@ declare const useRuntime: typeof import('@talxis/base-controls').useRuntime;
 /** The ribbon's commands as plain UI, with no runtime behind them. */
 declare const RibbonUiCommandBar: (props: { items: ICommandBarItemProps[]; align?: 'start' | 'end'; className?: string }) => JSX.Element;
 /** The ribbon's default slot: the command bar. */
-declare const RibbonUiCommandBarComponents: { onRenderCommandBar: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null };
+declare const RibbonUiCommandBarComponents: { onRender: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null };
 /** The loading boundary's default slots: a spinner with a text beside it. */
 declare const LoadingBoundaryComponents: {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderSpinner: (props: import('@fluentui/react').ISpinnerProps) => JSX.Element | null;
     onRenderText: (props: import('@fluentui/react').ITextProps) => JSX.Element | null;
 };
 /** The ribbon shimmer's default slot. */
-declare const RibbonUiShimmerComponents: { onRenderShimmer: (props: import('@fluentui/react').IShimmerProps) => JSX.Element | null };
+declare const RibbonUiShimmerComponents: { onRender: (props: import('@fluentui/react').IShimmerProps) => JSX.Element | null };
 
 /** Subscribing to an emitter's events, without dispatching them. */
 type IEventSubscriber<T> = {
@@ -4018,7 +4019,7 @@ interface IDatasetControlProps<TData = unknown> {
     className?: string;
     /** The key the control's state is kept under in the state store. */
     stateKey?: string;
-    components?: Partial<IDatasetControlContainerComponents> & Partial<Omit<IRuntimeHostComponents, 'container' | 'placeholder'>> & { skeleton?: { onRenderSkeleton?: (props: any) => JSX.Element | null } };
+    components?: { container?: Partial<IDatasetControlContainerComponents>; skeleton?: { onRender?: (props: any) => JSX.Element | null } } & Partial<Omit<IRuntimeHostComponents, 'container' | 'placeholder'>>;
     /** Called with the control of each mount, before its init; subscribe to its events here. */
     onSetup?: (control: IDatasetControl<TData>) => void;
 }
@@ -4033,24 +4034,24 @@ interface IRuntimeExecuteFailure {
 /** Replacements for what a RuntimeHost draws itself. */
 interface IRuntimeHostComponents {
     /** The box the host draws everything in. */
-    container: Partial<{ onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null }>;
+    container: Partial<{ onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null }>;
     /** What stands in for the runtime until it is ready. */
     placeholder: Partial<typeof LoadingBoundaryComponents>;
     /** What stands in for the runtime when its init failed or its UI threw. */
     mountError: Partial<IErrorMessageBarComponents>;
     /** What covers the ready runtime while its loading is shown. */
     loadingOverlay: Partial<{
-        onRenderOverlay: (props: import('@fluentui/react').IOverlayProps) => JSX.Element | null;
+        onRender: (props: import('@fluentui/react').IOverlayProps) => JSX.Element | null;
         onRenderSpinner: (props: ISpinnerProps) => JSX.Element | null;
         onRenderText: (props: ITextProps) => JSX.Element | null;
     }>;
     /** How the failures of execute are shown, oldest first. */
-    executeError: Partial<{ onRenderErrors: (props: { failures: IRuntimeExecuteFailure[]; onDismiss: (failure: IRuntimeExecuteFailure) => void }) => JSX.Element | null }>;
+    executeError: Partial<{ onRender: (props: { failures: IRuntimeExecuteFailure[]; onDismiss: (failure: IRuntimeExecuteFailure) => void }) => JSX.Element | null }>;
 }
 
 interface IErrorMessageBarComponents {
     /** The bar; children holds the title, actions the command bar. */
-    onRenderMessageBar: (props: import('@fluentui/react').IMessageBarProps) => JSX.Element | null;
+    onRender: (props: import('@fluentui/react').IMessageBarProps) => JSX.Element | null;
     /** Wraps the title; its children are the title. */
     onRenderTooltip: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element | null;
     onRenderTitle: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
@@ -4060,13 +4061,13 @@ interface IErrorMessageBarComponents {
 
 /** The quick find's slots. */
 interface IDatasetControlUiQuickFindComponents {
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderTextField: (props: any) => JSX.Element | null;
     /** The search button drawn in place of the field while the quick find is compact. */
-    compact: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
+    compact: Partial<{ onRender: (props: IButtonProps) => JSX.Element | null }>;
     /** What explains how the search matches, under the field. */
     callout: Partial<{
-        onRenderCallout: (props: import('@fluentui/react').ICalloutProps) => JSX.Element | null;
+        onRender: (props: import('@fluentui/react').ICalloutProps) => JSX.Element | null;
         onRenderLikeWarning: (props: { text: string }) => JSX.Element | null;
         onRenderDescription: (props: { leadingWildcardWarning: string; columnsHintStart: string; columnsHintOperator: string; columnsHintEnd: string }) => JSX.Element | null;
         onRenderColumns: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
@@ -4076,12 +4077,12 @@ interface IDatasetControlUiQuickFindComponents {
 
 type IDatasetControlCommandBarProps = import('@fluentui/react').ICommandBarProps;
 
-interface IDatasetControlContainerComponents { onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null }
+interface IDatasetControlContainerComponents { onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null }
 interface IDatasetControlListColumn { column: IColumn; text: string; commands: ICommandBarItemProps[] }
 
 interface IEditColumnsComponents {
-    button?: Partial<{ onRenderTooltip: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element | null; onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
-    panel?: Partial<{ onRenderPanel: (props: any) => JSX.Element | null; onRenderFooter: (props: any) => JSX.Element | null; onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }>;
+    button?: Partial<{ onRender: (props: import('@fluentui/react').ITooltipHostProps) => JSX.Element | null; onRenderButton: (props: IButtonProps) => JSX.Element | null }>;
+    panel?: Partial<{ onRender: (props: any) => JSX.Element | null; onRenderFooter: (props: any) => JSX.Element | null; onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }>;
     scopeSelector?: Partial<{ onRenderSelector: (props: { children: React.ReactNode }) => JSX.Element | null; onRenderOption: (props: { option: any; text: string }) => JSX.Element | null }>;
     columnSelector?: Partial<{ onRenderSelector: (props: { children: React.ReactNode }) => JSX.Element | null; onRenderOption: (props: { option: IColumn; text: string }) => JSX.Element | null }>;
     columnList?: Partial<{ onRenderColumn: (props: IDatasetControlListColumn) => JSX.Element | null }>;
@@ -4111,9 +4112,9 @@ interface IDatasetControlNamespace {
     QuickFind: (props: {
         components?: Partial<IDatasetControlUiQuickFindComponents>;
     }) => JSX.Element;
-    Notifications: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO'; onDismiss?: () => void }[]; components?: Partial<{ onRenderNotifications: (props: INotificationMessageBarProps) => JSX.Element | null }> }) => JSX.Element;
-    Pagination: (props: { components?: Partial<{ onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null }> }) => JSX.Element;
-    PageSizeSwitcher: (props: { pageSizes?: number[]; components?: Partial<{ onRenderButton: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
+    Notifications: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO'; onDismiss?: () => void }[]; components?: Partial<{ onRender: (props: INotificationMessageBarProps) => JSX.Element | null }> }) => JSX.Element;
+    Pagination: (props: { components?: Partial<{ onRender: (props: IDatasetControlCommandBarProps) => JSX.Element | null }> }) => JSX.Element;
+    PageSizeSwitcher: (props: { pageSizes?: number[]; components?: Partial<{ onRender: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
     /** The empty state in place of its children while the provider has no records. */
     EmptyState: (props: { children?: React.ReactNode; components?: Partial<IDatasetControlUiEmptyStateComponents> }) => JSX.Element;
     /** The button that opens the column editor, and the editor itself. */
@@ -4147,7 +4148,7 @@ declare const useDatasetControlHeader: () => {
 declare const useDatasetControl: <TData = unknown>() => IDatasetControl<TData>;
 declare const ErrorMessageBarComponents: IErrorMessageBarComponents;
 /** The view switcher's default slots, to render the default button with your own items. */
-declare const DatasetControlUiViewSwitcherComponents: { onRenderButton: (props: IButtonProps) => JSX.Element | null };
+declare const DatasetControlUiViewSwitcherComponents: { onRender: (props: IButtonProps) => JSX.Element | null };
 
 
 /** Which columns of a task record hold what the task grid works with. */
@@ -4395,7 +4396,7 @@ declare class LocalStorageUserQueriesStore<TData = unknown> implements IUserQuer
 /** The quick find's default slots. */
 declare const DatasetControlUiQuickFindComponents: IDatasetControlUiQuickFindComponents;
 /** The pagination's default slots. */
-declare const DatasetControlUiPaginationComponents: { onRenderCommandBar: (props: IDatasetControlCommandBarProps) => JSX.Element | null };
+declare const DatasetControlUiPaginationComponents: { onRender: (props: IDatasetControlCommandBarProps) => JSX.Element | null };
 /** The empty state part's default slots. */
 declare const DatasetControlUiEmptyStateComponents: IDatasetControlUiEmptyStateComponents;
 
@@ -4714,7 +4715,7 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
     /** DatasetControl.PageSizeSwitcher showing the task count, always disabled. */
     PageSizeSwitcher: (props: {}) => JSX.Element;
     /** DatasetControl.Ribbon, its items passed through hooks.ribbonCommandUi. */
-    Ribbon: (props: { className?: string; disabled?: boolean; components?: { onRenderCommandBar?: (props: { items: ICommandBarItemProps[] }) => JSX.Element | null } }) => JSX.Element;
+    Ribbon: (props: { className?: string; disabled?: boolean; components?: { commandBar?: { onRender?: (props: { items: ICommandBarItemProps[] }) => JSX.Element | null } } }) => JSX.Element;
 };
 
 /** Where the tasks come from and how changing them is persisted. */
@@ -4782,14 +4783,14 @@ interface IMarkersOptions {
     today?: { enableMarker?: boolean; color?: string; lineStyle?: 'solid' | 'dotted' };
     /** The project module's start and end: enableMarkers defaults to \`true\`, color to the theme's primary colour. */
     project?: { enableMarkers?: boolean; color?: string; lineStyle?: 'solid' | 'dotted' };
-    /** The replaceable pieces of the markers: layer, column, track, scale and line each have onRenderContainer; chip has onRenderTooltip and onRenderChip. */
+    /** The replaceable pieces of the markers: layer, column, track, scale and line each have onRender; chip has onRender and onRenderChip. */
     components?: {
-        layer?: Partial<{ onRenderContainer: MarkerSlot }>;
-        column?: Partial<{ onRenderContainer: MarkerSlot }>;
-        track?: Partial<{ onRenderContainer: MarkerSlot }>;
-        scale?: Partial<{ onRenderContainer: MarkerSlot }>;
-        line?: Partial<{ onRenderContainer: MarkerSlot }>;
-        chip?: Partial<{ onRenderTooltip: MarkerSlot; onRenderChip: MarkerSlot }>;
+        layer?: Partial<{ onRender: MarkerSlot }>;
+        column?: Partial<{ onRender: MarkerSlot }>;
+        track?: Partial<{ onRender: MarkerSlot }>;
+        scale?: Partial<{ onRender: MarkerSlot }>;
+        line?: Partial<{ onRender: MarkerSlot }>;
+        chip?: Partial<{ onRender: MarkerSlot; onRenderChip: MarkerSlot }>;
     };
 }
 
@@ -4840,10 +4841,10 @@ interface INonWorkingDaysOptions {
     isVisibleByDefault?: boolean;
     /** Whether a dragged or drawn task may start or end on a non-working day. Defaults to false. */
     enableDropOnNonWorkingDays?: boolean;
-    /** The tooltip's replaceable pieces: onRenderCallout, onRenderContainer, and onRenderDescription, which gets the day's id and description. */
+    /** The tooltip's replaceable pieces: onRender, onRenderContainer, and onRenderDescription, which gets the day's id and description. */
     components?: {
         tooltip?: Partial<{
-            onRenderCallout: (props: any) => JSX.Element | null;
+            onRender: (props: any) => JSX.Element | null;
             onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
             onRenderDescription: (props: React.HTMLAttributes<HTMLSpanElement> & { day: { id: string; description: string } }) => JSX.Element | null;
         }>;
@@ -4874,13 +4875,13 @@ type TaskTooltipSlots = Partial<{ [slot: string]: (props: any) => JSX.Element | 
 declare const TaskTooltip: {
     /** The default tooltip: the name and status, the progress, and when it runs. */
     Renderer: (props: { components?: { callout?: TaskTooltipSlots; header?: { [part: string]: TaskTooltipSlots }; progress?: TaskTooltipSlots; dateRange?: TaskTooltipSlots } }) => JSX.Element;
-    /** The callout next to the pointer: onRenderCallout, onRenderContainer. */
+    /** The callout next to the pointer: onRender, onRenderContainer. */
     Callout: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The task's name and status pill, slots by part: header, headerStart, headerEnd, title, status. */
     Header: (props: { components?: { [part: string]: TaskTooltipSlots } }) => JSX.Element | null;
-    /** Holds the field rows: onRenderContainer. */
+    /** Holds the field rows: onRender. */
     FieldRows: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
-    /** Any column: onRenderContainer, onRenderIcon, onRenderLabel, onRenderValue. */
+    /** Any column: onRender, onRenderIcon, onRenderLabel, onRenderValue. */
     FieldRow: (props: { columnName: string; iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The start from the timeline, not the record. */
     StartDateRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;

@@ -6,12 +6,12 @@ import type { IRecordCardTitleComponents } from "../title";
 /** The replaceable pieces of the header row. */
 export interface IRecordCardHeaderComponents {
     /** The row. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
 }
 
 /** The defaults for {@link IRecordCardHeaderComponents}. */
 export const RecordCardHeaderComponents: IRecordCardHeaderComponents = {
-    onRenderContainer: props => <div {...props} />,
+    onRender: props => <div {...props} />,
 };
 
 /** The replaceable pieces of a header composed of the title and a status tag, by the part they belong to. */

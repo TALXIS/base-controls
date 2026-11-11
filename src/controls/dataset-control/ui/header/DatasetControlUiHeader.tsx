@@ -25,7 +25,7 @@ export const DatasetControlUiHeader = (props: IDatasetControlUiHeaderProps) => {
 
     return <SetIsolatedHeaderItemContext.Provider value={setIsolated}>
         <IsolatedHeaderItemContext.Provider value={isolated}>
-            {components.onRenderContainer({
+            {components.onRender({
                 className: getClassNames([styles.datasetControlHeader, props.className]),
                 children: <DatasetControlUiHeaderItems>{props.children}</DatasetControlUiHeaderItems>,
             })}

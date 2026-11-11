@@ -67,7 +67,7 @@ export const LookupManyUiSelect = (props: ILookupManyUiSelectProps) => {
     return <LookupManySelectContext.Provider value={{ components, onRemove, getRemoveText: props.getRemoveText }}>
         {/* a callout around a Fluent layer counts a pick as inside */}
         {props.isMenuPopup && <Layer><div ref={setMenuPortal} /></Layer>}
-        {components.onRenderSelect({
+        {components.onRender({
             isMulti: true,
             isDisabled: props.disabled,
             autoFocus: props.autoFocus,

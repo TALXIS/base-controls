@@ -16,7 +16,7 @@ export const MapUiMarker = (props: IMapUiMarkerProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getMapUiMarkerStyles(theme), [theme]);
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: getClassNames([styles.container, props.className]),
         children: components.onRenderPin({
             children: components.onRenderDot({ className: styles.dot }),

@@ -3,10 +3,10 @@ import { IWrapCompactProviderProps, WrapCompactProvider } from "@ui";
 /** The replaceable pieces of the header. */
 export interface IDatasetControlUiHeaderComponents {
     /** The box of the header, which turns its parts compact once they no longer fit on one line. */
-    onRenderContainer: (props: IWrapCompactProviderProps) => JSX.Element | null;
+    onRender: (props: IWrapCompactProviderProps) => JSX.Element | null;
 }
 
 /** The defaults for {@link IDatasetControlUiHeaderComponents}. */
 export const DatasetControlUiHeaderComponents: IDatasetControlUiHeaderComponents = {
-    onRenderContainer: props => <WrapCompactProvider {...props} />,
+    onRender: props => <WrapCompactProvider {...props} />,
 };

@@ -10,7 +10,7 @@ export interface IRecordSaveUiIndicatorButtonProps extends IButtonProps {
 /** The replaceable pieces of what a row says about its last save. */
 export interface IRecordSaveUiIndicatorComponents {
     /** What everything is drawn in, and what the error callout points at. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>) => JSX.Element | null;
     /** What says the record is saving. */
     onRenderSpinner: (props: ISpinnerProps) => JSX.Element | null;
     /** What says how the save went, and opens the error callout when it failed. */
@@ -20,7 +20,7 @@ export interface IRecordSaveUiIndicatorComponents {
 
 /** The defaults for {@link IRecordSaveUiIndicatorComponents}. */
 export const RecordSaveUiIndicatorComponents: IRecordSaveUiIndicatorComponents = {
-    onRenderContainer: props => <div {...props} />,
+    onRender: props => <div {...props} />,
     onRenderSpinner: props => <Spinner {...props} />,
     onRenderButton: ({ state, ...props }) => <IconButton {...props} />,
     onRenderErrorCallout: props => <RecordSaveUiErrorCallout {...props} />,

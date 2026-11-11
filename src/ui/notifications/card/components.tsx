@@ -3,7 +3,7 @@ import { DefaultButton, IButtonProps, ILinkProps, ITextProps, Link, PrimaryButto
 /** The replaceable pieces of a notification card. */
 export interface INotificationCardComponents {
     /** The card; its `children` are the title, the message and the actions. */
-    onRenderContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
+    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderTitle: (props: ITextProps) => JSX.Element | null;
     onRenderMessage: (props: ITextProps) => JSX.Element | null;
     /** The row of actions; its `children` are the buttons or the links. */
@@ -16,7 +16,7 @@ export interface INotificationCardComponents {
 
 /** The defaults for {@link INotificationCardComponents}. */
 export const NotificationCardComponents: INotificationCardComponents = {
-    onRenderContainer: props => <div {...props} />,
+    onRender: props => <div {...props} />,
     onRenderTitle: props => <Text {...props} />,
     onRenderMessage: props => <Text {...props} />,
     onRenderActions: props => <div {...props} />,

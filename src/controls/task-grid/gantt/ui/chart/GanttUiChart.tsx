@@ -19,7 +19,7 @@ export const GanttUiChart = (props: IGanttUiChartProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getGanttUiChartStyles(theme, props.moduleStyles), [theme, props.moduleStyles]);
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.root,
         children: <>
             {components.onRenderChart({ ref: props.chartRef, className: styles.chart })}

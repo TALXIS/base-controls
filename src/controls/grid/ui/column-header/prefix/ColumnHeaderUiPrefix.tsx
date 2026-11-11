@@ -18,5 +18,5 @@ export const ColumnHeaderUiPrefix = (props: IColumnHeaderUiPrefixProps) => {
     const components = { ...ColumnHeaderUiPrefixComponents, ...props.components };
     const styles = useMemo(() => getColumnHeaderUiPrefixStyles(alignment), [alignment]);
 
-    return components.onRenderContainer({ className: getClassNames([styles.prefix, props.className]), children: props.children });
+    return components.onRender({ className: getClassNames([styles.prefix, props.className]), children: props.children });
 };

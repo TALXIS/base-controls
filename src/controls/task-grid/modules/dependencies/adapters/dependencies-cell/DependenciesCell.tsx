@@ -20,6 +20,6 @@ const DependenciesCellCount = () => {
 /** A dependencies cell counting the tasks this one waits on or that wait on it. */
 export const DependenciesCell = (props: IGridCellParams) => {
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
-        <Grid.Cell.Renderer {...props} components={{ columnControl: { onRenderControl: () => <DependenciesCellCount /> } }} />
+        <Grid.Cell.Renderer {...props} components={{ columnControl: { onRender: () => <DependenciesCellCount /> } }} />
     </Grid.Cell.Field>;
 };

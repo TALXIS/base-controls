@@ -22,13 +22,13 @@ const PercentCompleteProgress = (props: IPercentCompleteProgressProps) => {
 /** The percent complete cell, a progress bar edited as a number. */
 export const PercentCompleteCell = (props: IPercentCompleteCellProps) => {
     const { progress, ...components } = mergeComponentNamespaces(useTaskGridContext().components.percentComplete, props.components);
-    const onRenderEditor = components.columnControl?.onRenderControl ?? ((controlProps, defaultRender) => defaultRender(controlProps));
+    const onRenderEditor = components.columnControl?.onRender ?? ((controlProps, defaultRender) => defaultRender(controlProps));
 
     const onRenderControl = (controlProps: IGridValueRenderer, defaultRender: (controlProps: IGridValueRenderer) => JSX.Element | null) => {
         return controlProps.parameters.CellType.raw === 'editor' ? onRenderEditor(controlProps, defaultRender) : <PercentCompleteProgress components={progress} />;
     };
 
     return <Grid.Cell.Field record={props.data!} name={props.colDef!.colId!}>
-        <Grid.Cell.Renderer {...props} components={{ ...components, columnControl: { onRenderControl } }} />
+        <Grid.Cell.Renderer {...props} components={{ ...components, columnControl: { onRender: onRenderControl } }} />
     </Grid.Cell.Field>;
 };

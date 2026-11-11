@@ -26,5 +26,5 @@ export const CellUiLoading = (props: ICellUiLoadingProps) => {
         'data-is-loading': 'true',
         styles: { root: getClassNames([styles.shimmerRoot, props.className]), shimmerWrapper: styles.shimmerWrapper },
     };
-    return components.onRenderShimmer(shimmerProps);
+    return components.onRender(shimmerProps);
 };

@@ -12,5 +12,5 @@ export interface IRecordCardHeaderProps {
 export const RecordCardHeader = (props: IRecordCardHeaderProps) => {
     const components = { ...RecordCardHeaderComponents, ...props.components };
     const styles = useMemo(() => getRecordCardHeaderStyles(), []);
-    return components.onRenderContainer({ className: styles.header, children: props.children });
+    return components.onRender({ className: styles.header, children: props.children });
 };

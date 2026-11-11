@@ -104,7 +104,7 @@ const ProductCount = (props: { className?: string }) => {
 
 const COMPONENTS: IGridGroupingComponents = {
     groupingIcon: { onRenderIcon: props => <GroupingIcon {...props} /> },
-    groupCell: { count: { onRenderCount: props => <ProductCount className={props.className} /> } },
+    groupCell: { count: { onRender: props => <ProductCount className={props.className} /> } },
 }
 
 const createProductsByCategory = () => {

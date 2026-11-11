@@ -14,5 +14,5 @@ export interface ITaskGridUiTreeCellIndentProps {
 export const TaskGridUiTreeCellIndent = (props: ITaskGridUiTreeCellIndentProps) => {
     const components = { ...TaskGridUiTreeCellIndentComponents, ...props.components };
     const styles = useMemo(() => getTaskGridUiTreeCellIndentStyles(props.level, props.hasToggle), [props.level, props.hasToggle]);
-    return components.onRenderIndent({ className: styles.indent });
+    return components.onRender({ className: styles.indent });
 };

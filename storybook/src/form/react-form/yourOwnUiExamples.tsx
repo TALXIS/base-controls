@@ -52,7 +52,7 @@ const GridExample = () => {
     const [tab, setTab] = React.useState('company')
 
     return <Form.Root onLoad={async () => ({ record: account })}>
-        <Form.Tabs expandedTab={tab} onTabChange={setTab} components={{ onRenderTabs: props => <StepTabs {...props} /> }}>
+        <Form.Tabs expandedTab={tab} onTabChange={setTab} components={{ onRender: props => <StepTabs {...props} /> }}>
             <Form.Tab id='company' label='Company'>
                 <Form.Column>
                     <Form.Section label='Company'>
@@ -100,9 +100,9 @@ const LEVELS = { ERROR: MessageBarType.error, WARNING: MessageBarType.warning, I
 
 const GridExample = () => <Form.Root onLoad={async () => ({ record: account })}>
     {/* a component of yours holds the hooks a slot needs */}
-    <Form.Ribbon components={{ onRenderCommandBar: props => <AccountRibbon {...props} /> }} />
+    <Form.Ribbon components={{ onRender: props => <AccountRibbon {...props} /> }} />
     {/* each message in a bar of its own */}
-    <Form.Notifications messages={[{ text: 'Contoso is a key account.', level: 'INFO' }]} components={{ onRenderNotifications: props => <>
+    <Form.Notifications messages={[{ text: 'Contoso is a key account.', level: 'INFO' }]} components={{ onRender: props => <>
         {props.messages?.map((message, index) => <MessageBar key={index} messageBarType={LEVELS[message.level]}>
             <span dangerouslySetInnerHTML={{ __html: message.text }} />
         </MessageBar>)}

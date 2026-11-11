@@ -6,7 +6,7 @@ type Reference = ComponentFramework.EntityReference;
 
 /** The replaceable pieces of {@link LookupManySelect}. */
 export interface ILookupManyUiSelectComponents {
-    onRenderSelect: (props: AsyncProps<Reference, true, never>) => JSX.Element;
+    onRender: (props: AsyncProps<Reference, true, never>) => JSX.Element;
     /** One picked record, handed `onRemove`. */
     onRenderPill: (props: ILookupManyUiPillProps) => JSX.Element;
     /** One record offered. */
@@ -15,7 +15,7 @@ export interface ILookupManyUiSelectComponents {
 
 /** The defaults for {@link ILookupManyUiSelectComponents}. */
 export const LookupManyUiSelectComponents: ILookupManyUiSelectComponents = {
-    onRenderSelect: props => <AsyncSelect {...props} />,
+    onRender: props => <AsyncSelect {...props} />,
     onRenderPill: props => <LookupManyUiPill {...props} />,
     onRenderOption: props => <components.Option {...props} />,
 };

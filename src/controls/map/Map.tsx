@@ -12,9 +12,9 @@ export const MapRoot = (props: IMapProps) => {
     const propsRef = useLatest(props);
     const createRuntime = () => new MapRuntime({ provider, getProps: () => propsRef.current });
 
-    const { loading, errorMessage, ...container } = props.components ?? {};
+    const { container, loading, errorMessage } = props.components ?? {};
     const runtimeContainer: Partial<IRuntimeHostUiContainerComponents> = {
-        onRenderContainer: containerProps => <MapUiContainer height={props.height} className={getClassNames([containerProps.className, props.className])} components={container}>
+        onRender: containerProps => <MapUiContainer height={props.height} className={getClassNames([containerProps.className, props.className])} components={container}>
             {containerProps.children}
         </MapUiContainer>,
     };

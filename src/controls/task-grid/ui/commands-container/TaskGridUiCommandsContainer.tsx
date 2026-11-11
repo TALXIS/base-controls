@@ -12,5 +12,5 @@ export const TaskGridUiCommandsContainer = (props: ITaskGridUiCommandsContainerP
     const { components: _, className, ...containerProps } = props;
     const components = { ...TaskGridUiCommandsContainerComponents, ...props.components };
     const styles = useMemo(() => getTaskGridUiCommandsContainerStyles(), []);
-    return components.onRenderContainer({ ...containerProps, className: getClassNames([className, styles.container]) });
+    return components.onRender({ ...containerProps, className: getClassNames([className, styles.container]) });
 };

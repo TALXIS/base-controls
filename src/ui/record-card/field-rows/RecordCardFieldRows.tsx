@@ -12,5 +12,5 @@ export const RecordCardFieldRows = (props: IRecordCardFieldRowsProps) => {
     const components = { ...RecordCardFieldRowsComponents, ...props.components };
     const styles = useMemo(() => getRecordCardFieldRowsStyles(), []);
 
-    return components.onRenderContainer({ className: styles.fieldRows, children: props.children });
+    return components.onRender({ className: styles.fieldRows, children: props.children });
 };

@@ -16,12 +16,15 @@ const loadCommands = async (): Promise<IRibbonCommand[]> => {
 }
 
 const components: IRibbonComponents = {
-    //a slot of the ribbon itself: draws its default with one prop changed
-    onRenderCommandBar: props => RibbonUiCommandBarComponents.onRenderCommandBar({ ...props, items: props.items.map(item => ({ ...item, iconOnly: true })) }),
+    //a piece: the slots of the ribbon's command bar
+    commandBar: {
+        //draws the default command bar with one prop changed
+        onRender: props => RibbonUiCommandBarComponents.onRender({ ...props, items: props.items.map(item => ({ ...item, iconOnly: true })) }),
+    },
     //a piece: the slots of the shimmer the ribbon shows while it loads
     shimmer: {
         //draws the default shimmer, as wide as the two icon-only commands
-        onRenderShimmer: props => RibbonUiShimmerComponents.onRenderShimmer({ ...props, width: 80 }),
+        onRender: props => RibbonUiShimmerComponents.onRender({ ...props, width: 80 }),
     },
 }
 

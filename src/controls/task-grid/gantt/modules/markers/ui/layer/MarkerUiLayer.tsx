@@ -13,5 +13,5 @@ export const MarkerUiLayer = (props: IMarkerUiLayerProps) => {
     const components = { ...MarkerUiLayerComponents, ...props.components };
     const styles = useMemo(() => getMarkerUiLayerStyles(), []);
 
-    return components.onRenderContainer({ className: styles.layer, children: props.children });
+    return components.onRender({ className: styles.layer, children: props.children });
 };

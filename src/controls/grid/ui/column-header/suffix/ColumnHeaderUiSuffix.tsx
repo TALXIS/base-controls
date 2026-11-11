@@ -13,7 +13,7 @@ export const ColumnHeaderUiSuffix = (props: IColumnHeaderUiSuffixProps) => {
     const components = { ...ColumnHeaderUiSuffixComponents, ...props.components };
     const styles = useMemo(() => getColumnHeaderUiSuffixStyles(), []);
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.suffixContainer,
         children: children,
     });

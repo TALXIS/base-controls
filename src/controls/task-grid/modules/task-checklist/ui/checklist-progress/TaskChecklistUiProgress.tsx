@@ -20,7 +20,7 @@ export const TaskChecklistUiProgress = (props: ITaskChecklistUiProgressProps) =>
     if (totalCount === 0) {
         return null;
     }
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.root,
         children: <>
             {components.onRenderIcon({ iconName: 'Completed', className: completedCount === totalCount ? styles.completedIcon : styles.icon })}

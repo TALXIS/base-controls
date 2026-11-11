@@ -18,7 +18,7 @@ export const AggregationUiTotalValue = (props: IAggregationUiTotalValueProps) =>
     const theme = useTheme();
     const styles = useMemo(() => getAggregationUiTotalValueStyles(theme), [theme]);
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.total,
         children: <>
             {props.label && components.onRenderLabel({ className: styles.label, children: props.label })}

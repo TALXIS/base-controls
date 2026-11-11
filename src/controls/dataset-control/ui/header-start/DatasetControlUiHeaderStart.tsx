@@ -18,5 +18,5 @@ export interface IDatasetControlUiHeaderStartProps {
 export const DatasetControlUiHeaderStart = (props: IDatasetControlUiHeaderStartProps) => {
     const components = { ...DatasetControlUiHeaderStartComponents, ...props.components };
     const styles = useMemo(() => getDatasetControlUiHeaderStartStyles(), []);
-    return components.onRenderContainer({ className: getClassNames([styles.datasetControlHeaderStart, props.className]), children: <DatasetControlUiHeaderItems>{props.children}</DatasetControlUiHeaderItems> });
+    return components.onRender({ className: getClassNames([styles.datasetControlHeaderStart, props.className]), children: <DatasetControlUiHeaderItems>{props.children}</DatasetControlUiHeaderItems> });
 };

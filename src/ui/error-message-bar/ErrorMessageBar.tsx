@@ -39,7 +39,7 @@ export const ErrorMessageBar = (props: IErrorMessageBarProps) => {
         return items;
     };
 
-    return components.onRenderMessageBar({
+    return components.onRender({
         messageBarType: MessageBarType.error,
         isMultiline: false,
         styles: { content: styles.content, actions: styles.actions },

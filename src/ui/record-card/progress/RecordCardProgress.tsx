@@ -21,7 +21,7 @@ export const RecordCardProgress = (props: IRecordCardProgressProps) => {
     const styles = useMemo(() => getRecordCardProgressStyles(theme), [theme]);
     const percent = Math.min(100, Math.max(0, props.percent));
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.progress,
         children: <>
             {components.onRenderTrack({

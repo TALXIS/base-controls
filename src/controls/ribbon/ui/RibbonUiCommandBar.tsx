@@ -16,7 +16,7 @@ export interface IRibbonUiCommandBarProps {
 export const RibbonUiCommandBar = (props: IRibbonUiCommandBarProps) => {
     const components = { ...RibbonUiCommandBarComponents, ...props.components };
     const styles = useMemo(() => getRibbonUiCommandBarStyles(), []);
-    return components.onRenderCommandBar({
+    return components.onRender({
         items: props.items,
         className: getClassNames([styles.ribbon, props.className]),
         align: props.align,

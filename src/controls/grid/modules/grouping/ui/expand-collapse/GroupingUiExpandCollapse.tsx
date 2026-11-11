@@ -17,7 +17,7 @@ export const GroupingUiExpandCollapse = (props: IGroupingUiExpandCollapseProps) 
     const styles = useMemo(() => getGroupingUiExpandCollapseStyles(), []);
     const components = { ...GroupingUiExpandCollapseComponents, ...props.components };
 
-    return components.onRenderContainer({
+    return components.onRender({
         className: styles.root,
         children: <>
             {components.onRenderExpandButton({

@@ -37,7 +37,7 @@ export const Notifications = (props: IFormNotificationsProps) => {
 
 	const mergedMessages = [...messages, ...validationNotifications ?? []];
 
-	return components.onRenderNotifications({
+	return components.onRender({
 		...notificationsProps,
 		messages: mergedMessages,
 	});

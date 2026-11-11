@@ -23,7 +23,7 @@ export const CellUiLockIcon = (props: ICellUiLockIconProps) => {
     const components = { ...CellUiLockIconComponents, ...props.components };
 
     //`TooltipHost` is styled by `hostClassName`, not `className`
-    return components.onRenderTooltip({
+    return components.onRender({
         content: props.message,
         hostClassName: getClassNames([styles.root, props.className]),
         children: components.onRenderIcon({ iconName: 'Lock', className: styles.icon, 'aria-label': props.message }),

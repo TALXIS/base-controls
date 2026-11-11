@@ -20,5 +20,5 @@ export const DatasetControlUiFooter = (props: IDatasetControlUiFooterProps) => {
     const components = { ...DatasetControlUiFooterComponents, ...props.components };
     const theme = useTheme();
     const styles = useMemo(() => getDatasetControlUiFooterStyles(theme), [theme]);
-    return components.onRenderContainer({ className: getClassNames([styles.datasetControlFooter, props.className]), children: props.children });
+    return components.onRender({ className: getClassNames([styles.datasetControlFooter, props.className]), children: props.children });
 };

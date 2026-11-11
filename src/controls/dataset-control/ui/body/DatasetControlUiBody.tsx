@@ -17,5 +17,5 @@ export interface IDatasetControlUiBodyProps {
 export const DatasetControlUiBody = (props: IDatasetControlUiBodyProps) => {
     const components = { ...DatasetControlUiBodyComponents, ...props.components };
     const styles = useMemo(() => getDatasetControlUiBodyStyles(), []);
-    return components.onRenderContainer({ className: getClassNames([styles.datasetControlBody, props.className]), children: props.children });
+    return components.onRender({ className: getClassNames([styles.datasetControlBody, props.className]), children: props.children });
 };

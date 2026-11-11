@@ -18,7 +18,7 @@ The map shows no loading state of its own while the provider loads. To show one,
 
 ## The placeholder
 
-While a \`DatasetControl\` loads, such as on a view switch, it shows a placeholder shaped like a grid. \`Map.Ui.Skeleton\` draws a map in place of the grid's rows and footer, under the same header, so nothing jumps when the map arrives. Hand it to \`components.skeleton.onRenderSkeleton\` with the props the slot gets, as \`GridExample.tsx\` does.
+While a \`DatasetControl\` loads, such as on a view switch, it shows a placeholder shaped like a grid. \`Map.Ui.Skeleton\` draws a map in place of the grid's rows and footer, under the same header, so nothing jumps when the map arrives. Hand it to \`components.skeleton.onRender\` with the props the slot gets, as \`GridExample.tsx\` does.
 
 ## Views
 

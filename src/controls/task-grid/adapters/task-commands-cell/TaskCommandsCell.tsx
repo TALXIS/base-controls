@@ -13,7 +13,7 @@ export const TaskCommandsCell = (props: ITaskCommandsCellProps) => {
     return <Grid.Cell.EmptyRenderer {...props} components={{
         ...components,
         commands: {
-            onRenderContainer: containerProps => <TaskGridUiCommandsContainer {...containerProps} components={components.commands} />,
+            onRender: containerProps => <TaskGridUiCommandsContainer {...containerProps} components={components.commands} />,
             onRenderCommandBar: commandBarProps => <TaskGridUiCommandBar {...commandBarProps} components={components.commands} />,
         },
     }} />;

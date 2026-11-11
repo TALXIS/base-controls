@@ -17,5 +17,5 @@ export const CellUiContainer = (props: ICellUiContainerProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getCellUiContainerStyles(theme), [theme]);
 
-    return components.onRenderContainer({ ...divProps, className: getClassNames([CELL_CONTAINER_CLASS, styles.cellContainer, className]) });
+    return components.onRender({ ...divProps, className: getClassNames([CELL_CONTAINER_CLASS, styles.cellContainer, className]) });
 };

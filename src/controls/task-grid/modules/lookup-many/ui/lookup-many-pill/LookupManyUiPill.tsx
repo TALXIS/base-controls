@@ -39,7 +39,7 @@ export const LookupManyUiPill = (props: ILookupManyUiPillProps) => {
         ? <Link className={styles.link} onMouseDown={event => event.stopPropagation()} onClick={onOpenClick}>{components.onRenderLabel(labelProps)}</Link>
         : components.onRenderLabel(labelProps);
 
-    const onRenderContainer: IOptionTagComponents['onRenderContainer'] = containerProps => components.onRenderContainer({
+    const onRenderContainer: IOptionTagComponents['onRender'] = containerProps => components.onRender({
         ...containerProps,
         children: <>
             {containerProps.children}
@@ -49,5 +49,5 @@ export const LookupManyUiPill = (props: ILookupManyUiPillProps) => {
         </>,
     });
 
-    return <OptionTag label={reference.name} color={color} className={getClassNames([styles.pill, props.className])} components={{ ...components, onRenderLabel, onRenderContainer }} />;
+    return <OptionTag label={reference.name} color={color} className={getClassNames([styles.pill, props.className])} components={{ ...components, onRenderLabel, onRender: onRenderContainer }} />;
 };
