@@ -49,13 +49,7 @@ export class TaskActions implements ITaskActions {
         }
         //the task's row shows the wait
         const isCreated = await this._runtime.execute(() => this._provider.whenTaskCreated(task.getRecordId()), { loading: { show: false }, error: { title: this._runtime.getLabels(TASK_GRID_LABELS).get('taskGrid.createTaskFailed'), rethrow: false } });
-        if (!isCreated) {
-            return null;
-        }
-        if (this._runtime.isEditingEnabled()) {
-            this._runtime.services.find('taskTree')?.editTaskSubject(task.getRecordId());
-        }
-        return task;
+        return isCreated ? task : null;
     }
 
     public async open(taskIds: string[]): Promise<IOpenTasksResult | null> {

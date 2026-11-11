@@ -1,5 +1,5 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { ColDef, GridApi, IRowNode } from "ag-grid-community";
+import { ColDef, GridApi } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
 import { GridCellCommandsHook, GridCellLoadingHook, GridLockHook, GridSelectionStateHook, GridOpenRecordHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
@@ -105,16 +105,6 @@ export class TaskTree implements ITaskGridTree {
 
     public revealTask(taskId: string): void {
         this._revealTask(taskId, REVEAL_TASK_ATTEMPTS);
-    }
-
-    public editTaskSubject(taskId: string): void {
-        if (!this._grid.modules.find('editing')) {
-            return;
-        }
-        this._revealTask(taskId, REVEAL_TASK_ATTEMPTS, node => {
-            this._gridApi?.startEditingCell({ rowIndex: node.rowIndex!, colKey: this._provider.getFieldMapping().subject });
-            this._selectEditorText(REVEAL_TASK_ATTEMPTS);
-        });
     }
 
     private get _gridApi(): GridApi<IRecord> | undefined {
@@ -333,20 +323,8 @@ export class TaskTree implements ITaskGridTree {
     };
 
     //typing replaces the placeholder name; the editor mounts in a later frame
-    private _selectEditorText(attemptsLeft: number): void {
-        const input = this._grid.services.find('viewport')?.getScrollElement()?.closest('.ag-root-wrapper')?.querySelector<HTMLInputElement>('.ag-cell-inline-editing input');
-        if (input) {
-            input.select();
-            //a subject wider than the grid would otherwise open scrolled to its end
-            this._gridApi?.ensureColumnVisible(this._provider.getFieldMapping().subject, 'start');
-        }
-        else if (attemptsLeft > 1) {
-            requestAnimationFrame(() => this._selectEditorText(attemptsLeft - 1));
-        }
-    }
-
     //AG Grid draws a new row in a later frame
-    private _revealTask(recordId: string, attemptsLeft: number, onRevealed?: (node: IRowNode<IRecord>) => void): void {
+    private _revealTask(recordId: string, attemptsLeft: number): void {
         const gridApi = this._gridApi;
         if (!gridApi || gridApi.isDestroyed()) {
             return;
@@ -354,10 +332,9 @@ export class TaskTree implements ITaskGridTree {
         const node = gridApi.getRowNode(recordId);
         if (node?.rowIndex != null) {
             gridApi.ensureNodeVisible(node);
-            onRevealed?.(node);
         }
         else if (attemptsLeft > 1) {
-            requestAnimationFrame(() => this._revealTask(recordId, attemptsLeft - 1, onRevealed));
+            requestAnimationFrame(() => this._revealTask(recordId, attemptsLeft - 1));
         }
     }
 
