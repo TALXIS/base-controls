@@ -4536,8 +4536,8 @@ interface IDataverseLookupManyColumn extends ILookupManyColumn {
     select?: string;
     /** Set when the relationship goes through an intersection entity of your own. */
     customIntersection?: { navigationPropertyName: string };
-    /** Liquid FetchXML over task, project and hostRecord for the records offered; read-only without it. */
-    fetchXml?: string;
+    /** Liquid FetchXML over task, project and hostRecord for the records offered. */
+    fetchXml: string;
 }
 
 /** Lookup-many columns of Dataverse tasks, loaded and saved through their relationships. */

@@ -1,5 +1,5 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { ColDef, GridApi } from "ag-grid-community";
+import { ColDef, GridApi, IRowNode } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
 import { GridCellCommandsHook, GridCellLoadingHook, GridLockHook, GridSelectionStateHook, GridOpenRecordHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
@@ -41,6 +41,7 @@ export class TaskTree implements ITaskGridTree {
     private _removeFromRuntime: () => void;
     private _isFlatList: boolean;
     private _treeRows?: IRecord[];
+    private _subjectEditedTaskId?: string;
     private _flatRows: IRecord[] = [];
     private _partiallySelectedIds?: Set<string>;
     private _unsubscribes: (() => void)[];
@@ -105,6 +106,17 @@ export class TaskTree implements ITaskGridTree {
 
     public revealTask(taskId: string): void {
         this._revealTask(taskId, REVEAL_TASK_ATTEMPTS);
+    }
+
+    public editTaskSubject(taskId: string): void {
+        if (!this._grid.modules.find('editing') || this._isUserTyping()) {
+            return;
+        }
+        this._subjectEditedTaskId = taskId;
+        this._revealTask(taskId, REVEAL_TASK_ATTEMPTS, node => {
+            this._gridApi?.startEditingCell({ rowIndex: node.rowIndex!, colKey: this._provider.getFieldMapping().subject });
+            this._selectEditorText(REVEAL_TASK_ATTEMPTS);
+        });
     }
 
     private get _gridApi(): GridApi<IRecord> | undefined {
@@ -316,15 +328,47 @@ export class TaskTree implements ITaskGridTree {
         this._provider.clearSelectedRecordIds();
     };
 
-    private _onTasksCreated = (_records: IRecord[], parentId?: string): void => {
+    private _onTasksCreated = (records: IRecord[], parentId?: string): void => {
         if (parentId) {
             this._expansion.setExpanded(parentId, true);
         }
+        if (records[0]) {
+            this.revealTask(records[0].getRecordId());
+        }
     };
 
+    //a subject editor this opened for a new task is not the user's
+    private _isUserTyping(): boolean {
+        const gridApi = this._gridApi;
+        const root = this._getGridRoot();
+        const editingCell = gridApi?.getEditingCells()[0];
+        if (editingCell) {
+            const rowId = gridApi!.getDisplayedRowAtIndex(editingCell.rowIndex)?.id;
+            return rowId !== this._subjectEditedTaskId || editingCell.column?.getColId() !== this._provider.getFieldMapping().subject;
+        }
+        const active = root?.ownerDocument.activeElement;
+        return !!active && !root!.contains(active) && active.matches('input, textarea, [contenteditable="true"]');
+    }
+
+    private _getGridRoot(): Element | null | undefined {
+        return this._grid.services.find('viewport')?.getScrollElement()?.closest('.ag-root-wrapper');
+    }
+
     //typing replaces the placeholder name; the editor mounts in a later frame
+    private _selectEditorText(attemptsLeft: number): void {
+        const input = this._getGridRoot()?.querySelector<HTMLInputElement>('.ag-cell-inline-editing input');
+        if (input) {
+            input.select();
+            //a subject wider than the grid would otherwise open scrolled to its end
+            this._gridApi?.ensureColumnVisible(this._provider.getFieldMapping().subject, 'start');
+        }
+        else if (attemptsLeft > 1) {
+            requestAnimationFrame(() => this._selectEditorText(attemptsLeft - 1));
+        }
+    }
+
     //AG Grid draws a new row in a later frame
-    private _revealTask(recordId: string, attemptsLeft: number): void {
+    private _revealTask(recordId: string, attemptsLeft: number, onRevealed?: (node: IRowNode<IRecord>) => void): void {
         const gridApi = this._gridApi;
         if (!gridApi || gridApi.isDestroyed()) {
             return;
@@ -332,9 +376,10 @@ export class TaskTree implements ITaskGridTree {
         const node = gridApi.getRowNode(recordId);
         if (node?.rowIndex != null) {
             gridApi.ensureNodeVisible(node);
+            onRevealed?.(node);
         }
         else if (attemptsLeft > 1) {
-            requestAnimationFrame(() => this._revealTask(recordId, attemptsLeft - 1));
+            requestAnimationFrame(() => this._revealTask(recordId, attemptsLeft - 1, onRevealed));
         }
     }
 

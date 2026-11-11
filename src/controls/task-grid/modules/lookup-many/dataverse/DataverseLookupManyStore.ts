@@ -19,7 +19,7 @@ export interface IDataverseLookupManyColumn extends ILookupManyColumn {
         navigationPropertyName: string;
     };
     /** Liquid FetchXML over `task`, `project` and `hostRecord` for the records offered. */
-    fetchXml?: string;
+    fetchXml: string;
 }
 
 export interface IDataverseLookupManyStoreParameters {
@@ -106,11 +106,8 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
     }
 
     //a column offers what its FetchXML selects, rendered for the task
-    public createOptionsProvider(parameters: ILookupManyOptionsParameters<IDataverseLookupManyColumn>): IDataProvider | undefined {
+    public createOptionsProvider(parameters: ILookupManyOptionsParameters<IDataverseLookupManyColumn>): IDataProvider {
         const { record, settings } = parameters;
-        if (!settings.fetchXml) {
-            return undefined;
-        }
         const project = this._taskRuntime.services.get('datasetControl').modules.find('project');
         return new FetchXmlDataProvider({
             fetchXml: LIQUID.parseAndRenderSync(settings.fetchXml, {
@@ -176,7 +173,8 @@ export class DataverseLookupManyStore implements ILookupManyStore<IDataverseLook
         const navigationPropertyName = settings.navigationPropertyName;
         const entityName = this._provider.getEntityName();
         const metadata: any = await this._pcfContext.utils.getEntityMetadata(entityName);
-        const relationships: any[] = [...metadata.OneToManyRelationships.getAll(), ...metadata.ManyToManyRelationships.getAll()];
+        //Dataverse leaves out a kind of relationship the table has none of
+        const relationships: any[] = [...metadata.OneToManyRelationships?.getAll() ?? [], ...metadata.ManyToManyRelationships?.getAll() ?? []];
         const relationship = relationships.find(candidate => candidate.RelationshipType === MANY_TO_MANY
             ? candidate.Entity1NavigationPropertyName === navigationPropertyName || candidate.Entity2NavigationPropertyName === navigationPropertyName
             : candidate.ReferencedEntityNavigationPropertyName === navigationPropertyName || candidate.ReferencingEntityNavigationPropertyName === navigationPropertyName);

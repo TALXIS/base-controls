@@ -156,7 +156,7 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
     private async _resolveRelationship(): Promise<IValueRelationship> {
         const { entityName, navigationPropertyName } = this._parameters;
         const metadata: any = await this._getPcfContext().utils.getEntityMetadata(entityName);
-        const relationships: any[] = metadata.OneToManyRelationships.getAll().filter((relationship: any) => relationship.ReferencingEntity === ATTRIBUTE_VALUE_ENTITY_NAME);
+        const relationships: any[] = (metadata.OneToManyRelationships?.getAll() ?? []).filter((relationship: any) => relationship.ReferencingEntity === ATTRIBUTE_VALUE_ENTITY_NAME);
         const relationship = navigationPropertyName
             ? relationships.find(candidate => candidate.ReferencedEntityNavigationPropertyName === navigationPropertyName || candidate.ReferencingEntityNavigationPropertyName === navigationPropertyName)
             : relationships[0];

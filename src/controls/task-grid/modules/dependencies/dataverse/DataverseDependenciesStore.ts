@@ -81,7 +81,7 @@ export class DataverseDependenciesStore implements IDependenciesStore {
         const { entityName, predecessorAttribute, successorAttribute } = this._parameters;
         const taskEntityName = this._parameters.taskRuntime.getProvider().getEntityName();
         const [metadata, taskMetadata]: any[] = await Promise.all([this._getPcfContext().utils.getEntityMetadata(entityName), this._getPcfContext().utils.getEntityMetadata(taskEntityName, [])]);
-        const relationships: { ReferencedEntity: string; ReferencingAttribute: string; ReferencingEntityNavigationPropertyName: string }[] = metadata.ManyToOneRelationships.getAll();
+        const relationships: { ReferencedEntity: string; ReferencingAttribute: string; ReferencingEntityNavigationPropertyName: string }[] = metadata.ManyToOneRelationships?.getAll() ?? [];
         const navigationPropertyNames = new Map<string, string>();
         for (const attribute of [predecessorAttribute, successorAttribute]) {
             const relationship = relationships.find(relationship => relationship.ReferencedEntity === taskEntityName && relationship.ReferencingAttribute === attribute);

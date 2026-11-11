@@ -210,6 +210,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const position = this._resolvePlacement(resolvedParentId, parameters?.position);
         const params = { ...this._resolveCreate(resolvedParentId, position), data: parameters?.data, taskId: crypto.randomUUID() };
         const fieldMapping = this.getFieldMapping();
+        //pending before its row is drawn, so the row draws as loading
+        this._pendingTasks.set(params.taskId, this._finishPendingTask(params));
         const [record] = this._addTasks([{
             ...params.data,
             [this.getMetadata().PrimaryIdAttribute!]: params.taskId,
@@ -217,7 +219,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             [fieldMapping.stackRank]: params.stackRank,
             [fieldMapping.stateCode]: ACTIVE_STATE_CODE,
         }], resolvedParentId, position);
-        this._pendingTasks.set(params.taskId, this._finishPendingTask(params));
         return record;
     }
 
@@ -537,6 +538,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     //a required column, or one the available columns leave out
     private _completeColumn = (column: IColumn): IColumn => {
+        const definition = this._definitions.get(column.name);
+        //a module describes its own virtual columns
+        if (definition?.isVirtual) {
+            return { ...definition, ...column, dataType: definition.dataType, isVirtual: true, disableSorting: definition.disableSorting, metadata: { ...column.metadata, ...definition.metadata } };
+        }
         if (column.dataType && !this._getRequiredColumn(column.name)) {
             return column;
         }

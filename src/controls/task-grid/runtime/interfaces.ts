@@ -16,6 +16,8 @@ export interface ITaskGridTree {
     setFlatList(isFlatList: boolean): void;
     /** Scrolls a task's row into view. */
     revealTask(taskId: string): void;
+    /** Opens the task's subject for typing, unless the user is already typing somewhere else. */
+    editTaskSubject(taskId: string): void;
 }
 
 /** The services a provider's platform provides, by augmenting this. */

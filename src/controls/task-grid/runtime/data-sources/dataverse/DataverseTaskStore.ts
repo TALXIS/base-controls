@@ -278,7 +278,7 @@ export class DataverseTaskStore implements ITaskStore {
 
     protected async _getManyToOneRelationships(entityName: string): Promise<{ ReferencedEntity: string; ReferencingAttribute: string; ReferencingEntityNavigationPropertyName: string }[]> {
         const metadata: any = await this._getPcfContext().utils.getEntityMetadata(entityName);
-        return metadata.ManyToOneRelationships.getAll();
+        return metadata.ManyToOneRelationships?.getAll() ?? [];
     }
 
     protected async _getNavigationPropertyName(referencedEntityName: string, referencingAttribute: string): Promise<string> {

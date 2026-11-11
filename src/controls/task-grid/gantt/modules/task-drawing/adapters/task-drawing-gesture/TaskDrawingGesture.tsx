@@ -84,6 +84,14 @@ export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
         return !!rowTaskId && taskDrawing.canDrawDates(rowTaskId);
     };
 
+    //only while Alt is held, so a plain drag on a dateless row stays a drag
+    const updateDatesHint = (isAltPressed: boolean) => {
+        const pointer = pointerRef.current;
+        if (isAltPressed && pointer && isDateTarget(pointer.target)) {
+            updatePreview();
+        }
+    };
+
     const stopDrawing = () => {
         activeDragRef.current = undefined;
         autoScroll.stop();
@@ -97,16 +105,19 @@ export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
                 setArmed(true);
                 updatePreview();
             }
+            if (event.key === 'Alt' && !activeDragRef.current) {
+                updateDatesHint(event.altKey);
+            }
         },
         //a drag under way ends on mouseup, whatever the key does
         onKeyUp: (event: KeyboardEvent) => {
-            if (event.key === 'Control' && !activeDragRef.current) {
+            if ((event.key === 'Control' || event.key === 'Alt') && !activeDragRef.current) {
                 stopDrawing();
             }
         },
         onMouseDown: (event: MouseEvent) => {
             const target = event.button === 0 ? getCreateTarget(chart, event.target) : undefined;
-            const isDrawingDates = !event.ctrlKey && isDateTarget(event.target);
+            const isDrawingDates = event.altKey && !event.ctrlKey && isDateTarget(event.target);
             if (!target || !(isDrawingDates || (event.ctrlKey && taskDrawing.isEnabled()))) {
                 return;
             }
@@ -122,9 +133,7 @@ export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
             const activeDrag = activeDragRef.current;
             if (!activeDrag && !event.ctrlKey) {
                 stopDrawing();
-                if (isDateTarget(event.target)) {
-                    updatePreview();
-                }
+                updateDatesHint(event.altKey);
                 return;
             }
             if (activeDrag) {

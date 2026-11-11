@@ -28,6 +28,7 @@ const NAMED_TASK_COUNT = 3;
 /** Runs the provider's task actions under the loading overlay with their errors shown. */
 export class TaskActions implements ITaskActions {
     private _runtime: ITaskRuntime;
+    private _latestCreatedTaskId?: string;
 
     constructor(runtime: ITaskRuntime) {
         this._runtime = runtime;
@@ -44,12 +45,18 @@ export class TaskActions implements ITaskActions {
         if (!task) {
             return null;
         }
-        if (!parentId) {
-            this._runtime.services.find('taskTree')?.revealTask(task.getRecordId());
-        }
+        const taskId = task.getRecordId();
+        this._latestCreatedTaskId = taskId;
         //the task's row shows the wait
-        const isCreated = await this._runtime.execute(() => this._provider.whenTaskCreated(task.getRecordId()), { loading: { show: false }, error: { title: this._runtime.getLabels(TASK_GRID_LABELS).get('taskGrid.createTaskFailed'), rethrow: false } });
-        return isCreated ? task : null;
+        const isCreated = await this._runtime.execute(() => this._provider.whenTaskCreated(taskId), { loading: { show: false }, error: { title: this._runtime.getLabels(TASK_GRID_LABELS).get('taskGrid.createTaskFailed'), rethrow: false } });
+        if (!isCreated) {
+            return null;
+        }
+        //a task created since takes the editor
+        if (this._runtime.isEditingEnabled() && this._latestCreatedTaskId === taskId) {
+            this._runtime.services.find('taskTree')?.editTaskSubject(taskId);
+        }
+        return task;
     }
 
     public async open(taskIds: string[]): Promise<IOpenTasksResult | null> {

@@ -93,10 +93,7 @@ export class Templates implements ITemplates {
         if (!this._taskRuntime.isCreationEnabled()) {
             return null;
         }
-        //the store may ask the user first, so the parent's chain shows the wait rather than the overlay
-        return this._taskRuntime.services.get('savingChains').track(parentId ? [parentId] : [], () => this._taskRuntime.execute(
-            () => this._taskRuntime.getProvider().createTasksWith(parentId, params => this._store.createTasks({ ...params, templateId })),
-            { loading: { show: false }, error: { title: this._labels.get('templates.templatesFailed') } }));
+        return this._execute('templates.creatingTasks', () => this._taskRuntime.getProvider().createTasksWith(parentId, params => this._store.createTasks({ ...params, templateId })));
     }
 
     public async createTemplateFromTask(task: IRecord): Promise<void> {
@@ -194,7 +191,7 @@ export class Templates implements ITemplates {
         return { data, children };
     }
 
-    private _execute<T>(loadingLabel: 'templates.savingTemplate', operation: () => Promise<T>): Promise<T> {
+    private _execute<T>(loadingLabel: 'templates.savingTemplate' | 'templates.creatingTasks', operation: () => Promise<T>): Promise<T> {
         return this._taskRuntime.execute(operation, { loading: { message: this._labels.get(loadingLabel) }, error: { title: this._labels.get('templates.templatesFailed') } });
     }
 }

@@ -200,11 +200,15 @@ export class DatasetControlRuntime extends Runtime implements IDatasetControlInt
         }
     }
 
-    //a column the provider does not offer is kept as the view gives it
+    //a column neither the provider nor the view describes, such as a deleted attribute, is left out
     private async _completeColumns(provider: IDataProvider, columns: IDatasetControlViewColumn[], linking: ILinkEntityExposedExpression[]): Promise<IColumn[]> {
         const [ownColumns, relatedColumns] = await Promise.all([provider.getAvailableColumns(), this._getRelatedColumns(provider, columns, linking)]);
         const definitions = new Map([...ownColumns, ...relatedColumns].map(column => [column.name, column]));
-        return columns.map(column => this._completeColumn(column, definitions.get(column.name)));
+        const unknownColumnNames = columns.filter(column => !definitions.has(column.name) && !column.dataType).map(column => column.name);
+        if (unknownColumnNames.length > 0) {
+            console.warn(`The view's columns ${unknownColumnNames.join(', ')} are not offered by the provider and are left out.`);
+        }
+        return columns.filter(column => !unknownColumnNames.includes(column.name)).map(column => this._completeColumn(column, definitions.get(column.name)));
     }
 
     //its own metadata, so the provider setting up one view's column leaves the others alone

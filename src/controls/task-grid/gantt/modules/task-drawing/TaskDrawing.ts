@@ -22,7 +22,7 @@ export interface ITaskDrawing {
     isEnabled(): boolean;
     /** Creates a task over the span, right before the row's task under the same parent. */
     create(rowTaskId: string, span: IGanttSpan): Promise<void>;
-    /** Whether a drag on the task's row can draw its dates. */
+    /** Whether an Alt+drag on the task's row can draw its dates. */
     canDrawDates(taskId: string): boolean;
     /** Saves the span as the dates of a task that has none. */
     drawDates(taskId: string, span: IGanttSpan): void;

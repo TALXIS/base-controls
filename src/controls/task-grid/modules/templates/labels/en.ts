@@ -11,6 +11,7 @@ export const TEMPLATES_LABELS = defineLabels({
     /** The column of the template list. */
     'templates.name': 'Name',
     'templates.savingTemplate': 'Saving template...',
+    'templates.creatingTasks': 'Creating tasks from template...',
     /** Titles the dialog an operation on a template failed with. */
     'templates.templatesFailed': 'The template could not be used.',
 });
