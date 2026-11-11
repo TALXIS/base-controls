@@ -10,5 +10,5 @@ export interface IMemoryDependenciesModuleParameters extends Omit<IDependenciesP
 /** Dependencies kept in the `dependencies` table you pass. */
 export const createMemoryDependenciesModule = (parameters: IMemoryDependenciesModuleParameters): IDependenciesModule => {
     const { dependencies, ...moduleParameters } = parameters;
-    return createDependenciesModule({ ...moduleParameters, createStore: () => new MemoryDependenciesStore(dependencies) });
+    return createDependenciesModule({ ...moduleParameters, createStore: taskRuntime => new MemoryDependenciesStore({ taskRuntime, dependencies }) });
 };
