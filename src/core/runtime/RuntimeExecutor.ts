@@ -39,12 +39,13 @@ export interface IRuntimeExecutorParameters {
     loading: IRuntimeLoading;
 }
 
+//an error shows once across every runtime it passes through
+let runningCount = 0;
+let reportedErrors = new WeakSet<object>();
+
 export class RuntimeExecutor implements IRuntimeExecutor {
     public readonly events = new EventEmitter<IRuntimeExecutorEvents>();
     private _loading: IRuntimeLoading;
-    private _runningCount = 0;
-    //an outer run rethrows what an inner one already reported
-    private _reportedErrors = new WeakSet<object>();
 
     constructor(parameters: IRuntimeExecutorParameters) {
         this._loading = parameters.loading;
@@ -54,7 +55,7 @@ export class RuntimeExecutor implements IRuntimeExecutor {
     public execute<T>(operation: () => T | Promise<T>, parameters?: IRuntimeExecuteParameters): Promise<T>;
     public async execute<T>(operation: () => T | Promise<T>, parameters?: IRuntimeExecuteParameters): Promise<T | undefined> {
         const hideLoading = parameters?.loading?.show === false ? undefined : this._loading.show(parameters?.loading?.message);
-        this._runningCount++;
+        runningCount++;
         try {
             return await operation();
         }
@@ -67,19 +68,19 @@ export class RuntimeExecutor implements IRuntimeExecutor {
         }
         finally {
             hideLoading?.();
-            this._runningCount--;
-            if (this._runningCount === 0) {
-                this._reportedErrors = new WeakSet();
+            runningCount--;
+            if (runningCount === 0) {
+                reportedErrors = new WeakSet();
             }
         }
     }
 
     private _report(error: unknown, title?: string): void {
         if (typeof error === 'object' && error !== null) {
-            if (this._reportedErrors.has(error)) {
+            if (reportedErrors.has(error)) {
                 return;
             }
-            this._reportedErrors.add(error);
+            reportedErrors.add(error);
         }
         this.events.dispatchEvent('onExecuteFailed', error, title);
     }

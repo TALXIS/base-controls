@@ -155,10 +155,10 @@ export class TaskRuntime implements ITaskRuntime {
             taskCommands.push({ id: 'new', label: labels.get('taskGrid.new'), iconName: 'Add', onExecute: () => { runQuietly(() => this.tasks.create()); } });
         }
         if (this.isEditingEnabled() && selectedIds.length > 0) {
-            taskCommands.push({ id: 'edit', label: labels.get('taskGrid.edit'), iconName: 'Edit', onExecute: () => runQuietly(() => this.tasks.open(selectedIds)) });
+            taskCommands.push({ id: 'edit', label: labels.get('taskGrid.edit'), iconName: 'Edit', onExecute: async () => { await this.tasks.open(selectedIds); } });
         }
         if (this.isDeletionEnabled() && selectedIds.length > 0) {
-            taskCommands.push({ id: 'delete', label: labels.get('taskGrid.delete'), iconName: 'Delete', onExecute: () => runQuietly(() => this.tasks.delete(selectedIds)) });
+            taskCommands.push({ id: 'delete', label: labels.get('taskGrid.delete'), iconName: 'Delete', onExecute: () => this.tasks.delete(selectedIds) });
         }
         commands.unshift(...taskCommands);
     };

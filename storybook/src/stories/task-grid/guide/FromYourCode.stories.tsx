@@ -28,7 +28,7 @@ Try: select a task, click **Add a review**, then delete the review with **Delete
 
 ## Ribbon commands of your own
 
-\`TaskDatasetControl.Ribbon\` draws *New*, *Edit* and *Delete*, then the commands you add with the ribbon's \`hooks.commands\`, as on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview). A task action shows its own error dialog before it rejects, so wrap \`move\`, \`open\` and \`delete\` in a \`runQuietly\` of your own, as the example does.
+\`TaskDatasetControl.Ribbon\` draws *New*, *Edit* and *Delete*, then the commands you add with the ribbon's \`hooks.commands\`, as on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview). A task action that fails shows its error once, so a command calls it as it is.
 
 To change how the ribbon draws an item, such as turning *Delete* off for projects, add a hook to \`taskRuntime.hooks.ribbonCommandUi\`.
 

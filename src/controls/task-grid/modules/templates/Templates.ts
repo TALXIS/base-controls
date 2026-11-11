@@ -137,7 +137,7 @@ export class Templates implements ITemplates {
         }
         const task = selectedIds.length === 1 ? provider.getRecordsMap()[selectedIds[0]] : undefined;
         if (task && this._store.createTemplate) {
-            commands.splice(newIndex === -1 ? commands.length : newIndex + 1, 0, { id: 'saveAsTemplate', label: this._labels.get('templates.saveAsTemplate'), iconName: 'PageAdd', onExecute: () => runQuietly(() => this.createTemplateFromTask(task)) });
+            commands.splice(newIndex === -1 ? commands.length : newIndex + 1, 0, { id: 'saveAsTemplate', label: this._labels.get('templates.saveAsTemplate'), iconName: 'PageAdd', onExecute: () => this.createTemplateFromTask(task) });
         }
     };
 

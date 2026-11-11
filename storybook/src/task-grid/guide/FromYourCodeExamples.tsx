@@ -68,14 +68,6 @@ import { createLoadOffice } from './office'
 
 const loadTasks = createLoadOffice()
 
-//a ribbon command shows what it throws, and a task action has shown its failure already
-const runQuietly = async (action: () => Promise<unknown>) => {
-    try {
-        await action()
-    }
-    catch { }
-}
-
 //called on every mount, before its modules load
 const onSetup = (control: IDatasetControl<ITaskViewData>) => {
     //the ribbon runs this hook on every load, such as when the selection changes
@@ -89,10 +81,10 @@ const onSetup = (control: IDatasetControl<ITaskViewData>) => {
         const { structure } = provider.getRecordTree()
         const { previous, next } = structure.getNeighbours(taskId)
         commands.push(
-            //create resolves null instead of throwing, so it needs no runQuietly
+            //a failed action shows its own error once, so a command can return it as it is
             { id: 'insertAbove', label: 'Insert above', iconName: 'Add', onExecute: async () => { await taskRuntime.tasks.create(structure.getParent(taskId)?.getRecordId(), { position: { before: taskId } }) } },
-            { id: 'moveUp', label: 'Move up', iconName: 'Up', disabled: !previous, onExecute: () => runQuietly(() => taskRuntime.tasks.move(taskId, previous!.getRecordId(), 'above')) },
-            { id: 'moveDown', label: 'Move down', iconName: 'Down', disabled: !next, onExecute: () => runQuietly(() => taskRuntime.tasks.move(taskId, next!.getRecordId(), 'below')) },
+            { id: 'moveUp', label: 'Move up', iconName: 'Up', disabled: !previous, onExecute: async () => { await taskRuntime.tasks.move(taskId, previous!.getRecordId(), 'above') } },
+            { id: 'moveDown', label: 'Move down', iconName: 'Down', disabled: !next, onExecute: async () => { await taskRuntime.tasks.move(taskId, next!.getRecordId(), 'below') } },
         )
     }))
 }
