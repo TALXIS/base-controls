@@ -49,8 +49,8 @@ export class TaskRuntime implements ITaskRuntime {
     }
 
     public async load(): Promise<IDatasetControlLoadResult<ITaskViewData>> {
-        const { store, fieldMapping, rootTaskId, views } = await this._getProps().onLoad(this);
-        const provider = new TaskDataProvider({ store, formatting: this.services.get('pcfContext').formatting, fieldMapping, rootTaskId, defaultCreatePosition: this._getProps().defaultCreatePosition });
+        const { store, fieldMapping, rootTaskId, hoursPerDay, views } = await this._getProps().onLoad(this);
+        const provider = new TaskDataProvider({ store, formatting: this.services.get('pcfContext').formatting, fieldMapping, rootTaskId, hoursPerDay, defaultCreatePosition: this._getProps().defaultCreatePosition });
         provider.hooks.availableColumns.add(this._addPathColumn);
         //modules waiting for it add columns a user view may keep
         this.services.provide('provider', provider);

@@ -191,6 +191,8 @@ export interface ITaskDataProviderParameters {
     rootTaskId?: string;
     /** Where a task created with no position of its own goes, `first` by default. */
     defaultCreatePosition?: TaskCreatePosition;
+    /** How many hours a day of the duration column holds, unless its metadata says otherwise. */
+    hoursPerDay?: number;
 }
 
 /** Adds to the available columns in place. */
@@ -226,7 +228,7 @@ export interface ITaskDataProviderHooks {
 export interface ITaskDataProvider extends IDataProvider {
     readonly taskEvents: IEventSubscriber<ITaskDataProviderEvents>;
     getFieldMapping(): IFieldMapping;
-    /** How many hours a day of a duration holds: the duration column's `HoursPerDay`, else `24`. */
+    /** Hours a day of a duration holds: the duration column's, else `hoursPerDay`, else `24`. */
     getHoursPerDay(): number;
     getStore(): ITaskStore;
     /** Every loaded task, whatever the view shows. */

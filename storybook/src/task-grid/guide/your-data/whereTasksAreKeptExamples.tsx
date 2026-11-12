@@ -123,7 +123,7 @@ export const createModules = (projectId: string) => [
 `,
 }
 
-const STORE_CALLS_CODE = `import { createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ITaskCreateParameters, ITaskDeleteParameters, ITaskGridLoadResult, ITaskGridView, ITaskRuntime, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const STORE_CALLS_CODE = `import { createRowSelectionModule, createTaskDraggingModule, createTaskEditingModule, DatasetControl, ITaskCreateParameters, ITaskDataProvider, ITaskDeleteParameters, ITaskGridLoadResult, ITaskGridView, ITaskRuntime, MemoryTaskStore, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import type { IRecord } from '@talxis/client-libraries'
 import { Stack, Text } from '@fluentui/react'
 import { createOfficeTable, OFFICE_COLUMNS, OFFICE_METADATA, officeFieldMapping } from './office'
@@ -139,8 +139,8 @@ class LoggingStore extends MemoryTaskStore {
         this._log = log
     }
 
-    public async load() {
-        const result = await super.load()
+    public async load(provider: ITaskDataProvider) {
+        const result = await super.load(provider)
         this._log(\`load: \${result.rawData.length} tasks\`)
         return result
     }

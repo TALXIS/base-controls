@@ -17,6 +17,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _fieldMapping: IFieldMapping;
     private _quickFindColumnNames: string[] = [];
     private _rootTaskId?: string;
+    private _hoursPerDay?: number;
     private _defaultCreatePosition: TaskCreatePosition;
     private _tree: RecordTree;
     private _hasLoaded = false;
@@ -43,6 +44,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this._store = parameters.store;
         this._fieldMapping = { ...parameters.fieldMapping, stateCode: parameters.fieldMapping.stateCode ?? 'statecode' };
         this._rootTaskId = parameters.rootTaskId;
+        this._hoursPerDay = parameters.hoursPerDay;
         this._defaultCreatePosition = parameters.defaultCreatePosition ?? 'first';
         this._tree = new RecordTree(this, columnName => this._columnMatchers.find(matcher => matcher.isHandledColumn(columnName)));
         this.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
@@ -51,7 +53,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     //the definition, so a view without the duration column still has it
     public getHoursPerDay(): number {
         const durationColumnName = this._fieldMapping.duration;
-        return getHoursPerDay(durationColumnName ? this._getDefinition(durationColumnName).metadata?.HoursPerDay : undefined);
+        return getHoursPerDay((durationColumnName ? this._getDefinition(durationColumnName).metadata?.HoursPerDay : undefined) ?? this._hoursPerDay);
     }
 
     public getFieldMapping(): IFieldMapping {
@@ -134,7 +136,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             return columns;
         }
         //the hooks add columns of the tasks, such as Path
-        return this._withHookColumns(columns);
+        return this._withHookColumns(columns).map(this._withHoursPerDay);
     }
 
     public addColumnHandler(handler: ITaskColumnHandler): () => void {
@@ -475,6 +477,14 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         catch { }
     }
 
+    //the duration cells read it from the column
+    private _withHoursPerDay = (column: IColumn): IColumn => {
+        if (this._hoursPerDay === undefined || column.name !== this._fieldMapping.duration) {
+            return column;
+        }
+        return { ...column, metadata: { HoursPerDay: this._hoursPerDay, ...column.metadata } };
+    };
+
     private _isRelatedEntity(options?: IAvailableColumnOptions): boolean {
         return !!options?.entityName && options.entityName !== this.getEntityName();
     }
@@ -550,7 +560,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             return { ...definition, ...column, dataType: definition.dataType, isVirtual: true, disableSorting: definition.disableSorting, metadata: { ...column.metadata, ...definition.metadata } };
         }
         if (column.dataType && !this._getRequiredColumn(column.name)) {
-            return column;
+            return this._withHoursPerDay(column);
         }
         return this._merge(this._getDefinition(column.name), column);
     };

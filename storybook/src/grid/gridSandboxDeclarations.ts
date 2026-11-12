@@ -4359,7 +4359,7 @@ interface ITaskRuntime extends IRuntime {
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
     getFieldMapping(): IFieldMapping;
-    /** How many hours a day of a duration holds: the duration column's \`HoursPerDay\`, else 24. */
+    /** How many hours a day of a duration holds: the duration column's, else hoursPerDay, else 24. */
     getHoursPerDay(): number;
     /** Copies of the items with every ribbon command UI hook applied, menus included. */
     getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[];
@@ -4388,6 +4388,8 @@ interface ITaskGridLoadResult {
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & { stateCode?: string };
     /** Scopes the tree to the subtree under this task, which the store has to load too. */
     rootTaskId?: string;
+    /** Hours in a day of the duration column, unless its metadata says otherwise; 24 when left out. */
+    hoursPerDay?: number;
     /** The views to switch between; leave out for a task grid with one view. */
     views?: ITaskGridView[];
 }
@@ -4917,8 +4919,8 @@ declare class MemoryTable<TRow extends object> {
 /** Tasks kept in a \`MemoryTable\`; opening one, or a record a lookup points to, shows an alert. */
 declare class MemoryTaskStore implements ITaskStore {
     constructor(parameters: { taskRuntime: ITaskRuntime; tasks: MemoryTable<IRawRecord>; metadata: IMemoryProviderEntityMetadata; columns: IColumn[] });
-    [operation: string]: any;
 }
+interface MemoryTaskStore extends ITaskStore { }
 
 /** The sample tasks: 137 tasks over seven projects. */
 declare const TASKS: IRawRecord[];
@@ -5206,8 +5208,8 @@ declare class DataverseTaskStore implements ITaskStore {
         hostRecord?: IDataverseHostRecord;
         form?: { editId?: string; bulkEditId?: string; getParameters?: (operation: 'edit' | 'bulkEdit' | 'open', defaults: any) => any };
     });
-    [operation: string]: any;
 }
+interface DataverseTaskStore extends ITaskStore { }
 /** The user's own task columns as TALXIS attribute definitions and values. */
 declare const createTalxisCustomColumnsModule: (parameters: { entityName: string; recordId?: string; navigationPropertyName?: string; enableCreation?: boolean; enableEditing?: boolean; enableDeletion?: boolean }) => IDatasetControlModule;
 /** The project module for a project record in Dataverse. */

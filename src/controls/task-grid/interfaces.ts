@@ -13,7 +13,7 @@ export type ITaskGridGridModule = IGridModule<Exclude<keyof IGridModuleMap, 'row
 export type ITaskGridView = IDatasetControlView<ITaskViewData, ITaskDataProvider>;
 
 /** What a `TaskDatasetControl`'s `onLoad` returns. */
-export interface ITaskGridLoadResult extends Pick<ITaskDataProviderParameters, 'fieldMapping' | 'rootTaskId'> {
+export interface ITaskGridLoadResult extends Pick<ITaskDataProviderParameters, 'fieldMapping' | 'rootTaskId' | 'hoursPerDay'> {
     /** Where the tasks are kept, such as a `MemoryTaskStore` or a `DataverseTaskStore`. */
     store: ITaskStore;
     /** The views to switch between; leave out for a task grid with one view. */
