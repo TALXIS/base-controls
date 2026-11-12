@@ -9,6 +9,8 @@ export const GRID_GROUPING_LABELS_CS = translateLabels(GRID_GROUPING_LABELS, {
     'gridGrouping.menuSection': 'Seskupení',
     'gridGrouping.expandLevel': 'Rozbalit o jednu úroveň',
     'gridGrouping.collapseLevel': 'Sbalit o jednu úroveň',
+    'gridGrouping.expand': 'Rozbalit',
+    'gridGrouping.collapse': 'Sbalit',
     'gridGrouping.groupSelectionLimitMessage': 'Tento výběr by načetl záznamy více než {{maxGroupLoads}} skupin. Vyberte méně skupin, nebo je rozbalte a vyberte jejich záznamy.',
     'gridGrouping.groupSelectionLimitConfirm': 'OK',
 });

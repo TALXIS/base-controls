@@ -7,6 +7,8 @@ import { useTaskGridService } from "../../useTaskGridServices";
 import { useTaskRuntime } from "../root/context";
 import { TaskGridUiTreeCellIndent } from "../../ui";
 import { ITreeCellComponents } from "./components";
+import { useLabels } from "@labels";
+import { GRID_GROUPING_LABELS } from "@controls/grid/modules/grouping/labels";
 
 export interface ITreeCellProps extends ICellRendererParams<IRecord> {
     components?: ITreeCellComponents;
@@ -18,6 +20,7 @@ export const TreeCell = (props: ITreeCellProps) => {
     const runtime = useTaskRuntime();
     const components = props.components ?? {};
     const { rerender } = useRerender();
+    const labels = useLabels(GRID_GROUPING_LABELS);
     const node = props.node;
     const record = props.data!;
     const isFlatList = runtime.isFlatList();
@@ -40,7 +43,7 @@ export const TreeCell = (props: ITreeCellProps) => {
                 <Grid.Cell.Container components={components.container}>
                     <Grid.Cell.Loading components={components.loading}>
                         <TaskGridUiTreeCellIndent level={isFlatList ? 0 : node.level} hasToggle={hasToggle || isFlatList} components={components.indent} />
-                        {hasToggle && <GroupingUi.Toggle isExpanded={!!node.expanded} onToggle={() => expansion.toggle(record.getRecordId())} components={components.toggle} />}
+                        {hasToggle && <GroupingUi.Toggle isExpanded={!!node.expanded} expandText={labels.get('gridGrouping.expand')} collapseText={labels.get('gridGrouping.collapse')} onToggle={() => expansion.toggle(record.getRecordId())} components={components.toggle} />}
                         <Grid.Cell.LockIcon components={components.lockIcon} />
                         <Grid.Cell.Control components={components.control}>
                             <Grid.Cell.ColumnControl components={components.columnControl} />

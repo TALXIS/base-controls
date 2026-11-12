@@ -14,6 +14,8 @@ import { CellCommands } from "../../../../adapters/cells/commands/CellCommands";
 import { useGridModule } from "../../../../useGridModule";
 import { GroupCount } from "../group-count/GroupCount";
 import { GroupingUi } from "../../ui";
+import { useLabels } from "@labels";
+import { GRID_GROUPING_LABELS } from "../../labels";
 import { IGroupCellComponents } from "./components";
 
 export interface IGroupCellProps extends ICellRendererParams<IRecord> {
@@ -29,6 +31,7 @@ export const GroupCell = (props: IGroupCellProps) => {
     const node = props.node;
     const { rerender } = useRerender();
     const components = { ...grouping.components.groupCell, ...props.components };
+    const labels = useLabels(GRID_GROUPING_LABELS);
 
     useEffect(() => {
         node.addEventListener('expandedChanged', rerender);
@@ -45,7 +48,7 @@ export const GroupCell = (props: IGroupCellProps) => {
             <CellTheme theme={props.theme}>
                 <CellContainer components={components.container}>
                     <CellLoading components={components.loading}>
-                        {isExpandable && <GroupingUi.Toggle isExpanded={!!node.expanded} onToggle={() => grouping.toggleGroup(node)} components={components.toggle} />}
+                        {isExpandable && <GroupingUi.Toggle isExpanded={!!node.expanded} expandText={labels.get('gridGrouping.expand')} collapseText={labels.get('gridGrouping.collapse')} onToggle={() => grouping.toggleGroup(node)} components={components.toggle} />}
                         <CellControl components={components.control}>
                             <CellColumnControl components={components.columnControl} />
                         </CellControl>

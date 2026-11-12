@@ -13,6 +13,10 @@ export const GRID_GROUPING_LABELS = defineLabels({
     'gridGrouping.expandLevel': 'Expand one level',
     /** What closing one level of groups is called. */
     'gridGrouping.collapseLevel': 'Collapse one level',
+    /** What a closed row's chevron does. */
+    'gridGrouping.expand': 'Expand',
+    /** What an open row's chevron does. */
+    'gridGrouping.collapse': 'Collapse',
     /** What a selection refused for loading too many groups says. */
     'gridGrouping.groupSelectionLimitMessage': 'This selection would load the records of more than {{maxGroupLoads}} groups. Select fewer groups, or expand them and select their records.',
     'gridGrouping.groupSelectionLimitConfirm': 'OK',

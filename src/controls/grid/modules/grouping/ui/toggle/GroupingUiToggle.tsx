@@ -7,6 +7,10 @@ import { getGroupingUiToggleStyles, GROUPING_TOGGLE_CLASS } from "./styles";
 
 export interface IGroupingUiToggleProps {
     isExpanded: boolean;
+    /** Accessible name and tooltip while the row is closed. */
+    expandText?: string;
+    /** Accessible name and tooltip while the row is open. */
+    collapseText?: string;
     onToggle: () => void;
     components?: Partial<IGroupingUiToggleComponents>;
 }
@@ -22,6 +26,9 @@ export const GroupingUiToggle = (props: IGroupingUiToggleProps) => {
         children: components.onRenderButton({
             isExpanded: props.isExpanded,
             iconProps: { iconName: props.isExpanded ? 'ChevronDown' : 'ChevronRight' },
+            ariaLabel: props.isExpanded ? props.collapseText : props.expandText,
+            title: props.isExpanded ? props.collapseText : props.expandText,
+            'aria-expanded': props.isExpanded,
             styles: { root: styles.button, icon: styles.icon, iconHovered: styles.iconHovered, iconPressed: styles.iconPressed },
             onClick: props.onToggle,
         }),
