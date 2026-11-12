@@ -14,6 +14,7 @@ export const TASK_GRID_LABELS_CS = translateLabels(TASK_GRID_LABELS, {
     'taskGrid.delete': 'Odstranit',
     'taskGrid.addChild': 'Přidat podúkol',
     'taskGrid.confirmDeleteTasks': 'Chcete odstranit {{ names }}?',
+    'taskGrid.confirmDeleteTaskWithSubtasks': 'Chcete odstranit {{ names }} a jeho podúkoly ({{ count }})?',
     'taskGrid.confirmDeleteTasksWithSubtasks': 'Chcete odstranit {{ names }} a jejich podúkoly ({{ count }})?',
     'taskGrid.tasksCannotBeDeleted': 'Vybrané úkoly nelze odstranit.',
     'taskGrid.taskCannotBeDeleted': 'Tento úkol nelze odstranit.',

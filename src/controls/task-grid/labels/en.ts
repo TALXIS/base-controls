@@ -16,8 +16,10 @@ export const TASK_GRID_LABELS = defineLabels({
     'taskGrid.delete': 'Delete',
     'taskGrid.addChild': 'Add a subtask',
     'taskGrid.confirmDeleteTasks': 'Do you want to delete {{ names }}?',
+    /** Asks before deleting one task that has `{{ count }}` subtasks under it. */
+    'taskGrid.confirmDeleteTaskWithSubtasks': 'Do you want to delete {{ names }} and its subtasks ({{ count }})?',
     /** Asks before deleting tasks that have `{{ count }}` subtasks under them. */
-    'taskGrid.confirmDeleteTasksWithSubtasks': 'Do you want to delete {{ names }} and their {{ count }} subtasks?',
+    'taskGrid.confirmDeleteTasksWithSubtasks': 'Do you want to delete {{ names }} and their subtasks ({{ count }})?',
     /** None of the selected tasks may be deleted. */
     'taskGrid.tasksCannotBeDeleted': 'The selected tasks cannot be deleted.',
     /** Why the store kept a task. */

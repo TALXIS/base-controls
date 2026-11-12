@@ -77,7 +77,8 @@ export class TaskActions implements ITaskActions {
         }
         const subtaskCount = deletableTaskIds.filter(taskId => !taskIds.includes(taskId)).length;
         const names = this._getTaskNames(taskIds);
-        const text = subtaskCount > 0 ? labels.get('taskGrid.confirmDeleteTasksWithSubtasks', { names, count: subtaskCount }) : labels.get('taskGrid.confirmDeleteTasks', { names });
+        const withSubtasksLabel = taskIds.length === 1 ? 'taskGrid.confirmDeleteTaskWithSubtasks' : 'taskGrid.confirmDeleteTasksWithSubtasks';
+        const text = subtaskCount > 0 ? labels.get(withSubtasksLabel, { names, count: subtaskCount }) : labels.get('taskGrid.confirmDeleteTasks', { names });
         const confirmation = await navigation.openConfirmDialog({ text });
         if (!confirmation.confirmed) {
             return;
