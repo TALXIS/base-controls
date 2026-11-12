@@ -4881,7 +4881,25 @@ declare const TaskDatasetControl: ((props: ITaskDatasetControlProps) => JSX.Elem
 
 /** Where the tasks come from and how changing them is persisted. */
 interface ITaskStore {
-    [operation: string]: any;
+    /** Loads every task of the view the provider was created for. */
+    load(provider: ITaskDataProvider): Promise<ITaskLoadResult>;
+    /** The columns Edit columns offers, of \`options.entityName\` when given. */
+    getAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]>;
+    getAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]>;
+    /** Creates the task the grid already shows under \`parameters.taskId\`, or \`null\` to drop it. */
+    createTask(parameters: ITaskCreateParameters): Promise<ITaskCreateResult | null>;
+    /** Whether a task may be deleted. */
+    canDeleteTask?(task: IRecord): boolean;
+    /** Called level by level, deepest first; \`null\` when the user cancelled. */
+    deleteTasks(parameters: ITaskDeleteParameters): Promise<IDeleteTasksResult | null>;
+    /** Saves what changed on the task, its parent and rank included. */
+    saveTask(task: IRecord): Promise<IRecordSaveOperationResult>;
+    /** Opens the tasks in an editor outside the grid, \`null\` when nothing changed. */
+    openTasks(taskIds: string[]): Promise<IOpenTasksResult | null>;
+    /** Opens the record a task's lookup points to. */
+    openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
+    /** What the backend changed since the store last read its tasks. */
+    synchronize?(): Promise<ITaskChanges>;
 }
 
 /** One table of plain rows, kept by whoever creates it and read by the memory stores it is given. */
