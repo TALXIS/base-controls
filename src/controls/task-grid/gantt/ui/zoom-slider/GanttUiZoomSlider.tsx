@@ -21,6 +21,10 @@ export interface IGanttUiZoomSliderProps {
     disabled?: boolean;
     /** Accessible name of the slider itself. */
     ariaLabel?: string;
+    /** Accessible name and tooltip of the button that moves down. */
+    zoomOutLabel?: string;
+    /** Accessible name and tooltip of the button that moves up. */
+    zoomInLabel?: string;
     components?: Partial<IGanttUiZoomSliderComponents>;
 }
 
@@ -80,6 +84,8 @@ export const GanttUiZoomSlider = (props: IGanttUiZoomSliderProps) => {
                 disabled: disabled,
                 className: styles.zoomButton,
                 iconProps: { iconName: 'Remove' },
+                ariaLabel: props.zoomOutLabel,
+                title: props.zoomOutLabel,
                 onClick: () => onButtonClick(-1),
                 onMouseDown: () => startHold(-1),
                 onMouseUp: stopHold,
@@ -104,6 +110,8 @@ export const GanttUiZoomSlider = (props: IGanttUiZoomSliderProps) => {
                 disabled: disabled,
                 className: styles.zoomButton,
                 iconProps: { iconName: 'Add' },
+                ariaLabel: props.zoomInLabel,
+                title: props.zoomInLabel,
                 onClick: () => onButtonClick(1),
                 onMouseDown: () => startHold(1),
                 onMouseUp: stopHold,

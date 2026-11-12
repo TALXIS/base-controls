@@ -35,6 +35,8 @@ export const GanttZoomSlider = (props: IGanttZoomSliderProps) => {
 
     return <GanttUiZoomSlider
         ariaLabel={labels.get('gantt.zoomSlider')}
+        zoomOutLabel={labels.get('gantt.zoomOut')}
+        zoomInLabel={labels.get('gantt.zoomIn')}
         min={0}
         max={SLIDER_RESOLUTION}
         buttonStep={SLIDER_RESOLUTION / BUTTON_STEPS}
