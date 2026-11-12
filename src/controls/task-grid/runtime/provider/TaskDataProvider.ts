@@ -299,6 +299,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             return null;
         }
         const { parentId, stackRank } = this.getFieldMapping();
+        //new tasks beside a drop give way to its rank
+        [movingTaskId, ...this._tree.structure.getChildren(params.parentRecord?.getRecordId() ?? null).map(child => child.getRecordId())].forEach(taskId => this._newTaskPositions.delete(taskId));
         params.movingRecord.setValue(parentId, params.parentRecord ? [params.parentRecord.getNamedReference()] : null);
         params.movingRecord.setValue(stackRank, params.stackRank);
         this.taskEvents.dispatchEvent('onTaskMoved', params);
