@@ -35,7 +35,7 @@ export interface IDataverseTaskStoreParameters {
     taskRuntime: ITaskRuntime;
     /** Selects the tasks, rendered with Liquid over `project` and `hostRecord`. */
     fetchXml: string;
-    /** The record the grid sits on, as `hostRecord` in the FetchXML. */
+    /** The record the grid sits on, as `hostRecord` in the FetchXML and on new tasks it filters. */
     hostRecord?: IDataverseHostRecord;
     form?: IDataverseTaskFormParameters;
 }
@@ -55,6 +55,7 @@ export class DataverseTaskStore implements ITaskStore {
     protected _entitySetName!: string;
     protected _primaryIdAttribute!: string;
     protected _projectLookup?: { columnName: string; reference: ComponentFramework.EntityReference };
+    protected _hostLookup?: { columnName: string; reference: ComponentFramework.EntityReference };
     //the newest modifiedon the store has read, in server time
     protected _synchronizedOn?: number;
 
@@ -75,8 +76,9 @@ export class DataverseTaskStore implements ITaskStore {
         this._entityName = this._fetchXmlProvider.getEntityName();
         this._entitySetName = metadata.EntitySetName;
         this._primaryIdAttribute = metadata.PrimaryIdAttribute;
-        const [projectLookup, webApiRawRecords] = await Promise.all([this._resolveProjectLookup(this._fetchXml), this._getRawRecords(this._fetchXmlProvider.getSortedRecordIds())]);
+        const [projectLookup, hostLookup, webApiRawRecords] = await Promise.all([this._resolveProjectLookup(this._fetchXml), this._resolveHostLookup(this._fetchXml), this._getRawRecords(this._fetchXmlProvider.getSortedRecordIds())]);
         this._projectLookup = projectLookup;
+        this._hostLookup = hostLookup;
         this._synchronizedOn = this._getLatestModifiedOn(webApiRawRecords) ?? loadStartedOn;
         const webApiRecords = new Map(webApiRawRecords.map(record => [record[this._primaryIdAttribute], record]));
         //the FetchXML values win
@@ -185,6 +187,17 @@ export class DataverseTaskStore implements ITaskStore {
         return columnNames[0] ? { columnName: columnNames[0], reference: { id: { guid: project.getId() }, name: project.getName() ?? '', etn: projectEntityName } } : undefined;
     }
 
+    //the task lookup the FetchXML narrows to the host record
+    protected async _resolveHostLookup(fetchXml: string): Promise<{ columnName: string; reference: ComponentFramework.EntityReference } | undefined> {
+        const { id, entityName } = this._parameters.hostRecord ?? {};
+        if (!id || !entityName) {
+            return undefined;
+        }
+        const filteredColumnNames = this._getColumnsFilteredByValue(fetchXml, id);
+        const relationship = (await this._getManyToOneRelationships(this._entityName)).find(relationship => relationship.ReferencedEntity === entityName && filteredColumnNames.includes(relationship.ReferencingAttribute));
+        return relationship && { columnName: relationship.ReferencingAttribute, reference: { id: { guid: id }, name: '', etn: entityName } };
+    }
+
     //the root entity's `eq` conditions on this value
     protected _getColumnsFilteredByValue(fetchXml: string, value: string): string[] {
         const entity = new DOMParser().parseFromString(fetchXml, 'text/xml').querySelector('fetch > entity');
@@ -202,12 +215,16 @@ export class DataverseTaskStore implements ITaskStore {
 
     protected _getPlacement(parameters: ITaskCreateParameters): IRawRecord {
         const fieldMapping = this._taskRuntime.getProvider().getFieldMapping();
-        const placement: IRawRecord = { [fieldMapping.stackRank]: parameters.stackRank };
+        const placement: IRawRecord = {};
+        for (const lookup of [this._hostLookup, this._projectLookup]) {
+            if (lookup) {
+                placement[lookup.columnName] = lookup.reference;
+            }
+        }
+        placement[fieldMapping.stackRank] = parameters.stackRank;
+        //last, so a host lookup on the parent column never moves a subtask
         if (parameters.parentRecord) {
             placement[fieldMapping.parentId] = parameters.parentRecord.getNamedReference();
-        }
-        if (this._projectLookup) {
-            placement[this._projectLookup.columnName] = this._projectLookup.reference;
         }
         return placement;
     }
