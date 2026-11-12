@@ -4359,7 +4359,7 @@ interface ITaskRuntime extends IRuntime {
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
     getFieldMapping(): IFieldMapping;
-    /** How many hours a day of a task's duration holds; 24 unless onLoad returned hoursPerDay. */
+    /** How many hours a day of a duration holds: the duration column's `HoursPerDay`, else 24. */
     getHoursPerDay(): number;
     /** Copies of the items with every ribbon command UI hook applied, menus included. */
     getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[];
@@ -4388,8 +4388,6 @@ interface ITaskGridLoadResult {
     fieldMapping: Omit<IFieldMapping, 'stateCode'> & { stateCode?: string };
     /** Scopes the tree to the subtree under this task, which the store has to load too. */
     rootTaskId?: string;
-    /** Hours in a day of a task's duration; 24 when left out. */
-    hoursPerDay?: number;
     /** The views to switch between; leave out for a task grid with one view. */
     views?: ITaskGridView[];
 }

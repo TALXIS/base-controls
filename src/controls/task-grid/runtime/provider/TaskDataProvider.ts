@@ -1,6 +1,7 @@
 import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IFormatting, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
 import { HookRegistry } from "@core";
 import { StackRank } from "@core/stack-rank";
+import { getHoursPerDay } from "@fields/duration";
 import { IRecordTree, RecordTree } from "./record-tree";
 import { ITaskDataProviderParameters, INewTaskParameters, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskCreateParameters, ITaskCreateResult, ITasksCreateResult, TaskCreatePlacement, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParameters, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
 
@@ -28,7 +29,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _columnHandlers: ITaskColumnHandler[] = [];
     private _columnMatchers: ITaskColumnMatcher[] = [];
     private _requiredColumns: IColumn[] = [];
-    private _hoursPerDay?: number;
     private _pendingTasks = new Map<string, Promise<TaskCreationOutcome>>();
     private _failedCreations = new Map<string, TaskCreationOutcome>();
     private _synchronization?: Promise<void>;
@@ -44,13 +44,14 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this._fieldMapping = { ...parameters.fieldMapping, stateCode: parameters.fieldMapping.stateCode ?? 'statecode' };
         this._rootTaskId = parameters.rootTaskId;
         this._defaultCreatePosition = parameters.defaultCreatePosition ?? 'first';
-        this._hoursPerDay = parameters.hoursPerDay;
         this._tree = new RecordTree(this, columnName => this._columnMatchers.find(matcher => matcher.isHandledColumn(columnName)));
         this.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
     }
 
-    public getHoursPerDay(): number | undefined {
-        return this._hoursPerDay;
+    //the definition, so a view without the duration column still has it
+    public getHoursPerDay(): number {
+        const durationColumnName = this._fieldMapping.duration;
+        return getHoursPerDay(durationColumnName ? this._getDefinition(durationColumnName).metadata?.HoursPerDay : undefined);
     }
 
     public getFieldMapping(): IFieldMapping {
@@ -133,7 +134,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             return columns;
         }
         //the hooks add columns of the tasks, such as Path
-        return this._withHookColumns(columns).map(this._withHoursPerDay);
+        return this._withHookColumns(columns);
     }
 
     public addColumnHandler(handler: ITaskColumnHandler): () => void {
@@ -582,12 +583,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._getImplicitColumnNames().includes(columnName);
     }
 
-    private _withHoursPerDay = (column: IColumn): IColumn => {
-        if (this._hoursPerDay === undefined || column.name !== this._fieldMapping.duration) {
-            return column;
-        }
-        return { ...column, metadata: { HoursPerDay: this._hoursPerDay, ...column.metadata } };
-    };
 
     private _getStateCodeCondition() {
         return this.getFiltering()?.conditions.find(condition => condition.attributeName === this.getFieldMapping().stateCode

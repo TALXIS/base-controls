@@ -173,7 +173,7 @@ export interface ITaskDataProviderEvents {
     onTasksDeleted: (taskIds: string[]) => void;
     /** Fires when a task is placed, before its move saves. */
     onTaskMoved: (parameters: ITaskMoveParameters) => void;
-    /** Fires when tasks take new values in place, whatever changed them. */
+    /** Fires when `updateTaskData` merges in backend changes or module values. */
     onTasksUpdated: (records: IRecord[]) => void;
     /** Fires when the editor the tasks were opened in outside the grid closes. */
     onEditorClosed: (taskIds: string[]) => void;
@@ -191,8 +191,6 @@ export interface ITaskDataProviderParameters {
     rootTaskId?: string;
     /** Where a task created with no position of its own goes, `first` by default. */
     defaultCreatePosition?: TaskCreatePosition;
-    /** How many hours a day of the duration column holds, unless its metadata says otherwise. */
-    hoursPerDay?: number;
 }
 
 /** Adds to the available columns in place. */
@@ -228,8 +226,8 @@ export interface ITaskDataProviderHooks {
 export interface ITaskDataProvider extends IDataProvider {
     readonly taskEvents: IEventSubscriber<ITaskDataProviderEvents>;
     getFieldMapping(): IFieldMapping;
-    /** How many hours a day of the duration column holds, unless its metadata says otherwise. */
-    getHoursPerDay(): number | undefined;
+    /** How many hours a day of a duration holds: the duration column's `HoursPerDay`, else `24`. */
+    getHoursPerDay(): number;
     getStore(): ITaskStore;
     /** Every loaded task, whatever the view shows. */
     getAllRecords(): IRecord[];

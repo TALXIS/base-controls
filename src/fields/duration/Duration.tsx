@@ -9,6 +9,9 @@ import { DEFAULT_DURATION_OPTIONS, WORKING_DAY_DURATION_OPTIONS } from "./durati
 
 const splitWords = (words: string): string[] => words.split(',').map(word => word.trim());
 
+/** How many hours a day of a duration holds, from a column's `HoursPerDay`; `24` when it gives none. */
+export const getHoursPerDay = (hoursPerDay: unknown): number => typeof hoursPerDay === 'number' && hoursPerDay > 0 ? hoursPerDay : 24;
+
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
@@ -16,7 +19,7 @@ export const Duration = (props: IDuration) => {
     const context = props.context;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const labels = useLabels(DURATION_LABELS);
-    const hoursPerDay = typeof parameters.HoursPerDay?.raw === 'number' && parameters.HoursPerDay.raw > 0 ? parameters.HoursPerDay.raw : 24;
+    const hoursPerDay = getHoursPerDay(parameters.HoursPerDay?.raw);
 
     const formatter = (value: number | null) => {
         if (typeof value === 'number') {
