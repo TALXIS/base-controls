@@ -17,7 +17,7 @@ export interface ITalxisCustomColumnsStoreParameters {
     taskRuntime: ITaskRuntime;
     /** The logical name of the entity the columns are defined for, such as `task`. */
     entityName: string;
-    /** Only the definitions of this record, such as the project. */
+    /** The record, such as the project, whose own columns load too and which owns new ones. */
     recordId?: string;
     /** The relationship to `talxis_attributevalue` holding the values, when there are several. */
     navigationPropertyName?: string;
