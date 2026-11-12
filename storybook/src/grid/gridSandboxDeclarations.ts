@@ -4359,7 +4359,7 @@ interface ITaskRuntime extends IRuntime {
     isFlatList(): boolean;
     setFlatList(isFlatList: boolean): void;
     getFieldMapping(): IFieldMapping;
-    /** How many hours a day of a duration holds: the duration column's `HoursPerDay`, else 24. */
+    /** How many hours a day of a duration holds: the duration column's \`HoursPerDay\`, else 24. */
     getHoursPerDay(): number;
     /** Copies of the items with every ribbon command UI hook applied, menus included. */
     getRibbonCommandItems(items: ICommandBarItemProps[]): ICommandBarItemProps[];
