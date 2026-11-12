@@ -117,7 +117,10 @@ export class TaskTree implements ITaskGridTree {
         }
         this._subjectEditedTaskId = taskId;
         this._revealTask(taskId, REVEAL_TASK_ATTEMPTS, node => {
-            this._gridApi?.startEditingCell({ rowIndex: node.rowIndex!, colKey: this._provider.getFieldMapping().subject });
+            const subject = this._provider.getFieldMapping().subject;
+            //AG Grid focuses only the editor of the focused cell
+            this._gridApi?.setFocusedCell(node.rowIndex!, subject);
+            this._gridApi?.startEditingCell({ rowIndex: node.rowIndex!, colKey: subject });
             this._selectEditorText(REVEAL_TASK_ATTEMPTS);
         });
     }
