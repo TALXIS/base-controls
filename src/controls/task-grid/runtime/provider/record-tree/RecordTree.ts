@@ -100,7 +100,7 @@ export class RecordTree implements IRecordTree {
         this._index = index;
         this._descendants.clear();
         //the sort and the filter below may read the path
-        this._patchRecordPaths(index);
+        this.patchPaths(index.records);
         const matchingIds = this._buildMatchingIds(index);
         //a new task stays shown whatever the filter
         index.records.map(record => record.getRecordId()).filter(recordId => this._provider.getNewTaskPosition(recordId)).forEach(recordId => matchingIds.add(recordId));
@@ -419,13 +419,14 @@ export class RecordTree implements IRecordTree {
         return provider;
     }
 
-    private _patchRecordPaths(index: IHierarchyIndex): void {
+    /** Writes the records' paths into the path column again. */
+    public patchPaths(records: IRecord[]): void {
         if (!this._provider.getColumnsMap()[PATH_COLUMN_NAME]) {
             return;
         }
-        for (const record of index.records) {
+        for (const record of records) {
             const field: any = record.getField(PATH_COLUMN_NAME);
-            const path = (index.ancestorNames.get(record.getRecordId()) ?? []).join('/');
+            const path = (this._index.ancestorNames.get(record.getRecordId()) ?? []).join('/');
             field._originalValue = path;
             field._currentValue = path;
         }

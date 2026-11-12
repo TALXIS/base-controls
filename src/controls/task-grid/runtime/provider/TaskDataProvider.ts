@@ -349,6 +349,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         if (isTreeChanged) {
             this._rebuildTree();
         }
+        else {
+            this._tree.patchPaths(records);
+        }
         this.taskEvents.dispatchEvent('onTasksUpdated', records);
     }
 
