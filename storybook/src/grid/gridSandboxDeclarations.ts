@@ -4476,6 +4476,8 @@ interface IDatasetControlPartMap {
 interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
     /** Read once, at mount; the task tree and the client-side row model are always added. */
     modules?: IGridModule[];
+    /** How many levels of tasks open themselves while the view has none saved; read at mount. */
+    defaultExpandedLevel?: number;
 }
 
 /** The subject cell's pieces: a cell's, plus its indent and chevron. */

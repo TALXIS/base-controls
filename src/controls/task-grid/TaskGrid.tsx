@@ -10,7 +10,8 @@ export const TaskGridRoot = (props: ITaskGridProps) => {
     const runtime = useTaskRuntime();
     const datasetControl = useDatasetControlInternal();
 
-    const modules = useMemo((): IGridModule[] => [createTaskTreeModule(runtime, datasetControl.getViewStateStore()), ...props.modules ?? []], []);
+    const { defaultExpandedLevel, ...gridProps } = props;
+    const modules = useMemo((): IGridModule[] => [createTaskTreeModule(runtime, datasetControl.getViewStateStore(), defaultExpandedLevel), ...props.modules ?? []], []);
 
-    return <ClientSideGrid enableZebra={false} enableOptionSetColors {...props} modules={modules} />;
+    return <ClientSideGrid enableZebra={false} enableOptionSetColors {...gridProps} modules={modules} />;
 };

@@ -16,9 +16,9 @@ declare module "@controls/grid/interfaces" {
 }
 
 /** Builds the grid module that draws a task grid's tasks as a tree. */
-export const createTaskTreeModule = (runtime: ITaskRuntime, state: IStateStore): ITaskTreeModule => ({
+export const createTaskTreeModule = (runtime: ITaskRuntime, state: IStateStore, defaultExpandedLevel?: number): ITaskTreeModule => ({
     name: 'taskTree',
     agGridModules: [RowGroupingModule, TreeDataModule, RowDragModule],
-    onLoad: grid => new TaskTree({ grid: grid as IGrid<ITaskGridServiceMap>, runtime, state }),
+    onLoad: grid => new TaskTree({ grid: grid as IGrid<ITaskGridServiceMap>, runtime, state, defaultExpandedLevel }),
     onDestroy: tree => tree.destroy(),
 });

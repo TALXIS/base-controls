@@ -24,4 +24,6 @@ export interface ITaskGridLoadResult extends Pick<ITaskDataProviderParameters, '
 export interface ITaskGridProps extends Omit<IGridProps, 'modules'> {
     /** Read once, at mount, and loaded after the task tree. */
     modules?: ITaskGridGridModule[];
+    /** How many levels of tasks open themselves while the view has none saved; read at mount. */
+    defaultExpandedLevel?: number;
 }

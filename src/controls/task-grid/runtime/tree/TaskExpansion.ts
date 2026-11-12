@@ -32,7 +32,10 @@ export interface ITaskExpansion {
 
 export interface ITaskExpansionParameters {
     provider: ITaskDataProvider;
-    expandedIds: string[];
+    /** What the view saved; without it, tasks open by `defaultExpandedLevel`. */
+    expandedIds?: string[];
+    /** How many levels open themselves, `-1` for none. */
+    defaultExpandedLevel: number;
     isFlatList: () => boolean;
     onExpandedIdsChanged: (expandedIds: string[]) => void;
 }
@@ -48,16 +51,25 @@ export class TaskExpansion implements ITaskExpansion {
     private _isFlatList: () => boolean;
     private _onExpandedIdsChanged: (expandedIds: string[]) => void;
     private _intent = new Map<string, boolean>();
+    //until the user changes the expansion
+    private _defaultExpandedLevel?: number;
     private _gridApi?: GridApi<IRecord>;
     private _isApplying = false;
     private _isReporting = false;
+    //the search and filters the shown rows were last opened for
+    private _matchingKey?: string;
+    //the parents a match held open then
+    private _heldOpenIds = new Set<string>();
     public readonly events = new EventEmitter<ITaskExpansionEvents>();
 
     constructor(parameters: ITaskExpansionParameters) {
         this._provider = parameters.provider;
         this._isFlatList = parameters.isFlatList;
         this._onExpandedIdsChanged = parameters.onExpandedIdsChanged;
-        for (const recordId of parameters.expandedIds) {
+        if (!parameters.expandedIds) {
+            this._defaultExpandedLevel = parameters.defaultExpandedLevel;
+        }
+        for (const recordId of parameters.expandedIds ?? []) {
             this._intent.set(recordId, true);
         }
     }
@@ -66,7 +78,9 @@ export class TaskExpansion implements ITaskExpansion {
     /** @returns Detaches from `gridApi`. */
     public attach(gridApi: GridApi<IRecord>): () => void {
         this._gridApi = gridApi;
-        const stop = listenToGridApi(gridApi, { rowGroupOpened: this._onRowGroupOpened });
+        this._matchingKey = this._getMatchingKey();
+        this._heldOpenIds = this._getHeldOpenIds();
+        const stop = listenToGridApi(gridApi, { rowGroupOpened: this._onRowGroupOpened, rowDataUpdated: this._onRowDataUpdated });
         return () => {
             stop();
             if (this._gridApi === gridApi) {
@@ -84,7 +98,7 @@ export class TaskExpansion implements ITaskExpansion {
         if (view.getOrderedIds().length > 0 && !view.isMatching(recordId) && view.hasChildren(recordId)) {
             return true;
         }
-        return this._intent.get(recordId) ?? false;
+        return this._intent.get(recordId) ?? this._isOpenByDefault(recordId);
     }
 
     public setExpanded(recordId: string, expanded: boolean): void {
@@ -129,12 +143,11 @@ export class TaskExpansion implements ITaskExpansion {
     /** Forgets tasks that are gone. */
     public prune(): void {
         const recordsMap = this._provider.getRecordsMap();
-        for (const recordId of [...this._intent.keys()]) {
-            if (!recordsMap[recordId]) {
-                this._intent.delete(recordId);
-            }
+        const goneIds = [...this._intent.keys()].filter(recordId => !recordsMap[recordId]);
+        if (goneIds.length > 0) {
+            goneIds.forEach(recordId => this._intent.delete(recordId));
+            this._store();
         }
-        this._store();
     }
 
     private _change(recordIds: string[], expanded: boolean): void {
@@ -200,8 +213,9 @@ export class TaskExpansion implements ITaskExpansion {
         nodes.forEach(node => node.setExpanded(expanded));
     }
 
+    //AG Grid reports what this set too, after it is done
     private _onRowGroupOpened = (event: RowGroupOpenedEvent<IRecord>): void => {
-        if (this._isApplying || !event.node.id) {
+        if (this._isApplying || !event.node.id || !!event.expanded === this.isExpanded(event.node.id)) {
             return;
         }
         this._isReporting = true;
@@ -213,7 +227,51 @@ export class TaskExpansion implements ITaskExpansion {
         }
     };
 
+    private _isOpenByDefault(recordId: string): boolean {
+        return this._defaultExpandedLevel !== undefined && this._provider.getRecordTree().view.getPath(recordId).length - 1 <= this._defaultExpandedLevel;
+    }
+
+    //AG Grid asks isExpanded only of the rows it creates
+    private _onRowDataUpdated = (): void => {
+        const matchingKey = this._getMatchingKey();
+        if (!this._gridApi || matchingKey === this._matchingKey) {
+            return;
+        }
+        this._matchingKey = matchingKey;
+        const heldOpenIds = this._getHeldOpenIds();
+        const candidateIds = new Set([...heldOpenIds, ...this._heldOpenIds]);
+        this._heldOpenIds = heldOpenIds;
+        const gridApi = this._gridApi;
+        const changed = [...candidateIds].map(recordId => gridApi.getRowNode(recordId)).filter((node): node is IRowNode<IRecord> => !!node?.id && node.group === true && node.expanded !== this.isExpanded(node.id));
+        if (changed.length === 0) {
+            return;
+        }
+        this._isApplying = true;
+        try {
+            changed.forEach(node => node.setExpanded(!node.expanded));
+            this._gridApi.onGroupExpandedOrCollapsed();
+        }
+        finally {
+            this._isApplying = false;
+        }
+    };
+
+    private _getHeldOpenIds(): Set<string> {
+        const view = this._provider.getRecordTree().view;
+        return new Set(view.getOrderedIds().filter(recordId => !view.isMatching(recordId) && view.hasChildren(recordId)));
+    }
+
+    private _getMatchingKey(): string {
+        return JSON.stringify([this._provider.getSearchQuery(), this._provider.getFiltering()]);
+    }
+
+    //what the default level opened is saved with the user's change
     private _store(): void {
+        if (this._defaultExpandedLevel !== undefined) {
+            const view = this._provider.getRecordTree().view;
+            view.getOrderedIds().filter(recordId => !this._intent.has(recordId) && view.hasChildren(recordId) && this._isOpenByDefault(recordId)).forEach(recordId => this._intent.set(recordId, true));
+            this._defaultExpandedLevel = undefined;
+        }
         this._onExpandedIdsChanged(this.getExpandedIds());
     }
 }

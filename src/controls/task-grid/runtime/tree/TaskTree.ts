@@ -29,6 +29,8 @@ export interface ITaskTreeParameters {
     runtime: ITaskRuntime;
     /** The view's store in the dataset control. */
     state: IStateStore;
+    /** How many levels open themselves while the view has none saved, `-1` for none. */
+    defaultExpandedLevel?: number;
 }
 
 /** Draws the tasks as a tree on the grid. */
@@ -55,7 +57,8 @@ export class TaskTree implements ITaskGridTree {
         this._isFlatList = this._getState().isFlatList ?? parameters.runtime.getView()?.data?.isFlatList ?? false;
         this._expansion = new TaskExpansion({
             provider: this._provider,
-            expandedIds: this._getState().expandedIds ?? [],
+            expandedIds: this._getState().expandedIds,
+            defaultExpandedLevel: parameters.defaultExpandedLevel ?? -1,
             isFlatList: () => this._isFlatList,
             onExpandedIdsChanged: expandedIds => this._setState({ expandedIds }),
         });
