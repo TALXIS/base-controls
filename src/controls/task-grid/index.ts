@@ -10,7 +10,7 @@ export type { ITreeCellProps, ITreeCellComponents, IExpansionHeaderProps, IExpan
 export * from './modules';
 export * from './priorities';
 export * from './runtime/data-sources';
-export type { ITaskRuntime, ITaskActions, ITaskRuntimeServiceMap, ITaskRuntimeModuleServiceMap, TaskRibbonCommandUiHook } from './runtime';
+export type { ITaskRuntime, ITaskActions, ITaskRuntimeServiceMap, ITaskRuntimeModuleServiceMap, TaskRibbonCommandUiHook, ITaskSavingChains, ITaskSavingChainsEvents, ITaskSavingChainsHooks, TaskSavingChainLinksHook, ITaskSavingChainLinksHookParameters } from './runtime';
 export type { ITaskDatasetControlProps, ITaskSettings, ITaskGridSetting, TaskGridSettingsHook } from './adapters/root';
 export { useTaskRuntime } from './adapters/root';
 export { useTaskGridService, useTaskGridServices } from './useTaskGridServices';
