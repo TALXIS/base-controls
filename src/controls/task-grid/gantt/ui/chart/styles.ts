@@ -72,9 +72,10 @@ export const getGanttUiChartStyles = (theme: ITheme, moduleStyles: IStyle[]) => 
         height: '100%',
         overflow: 'hidden',
     },
+    //out of the flow: dhtmlx writes its measured height back, so the chart could never shrink
     chart: [{
-        width: '100%',
-        height: '100%',
+        position: 'absolute',
+        inset: 0,
         //the browser draws the chart's scrollbars in it
         colorScheme: theme.isInverted ? 'dark' : 'light',
         '--dhx-gantt-font-family': theme.fonts.medium.fontFamily,
