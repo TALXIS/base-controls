@@ -20,7 +20,8 @@ const loadTasks = (taskRuntime: ITaskRuntime) => ({
 //the control holds the tasks, and the grid in its body draws them as a tree
 const GridExample = () => <TaskDatasetControl onLoad={loadTasks}>
     <DatasetControl.Body>
-        <TaskGrid />
+        {/* new: opens the top tasks and their subtasks */}
+        <TaskGrid defaultExpandedLevel={1} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `

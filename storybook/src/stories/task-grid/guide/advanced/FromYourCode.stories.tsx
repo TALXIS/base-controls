@@ -41,10 +41,10 @@ The **task runtime** runs the task grid in one mount of \`TaskDatasetControl\`: 
 
 ## Try it
 
-- In *The task runtime*, open the plan, select *Paint the meeting rooms* and click **Add a check**: *Check the work* appears under it, and the line beside the buttons says *Created Check the work*.
+- In *The task runtime*, select *Paint the meeting rooms* and click **Add a check**: *Check the work* appears under it, and the line beside the buttons says *Created Check the work*.
 - Select only *Check the work*, click *Delete* and confirm: the line says *Deleted 1 task*, though the ribbon deleted it.
 - Select *Install the network* and click **Mark done**: its *Status* turns to *Done*.
-- In *Ribbon commands of your own*, open the plan, select *Install the network* and click **Move up**: it moves above *Order desks and chairs*. Select *Move to the new office*: *Delete* is off.
+- In *Ribbon commands of your own*, select *Install the network* and click **Move up**: it moves above *Order desks and chairs*. Select *Move to the new office*: *Delete* is off.
 
 ## Remember
 

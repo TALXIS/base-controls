@@ -43,6 +43,7 @@ Every other prop works as on a Grid: see [**Props and events**](?path=/docs/cont
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
 | \`modules\` | \`ITaskGridGridModule[]\` | None | At mount | Grid modules, loaded after the tree. \`createTaskEditingModule()\` takes the place of the Grid's editing module; grouping and totals are left out. |
+| \`defaultExpandedLevel\` | \`number\` | \`-1\` | At mount | How many levels of tasks start open while the view has none saved: \`0\` opens the top tasks, \`1\` their subtasks too, \`-1\` none. |
 | \`components\` | \`IGridComponents\` | Defaults | Live | The Grid's overlays and rows. The task grid's own cells take theirs through \`cellRendererParams\`: see *Slots* below. |
 | \`enableZebra\` | \`boolean\` | \`false\` | At mount | Shades every other row. |
 | \`enableOptionSetColors\` | \`boolean\` | \`true\` | At mount | Draws options that have a colour as tags. |
@@ -57,6 +58,8 @@ Every other prop works as on a Grid: see [**Props and events**](?path=/docs/cont
 | | \`stateKey\` | \`string\` | None | At mount | Where the zoom is kept in each view. |
 | | \`timelineLimits\` | \`{ start?: Dayjs, end?: Dayjs }\` | Today ± 25 years | Live | How far the timeline scrolls, widened to fit the tasks. |
 | | \`components\` | \`ITaskGanttComponents\` | Defaults | Live | See *Slots* below. |
+| | \`onSetup\` | \`(gantt: IGantt) => void\` | None | At mount | Gets the Gantt of each mount, before its modules load; add hooks here. |
+| | \`onReady\` | \`(gantt: IGantt) => void\` | None | Once loaded | Called once per mount when the chart is drawn. |
 | \`TaskGantt.Split\` | \`children\` | Two elements | Required | Live | The \`TaskGrid\`, then the \`TaskGantt\`. |
 | | \`defaultGanttSize\` | \`number\` | \`60\` | At mount | The Gantt's share of the width, in percent, until the user drags the handle. |
 | | \`stateKey\` | \`string\` | None | At mount | Where the user's width is kept in each view. |
@@ -119,7 +122,7 @@ Create a new store in every \`onLoad\`, with the task runtime it gets.
 |---|---|---|
 | \`taskRuntime\` | \`ITaskRuntime\` | Required. The task runtime \`onLoad\` gets. |
 | \`fetchXml\` | \`string\` | Required. Selects the tasks: a Liquid template over \`project\`, from the project module, and \`hostRecord\`. |
-| \`hostRecord\` | \`{ entityName, id?, data? }\` | The record the grid sits on, such as the one the form shows. |
+| \`hostRecord\` | \`{ entityName, id?, data? }\` | The record the grid sits on, such as the one the form shows. A new task gets the lookup to it that the FetchXML filters by. |
 | \`form\` | \`{ editId?, bulkEditId?, getParameters? }\` | The forms *Edit* opens one task and several tasks in, and \`getParameters(operation, defaults)\` to change what \`Xrm.Navigation.navigateTo\` gets. |
 
 ### ITaskStore
@@ -360,7 +363,7 @@ Gantt modules come from \`@talxis/base-controls/gantt\` and go in \`TaskGantt\`'
 | \`getProvider()\` | The task provider. See *The task provider* below. |
 | \`getView()\` | The open view, with its \`data\`. |
 | \`getFieldMapping()\` | The field mapping \`onLoad\` returned. |
-| \`getHoursPerDay()\` | The \`hoursPerDay\` \`onLoad\` returned, \`24\` when it returned none. |
+| \`getHoursPerDay()\` | How many hours a day of a duration holds: the duration column's \`HoursPerDay\`, else the \`hoursPerDay\` \`onLoad\` returned, else \`24\`. |
 | \`getLabels(set)\` | A label set as the control translates it. |
 | \`isFlatList()\`, \`setFlatList(isFlatList)\` | Whether the tasks show without the tree. |
 | \`isCreationEnabled()\`, \`isEditingEnabled()\`, \`isDeletionEnabled()\` | The control's \`enable…\` props. |

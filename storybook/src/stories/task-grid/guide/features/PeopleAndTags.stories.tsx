@@ -40,7 +40,7 @@ In Dataverse, \`createDataverseLookupManyModule\` reads each column through a re
 
 ## Try it
 
-- Press *Expand one level* twice, then double-click the *Assigned to* cell of *Install the network* and pick Petra Svobodová: her pill joins Martin's.
+- Double-click the *Assigned to* cell of *Install the network* and pick Petra Svobodová: her pill joins Martin's.
 - Open the menu of *Assigned to*, pick *Filter By*, choose Jana Nováková and apply: the plan shows her tasks, *Sign the lease* and *Move in*, under *Move to the new office*, which is hers too.
 - In **Code**, set the \`appearance\` of \`tags\` to \`{ type: 'plain' }\`: the tags turn grey.
 

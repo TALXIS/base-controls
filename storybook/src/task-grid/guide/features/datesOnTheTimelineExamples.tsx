@@ -60,7 +60,7 @@ const GridExample = () => <TaskDatasetControl onLoad={loadTasks} modules={contro
     <DatasetControl.Body>
         {/* new: a wider chart, for the days around each date */}
         <TaskGantt.Split defaultGanttSize={45}>
-            <TaskGrid modules={gridModules} />
+            <TaskGrid defaultExpandedLevel={1} modules={gridModules} />
             <TaskGantt modules={ganttModules} />
         </TaskGantt.Split>
     </DatasetControl.Body>

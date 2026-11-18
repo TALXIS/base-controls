@@ -33,7 +33,7 @@ There is no Dataverse or TALXIS templates module: keep templates in your own bac
 
 ## Try it
 
-- Press *Expand one level* twice, then press **+** on *Fit out the space* and pick *From template* › *Set up a meeting room*: the room goes first under *Fit out the space*, and its chevron opens its three tasks.
+- Press **+** on *Fit out the space* and pick *From template* › *Set up a meeting room*: the room goes first under *Fit out the space*, and its chevron opens its three tasks.
 - Select *Plan the opening party* and click *Save as template*: *New* › *From template* now offers it beside *Set up a meeting room*.
 - In **Code**, open *project.ts* and set \`endDate\` to \`'2026-04-17'\`: the header and the *Project end* marker move to 17 April.
 

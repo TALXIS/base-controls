@@ -61,7 +61,7 @@ const statusBarsModule: IGanttModule = {
 const GridExample = () => <TaskDatasetControl onLoad={loadTasks} enableEditing height='480px'>
     <DatasetControl.Body>
         <TaskGantt.Split defaultGanttSize={30}>
-            <TaskGrid onSetup={onSetup} modules={[createTaskEditingModule()]} />
+            <TaskGrid defaultExpandedLevel={1} onSetup={onSetup} modules={[createTaskEditingModule()]} />
             <TaskGantt modules={[createLibraryModule(), statusBarsModule]} />
         </TaskGantt.Split>
     </DatasetControl.Body>
@@ -97,7 +97,7 @@ const lookupManyModule = createMemoryLookupManyModule({ sources, columns, values
 
 const GridExample = () => <TaskDatasetControl modules={[lookupManyModule]} onLoad={loadTasks} height='420px'>
     <DatasetControl.Body>
-        <TaskGrid />
+        <TaskGrid defaultExpandedLevel={0} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `
@@ -133,7 +133,7 @@ const tooltipModule = createTaskTooltipModule({
 const GridExample = () => <TaskDatasetControl onLoad={loadTasks} enableEditing height='420px'>
     <DatasetControl.Body>
         <TaskGantt.Split>
-            <TaskGrid modules={[createTaskEditingModule()]} />
+            <TaskGrid defaultExpandedLevel={1} modules={[createTaskEditingModule()]} />
             <TaskGantt modules={[createLibraryModule(), createBarDraggingModule(), tooltipModule]} />
         </TaskGantt.Split>
     </DatasetControl.Body>
@@ -170,7 +170,7 @@ const barContentModule: IGanttModule = {
 const GridExample = () => <TaskDatasetControl onLoad={loadTasks} enableEditing height='420px'>
     <DatasetControl.Body>
         <TaskGantt.Split>
-            <TaskGrid modules={[createTaskEditingModule()]} />
+            <TaskGrid defaultExpandedLevel={1} modules={[createTaskEditingModule()]} />
             <TaskGantt modules={[createLibraryModule(), createBarDraggingModule(), barContentModule]} />
         </TaskGantt.Split>
     </DatasetControl.Body>

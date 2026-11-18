@@ -180,7 +180,7 @@ const GridExample = () => <TaskDatasetControl modules={[createTaskDraggingModule
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()]} />
+        <TaskGrid defaultExpandedLevel={1} modules={[createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()]} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `
@@ -225,7 +225,7 @@ const loadTasks = (taskRuntime: ITaskRuntime): ITaskGridLoadResult => ({
 //new: the base factory takes your store in place of a memory table
 const GridExample = () => <TaskDatasetControl modules={[createTaskChecklistModule({ createStore })]} onLoad={loadTasks} height='420px'>
     <DatasetControl.Body>
-        <TaskGrid />
+        <TaskGrid defaultExpandedLevel={0} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `

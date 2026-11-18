@@ -25,14 +25,14 @@ const loadTasks = (taskRuntime: ITaskRuntime): ITaskGridLoadResult => ({
 
 const GridExample = () => <TaskDatasetControl onLoad={loadTasks} height='420px'>
     <DatasetControl.Body>
-        <TaskGrid />
+        <TaskGrid defaultExpandedLevel={1} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `
 
 const DATAVERSE_FILE: IGridExampleFile = {
     name: 'dataverse.ts',
-    code: `import { createDataverseProjectModule, DataverseTaskStore, IDataverseHostRecord, ITaskGridLoadResult, ITaskGridView, ITaskRuntime } from '@talxis/base-controls'
+    code: `import { DataverseTaskStore, IDataverseHostRecord, ITaskGridLoadResult, ITaskGridView, ITaskRuntime } from '@talxis/base-controls'
 
 //not run on this page: Dataverse tasks regarding the record the form shows
 
@@ -53,6 +53,7 @@ const VIEWS: ITaskGridView[] = [
 
 //hostRecord is the record the form shows, such as { entityName: 'new_officemove', id }
 export const createLoadTasks = (hostRecord: IDataverseHostRecord) => (taskRuntime: ITaskRuntime): ITaskGridLoadResult => ({
+    //new tasks are regarding the record the FetchXML filters by
     store: new DataverseTaskStore({ taskRuntime, fetchXml: FETCH_XML, hostRecord }),
     //task has no parent or rank of its own: add a lookup to task and a text column
     fieldMapping: {
@@ -67,12 +68,6 @@ export const createLoadTasks = (hostRecord: IDataverseHostRecord) => (taskRuntim
     },
     views: VIEWS,
 })
-
-//for TaskDatasetControl's modules
-export const createModules = (hostRecord: IDataverseHostRecord) => [
-    //the form's record as the project: new tasks are regarding it
-    createDataverseProjectModule({ entityName: hostRecord.entityName, id: hostRecord.id! }),
-]
 `,
 }
 
@@ -202,7 +197,7 @@ const GridExample = () => {
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
             <DatasetControl.Body>
-                <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()]} />
+                <TaskGrid defaultExpandedLevel={0} modules={[createRowSelectionModule({ mode: 'multiple' }), createTaskEditingModule()]} />
             </DatasetControl.Body>
         </TaskDatasetControl>
         {/* new: the last eight calls, the newest at the bottom */}

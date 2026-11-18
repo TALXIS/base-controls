@@ -37,7 +37,7 @@ A bar is filled as far as the task's \`percentComplete\`, and a task with subtas
 
 | To | The user |
 |---|---|
-| Zoom | Drags \`TaskGantt.ZoomSlider\`, or turns the mouse wheel over the chart while holding Ctrl |
+| Zoom | Drags \`TaskGantt.ZoomSlider\`, clicks its *Zoom in* and *Zoom out*, or turns the mouse wheel over the chart while holding Ctrl |
 | Scroll | Drags an empty part of the timeline |
 | See every task, or today | Clicks *Zoom to fit* or *Go to today*, which the chart adds to \`TaskDatasetControl.Ribbon\` |
 | Find one task | Points at its *Task* cell and clicks *Show on timeline* |
@@ -55,7 +55,7 @@ A dropped bar saves its dates as an edit in a cell does, so dragging bars needs 
 
 ## Try it
 
-- Press *Expand one level* twice, then drag the bar of *Paint the meeting rooms* a few days to the right: its *Start* and *Due* in the grid move by the same number of days.
+- Drag the bar of *Paint the meeting rooms* a few days to the right: its *Start* and *Due* in the grid move by the same number of days.
 - Hold Ctrl and drag along an empty stretch of the row of *Move in*: a new task appears just above it, with the dates you drew.
 - Drag the zoom slider to the left to zoom out, then click *Zoom to fit*: the whole plan fits the chart again.
 

@@ -7,7 +7,7 @@ import { GuideMap } from '../../task-grid/guide/taskGridGuide'
 import { OfficeMoveExample } from '../../task-grid/examples/overviewExamples'
 
 const DESCRIPTION = `
-A task grid shows a plan as a tree of tasks, each task under the one it is part of, with a Gantt chart beside it that draws the same tasks on a timeline. It is for React and Power Apps applications whose users plan work where they see it: they add tasks, rename them, change their dates, drag them about and delete them, and each feature beyond the tree, such as people, dependencies or holidays, is a module you add. Try it below: press *Expand one level* twice, then drag the bar of *Paint the meeting rooms* a week later.
+A task grid shows a plan as a tree of tasks, each task under the one it is part of, with a Gantt chart beside it that draws the same tasks on a timeline. It is for React and Power Apps applications whose users plan work where they see it: they add tasks, rename them, change their dates, drag them about and delete them, and each feature beyond the tree, such as people, dependencies or holidays, is a module you add. Try it below: drag the bar of *Paint the meeting rooms* a week later.
 
 {{canvas: The office move}}
 

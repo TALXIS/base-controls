@@ -60,7 +60,7 @@ const GridExample = () => <TaskDatasetControl onLoad={loadTasks} enableCreation 
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <TaskGrid modules={[createRowSelectionModule({ mode: 'multiple' })]} />
+        <TaskGrid defaultExpandedLevel={1} modules={[createRowSelectionModule({ mode: 'multiple' })]} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `
@@ -102,7 +102,7 @@ const GridExample = () => <TaskDatasetControl onSetup={onSetup} onLoad={loadTask
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <TaskGrid modules={[createRowSelectionModule({ mode: 'single' })]} />
+        <TaskGrid defaultExpandedLevel={1} modules={[createRowSelectionModule({ mode: 'single' })]} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `

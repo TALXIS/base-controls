@@ -38,9 +38,9 @@ Three props say what the user may change, and each is off until you turn it on. 
 
 ## Try it
 
-- Open *Move to the new office*, point at *Fit out the space* and press its **+**: a new task opens as its first subtask, named *(No Name)*. Click into the name, replace it with one of your own and press Enter.
+- Point at *Fit out the space* and press its **+**: a new task opens as its first subtask, its name *(No Name)* ready to type over. Type a name of your own and press Enter.
 - Double-click the *Due* of *Book the movers* and pick another day: the new date saves at once.
-- Drag *Book the movers* onto *Fit out the space* and hold it there until the row is highlighted, then drop it: it moves under *Fit out the space*, above *Order desks and chairs*.
+- Drag *Book the movers* onto *Fit out the space* and hold it there until the row is highlighted, then drop it: it becomes the first task under *Fit out the space*, above the one you added.
 - Double-click a cell of *Sign the lease*: it does not open, and the row shows a lock.
 
 ## Remember

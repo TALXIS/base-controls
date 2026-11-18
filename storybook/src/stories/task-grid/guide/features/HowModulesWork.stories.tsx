@@ -54,7 +54,7 @@ Not every module comes for every backend: the factories of each are under *Task 
 
 ## Try it
 
-- Press *Expand one level* twice, then rest the pointer on the bar of *Install the network*: the tooltip, a Gantt module, shows its name, progress and dates.
+- Rest the pointer on the bar of *Install the network*: the tooltip, a Gantt module, shows its name, progress and dates.
 - Open the menu of the *Task* column, pick *Filter By*, type "paint" and apply: the filtering module, a grid module, keeps *Paint the meeting rooms* and the tasks above it.
 - In **Code**, delete \`createMemoryTaskChecklistModule({ items: checklists })\` from \`controlModules\`: the *Checklist* column goes, though the view still names it.
 

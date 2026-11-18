@@ -30,7 +30,7 @@ This step adds three Gantt modules to the plan of [**The timeline**](?path=/docs
 
 ## Try it
 
-- Press *Expand one level* twice, then rest the pointer on the bar of *Book the movers*: the tooltip shows its status, *Waiting*, with its progress, its dates and its 5 working days.
+- Rest the pointer on the bar of *Book the movers*: the tooltip shows its status, *Waiting*, with its progress, its dates and its 5 working days.
 - Drag the bar of *Paint the meeting rooms* a few days later: wherever you drop it, it starts and ends on a working day.
 - Click *Show on timeline* in the row of *Order the catering*: the scale shows its days, with Easter Monday and the weekends shaded and the *Opening party* marker on Friday 10 April.
 - Open *Settings* and turn on *Hide non-working days*: the shaded days leave the scale.

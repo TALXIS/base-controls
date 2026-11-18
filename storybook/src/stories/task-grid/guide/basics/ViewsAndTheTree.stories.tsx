@@ -35,17 +35,17 @@ A switch mounts the control again, so \`onLoad\` runs again, and the table outsi
 
 **The settings menu.** \`TaskDatasetControl.Settings\` holds two switches: *Show hierarchy* turns the flat list off and on, and *Hide inactive tasks* hides tasks such as *Sign the lease*.
 
-**What is remembered.** Each view keeps what the user did in it, such as the tasks they opened, the search and the flat list. With a \`stateKey\`, the control keeps all of it, and the view it is on, when it mounts again, for as long as its state store lasts: see [**State**](?path=/docs/controls-datasetcontrol-state--overview). Here, opening **Code** and coming back to **Preview** mounts it again. It also runs the code again, so the tasks start afresh, while what was open stays.
+**What is remembered.** Each view keeps what the user did in it, such as the tasks they opened, the search and the flat list. With a \`stateKey\`, the control keeps all of it, and the view it is on, when it mounts again, for as long as its state store lasts: see [**State**](?path=/docs/controls-datasetcontrol-state--overview). Here, opening **Code** and coming back to **Preview** mounts it again. It also runs the code again, so the tasks start afresh, while what was open stays. A view that has saved its open tasks shows them, whatever \`defaultExpandedLevel\` says.
 
 **Start from one task.** Return a \`rootTaskId\` from \`onLoad\` and the tree shows only the tasks under that task.
 
 ## Try it
 
-- Press *Expand one level* twice to open the whole plan, then search for *paint*: only *Paint the meeting rooms* is left, under *Move to the new office* and *Fit out the space* in italics.
-- Switch to *By effort* and open the plan the same way: under each task, the one with the most hours comes first.
+- Search for *paint*: only *Paint the meeting rooms* is left, under *Move to the new office* and *Fit out the space* in italics.
+- Switch to *By effort*: under each task, the one with the most hours comes first.
 - Switch to *Every task*: all eleven tasks are in one list, with their *Path*. In the settings menu, turn on *Hide inactive tasks* to take *Sign the lease* out of the list, and *Show hierarchy* to get the tree back.
-- Switch back to *Whole plan*: the search and the open tasks are as you left them. Open **Code** and come back to **Preview**: they still are.
-- Clear the search, then in **Code** add \`rootTaskId: 'fitout'\` to what \`loadTasks\` returns: the tree starts with the three subtasks of *Fit out the space*.
+- Switch back to *Whole plan*: the search is as you left it. Clear it and close *Fit out the space*, then open **Code** and come back to **Preview**: *Fit out the space* is still closed, as the view saved it.
+- In **Code**, add \`rootTaskId: 'fitout'\` to what \`loadTasks\` returns: the tree starts with the three subtasks of *Fit out the space*.
 
 ## Remember
 

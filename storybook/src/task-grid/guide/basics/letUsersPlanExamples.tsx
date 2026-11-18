@@ -29,7 +29,7 @@ const GridExample = () => <TaskDatasetControl onLoad={loadTasks} modules={contro
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     <DatasetControl.Body>
-        <TaskGrid modules={gridModules} />
+        <TaskGrid defaultExpandedLevel={1} modules={gridModules} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `

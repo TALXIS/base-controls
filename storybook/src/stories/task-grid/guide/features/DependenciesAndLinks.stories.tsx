@@ -38,7 +38,7 @@ While the link is drawn, its tooltip names the type and the two tasks. It also s
 
 ## Try it
 
-- Press *Expand one level* twice, then drag from the dot at the end of *Paint the meeting rooms* to the start of *Move in*: a finish-to-start link appears, and *Move in* counts 3 predecessors.
+- Drag from the dot at the end of *Paint the meeting rooms* to the start of *Move in*: a finish-to-start link appears, and *Move in* counts 3 predecessors.
 - Drag from the end of *Move in* to the start of *Order desks and chairs*: the tooltip says the link would make a loop, and no link is drawn.
 - Select *Install the network* and click *Delete*: once you confirm, its two links go, *Order desks and chairs* has no successor left, and *Move in* counts one predecessor fewer.
 

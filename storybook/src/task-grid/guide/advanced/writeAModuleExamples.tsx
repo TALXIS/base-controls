@@ -37,7 +37,7 @@ const duplicateModule: IDatasetControlModule<'duplicate'> = {
 
 const GridExample = () => <TaskDatasetControl modules={[duplicateModule]} onLoad={loadTasks} enableCreation enableEditing height='480px'>
     <DatasetControl.Body>
-        <TaskGrid modules={[createTaskEditingModule()]} />
+        <TaskGrid defaultExpandedLevel={1} modules={[createTaskEditingModule()]} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `
@@ -81,7 +81,7 @@ const lateDueDatesModule: IGridModule<'lateDueDates'> = {
 
 const GridExample = () => <TaskDatasetControl onLoad={loadTasks} enableEditing height='480px'>
     <DatasetControl.Body>
-        <TaskGrid modules={[createTaskEditingModule(), lateDueDatesModule]} />
+        <TaskGrid defaultExpandedLevel={0} modules={[createTaskEditingModule(), lateDueDatesModule]} />
     </DatasetControl.Body>
 </TaskDatasetControl>
 `
@@ -154,7 +154,7 @@ const taskMenuModule: IGanttModule<'taskMenu'> = {
 const GridExample = () => <TaskDatasetControl onLoad={loadTasks} enableCreation enableEditing height='480px'>
     <DatasetControl.Body>
         <TaskGantt.Split>
-            <TaskGrid modules={[createTaskEditingModule()]} />
+            <TaskGrid defaultExpandedLevel={1} modules={[createTaskEditingModule()]} />
             <TaskGantt modules={[createLibraryModule(), taskMenuModule]} />
         </TaskGantt.Split>
     </DatasetControl.Body>

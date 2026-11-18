@@ -27,7 +27,7 @@ A task grid needs your rows, a store that keeps them, and a field mapping that s
 | \`TaskDatasetControl\` | Holds the tasks: it calls \`onLoad\`, and from the next step decides what the user may change. |
 | \`TaskGrid\` | Draws the tasks as a tree, inside \`DatasetControl.Body\`. |
 
-**The tree.** A task with a \`parentid\` is a subtask of that task; a task without one is at the top. Among the tasks under the same parent, the \`stackrank\` sets the order: ranks are compared as text, so \`'0|100000:'\` comes before \`'0|200000:'\`.
+**The tree.** A task with a \`parentid\` is a subtask of that task; a task without one is at the top. Among the tasks under the same parent, the \`stackrank\` sets the order: ranks are compared as text, so \`'0|100000:'\` comes before \`'0|200000:'\`. \`defaultExpandedLevel\` on \`TaskGrid\` says how many levels start open: \`0\` opens the top tasks, \`1\` their subtasks too, and without it every task starts closed.
 
 **Mounts.** \`onLoad\` runs whenever the control mounts: when it opens, and later each time the user switches views. So it returns a new store each time, while the table stays outside \`onLoad\` and keeps every change. How mounts work is on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
@@ -35,8 +35,7 @@ The grid shows the columns of \`OFFICE_COLUMNS\` that are not hidden. Like every
 
 ## Try it
 
-- Open *Move to the new office* with its chevron: its four subtasks appear under it, in the order of their \`stackrank\`.
-- Press *Expand one level*, the **+** above the chevrons, twice: each press opens one more level, and the whole plan is open.
+- Close *Fit out the space* with its chevron: its three subtasks go. Press *Collapse one level*, the **−** above the chevrons: only the two top tasks are left, and *Expand one level* opens them again one level at a time.
 - In **Code**, open *office.ts* and give *Plan the opening party* the \`stackrank\` \`'0|050000:'\`: back in **Preview**, it is above *Move to the new office*.
 - In *office.ts*, add \`{ taskid: 'keys', subject: 'Hand back the old keys', parentid: null, stackrank: '0|300000:', statecode: 0 }\` to \`OFFICE_TASKS\`: it is the last task at the top.
 

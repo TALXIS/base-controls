@@ -16,7 +16,7 @@ So far the plan has lived in memory. This step moves it to where your tasks real
 
 ## How it works
 
-*GridExample.tsx* returns the memory store. *dataverse.ts* and *talxis.ts* load the same plan in a model-driven app, so they do not run on this page: each exports what \`onLoad\` returns, and the modules for \`TaskDatasetControl\`'s \`modules\`. The control and the grid stay as they are, and each module's factory for every backend is under *Task modules* on [**Reference**](?path=/docs/controls-taskgrid-reference--overview).
+*GridExample.tsx* returns the memory store. *dataverse.ts* and *talxis.ts* load the same plan in a model-driven app, so they do not run on this page: each exports what \`onLoad\` returns, and *talxis.ts* the modules for \`TaskDatasetControl\`'s \`modules\` too. The control and the grid stay as they are, and each module's factory for every backend is under *Task modules* on [**Reference**](?path=/docs/controls-taskgrid-reference--overview).
 
 | \`onLoad\` returns | What it is |
 |---|---|
@@ -35,7 +35,7 @@ So far the plan has lived in memory. This step moves it to where your tasks real
 | \`DataverseTaskStore\` in TALXIS | In \`talxis_projecttask\` | The same, with \`createDataverseProjectModule\` naming the project |
 | A store of your own | Behind your API | See [**Your own backend**](?path=/docs/controls-taskgrid-guide-your-data-your-own-backend--overview) |
 
-\`DataverseTaskStore\` runs in a model-driven app, where it reads and writes through the Web API. It loads every task the FetchXML selects at once. *Edit* opens one task in its form in a side dialog and several in the bulk edit form; \`form\` names other forms. A new task is created in its place with its parent and rank, and with its lookup to the project when the project module is loaded.
+\`DataverseTaskStore\` runs in a model-driven app, where it reads and writes through the Web API. It loads every task the FetchXML selects at once. *Edit* opens one task in its form in a side dialog and several in the bulk edit form; \`form\` names other forms. A new task is created in its place with its parent and rank, with its lookup to the host record when the FetchXML filters by it, and with its lookup to the project when the project module is loaded.
 
 ### Which tasks load
 
@@ -48,7 +48,7 @@ The FetchXML selects which tasks load, through its entity and its filter. With v
 | \`{{ project.id }}\`, \`{{ project.name }}\`, \`{{ project.entityName }}\` | The project the tasks belong to | The project module, from [**Templates and the project**](?path=/docs/controls-taskgrid-guide-features-templates-and-the-project--overview) |
 | \`{{ project.<column> }}\` | One of the project's columns | \`columns\` of \`createDataverseProjectModule\` |
 
-\`hostRecord\` fills in the template and nothing else. Only the project module gives new tasks their lookup, so *dataverse.ts* loads the form's record as the project too.
+When the FetchXML filters a lookup of the task by \`{{ hostRecord.id }}\`, as *dataverse.ts* does with \`regardingobjectid\`, every new task gets that lookup too.
 
 ### The field mapping
 
@@ -88,7 +88,7 @@ The store loads every task of the view at once. Sorting, filtering, search and o
 ## Try it
 
 - In the first example's **Code**, change \`subject: 'subject'\` to \`subject: 'owner'\`: the tree draws each task's owner beside the chevron, and *Task* becomes an ordinary column.
-- In *What reaches the store*, open *Move to the new office*: nothing reaches the store. Double-click the cell of *Book the movers* beside its name, rename it and press Enter: the log shows \`saveTask\` with \`subject\`, then \`synchronize\`.
+- In *What reaches the store*, close *Move to the new office* and open it again: nothing reaches the store. Double-click the cell of *Book the movers* beside its name, rename it and press Enter: the log shows \`saveTask\` with \`subject\`, then \`synchronize\`.
 - Click the row of *Fit out the space*, so that only it is selected, press *Delete* and confirm: \`deleteTasks\` runs for its three subtasks first, then for the task itself.
 - Switch to *By due date*: a new mount runs \`onLoad\` and \`load\`. Search for "plan": nothing reaches the store.
 

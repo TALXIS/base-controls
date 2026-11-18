@@ -64,10 +64,10 @@ What a template reads, set on the task in a \`task\` hook: DHTMLX keeps any fiel
 
 ## Try it
 
-- In *Colours by status*, open *Move to the new office* and *Fit out the space*, double-click the *Status* of *Install the network* and pick *Waiting*: its row, its progress bar and its bar on the timeline turn amber.
-- In *People in cells*, open the plan and drag the right edge of the *Assigned to* header to the left until *Move in* shows **+1**, then rest the pointer on it: Tomáš is listed as a chip too.
-- In *A tooltip of your own*, open the plan and rest the pointer on the bar of *Install the network*: its priority and 19 hours left are under its name. Drag the bar a week to the right, and the dates in the tooltip move with it.
-- In *Content on the bars*, open the plan and drag the bar of *Paint the meeting rooms* a week to the right: the due date beside it moves a week later.
+- In *Colours by status*, double-click the *Status* of *Install the network* and pick *Waiting*: its row, its progress bar and its bar on the timeline turn amber.
+- In *People in cells*, drag the right edge of the *Assigned to* header to the left until *Move in* shows **+1**, then rest the pointer on it: Tomáš is listed as a chip too.
+- In *A tooltip of your own*, rest the pointer on the bar of *Install the network*: its priority and 19 hours left are under its name. Drag the bar a week to the right, and the dates in the tooltip move with it.
+- In *Content on the bars*, drag the bar of *Paint the meeting rooms* a week to the right: the due date beside it moves a week later.
 
 ## Remember
 

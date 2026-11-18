@@ -33,7 +33,7 @@ A column's full name is its \`name\` followed by \`DatasetConstants.CUSTOM_COLUM
 
 ## Try it
 
-- In **Code**, open *checklists.ts* and set \`isCompleted\` of *Test the Wi-Fi on every floor* to \`true\`. Back in **Preview**, press *Expand one level* twice: *Install the network* shows *2/4*.
+- In **Code**, open *checklists.ts* and set \`isCompleted\` of *Test the Wi-Fi on every floor* to \`true\`. Back in **Preview**, *Install the network* shows *2/4*.
 - Open *Edit columns*, pick *Add custom column* and save: a text column, *Custom column 3*, appears beside *Task*.
 - Double-click the *Budget* cell of *Paint the meeting rooms*, type 4000 and press Enter: the budget saves at once.
 
