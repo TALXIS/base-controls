@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { GuideMap } from '../../task-grid/guide/GuideSteps'
+import { GuideMap } from '../../task-grid/guide/taskGridGuide'
 import { OfficeMoveExample } from '../../task-grid/examples/overviewExamples'
 
 const DESCRIPTION = `

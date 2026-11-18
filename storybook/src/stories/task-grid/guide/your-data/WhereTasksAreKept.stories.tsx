@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../../form/storyHelpers'
 import { gridDocsPage } from '../../../../grid/gridDocsPage'
-import { GuideNavigation, GuideProgress } from '../../../../task-grid/guide/GuideSteps'
+import { GuideNavigation, GuideProgress } from '../../../../task-grid/guide/taskGridGuide'
 import { StoreCallsExample, WhereTasksAreKeptExample } from '../../../../task-grid/guide/your-data/whereTasksAreKeptExamples'
 
 const STEP = 'Where tasks are kept'

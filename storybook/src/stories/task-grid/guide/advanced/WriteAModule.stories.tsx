@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../../form/storyHelpers'
 import { gridDocsPage } from '../../../../grid/gridDocsPage'
-import { GuideNavigation, GuideProgress } from '../../../../task-grid/guide/GuideSteps'
+import { GuideNavigation, GuideProgress } from '../../../../task-grid/guide/taskGridGuide'
 import { GanttModuleExample, GridModuleExample, TaskModuleExample } from '../../../../task-grid/guide/advanced/writeAModuleExamples'
 
 const STEP = 'Write a module'

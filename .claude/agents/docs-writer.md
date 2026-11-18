@@ -33,13 +33,16 @@ every claim against `src/` before you write it.
 
 ## Guide pages
 
-A control with a guide, such as TaskGrid, teaches it as one path through `…/Guide/<Stage>/<Step>` pages,
-listed in order with their stages in `storybook/src/task-grid/guide/GuideSteps.tsx`.
+A control with a guide teaches it as one path through `…/Guide/<Stage>/<Step>` pages. Its stages and
+steps are listed in order in the guide's config, such as `storybook/src/task-grid/guide/taskGridGuide.ts`,
+which passes them to `createGuide` in `storybook/src/grid/showcase/Guide.tsx`. The TaskGrid guide is the
+model.
 
-- **One storyline:** every step runs on the same sample plan, such as the office move, and adds one thing
-  to what the reader built in the step before.
-- **Stages:** Basics, Features, Your data, Advanced. Each stage promises what the reader can do once it is
-  done; Basics alone is enough for a first use.
+- **One storyline:** every step runs on the same sample scenario, such as the office move, and adds one
+  thing to what the reader built in the step before. A shared files module, such as
+  `task-grid/guide/officePlanFiles.ts`, holds the scenario's data.
+- **Stages:** three or four, such as Basics, Features, Your data, Advanced. Each stage promises what the
+  reader can do once it is done; Basics alone is enough for a first use.
 - **Every step has the same rhythm:**
   1. `{{block: progress}}`
   2. a goal of one or two sentences
@@ -55,7 +58,7 @@ listed in order with their stages in `storybook/src/task-grid/guide/GuideSteps.t
 - **Where the rest goes:** the guide's overview holds the showcase, the anatomy, how the parts fit
   together, the stage map (`GuideMap`) and a glossary. `…/Reference` holds every table a reader looks up,
   slots included.
-- **Adding a step:** add it to `GuideSteps.tsx`, and report that it needs a place in the `storySort` of
+- **Adding a step:** add it to the guide's config, and report that it needs a place in the `storySort` of
   `storybook/.storybook/preview.tsx`, which you do not edit.
 
 ## Writing

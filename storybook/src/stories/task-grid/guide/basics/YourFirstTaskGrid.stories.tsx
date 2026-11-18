@@ -2,7 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../../form/storyHelpers'
 import { gridDocsPage } from '../../../../grid/gridDocsPage'
-import { GuideNavigation, GuideProgress } from '../../../../task-grid/guide/GuideSteps'
+import { GuideNavigation, GuideProgress } from '../../../../task-grid/guide/taskGridGuide'
 import { YourFirstTaskGridExample } from '../../../../task-grid/guide/basics/yourFirstTaskGridExamples'
 
 const STEP = 'Your first task grid'
