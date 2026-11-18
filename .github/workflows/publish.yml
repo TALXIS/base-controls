@@ -43,7 +43,7 @@ jobs:
           if [ "$DIST_TAG" = latest ]; then
             echo "::error::A new latest release must come from master or release/$LINE."
           else
-            echo "::error::A hotfix to $LINE must come from release/$LINE. Create it from the $LINE.0 tag first."
+            echo "::error::A hotfix to $LINE must come from release/$LINE. Create it from that month's first tag."
           fi
           exit 1
 
