@@ -1,11 +1,11 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../grid/GridLivePreview'
-import { VIEWS_FILE, withFiles } from '../../dataset-control/examples/shared'
+import { withDealList } from '../../dataset-control/guide/dealListFiles'
 
 const COME_BACK_CODE = `import { ClientSideGrid, createSortingModule, DatasetControl, StateProvider, StateStore } from '@talxis/base-controls'
 import { DefaultButton, Stack, Text } from '@fluentui/react'
-import { loadDeals } from './views'
+import { loadDeals } from './deals'
 
 const modules = [createSortingModule()]
 
@@ -149,6 +149,6 @@ export class DealsControl implements ComponentFramework.StandardControl<{}, {}> 
 `,
 }
 
-export const ComeBackExample = () => <GridExampleRunner seedCode={withFiles(COME_BACK_CODE, VIEWS_FILE, PCF_CONTROL_FILE)} />
+export const ComeBackExample = () => <GridExampleRunner seedCode={withDealList(COME_BACK_CODE, PCF_CONTROL_FILE)} />
 export const OwnComponentExample = () => <GridExampleRunner seedCode={OWN_COMPONENT_CODE} tabs={['preview', 'code']} />
 export const ScopesExample = () => <GridExampleRunner seedCode={SCOPES_CODE} tabs={['preview', 'code']} />

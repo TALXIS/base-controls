@@ -29,13 +29,13 @@ Every provider also takes a \`formatting\`, which formats the values it hands to
 
 ## Hand it to controls
 
-Controls take their provider from around them, not from a prop. A [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) loads the provider its \`onLoad\` returns and hands it to everything inside it. Without one, wrap the controls in \`DataProviderScope\` and load the provider yourself.
+Controls take their provider from around them, not from a prop. A [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview) loads the provider its \`onLoad\` returns and hands it to everything inside it. Without one, wrap the controls in \`DataProviderScope\` and load the provider yourself.
 
 {{story: Without a DatasetControl}}
 
 ## Load and read
 
-\`refresh()\` loads the first page and resolves with its records. Loading replaces the records, so their unsaved changes are lost: \`refresh()\` never asks. The parts of a DatasetControl that load, such as paging, ask the user first, as [**Loading data**](?path=/docs/controls-datasetcontrol-loading-data--overview) describes.
+\`refresh()\` loads the first page and resolves with its records. Loading replaces the records, so their unsaved changes are lost. A provider on its own never asks; inside a DatasetControl, every load asks the user first, your own \`refresh()\` included, as [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview) describes.
 
 When a load fails, \`onError\` fires, the call rejects with a \`DataProviderError\`, and \`isError()\` and \`getErrorMessage()\` say why. \`isLoading()\` says whether a load is running, and \`getColumns()\`, \`getMetadata()\` and \`getPaging()\` describe the rest.
 
@@ -166,7 +166,7 @@ When your API sorts, filters and pages itself, extend \`DataProvider\`. Set the 
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Loading data', iconName: 'Download', href: '?path=/docs/controls-datasetcontrol-loading-data--overview', text: 'Load a provider for each view a DatasetControl shows.' },
+    { title: 'Load the deals', iconName: 'Download', href: '?path=/docs/controls-datasetcontrol-guide-basics-load-the-deals--overview', text: 'Load a provider for each view a DatasetControl shows.' },
     { title: 'Data', iconName: 'Table', href: '?path=/docs/controls-grid-data--overview', text: 'How the grid draws the columns and records of its provider.' },
     { title: 'State persistence', iconName: 'History', href: '?path=/docs/concepts-state-persistence--overview', text: 'Keep the sorting, search and paging a user set when they come back.' },
 ]

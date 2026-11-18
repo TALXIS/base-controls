@@ -34,7 +34,7 @@ Where Base Controls has its own version of a Fluent component, use it: it takes 
 
 ## Fluent UI v9
 
-The controls do not use Fluent UI v9. A PCF host hands its controls a v9 theme, from which \`createThemeBuilder({ fluentDesignLanguage })\` builds a v8 one: see [**Theming**](?path=/docs/concepts-theming--overview). v9 components in a part of your own need their own \`FluentProvider\`: see [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview).
+The controls do not use Fluent UI v9. A PCF host hands its controls a v9 theme, from which \`createThemeBuilder({ fluentDesignLanguage })\` builds a v8 one: see [**Theming**](?path=/docs/concepts-theming--overview). v9 components in a part of your own need their own \`FluentProvider\`: see [**Fluent UI v9**](?path=/docs/controls-datasetcontrol-guide-advanced-fluent-ui-v9--overview).
 
 ## Where next
 

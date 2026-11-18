@@ -29,11 +29,11 @@ Spread the props you get: they carry the class names, handlers and refs that mak
 
 A *piece* is a key in the \`components\` map that names something inside the part and holds that thing's slots, as \`commandBar\` and \`shimmer\` do in the example. A piece merges over its default slot by slot, so a slot you leave out keeps its default.
 
-Each control lists its pieces and slots under *Changing how it looks*, DatasetControl under *Reference* on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview), and TaskGrid under *Slots* on [**Reference**](?path=/docs/controls-taskgrid-reference--overview).
+Each control lists its pieces and slots under *Changing how it looks*, DatasetControl under *Slots* on its [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview), and TaskGrid under *Slots* on its [**Reference**](?path=/docs/controls-taskgrid-reference--overview).
 
 ## What slots do not change
 
-A slot changes how something looks, not what it holds. Commands and menu items are added through the part, with \`hooks.commands\`, \`hooks.items\` or \`hooks.columnCommands\`: see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview) and *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
+A slot changes how something looks, not what it holds. Commands and menu items are added through the part, with \`hooks.commands\`, \`hooks.items\` or \`hooks.columnCommands\`: see [**From your code**](?path=/docs/controls-datasetcontrol-guide-advanced-from-your-code--overview) and *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
 
 ## Where next
 
@@ -41,7 +41,7 @@ A slot changes how something looks, not what it holds. Commands and menu items a
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-your-own-ui--overview', text: 'Every slot of DatasetControl, and parts of your own.' },
+    { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-guide-advanced-your-own-ui--overview', text: 'Pieces and parts of your own in a DatasetControl.' },
     { title: 'Appearance', iconName: 'Color', href: '?path=/docs/controls-grid-appearance--overview', text: 'Replace the grid\'s cells, headers and overlays.' },
     { title: 'Fluent UI', iconName: 'Design', href: '?path=/docs/concepts-fluent-ui--overview', text: 'The Fluent components the defaults draw with.' },
 ]

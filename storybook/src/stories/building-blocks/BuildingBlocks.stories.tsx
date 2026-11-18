@@ -18,7 +18,7 @@ The root sets up what every control reads: the *PCF context*, which connects the
 
 | To show | Use |
 |---|---|
-| A list of records | A data provider, loaded by a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) and drawn by a [**Grid**](?path=/docs/controls-grid-get-started--overview), [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview) or [**Checklist**](?path=/docs/controls-checklist-get-started--overview) |
+| A list of records | A data provider, loaded by a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview) and drawn by a [**Grid**](?path=/docs/controls-grid-get-started--overview), [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview) or [**Checklist**](?path=/docs/controls-checklist-get-started--overview) |
 | A single record | A [**Form**](?path=/docs/controls-form-get-started--overview) |
 | Records with a position | A [**Map**](?path=/docs/controls-map-get-started--overview) |
 
@@ -34,7 +34,7 @@ DatasetControl, the grids, the map and the ribbon keep their state and their wor
 |---|---|
 | Change what a control does | Its props, and for the grid its modules, column definitions and hooks: see [**Modules**](?path=/docs/controls-grid-modules--overview) |
 | Change how a part looks | Its \`components\`, which replace what the part draws: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview) |
-| Add a part of your own | A component placed among the built-in parts: see DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview) |
+| Add a part of your own | A component placed among the built-in parts: see DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-guide-advanced-your-own-ui--overview) |
 | Draw a field yourself | A control of your own inside \`Form.Field\`: see the form's [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview) |
 
 ## Parts without a control

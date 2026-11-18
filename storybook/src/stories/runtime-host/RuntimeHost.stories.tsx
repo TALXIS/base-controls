@@ -108,7 +108,7 @@ const LIFECYCLE: ILifecycleStep[] = [
 ]
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Talking to the control', iconName: 'Plug', href: '?path=/docs/controls-datasetcontrol-talking-to-the-control--overview', text: 'What the DatasetControl\'s runtime adds: views, parts and modules.' },
+    { title: 'From your code', iconName: 'Plug', href: '?path=/docs/controls-datasetcontrol-guide-advanced-from-your-code--overview', text: 'What the DatasetControl\'s runtime adds: views, parts and modules.' },
     { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-ribbon-get-started--overview', text: 'A control on a runtime that loads its commands.' },
     { title: 'State persistence', iconName: 'History', href: '?path=/docs/concepts-state-persistence--overview', text: 'Keep what the user picked across mounts and sessions.' },
 ]

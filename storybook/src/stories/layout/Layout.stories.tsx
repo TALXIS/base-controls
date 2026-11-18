@@ -42,7 +42,7 @@ Some parts already respond on their own: \`CommandBar\` shows only its icons whe
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Layout', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-layout--overview', text: 'How the DatasetControl header shrinks its parts, and how to place your own in it.' },
+    { title: 'Lay it out', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-guide-features-lay-it-out--overview', text: 'How the DatasetControl header shrinks its parts, and how to place your own in it.' },
     { title: 'Fluent UI', iconName: 'Design', href: '?path=/docs/concepts-fluent-ui--overview', text: 'Base Controls\' CommandBar, which folds its commands when its own box resizes.' },
 ]
 

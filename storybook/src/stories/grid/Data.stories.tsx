@@ -41,7 +41,7 @@ How \`record.getValue()\` shapes option sets, two options, dates and lookups is 
 
 ## Paging
 
-The grid shows the records of the provider's current page, so the page size decides how many rows it has. Inside a DatasetControl, its paging parts move between pages (see [**Paging**](?path=/docs/controls-datasetcontrol-parts-paging--overview)); from your code, \`provider.getPaging()\` does (see *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview)).
+The grid shows the records of the provider's current page, so the page size decides how many rows it has. Inside a DatasetControl, its paging parts move between pages (see [**Search and page**](?path=/docs/controls-datasetcontrol-guide-features-search-and-page--overview)); from your code, \`provider.getPaging()\` does (see *Sort, filter, search and page* on [**Data providers**](?path=/docs/concepts-data-providers--overview)).
 
 ## Reference
 

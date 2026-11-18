@@ -23,7 +23,7 @@ These are the only pieces the grid itself takes \`components\` for. How slots wo
 
 ## No records
 
-\`overlays.emptyState\` draws the grid's empty state, as the example above does. Its text is a label, which the example changes too: see [**Localization**](?path=/docs/concepts-localization--overview). To show the same empty state outside a grid, use \`DatasetControl.EmptyState\`: see [**Notifications and empty state**](?path=/docs/controls-datasetcontrol-parts-notifications-and-empty-state--overview).
+\`overlays.emptyState\` draws the grid's empty state, as the example above does. Its text is a label, which the example changes too: see [**Localization**](?path=/docs/concepts-localization--overview). To show the same empty state outside a grid, use \`DatasetControl.EmptyState\`: see [**Messages and nothing to show**](?path=/docs/controls-datasetcontrol-guide-features-messages-and-nothing-to-show--overview).
 
 ## Loading
 

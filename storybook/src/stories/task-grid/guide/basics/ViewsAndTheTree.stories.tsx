@@ -27,7 +27,7 @@ The plan is the one from the last step, with a view switcher, a search box and a
 | Pick the columns | Return them in \`columns\`, by name. A view may show a column that is hidden in \`OFFICE_COLUMNS\`, such as *Effort (h)*. |
 | Start as a flat list | Return \`data: { isFlatList: true }\`. |
 
-A switch mounts the control again, so \`onLoad\` runs again, and the table outside it keeps every change. How views work in any DatasetControl is on [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+A switch mounts the control again, so \`onLoad\` runs again, and the table outside it keeps every change. How views work in any DatasetControl is on [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview).
 
 **Search keeps the context.** \`DatasetControl.QuickFind\` finds the tasks whose names start with what is typed, as on [**Data providers**](?path=/docs/concepts-data-providers--overview). A task that matches stays under the tasks above it, and those are in italics because they do not match themselves. A filter works the same way.
 
@@ -35,7 +35,7 @@ A switch mounts the control again, so \`onLoad\` runs again, and the table outsi
 
 **The settings menu.** \`TaskDatasetControl.Settings\` holds two switches: *Show hierarchy* turns the flat list off and on, and *Hide inactive tasks* hides tasks such as *Sign the lease*.
 
-**What is remembered.** Each view keeps what the user did in it, such as the tasks they opened, the search and the flat list. With a \`stateKey\`, the control keeps all of it, and the view it is on, when it mounts again, for as long as its state store lasts: see [**State**](?path=/docs/controls-datasetcontrol-state--overview). Here, opening **Code** and coming back to **Preview** mounts it again. It also runs the code again, so the tasks start afresh, while what was open stays. A view that has saved its open tasks shows them, whatever \`defaultExpandedLevel\` says.
+**What is remembered.** Each view keeps what the user did in it, such as the tasks they opened, the search and the flat list. With a \`stateKey\`, the control keeps all of it, and the view it is on, when it mounts again, for as long as its state store lasts: see [**Back where they left off**](?path=/docs/controls-datasetcontrol-guide-your-data-back-where-they-left-off--overview). Here, opening **Code** and coming back to **Preview** mounts it again. It also runs the code again, so the tasks start afresh, while what was open stays. A view that has saved its open tasks shows them, whatever \`defaultExpandedLevel\` says.
 
 **Start from one task.** Return a \`rootTaskId\` from \`onLoad\` and the tree shows only the tasks under that task.
 

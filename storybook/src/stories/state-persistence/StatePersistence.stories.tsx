@@ -41,7 +41,7 @@ Take your scope with \`useControlStateStore\`, so it also keeps per view inside 
 
 A child's \`stateKey\` scopes from the nearest store, not from its parent's scope. For children to land inside a component's own entry, the component hands its scope down in a \`StateProvider\`, as the planner in the example above does.
 
-A DatasetControl hands down the store of the view it shows, as a \`StateProvider\` would, so each view keeps its own. The DatasetControl in the example at the top keeps \`{ deals: { viewId, views: { [viewId]: { provider, parts: { grid } } } } }\`. The DatasetControl's [**State**](?path=/docs/controls-datasetcontrol-state--overview) and the grid's [**State**](?path=/docs/controls-grid-state--overview) list what each keeps.
+A DatasetControl hands down the store of the view it shows, as a \`StateProvider\` would, so each view keeps its own. The DatasetControl in the example at the top keeps \`{ deals: { viewId, views: { [viewId]: { provider, parts: { grid } } } } }\`. The DatasetControl's [**Back where they left off**](?path=/docs/controls-datasetcontrol-guide-your-data-back-where-they-left-off--overview) and the grid's [**State**](?path=/docs/controls-grid-state--overview) list what each keeps.
 
 ## Save state for later
 
@@ -55,7 +55,7 @@ In a PCF, build the store over the dictionary the host hands \`init\`, and save 
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'State', iconName: 'History', href: '?path=/docs/controls-datasetcontrol-state--overview', text: 'What a DatasetControl keeps for each view, and how it reopens on the view the user was on.' },
+    { title: 'Back where they left off', iconName: 'History', href: '?path=/docs/controls-datasetcontrol-guide-your-data-back-where-they-left-off--overview', text: 'What a DatasetControl keeps for each view, and how it reopens on the view the user was on.' },
     { title: 'PCF context', iconName: 'PlugConnected', href: '?path=/docs/concepts-pcf-context--overview', text: 'The host\'s context, whose mode keeps state for the session.' },
     { title: 'RuntimeHost', iconName: 'Processing', href: '?path=/docs/controls-runtimehost-get-started--overview', text: 'Keep what the user picked when a control of your own remounts.' },
 ]

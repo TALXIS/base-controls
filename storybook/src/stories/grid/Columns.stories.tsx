@@ -73,7 +73,7 @@ Multiline text and text area columns wrap onto the lines their row has room for,
 
 ## Remember the layout
 
-The widths, order and visibility of the columns live on the provider's columns. Inside a DatasetControl with a \`stateKey\`, the control keeps them per view: see the DatasetControl's [**State**](?path=/docs/controls-datasetcontrol-state--overview).
+The widths, order and visibility of the columns live on the provider's columns. Inside a DatasetControl with a \`stateKey\`, the control keeps them per view: see the DatasetControl's [**Back where they left off**](?path=/docs/controls-datasetcontrol-guide-your-data-back-where-they-left-off--overview).
 
 {{story: Remember the layout}}
 

@@ -57,7 +57,7 @@ A module that keeps data takes a store in the same way: its base factory takes \
 | Markers, in \`TaskGantt\` | \`createMarkersModule\` | \`loadMarkers()\` |
 | Non-working days, in \`TaskGantt\` | \`createNonWorkingDaysModule\` | \`loadNonWorkingDays()\` |
 
-A task module's store may also have \`destroy()\`, which runs when the mount goes. The store of the user views is on [**User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview).
+A task module's store may also have \`destroy()\`, which runs when the mount goes. The store of the user views is on [**Where views are kept**](?path=/docs/controls-datasetcontrol-guide-your-data-where-views-are-kept--overview).
 
 ## Try it
 

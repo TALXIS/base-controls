@@ -6,13 +6,13 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { TripPlannerExample } from './mapExamples'
 
 const DESCRIPTION = `
-A map can be the body of a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview), so the records on it come with the control's parts around them: views to switch between, quick find, a ribbon of commands and Edit columns. The map shows whatever the control has loaded, and pins and popups of your own read the control's provider, so they follow the view, the search, the columns and the selection. Try it below: open two capitals and press **Select** in each, then pick **Mark 2 as visited** in the ribbon.
+A map can be the body of a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview), so the records on it come with the control's parts around them: views to switch between, quick find, a ribbon of commands and Edit columns. The map shows whatever the control has loaded, and pins and popups of your own read the control's provider, so they follow the view, the search, the columns and the selection. Try it below: open two capitals and press **Select** in each, then pick **Mark 2 as visited** in the ribbon.
 
 {{canvas: A trip planner}}
 
 ## Put the map in the body
 
-\`LeafletMap\` or \`GoogleMap\` goes in \`DatasetControl.Body\` with no provider of its own, as in the example's \`GridExample.tsx\`, and the parts go in the header as for any body: see [**Layout**](?path=/docs/controls-datasetcontrol-layout--overview). The control mounts its body again for each load, such as a view switch or saving the columns, and the map with it, so its view fits the new pins each time.
+\`LeafletMap\` or \`GoogleMap\` goes in \`DatasetControl.Body\` with no provider of its own, as in the example's \`GridExample.tsx\`, and the parts go in the header as for any body: see [**Lay it out**](?path=/docs/controls-datasetcontrol-guide-features-lay-it-out--overview). The control mounts its body again for each load, such as a view switch or saving the columns, and the map with it, so its view fits the new pins each time.
 
 The map shows no loading state of its own while the provider loads. To show one, cover the control while the provider's \`onLoading\` says it loads, as \`LoadingCover\` in the example's \`GridExample.tsx\` does from inside the map with \`useDatasetControl().loading.show()\`: see *Run actions* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). Each load in the example takes a second, as \`loadTrip\` in \`views.ts\` makes it, so you can see it, such as on a quick find.
 
@@ -22,19 +22,19 @@ While a \`DatasetControl\` loads, such as on a view switch, it shows a placehold
 
 ## Views
 
-Each view in \`views.ts\` sets the provider up in \`resolve\`, such as *Wishlist* filtering on the trip status, and returns its columns. List the latitude and longitude columns in every view with \`isHidden: true\`, as \`READ_BY_THE_MAP\` does with them and the trip status, so they are loaded for the pins and the popup without being shown or listed in Edit columns. How views work: [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+Each view in \`views.ts\` sets the provider up in \`resolve\`, such as *Wishlist* filtering on the trip status, and returns its columns. List the latitude and longitude columns in every view with \`isHidden: true\`, as \`READ_BY_THE_MAP\` does with them and the trip status, so they are loaded for the pins and the popup without being shown or listed in Edit columns. How views work: [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview).
 
 ## Quick find
 
-\`DatasetControl.QuickFind\` searches the provider's quick find columns, here the capital and its country in \`QuickFindColumns\` in \`data.ts\`, and the map shows only what it finds. See [**Quick find**](?path=/docs/controls-datasetcontrol-parts-quick-find--overview).
+\`DatasetControl.QuickFind\` searches the provider's quick find columns, here the capital and its country in \`QuickFindColumns\` in \`data.ts\`, and the map shows only what it finds. See [**Search and page**](?path=/docs/controls-datasetcontrol-guide-features-search-and-page--overview).
 
 ## Selection and the ribbon
 
-A map has no selection of its own, so the popup's **Select** sets the provider's, with \`setSelectedRecordIds\` in \`CityCard.tsx\`. \`DatasetControl.Ribbon\` loads its commands again on every selection, so \`TripRibbon\` offers **Mark as visited** only while capitals are selected, and \`CityPin\` draws a selected pin dark with \`useDataProviderEvents\`. How the ribbon works: [**Ribbon**](?path=/docs/controls-datasetcontrol-parts-ribbon--overview).
+A map has no selection of its own, so the popup's **Select** sets the provider's, with \`setSelectedRecordIds\` in \`CityCard.tsx\`. \`DatasetControl.Ribbon\` loads its commands again on every selection, so \`TripRibbon\` offers **Mark as visited** only while capitals are selected, and \`CityPin\` draws a selected pin dark with \`useDataProviderEvents\`. How the ribbon works: [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview).
 
 ## Edit columns
 
-\`CityCard\` draws a row for each column in \`provider.getColumns()\` that is neither hidden nor the primary name, so the popup shows the columns of the open view as the user left them. Saving in Edit columns remounts the control with the new columns, and the popup follows. The columns Edit columns offers come from the provider, here the saved query \`loadTrip\` sets: see [**Edit columns**](?path=/docs/controls-datasetcontrol-parts-edit-columns--overview).
+\`CityCard\` draws a row for each column in \`provider.getColumns()\` that is neither hidden nor the primary name, so the popup shows the columns of the open view as the user left them. Saving in Edit columns remounts the control with the new columns, and the popup follows. The columns Edit columns offers come from the provider, here the saved query \`loadTrip\` sets: see [**Choose the columns**](?path=/docs/controls-datasetcontrol-guide-features-choose-the-columns--overview).
 
 ## Where next
 
@@ -42,8 +42,8 @@ A map has no selection of its own, so the popup's **Select** sets the provider's
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views--overview', text: 'Named views of the same records, each with its own columns and filter.' },
-    { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-parts-ribbon--overview', text: 'Commands for the selected records, and the built-in ones.' },
+    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-guide-basics-views--overview', text: 'Named views of the same records, each with its own columns and filter.' },
+    { title: 'Act on deals', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview', text: 'Commands for the selected records, and the built-in ones.' },
     { title: 'Your own UI', iconName: 'Edit', href: '?path=/docs/controls-map-your-own-ui--overview', text: 'Every slot of the pins and the popups.' },
 ]
 

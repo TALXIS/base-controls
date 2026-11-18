@@ -48,7 +48,7 @@ Write condition values the way the filter callout does, or it opens with nothing
 
 Once someone applies or clears a column filter, the provider's filter is rebuilt from the column conditions, all required: an OR becomes an AND, and nested filters and conditions on anything that is not a column are dropped. Keep a fixed scope, such as *only my team's tickets*, in the data source or the query instead.
 
-Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with a sort and a filter of its own, belong to the DatasetControl: see [**Views**](?path=/docs/controls-datasetcontrol-views--overview).
+Neither module raises an event when the sort or the filter changes: read \`provider.getSorting()\` and \`provider.getFiltering()\` in \`onDataLoaded\`. Saved views, each with a sort and a filter of its own, belong to the DatasetControl: see [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview).
 
 ## Narrow what a filter offers
 
@@ -132,7 +132,7 @@ The modules are \`grid.modules.find('sorting')\` and \`grid.modules.find('filter
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'The sort and filter the provider holds, and how to set them.' },
-    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-views--overview', text: 'Saved views, each with a sort and a filter of its own.' },
+    { title: 'Views', iconName: 'ViewList', href: '?path=/docs/controls-datasetcontrol-guide-basics-views--overview', text: 'Saved views, each with a sort and a filter of its own.' },
     { title: 'Grouping and totals', iconName: 'GroupList', href: '?path=/docs/controls-grid-modules-grouping-and-totals--overview', text: 'Group the rows by a column, and total its values.' },
 ]
 

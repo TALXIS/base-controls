@@ -111,14 +111,16 @@ Each fact lives on one page; every other page links to it.
 | Fact | Owner |
 |---|---|
 | Root providers | Concepts › Quick start |
-| The runtime: one per mount, `onSetup`, `runtime.lifecycle` (status, error, events, `remount()`), writing a runtime with `RuntimeLifecycle` | Controls › RuntimeHost |
+| The runtime: one per mount, `onSetup` and `onReady`, `runtime.lifecycle` (status, error, events, `remount()`), writing a runtime with `RuntimeLifecycle` | Controls › RuntimeHost |
 | How pieces and slots work | Concepts › Pieces and slots |
 | Provider behaviour | Concepts › Data providers |
 | Colours | Concepts › Theming |
 | The shared ribbon: commands, members, `hooks.commands` | Controls › Ribbon |
-| What DatasetControl adds to the ribbon | DatasetControl › Parts › Ribbon |
-| The unsaved-changes prompt | DatasetControl › Loading data |
-| Every DatasetControl slot | DatasetControl › Your own UI |
+| What DatasetControl adds to the ribbon | DatasetControl › Guide › Features › Act on deals |
+| The unsaved-changes prompt | DatasetControl › Guide › Features › Act on deals |
+| A failed DatasetControl load | DatasetControl › Guide › Basics › When loading fails |
+| What a DatasetControl keeps, and its `stateKey` | DatasetControl › Guide › Your data › Back where they left off |
+| Every DatasetControl slot | DatasetControl › Reference |
 | Grid props, defaults and save events | Grid › Props and events |
 | Dates the backend changes (`synchronize`) | TaskGrid › Guide › Your data › Your own backend |
 | `enable*` props and inactive tasks | TaskGrid › Guide › Basics › Let users plan |

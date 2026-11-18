@@ -90,7 +90,7 @@ The commands carry your own labels. To change the wording of **Try again**, **De
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-parts-ribbon--overview', text: 'The ribbon in DatasetControl: commands for the selected records.' },
+    { title: 'Act on deals', iconName: 'Ribbon', href: '?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview', text: 'The ribbon in DatasetControl: commands for the selected records.' },
     { title: 'RuntimeHost', iconName: 'Processing', href: '?path=/docs/controls-runtimehost-get-started--overview', text: 'The status and lifecycle events of the ribbon\'s runtime.' },
     { title: 'Pieces and slots', iconName: 'Edit', href: '?path=/docs/concepts-pieces-and-slots--overview', text: 'Replace what the ribbon draws, piece by piece.' },
 ]

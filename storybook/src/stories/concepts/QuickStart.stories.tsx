@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { FirstAppExample } from './quickStartExamples'
 
 const DESCRIPTION = `
-This page takes you from an empty React application to a first working control: install the packages, wrap the application in the providers every control needs, and add a control below them. The example is a whole application: a data provider with three products, a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview) that loads it and a [**Grid**](?path=/docs/controls-grid-get-started--overview) that draws it. Try it below: open **Code** and add a fourth product.
+This page takes you from an empty React application to a first working control: install the packages, wrap the application in the providers every control needs, and add a control below them. The example is a whole application: a data provider with three products, a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview) that loads it and a [**Grid**](?path=/docs/controls-grid-get-started--overview) that draws it. Try it below: open **Code** and add a fourth product.
 
 {{canvas: Overview}}
 
@@ -41,7 +41,7 @@ What each part of the example is, and how far you can take it: [**Building block
 const EXPLORE: IExploreCard[] = [
     { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Put your own records in a provider, from memory, Dataverse or your own API.' },
     { title: 'Grid', iconName: 'Table', href: '?path=/docs/controls-grid-get-started--overview', text: 'Switch on sorting, filtering, editing and more, module by module.' },
-    { title: 'DatasetControl', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-get-started--overview', text: 'Add views, a ribbon, quick find and paging around the grid.' },
+    { title: 'DatasetControl', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-overview--overview', text: 'Add views, a ribbon, quick find and paging around the grid.' },
 ]
 
 const meta = {

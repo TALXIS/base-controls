@@ -6,7 +6,7 @@ Every prop, module parameter, runtime member, field mapping key and slot of the 
 
 ## TaskDatasetControl props
 
-Every other prop works as on a [**DatasetControl**](?path=/docs/controls-datasetcontrol-get-started--overview).
+Every other prop works as on a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview).
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
@@ -26,7 +26,7 @@ Every other prop works as on a [**DatasetControl**](?path=/docs/controls-dataset
 | \`TaskDatasetControl.Settings\` | \`enableShowHierarchy\` | \`boolean\` | \`true\` | Live | The *Show hierarchy* toggle, which turns the flat list off and on. |
 | | \`enableHideInactiveTasks\` | \`boolean\` | \`true\` | Live | The *Hide inactive tasks* toggle. |
 | | \`components\` | \`Partial<ITaskGridUiSettingsMenuComponents>\` | Defaults | Live | See *Slots* below. |
-| \`TaskDatasetControl.Ribbon\` | Every prop of \`DatasetControl.Ribbon\` | | | | Its items pass through \`hooks.ribbonCommandUi\` of the task runtime. What DatasetControl adds to the ribbon is on [**Ribbon**](?path=/docs/controls-datasetcontrol-parts-ribbon--overview). |
+| \`TaskDatasetControl.Ribbon\` | Every prop of \`DatasetControl.Ribbon\` | | | | Its items pass through \`hooks.ribbonCommandUi\` of the task runtime. What DatasetControl adds to the ribbon is on [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview). |
 | \`TaskDatasetControl.PageSizeSwitcher\` | Every prop of \`DatasetControl.PageSizeSwitcher\` but \`pageSizes\` | | | | Shows how many tasks the tree holds, and is always disabled: a task grid loads every task at once. |
 
 \`TaskDatasetControl.Settings\` provides the \`taskSettings\` part, so \`control.parts.get('taskSettings')\` reaches it while it is drawn.
@@ -154,7 +154,7 @@ Task modules go in \`TaskDatasetControl\`'s \`modules\`; \`modules.get(name)\` a
 | Checklist | \`taskChecklist\` | \`createMemoryTaskChecklistModule\` | None | \`createTalxisTaskChecklistModule\` | \`createTaskChecklistModule\` |
 | Dependencies | \`dependencies\` | \`createMemoryDependenciesModule\` | \`createDataverseDependenciesModule\` | \`createTalxisDependenciesModule\` | \`createDependenciesModule\` |
 
-The parameters of the user views factories are on [**User views**](?path=/docs/controls-datasetcontrol-views-user-views--overview). \`createTaskEditingModule()\` goes in \`TaskGrid\`'s \`modules\` and takes no parameters.
+The parameters of the user views factories are under *User views* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview). \`createTaskEditingModule()\` goes in \`TaskGrid\`'s \`modules\` and takes no parameters.
 
 ### Project
 
@@ -453,7 +453,7 @@ Inside anything \`TaskGrid\` draws, such as a cell, \`useTaskGridService(key)\` 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
 | \`TaskGrid\` | \`overlays\`, \`rows\` | The Grid's, as on [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview) | | |
-| \`TaskDatasetControl.Ribbon\`, \`TaskDatasetControl.PageSizeSwitcher\` | Their DatasetControl parts' | As on [**Your own UI**](?path=/docs/controls-datasetcontrol-your-own-ui--overview) | | |
+| \`TaskDatasetControl.Ribbon\`, \`TaskDatasetControl.PageSizeSwitcher\` | Their DatasetControl parts' | Under *Slots* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview) | | |
 | \`TaskDatasetControl.Settings\` | Top level | \`onRender\`, \`onRenderButton\` | \`TaskGridUiSettingsMenuComponents\` | The tooltip around the settings button, and the button with its menu |
 | \`TaskGantt\` | \`chart\` | \`onRender\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` has to pass on its \`ref\` |
 | | \`overlay\` | \`onRender\` | \`GanttUiOverlayComponents\` | The cover the Gantt's \`overlay\` service shows over the chart |
