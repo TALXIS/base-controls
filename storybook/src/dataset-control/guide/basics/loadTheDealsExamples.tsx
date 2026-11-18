@@ -63,6 +63,7 @@ const loadSignedInUser = async () => {
 const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
     //new: what the views need comes first
     const user = await loadSignedInUser()
+    //new: the views are built for the signed-in user
     return { provider: new DealsProvider({ dataSource: deals, metadata }), views: createDealViews(user) }
 }
 

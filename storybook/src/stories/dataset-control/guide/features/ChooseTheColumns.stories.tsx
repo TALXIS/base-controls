@@ -29,7 +29,7 @@ Each salesperson reads the deals by different columns: Ben wants the probability
 - **Loading:** the picker says *Loading...* while the columns load; a failed load shows its error with **Details** and **Try again**.
 - **Hidden columns:** the list leaves them out, and saving keeps them, as \`stage\` on *Won deals*.
 - **Disabled:** the button while the provider loads, and **Save** while no visible column is left.
-- **Saving:** clears the selection and mounts the control again on the same view; with unsaved changes, it asks first, as in *Act on deals*.
+- **Saving:** clears the selection and mounts the control again on the same view; with unsaved changes, it asks first, as in [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview).
 
 The picker offers what the provider's \`onGetAvailableColumns()\` returns: \`DealsProvider\` in *deals.ts* offers every deal column, as in [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview). When the provider's \`onGetAvailableRelatedColumns()\` returns related entities, a *Column source* picker lets the user add their columns too.
 

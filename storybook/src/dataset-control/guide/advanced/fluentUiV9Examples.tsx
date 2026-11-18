@@ -9,7 +9,7 @@ import { DealsRibbon, failNextLoad } from './DealsRibbon'
 import { V9 } from './v9'
 import { RecordDataGrid } from './RecordDataGrid'
 
-//fails once after the ribbon asks it to, to show the error in Fluent v9 too
+//fails once after the ribbon's Fail the next load
 const onLoad = async () => {
     if (failNextLoad.current) {
         failNextLoad.current = false
@@ -75,7 +75,7 @@ export const DealsRibbon = () => {
             { id: 'failNextLoad', label: 'Fail the next load', iconName: 'Warning', onExecute: async () => { failNextLoad.current = true; await control.reload() } },
         ]
         if (selectedIds.length > 0) {
-            //an unsaved change, which brings up Save and Discard changes
+            //an unsaved change brings up Save and Discard changes
             commands.push({ id: 'markWon', label: \`Mark \${selectedIds.length} as won\`, iconName: 'Trophy2', onExecute: () => selectedIds.forEach(id => provider.getRecordsMap()[id].setValue('stage', WON_STAGE)) })
         }
         return commands
@@ -94,7 +94,7 @@ import { createTableColumn, DataGrid, DataGridBody, DataGridCell, DataGridHeader
 
 const TEXT_TYPES = [DataTypes.SingleLineText, DataTypes.Multiple]
 
-/** The provider's records in its visible columns, sorted and selected through the provider; \`editable\` lets the user change text values. */
+/** The provider's records in its visible columns, sorted and selected through the provider. */
 export const RecordDataGrid = (props: { editable?: boolean }) => {
     const provider = useDataProviderEvents(['onNewDataLoaded', 'onRecordsSelected', 'onRecordColumnValueChanged'])
     const columns = provider.getColumns().filter(column => !column.isHidden && !column.isVirtual).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
@@ -102,10 +102,10 @@ export const RecordDataGrid = (props: { editable?: boolean }) => {
         columnId: column.name,
         renderHeaderCell: () => column.displayName,
         renderCell: (record: IRecord) => props.editable && TEXT_TYPES.includes(column.dataType as any)
-            //a click in the field edits it, rather than selecting the row
+            //a click in the field edits it without selecting the row
             ? <Input appearance='underline' size='small' style={{ width: '100%' }} value={record.getValue(column.name) ?? ''} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={(_, data) => record.setValue(column.name, data.value)} />
             : record.getFormattedValue(column.name),
-        //two parameters make v9 offer sorting, which the provider does
+        //a compare of two parameters makes v9 offer sorting
         compare: (_a: IRecord, _b: IRecord) => 0,
     }))
     const [sorting] = provider.getSorting()
@@ -212,11 +212,11 @@ const ToolbarItem = (props: { item: ICommandBarItemProps }) => {
         return <Caption1 style={{ padding: '0 8px', alignSelf: 'center' }}>{item.text}</Caption1>
     }
     const button = <ToolbarButton icon={toIcon(item.iconProps)} disabled={item.disabled} onClick={event => item.onClick!(event as any, item)}>{item.iconOnly ? undefined : item.text}</ToolbarButton>
-    //an icon-only command names itself through its tooltip, as v8's command bar does
+    //an icon-only command names itself through its tooltip
     return item.iconOnly ? <Tooltip content={item.title ?? item.text ?? ''} relationship='label'>{button}</Tooltip> : button
 }
 
-/** A v8 command bar's items as a v9 toolbar, overflowing into a menu as the command bar does; an item without a click is text. */
+/** A v8 command bar's items as a v9 toolbar that overflows into a menu. */
 const CommandToolbar = (props: ICommandBarProps & { align?: 'start' | 'end', fixed?: boolean }) => {
     const items = [...props.items, ...props.farItems ?? []]
     if (items.length === 0) {
@@ -236,7 +236,7 @@ const CommandToolbar = (props: ICommandBarProps & { align?: 'start' | 'end', fix
     </Overflow>
 }
 
-//a header and the section after it make one group, which scrolls on its own
+//a header and the section after it make one scrolling group
 const renderMenuItems = (items: IContextualMenuItem[], selectedText?: string): React.ReactNode[] => items.map((item, index) => {
     switch (item.itemType) {
         case ContextualMenuItemType.Divider:
@@ -267,10 +267,10 @@ const MenuFromButton = (props: IButtonProps) => <Menu onOpenChange={(_, data) =>
 
 const getIntent = (messages: { level: string }[]) => messages.some(message => message.level === 'ERROR') ? 'error' : messages.some(message => message.level === 'WARNING') ? 'warning' : 'info'
 
-//more than one message collapses under a summary, as the default bar does
+//more than one message collapses under a summary
 const Notifications = (props: { messages?: { text: string, level: 'ERROR' | 'WARNING' | 'INFO' }[] }) => {
     const [isExpanded, setIsExpanded] = React.useState(false)
-    //the same summary the default bar shows, and translated the same way
+    //the default bar's summary label
     const labels = useLabels(NOTIFICATION_MESSAGE_BAR_LABELS)
     const messages = props.messages ?? []
     if (messages.length === 0) {
@@ -295,7 +295,7 @@ const Notifications = (props: { messages?: { text: string, level: 'ERROR' | 'WAR
     </div>
 }
 
-/** A v8 panel's props as a v9 drawer; \`fill\` lets what it holds take the whole body. */
+/** A v8 panel's props as a v9 drawer. */
 const PanelDrawer = (props: IPanelProps & { children?: React.ReactNode, keepOpenOnEscape?: boolean, fill?: boolean }) => <OverlayDrawer open position='end' size='medium' onOpenChange={(_, data) => !data.open && !(props.keepOpenOnEscape && data.type === 'escapeKeyDown') && props.onDismiss?.()}>
     <DrawerHeader>
         <DrawerHeaderTitle action={<Button appearance='subtle' icon={<DismissRegular />} aria-label='Close' onClick={() => props.onDismiss?.()} />}>{props.headerText}</DrawerHeaderTitle>
@@ -315,7 +315,7 @@ const errorBar: Partial<IErrorMessageBarComponents> = {
     onRenderCommandBar: props => <CommandToolbar {...props} fixed />,
 }
 
-//v9 copies the provider's class onto its popups, so the box is a div of its own
+//v9 copies the provider's class onto its popups
 const V9Container = (props: JSX.IntrinsicElements['div']) => {
     const isLight = !useTheme().isInverted
     return <FluentProvider theme={isLight ? webLightTheme : webDarkTheme} style={{ display: 'contents' }}>
@@ -395,7 +395,7 @@ export const V9 = {
     pageSizeSwitcher: {
         onRender: props => <MenuFromButton {...props} />,
     },
-    //the user queries' panel, and the control inside it, drawn the same way
+    //the Manage views panel and the control inside it
     get userQueries() {
         return {
             manageViewsPanel: {

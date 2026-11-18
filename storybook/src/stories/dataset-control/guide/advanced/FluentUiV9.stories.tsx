@@ -22,7 +22,7 @@ Every slot gets the props its default would get, such as the commands as \`items
 |---|---|
 | *v9.tsx* | \`V9\`, the pieces of every part drawn with v9 components, passed to each part's \`components\` |
 | *RecordDataGrid.tsx* | The records in v9's \`DataGrid\` in place of the grid, sorted and selected through the provider |
-| *DealsRibbon.tsx* | **Mark N as won**, which leaves an unsaved change, and two commands that make the list fail |
+| *DealsRibbon.tsx* | A ribbon of its own: **Mark N as won**, which leaves an unsaved change, and two commands that make the list fail |
 
 It draws in v9 the records, the menus, toolbars, search field and its popover, the column editor's drawer, the *Manage views* drawer, the notifications, the empty state and the load error. It leaves the loading placeholder, the error dialog, and the column editor's pickers and column list as they are.
 

@@ -33,7 +33,7 @@ Each control lists its pieces and slots under *Changing how it looks*, DatasetCo
 
 ## What slots do not change
 
-A slot changes how something looks, not what it holds. Commands and menu items are added through the part, with \`hooks.commands\`, \`hooks.items\` or \`hooks.columnCommands\`: see [**From your code**](?path=/docs/controls-datasetcontrol-guide-advanced-from-your-code--overview) and *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
+A slot changes how something looks, not what it holds. Commands and menu items are added through the part, with \`hooks.commands\`, \`hooks.items\` or \`hooks.columnCommands\`: see *Each part from your code* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview) and *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
 
 ## Where next
 

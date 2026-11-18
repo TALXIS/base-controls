@@ -18,7 +18,7 @@ The deals service is down now and then, and the list has to recover. When a load
 
 From this step on, **Code** keeps the deals, their provider, the views and \`loadDeals\` of the last step in *deals.ts*, and the entry imports what it uses. The new lines carry \`//new:\`.
 
-**A failed load.** \`loadDealsOrFail\` throws on every other load, as a service that does not answer would. When a load throws, from a module, \`onLoad\`, a view's \`resolve\` or the provider's first page, the control draws the error in place of its parts and keeps no provider.
+**A failed load.** \`loadDealsOrFail\` throws on every other load, as a service that does not answer would. When a load throws, from \`onLoad\`, a view's \`resolve\`, the provider's first page or a [**module**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview), the control draws the error in place of its parts and keeps no provider.
 
 | The error shows | What it is |
 |---|---|

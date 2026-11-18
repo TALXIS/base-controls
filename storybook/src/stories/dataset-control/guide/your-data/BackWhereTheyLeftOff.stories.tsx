@@ -16,6 +16,8 @@ Anna sorts *All deals* by value, opens another page of the app, and comes back t
 
 ## How it works
 
+The deal list is the one from [**Views of their own**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview), with \`dealViews\` and \`saveDealViewData\` moved to *userViews.ts* as they were, under a *Show the deals* toggle that stands in for leaving the page. In **Code**, the new lines carry \`//new:\`.
+
 The control keeps its **state**: the view the user is on and, for each view, how they left it. A \`stateKey\` decides how long it lasts:
 
 | \`stateKey\` | Where the control keeps its state | How long it lasts |

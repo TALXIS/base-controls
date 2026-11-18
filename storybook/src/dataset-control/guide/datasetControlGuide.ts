@@ -24,7 +24,7 @@ export const { GuideProgress, GuideNavigation, GuideMap } = createGuide<DatasetC
         { stage: 'Your data', title: 'Views of their own', text: 'Save as new view, Save changes and Manage views.' },
         { stage: 'Your data', title: 'Back where they left off', text: 'What each view keeps, and a stateKey to keep it longer.' },
         { stage: 'Your data', title: 'Where views are kept', text: 'Users\' views in Dataverse, TALXIS or a store of your own.' },
-        { stage: 'Advanced', title: 'From your code', text: 'The control of each mount, its parts, events and modules of your own.' },
+        { stage: 'Advanced', title: 'From your code', text: 'The control of each load, its parts, events and modules of your own.' },
         { stage: 'Advanced', title: 'Your own UI', text: 'Replace pieces, add parts and draw a view your way.' },
         { stage: 'Advanced', title: 'Fluent UI v9', text: 'Every part drawn in another design system.' },
     ],
