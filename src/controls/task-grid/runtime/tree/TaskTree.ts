@@ -1,7 +1,7 @@
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ColDef, GridApi, IRowNode } from "ag-grid-community";
 import { ThemeBuilder } from "@theme";
-import { GridCellCommandsHook, GridCellLoadingHook, GridLockHook, GridSelectionStateHook, GridOpenRecordHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
+import { GridCellCommandsHook, GridCellLoadingHook, GridSelectionStateHook, GridOpenRecordHook, IGridAgGridInitialOptions, IGridAgGridOptions, RECORD_LOCK_COLUMN_KEY, RECORD_SAVE_COLUMN_KEY, SELECTION_COLUMN_KEY } from "@controls/grid";
 import type { IGrid } from "@controls/grid";
 import type { IStateStore } from "@core";
 import type { ITaskDataProvider, ITaskMoveParameters } from "../provider";
@@ -74,7 +74,6 @@ export class TaskTree implements ITaskGridTree {
         services.get('cells').hooks.commands.add(this._onCellCommands, TASK_GRID_PRIORITY.tree);
 
         this._grid.modules.observe('rowSelection', selection => { selection.hooks.selectionState.add(this._onSelectionState, TASK_GRID_PRIORITY.tree); });
-        this._grid.modules.observe('editing', editing => { editing.locks.hooks.lock.add(this._onLock, TASK_GRID_PRIORITY.tree); });
         services.observe('gridApi', this._onGridApi);
         this._unsubscribes = [
             parameters.runtime.services.get('datasetControl').modules.observe('userQueries', userQueries => userQueries.saveWithView('isFlatList', () => this._isFlatList)),
@@ -195,12 +194,6 @@ export class TaskTree implements ITaskGridTree {
         }
         request.isHandled = true;
         runQuietly(() => this._runtime.tasks.openRecord(request.reference, request.columnName));
-    };
-
-    private _onLock: GridLockHook = (result, context) => {
-        if (context.record && !context.columnName && !this._runtime.isEditingEnabled()) {
-            result.isLocked = true;
-        }
     };
 
     private _onCellLoading: GridCellLoadingHook = (result, { record }) => {
