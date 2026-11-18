@@ -148,6 +148,19 @@ const preview: Preview = {
           [
             'DatasetControl',
             [
+              'Overview',
+              'Guide',
+              [
+                'Basics',
+                ['Your first deal list', 'Views', 'Load the deals', 'When loading fails'],
+                'Features',
+                ['Search and page', 'Act on deals', 'Choose the columns', 'Messages and nothing to show', 'Lay it out'],
+                'Your data',
+                ['Views of their own', 'Back where they left off', 'Where views are kept'],
+                'Advanced',
+                ['From your code', 'Your own UI', 'Fluent UI v9'],
+              ],
+              'Reference',
               'Get started',
               'Loading data',
               'Error handling',
