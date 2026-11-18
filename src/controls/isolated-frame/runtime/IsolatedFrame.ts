@@ -13,11 +13,14 @@ export interface IIsolatedComponentParameters {
 export interface IIsolatedFrameParameters extends IIsolatedComponentParameters {
     /** The name the frame's copy of the code registered its content under. */
     key: string;
+    /** The frame's fixed height, which its document fills. */
+    height?: string;
 }
 
 const MOUNT_ID = 'isolated-frame-mount';
 
-const FRAME_DOCUMENT = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body,#${MOUNT_ID}{margin:0}</style></head><body><div id="${MOUNT_ID}"></div></body></html>`;
+//a frame that follows its content leaves its document's height to the content
+const getFrameDocument = (isFilled: boolean) => `<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body,#${MOUNT_ID}{margin:0;${isFilled ? 'height:100%' : ''}}</style></head><body><div id="${MOUNT_ID}"></div></body></html>`;
 
 //only set while the bundle evaluates its modules
 const RUNNING_SCRIPT = (document.currentScript as HTMLScriptElement | null)?.src || undefined;
@@ -102,7 +105,7 @@ export class IsolatedFrame {
                 }
             };
             iframe.addEventListener('load', onLoad);
-            iframe.srcdoc = FRAME_DOCUMENT;
+            iframe.srcdoc = getFrameDocument(!!this._parameters.height);
         });
     }
 

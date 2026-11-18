@@ -1,9 +1,8 @@
 import { useEffect } from "react";
 import { useResizeObserver } from "@core";
 
-/** Keeps the iframe as tall as the document it shows, which an iframe never does on its own. */
-export const useIframeContentHeight = (iframe: HTMLIFrameElement | null): void => {
-    
+/** Keeps the iframe as tall as the document it shows, unless it has a fixed `height`. */
+export const useIframeHeight = (iframe: HTMLIFrameElement | null, height?: string): void => {
     const observeBody = useResizeObserver(entry => {
         const body = entry.target as HTMLElement;
         const frame = body.ownerDocument.defaultView?.frameElement as HTMLIFrameElement | null;
@@ -13,7 +12,7 @@ export const useIframeContentHeight = (iframe: HTMLIFrameElement | null): void =
     });
 
     useEffect(() => {
-        if (!iframe) {
+        if (!iframe || height) {
             return;
         }
         const listeners = new AbortController();

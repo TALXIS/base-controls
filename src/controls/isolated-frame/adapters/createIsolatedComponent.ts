@@ -10,6 +10,8 @@ export interface IIsolatedFrameProps {
     className?: string;
     /** The frame's accessible name. */
     title?: string;
+    /** A fixed height, such as `400px` or `100%`, which the content fills instead of sizing the frame. */
+    height?: string;
 }
 
 export interface IIsolatedComponentProps {
@@ -30,6 +32,7 @@ export const createIsolatedHost = <TProps extends object>(key: string, options?:
         contentProps,
         className: frame?.className,
         title: frame?.title,
+        height: frame?.height,
     });
 };
 

@@ -8,6 +8,7 @@ export interface IIsolatedFrameHostProps {
     contentProps: object;
     className?: string;
     title?: string;
+    height?: string;
 }
 
 interface IIsolatedFrameViewProps extends IIsolatedFrameHostProps {
@@ -31,7 +32,7 @@ export const IsolatedFrameHost = (props: IIsolatedFrameHostProps) => {
 
 //remounted on every retry, so each attempt starts with a fresh iframe
 const IsolatedFrameView = (props: IIsolatedFrameViewProps) => {
-    const frame = useMemo(() => new IsolatedFrame(props.parameters), []);
+    const frame = useMemo(() => new IsolatedFrame({ ...props.parameters, height: props.height }), []);
 
     useEffect(() => frame.render(props.contentProps));
     useEffect(() => () => frame.destroy(), []);
@@ -45,5 +46,5 @@ const IsolatedFrameView = (props: IIsolatedFrameViewProps) => {
         }
     };
 
-    return <IsolatedFrameUiFrame onLoad={onLoad} title={props.title} className={props.className} />;
+    return <IsolatedFrameUiFrame onLoad={onLoad} title={props.title} className={props.className} height={props.height} />;
 };
