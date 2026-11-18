@@ -1517,17 +1517,19 @@ interface IGridLock {
     isLocked: boolean;
 }
 
-type IGridLockLevel = 'column' | 'record' | 'cell';
+type IGridLockLevel = 'column' | 'row' | 'cell';
 
-/** Nothing for the grid, a column, a record's row, or both for a cell. */
-interface IGridLockHookParameters {
-    record?: IRecord;
-    columnName?: string;
+interface IGridColumnLockParameters {
+    columnName: string;
 }
 
-interface IGridLockResult {
-    isLocked: boolean;
-    lockedBy?: IGridLockLevel;
+interface IGridRowLockParameters {
+    record: IRecord;
+}
+
+interface IGridCellLockParameters {
+    record: IRecord;
+    columnName: string;
 }
 
 /** What a column decides for each of its cells. */
@@ -1540,8 +1542,6 @@ interface IGridColumnCellContext {
 
 interface IGridColumnContext {
     alignment?: IAlignment;
-    /** No hook can unlock a column locked here. */
-    isLocked?: boolean;
     /** Whether the value is drawn as a link to the record. */
     isPrimary?: boolean;
     /** Whether the header draws the required marker. */
@@ -1674,7 +1674,7 @@ interface IGridEditingEvents {
 /** Which cell the user is editing. */
 interface IGridEditing {
     readonly events: IEventEmitter<IGridEditingEvents>;
-    /** Whether a column, a record's row or a cell is locked. */
+    /** Whether a column, a row or a cell is locked. */
     readonly locks: IGridLocks;
     isEditing(record: IRecord, columnName: string): boolean;
     /** Counts an editor from the moment it is drawn. */
@@ -1818,14 +1818,25 @@ interface IGridRows {
     refreshRowClasses(records: IRecord[]): void;
 }
 
-type GridLockHook = (result: IGridLock, context: IGridLockHookParameters) => void;
+type GridColumnLockHook = (result: IGridLock, parameters: IGridColumnLockParameters) => void;
+type GridRowLockHook = (result: IGridLock, parameters: IGridRowLockParameters) => void;
+type GridCellLockHook = (result: IGridLock, parameters: IGridCellLockParameters) => void;
 
 interface IGridLocks {
-    get(context?: IGridLockHookParameters): IGridLockResult;
     readonly hooks: {
-        /** A context with a record and no columnName asks about the whole row. */
-        readonly lock: IHookPoint<GridLockHook>;
+        /** Locks or opens a column; it starts locked when not valid for update. */
+        readonly column: IHookPoint<GridColumnLockHook>;
+        /** Locks or opens a row; it starts locked when its record is inactive. */
+        readonly row: IHookPoint<GridRowLockHook>;
+        /** Locks or opens one cell; it starts locked when its column or row is. */
+        readonly cell: IHookPoint<GridCellLockHook>;
     };
+    isColumnLocked(columnName: string): boolean;
+    isRowLocked(record: IRecord): boolean;
+    /** Whether the cell is locked by its column, its row or its own hooks. */
+    isCellLocked(record: IRecord, columnName: string): boolean;
+    /** The level that locks the cell, or \`undefined\` when it is open. */
+    getCellLockLevel(record: IRecord, columnName: string): IGridLockLevel | undefined;
 }
 
 type GridValidationHook = (result: IFieldValidationResult, params: { record: IRecord; columnName: string }) => void;

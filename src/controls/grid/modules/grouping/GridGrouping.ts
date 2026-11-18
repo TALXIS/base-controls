@@ -17,7 +17,7 @@ import { IGridRowModelGrouping } from "../../runtime/row-model";
 import { IGridSurface } from "../../runtime/surfaces";
 import type { GridSelectionStateHook, GridSelectRecordsHook } from "../row-selection";
 import { GRID_MODULE_PRIORITY } from "../priorities";
-import { GridLockHook } from "../editing/GridLocks";
+import { GridCellLockHook } from "../editing/GridLocks";
 
 declare module "../../interfaces" {
     interface IGridModuleMap {
@@ -157,7 +157,7 @@ export class GridGrouping implements IGridGrouping {
         cells.hooks.theme.add(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
         //locks come with the editing module, which may load after this one
         this._gridServices.get('grid').modules.observe('editing', editing => {
-            editing.locks.hooks.lock.add(this._onLock, GRID_MODULE_PRIORITY.grouping);
+            editing.locks.hooks.cell.add(this._onLock, GRID_MODULE_PRIORITY.grouping);
         });
         //listed in the column menu after sorting and filtering
         columnHeaders.hooks.menuSections.add(this._onMenuSection, GRID_MODULE_PRIORITY.grouping);
@@ -379,11 +379,10 @@ export class GridGrouping implements IGridGrouping {
 
     /** A group row holds no record's value to edit. */
     //per cell: locking the group record would draw its row muted
-    private _onLock: GridLockHook = (result, { record, columnName }) => {
-        if (!record || !columnName || !isGroupRecord(record)) {
-            return;
+    private _onLock: GridCellLockHook = (result, { record }) => {
+        if (isGroupRecord(record)) {
+            result.isLocked = true;
         }
-        result.isLocked = true;
     };
 
     /** The grouping icon on a column the rows are grouped by. */

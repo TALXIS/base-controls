@@ -86,8 +86,8 @@ const onSetup = (grid: IGrid) => {
             result.errorMessage = 'A win chance is between 0 and 100 %.'
         }
     })
-    grid.modules.observe('editing', editing => editing.locks.hooks.lock.add((result, { record, columnName }) => {
-        if (record && columnName === 'probability' && isClosed(record)) {
+    grid.modules.observe('editing', editing => editing.locks.hooks.cell.add((result, { record, columnName }) => {
+        if (columnName === 'probability' && isClosed(record)) {
             result.isLocked = true
         }
     }))

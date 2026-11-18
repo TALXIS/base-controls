@@ -5,7 +5,7 @@ import { CELL_COMMANDS_CLASS } from "../../ui/cells/commands/styles";
 import { merge } from "merge-anything";
 import { createThemeBuilder, getTextColorForBackground } from "@theme";
 import type { GridCellCommandsHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../../runtime/cells";
-import type { GridLockHook } from "../editing/GridLocks";
+import type { GridCellLockHook } from "../editing/GridLocks";
 import type { IGridSurface } from "../../runtime/surfaces";
 import type { IGridServiceRegistry } from "../../runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
@@ -46,7 +46,7 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         parameters.services.get('surfaces').hooks.surfaces.add(this._onSurfaces, COMPATIBILITY_HOOK_PRIORITY);
         //locks come with the editing module, which may load after this one
         parameters.services.get('grid').modules.observe('editing', editing => {
-            editing.locks.hooks.lock.add(this._onLock, COMPATIBILITY_HOOK_PRIORITY);
+            editing.locks.hooks.cell.add(this._onLock, COMPATIBILITY_HOOK_PRIORITY);
         });
         cells.hooks.loading.add(this._onCellLoading, COMPATIBILITY_HOOK_PRIORITY);
         cells.hooks.theme.add(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
@@ -90,13 +90,11 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         return this._services.get('provider');
     }
 
-    private _onLock: GridLockHook = (result, { record, columnName }) => {
-        const field = record && columnName ? this._getField({ record, columnName }) : undefined;
-        if (!field) {
-            return;
+    private _onLock: GridCellLockHook = (result, { record, columnName }) => {
+        //a disabled expression only ever locks
+        if (this._getField({ record, columnName })?.isDisabled()) {
+            result.isLocked = true;
         }
-        //the record already answers for `disabledExpression`, inactive records and group rows
-        result.isLocked = field.isDisabled();
     };
 
     private _onCellLoading: GridCellLoadingHook = (result, params) => {

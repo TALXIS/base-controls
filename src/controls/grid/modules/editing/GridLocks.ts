@@ -1,107 +1,118 @@
-import { ColDef } from "ag-grid-community";
 import { IRecord } from "@talxis/client-libraries";
 import { HookRegistry, IHookPoint } from "@core";
 import { IGridServiceRegistry } from "../../runtime";
-import { getColumnContext } from "../../runtime/columns/colDef";
 
 declare module "../../runtime/columns/colDef" {
-    interface IGridColumnContext {
-        /** Whether what the cells hold is locked for good. */
-        isLocked?: boolean;
-    }
     interface IGridColumnCellContext {
         /** Whether the control takes input where the cell stands, with no editor to open. */
         enableOneClickEdit?: boolean;
     }
 }
 
-/** The level that locks something. */
-export type IGridLockLevel = 'column' | 'record' | 'cell';
-
-/** What is asked about: a column, a record's row, or both for a cell. */
-export interface IGridLockHookParameters {
-    record?: IRecord;
-    columnName?: string;
-}
-
-export interface IGridLockResult {
-    isLocked: boolean;
-    /** The level that locked it, where something did. */
-    lockedBy?: IGridLockLevel;
-}
+/** The level that locks a cell. */
+export type IGridLockLevel = 'column' | 'row' | 'cell';
 
 export interface IGridLock {
     isLocked: boolean;
 }
 
-/** A hook over whether something is locked, handed the context it is asked about. */
-export type GridLockHook = (result: IGridLock, parameters: IGridLockHookParameters) => void;
+export interface IGridColumnLockParameters {
+    columnName: string;
+}
+
+export interface IGridRowLockParameters {
+    record: IRecord;
+}
+
+export interface IGridCellLockParameters {
+    record: IRecord;
+    columnName: string;
+}
+
+export type GridColumnLockHook = (result: IGridLock, parameters: IGridColumnLockParameters) => void;
+export type GridRowLockHook = (result: IGridLock, parameters: IGridRowLockParameters) => void;
+export type GridCellLockHook = (result: IGridLock, parameters: IGridCellLockParameters) => void;
 
 export interface IGridLocksParameters {
     services: IGridServiceRegistry;
 }
 
 export interface IGridLocksHooks {
-    /** Any level; it is handed the context it is asked about. */
-    readonly lock: IHookPoint<GridLockHook>;
+    /** Locks or opens a column; it starts locked when not valid for update. */
+    readonly column: IHookPoint<GridColumnLockHook>;
+    /** Locks or opens a row; it starts locked when its record is inactive. */
+    readonly row: IHookPoint<GridRowLockHook>;
+    /** Locks or opens one cell; it starts locked when its column or row is. */
+    readonly cell: IHookPoint<GridCellLockHook>;
 }
 
-/** Whether a column, a record's row or a cell is locked. */
+/** Whether a column, a row or a cell is locked. */
 export interface IGridLocks {
-    /** Whether what the context names is locked, and at which level. */
-    get(parameters?: IGridLockHookParameters): IGridLockResult;
     readonly hooks: IGridLocksHooks;
+    isColumnLocked(columnName: string): boolean;
+    isRowLocked(record: IRecord): boolean;
+    /** Whether the cell is locked by its column, its row or its own hooks. */
+    isCellLocked(record: IRecord, columnName: string): boolean;
+    /** The level that locks the cell, or `undefined` when it is open. */
+    getCellLockLevel(record: IRecord, columnName: string): IGridLockLevel | undefined;
 }
 
 export class GridLocks implements IGridLocks {
     private _services: IGridServiceRegistry;
+    private _isLockedByColumn = new Map<string, boolean>();
     public readonly hooks = {
-        lock: new HookRegistry<GridLockHook>(),
+        column: new HookRegistry<GridColumnLockHook>({ onChange: () => this.clearColumnCache() }),
+        row: new HookRegistry<GridRowLockHook>(),
+        cell: new HookRegistry<GridCellLockHook>(),
     };
 
     constructor(parameters: IGridLocksParameters) {
         this._services = parameters.services;
     }
 
-    public get(parameters: IGridLockHookParameters = {}): IGridLockResult {
-        const { record, columnName } = parameters;
-        const colDef = columnName ? this._getColDef(columnName) : undefined;
-        if (columnName && this._isColumnLocked(columnName, colDef)) {
-            return { isLocked: true, lockedBy: 'column' };
+    public isColumnLocked(columnName: string): boolean {
+        let isLocked = this._isLockedByColumn.get(columnName);
+        if (isLocked === undefined) {
+            const metadata = this._services.get('provider').getColumnsMap()[columnName]?.metadata;
+            const result: IGridLock = { isLocked: !metadata?.IsValidForUpdate };
+            this.hooks.column.apply(result, { columnName });
+            isLocked = result.isLocked;
+            this._isLockedByColumn.set(columnName, isLocked);
         }
-        if (record && this._isRecordLocked(record)) {
-            return { isLocked: true, lockedBy: 'record' };
-        }
-        if (record && columnName && this._isCellLocked(record, columnName)) {
-            return { isLocked: true, lockedBy: 'cell' };
-        }
-        return { isLocked: false };
+        return isLocked;
     }
 
-    //a column set as locked is final, no hook can open it
-    private _isColumnLocked(columnName: string, colDef: ColDef<IRecord> | undefined): boolean {
-        return getColumnContext(colDef).isLocked === true || this._applyHooks(false, { columnName });
-    }
-
-    private _isRecordLocked(record: IRecord): boolean {
+    public isRowLocked(record: IRecord): boolean {
         const result: IGridLock = { isLocked: !record.isActive() };
-        this.hooks.lock.apply(result, { record });
+        this.hooks.row.apply(result, { record });
         return result.isLocked;
     }
 
-    private _isCellLocked(record: IRecord, columnName: string): boolean {
-        const result: IGridLock = { isLocked: false };
-        this.hooks.lock.apply(result, { record, columnName });
-        return result.isLocked;
+    public isCellLocked(record: IRecord, columnName: string): boolean {
+        return this._getCellLock(record, columnName).isCellLocked;
     }
 
-    private _applyHooks(isLocked: boolean, parameters: IGridLockHookParameters): boolean {
-        const result: IGridLock = { isLocked };
-        this.hooks.lock.apply(result, parameters);
-        return result.isLocked;
+    public getCellLockLevel(record: IRecord, columnName: string): IGridLockLevel | undefined {
+        const { isColumnLocked, isRowLocked, isCellLocked } = this._getCellLock(record, columnName);
+        if (!isCellLocked) {
+            return undefined;
+        }
+        if (isColumnLocked) {
+            return 'column';
+        }
+        return isRowLocked ? 'row' : 'cell';
     }
 
-    private _getColDef(columnName: string): ColDef<IRecord> | undefined {
-        return this._services.find('gridApi')?.getColumn(columnName)?.getColDef();
+    /** Forgets the columns' cached locks. */
+    public clearColumnCache(): void {
+        this._isLockedByColumn.clear();
+    }
+
+    private _getCellLock(record: IRecord, columnName: string) {
+        const isColumnLocked = this.isColumnLocked(columnName);
+        const isRowLocked = this.isRowLocked(record);
+        const result: IGridLock = { isLocked: isColumnLocked || isRowLocked };
+        this.hooks.cell.apply(result, { record, columnName });
+        return { isColumnLocked, isRowLocked, isCellLocked: result.isLocked };
     }
 }

@@ -65,11 +65,11 @@ Locks decide what can be edited. The levels are checked in the order of the tabl
 | Level | Locked by | Drawn as |
 |---|---|---|
 | Grid | No editing module | Nothing |
-| Column | \`context.isLocked\`, which defaults to \`!metadata.IsValidForUpdate\`, or a lock hook asked about \`{ columnName }\` | A lock in the header |
-| Record | A lock hook asked about \`{ record }\`, or an inactive record | A dimmed row, and a lock in a column pinned at the start |
-| Cell | A lock hook asked about \`{ record, columnName }\` | A lock in the cell |
+| Column | \`!metadata.IsValidForUpdate\`, then \`hooks.column\` | A lock in the header |
+| Row | An inactive record, then \`hooks.row\` | A dimmed row, and a lock in a column pinned at the start |
+| Cell | Its column or row lock, then \`hooks.cell\` | A lock in the cell |
 
-\`context.isLocked: true\` is final; to open a column its metadata locks, give it \`context: { isLocked: false }\`. Lock hooks are added with \`editing.locks.hooks.lock.add\`; in \`onSetup\`, reach the module with \`grid.modules.observe('editing', …)\`, as the example does (see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)). A hook asked about \`{ record }\` starts with \`result.isLocked\` as \`!record.isActive()\`, so it can also unlock. A cell is asked about only when its column and record are open.
+Each level starts from the one above and its hooks have the last word: \`result.isLocked\` arrives set, so a hook can lock or open. A cell starts locked when its column or row is, so a cell hook can open one cell in a locked column. Lock hooks are added with \`editing.locks.hooks.column\`, \`.row\` and \`.cell\`; in \`onSetup\`, reach the module with \`grid.modules.observe('editing', …)\`, as the example does (see *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview)).
 
 Locks gate only the grid's own editing: \`record.setValue()\` from your code ignores them. A lock that reads something outside its record, such as a toggle or the user's role, redraws nothing by itself: see *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). The lock column is \`RECORD_LOCK_COLUMN_KEY\`, hidden until a loaded row is locked, and a dimmed row carries the class \`LOCKED_RECORD_ROW_CLASS\`. To change the tooltips, as the example does, see [**Localization**](?path=/docs/concepts-localization--overview).
 
@@ -133,8 +133,9 @@ The module is \`grid.modules.find('editing')\`, or \`useGridModule('editing')\` 
 | \`isEditorAvailable(record, colDef)\` | Whether an editor may open over the cell: the column is not in-place and the cell is not locked. |
 | \`start(cell)\`, \`finish(cell)\` | Steps into an in-place cell; ends the edit and brings the focus back to the cell. |
 | \`isAutoSaveEnabled()\` | Whether each commit saves its record. |
-| \`locks.get({ record?, columnName? })\` | \`{ isLocked, lockedBy? }\`, where \`lockedBy\` is \`'column'\`, \`'record'\` or \`'cell'\`. |
-| \`locks.hooks.lock.add(hook, priority?)\` | Locks columns, records and cells. See *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). |
+| \`locks.isColumnLocked(columnName)\`, \`isRowLocked(record)\`, \`isCellLocked(record, columnName)\` | Whether the column, the row or the cell is locked. |
+| \`locks.getCellLockLevel(record, columnName)\` | \`'column'\`, \`'row'\` or \`'cell'\` for a locked cell, \`undefined\` for an open one. |
+| \`locks.hooks.column\`, \`.row\`, \`.cell\` | Lock or open columns, rows and cells. See *Locks* on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). |
 | \`events\` | \`onEditedCellChanged(previous?, next?)\` fires when an editor opens or closes, or the user steps into or out of an in-place cell. Each argument is \`{ recordId, columnName }\`. In \`onSetup\`, subscribe inside \`grid.modules.observe('editing', …)\`. |
 
 To change a value as a cell would, saving it with \`enableAutoSave\`, go through its field: \`grid.services.get('fields').get(record, columnName).setValue(value)\`. \`record.setValue()\` changes the record and saves nothing.
@@ -213,7 +214,7 @@ export const FreezeApprovedEntries: Story = {
     parameters: {
         docs: {
             description: {
-                story: `One lock hook locks approved entries and the *Hourly rate* of work that is not billable, and \`context.isLocked\` locks *Employee*. Try: hover a lock.`,
+                story: `A column hook locks *Employee*, a row hook locks approved entries, and a cell hook locks the *Hourly rate* of work that is not billable. Try: hover a lock.`,
             },
         },
     },

@@ -17,7 +17,7 @@ export const RecordLockIcon = (props: IRecordLockIconProps) => {
     const labels = useLabels(GRID_LABELS);
     const styles = useMemo(() => getRecordLockIconStyles(), []);
 
-    if (locks?.get({ record: cell.getRecord() }).lockedBy !== 'record') {
+    if (!locks?.isRowLocked(cell.getRecord())) {
         return null;
     }
     return <CellUi.LockIcon className={styles.icon} message={labels.get('grid.recordLocked')} components={props.components} />;

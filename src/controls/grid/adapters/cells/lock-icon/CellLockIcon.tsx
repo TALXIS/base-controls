@@ -15,7 +15,7 @@ export const CellLockIcon = (props: ICellLockIconProps) => {
     const labels = useLabels(GRID_LABELS);
 
     //a locked column is marked in its header, a locked record by its muted row
-    if (locks?.get({ record: cell.getRecord(), columnName: cell.getColumnName() }).lockedBy !== 'cell') {
+    if (locks?.getCellLockLevel(cell.getRecord(), cell.getColumnName()) !== 'cell') {
         return null;
     }
     return <CellUi.LockIcon message={labels.get('grid.valueLocked')} alignment={cell.getAlignment()} components={props.components} />;

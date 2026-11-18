@@ -478,9 +478,8 @@ const closedDealColours: IGridModule = {
 const lockClosedDeals: IGridModule = {
     name: 'lockClosedDeals',
     onLoad: grid => {
-        grid.modules.observe('editing', editing => editing.locks.hooks.lock.add((result, { record, columnName }) => {
-            //a record without a columnName asks about the whole row
-            if (record && !columnName && !isSummaryRow(record) && isClosed(record)) {
+        grid.modules.observe('editing', editing => editing.locks.hooks.row.add((result, { record }) => {
+            if (!isSummaryRow(record) && isClosed(record)) {
                 result.isLocked = true
             }
         }))

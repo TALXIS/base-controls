@@ -116,7 +116,7 @@ export class TaskRuntime implements ITaskRuntime {
             return true;
         }
         const locks = this.services.get('datasetControl').parts.find('grid')?.modules.find('editing')?.locks;
-        return locks ? locks.get({ record }).isLocked : !this.isEditingEnabled() || !record.isActive();
+        return locks ? locks.isRowLocked(record) : !this.isEditingEnabled() || !record.isActive();
     }
 
     public getHoursPerDay(): number {

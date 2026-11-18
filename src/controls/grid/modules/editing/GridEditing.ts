@@ -74,7 +74,7 @@ export class GridEditing implements IGridEditing {
     private _isLockedByRecord = new WeakMap<IRecord, boolean>();
     private _isRecordLockColumnVisible = false;
     public readonly events: IEventEmitter<IGridEditingEvents> = new EventEmitter<IGridEditingEvents>();
-    public readonly locks: IGridLocks;
+    public readonly locks: GridLocks;
 
     constructor(parameters: IGridEditingParameters) {
         this._services = parameters.services;
@@ -112,7 +112,7 @@ export class GridEditing implements IGridEditing {
         if (this._isOneClickEdit(colDef)) {
             return false;
         }
-        return !!record && !this.locks.get({ record: record, columnName: colDef.colId }).isLocked;
+        return !!record && !this.locks.isCellLocked(record, colDef.colId!);
     }
 
     public isEditing(record: IRecord, columnName: string): boolean {
@@ -146,7 +146,7 @@ export class GridEditing implements IGridEditing {
             result.options.readOnlyEdit = true;
         }, GRID_MODULE_PRIORITY.editing);
         this._services.get('gridTheme').hooks.styles.add(this._onStyles, GRID_MODULE_PRIORITY.editing);
-        this._services.get('rows').addRowClass(LOCKED_RECORD_ROW_CLASS, ({ record }) => this._isRecordLocked(record));
+        this._services.get('rows').addRowClass(LOCKED_RECORD_ROW_CLASS, ({ record }) => this._isRowLocked(record));
     }
 
     private _onStyles = (result: IGridStyles, theme: ITheme): void => {
@@ -154,6 +154,7 @@ export class GridEditing implements IGridEditing {
     };
 
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
+        this.locks.clearColumnCache();
         const columns = this._services.get('provider').getColumnsMap();
         for (const colDef of columnDefs) {
             const column = columns[colDef.colId!];
@@ -162,7 +163,6 @@ export class GridEditing implements IGridEditing {
             }
             colDef.cellEditor = CellFieldEditor;
             colDef.editable = this._hasEditor(column) && ((params: EditableCallbackParams<IRecord>) => this.isEditorAvailable(params.data, params.colDef));
-            colDef.context = { ...colDef.context, isLocked: colDef.context?.isLocked ?? !column.metadata?.IsValidForUpdate };
             if (this._isColumnRequired(column)) {
                 colDef.context = { ...colDef.context, isRequired: true };
             }
@@ -226,7 +226,7 @@ export class GridEditing implements IGridEditing {
     private _onRecordColumnValueChanged = (record: IRecord): void => {
         const wasLocked = this._isLockedByRecord.get(record);
         this._isLockedByRecord.delete(record);
-        const isLocked = this._isRecordLocked(record);
+        const isLocked = this._isRowLocked(record);
         if (isLocked !== wasLocked) {
             this._services.get('rows').refreshRowClasses([record]);
         }
@@ -242,17 +242,17 @@ export class GridEditing implements IGridEditing {
     private _syncRecordLockColumnVisibility(): void {
         let hasLockedRecord = false;
         this._gridApi.forEachNode(node => {
-            if (!hasLockedRecord && node.data && this._isRecordLocked(node.data)) {
+            if (!hasLockedRecord && node.data && this._isRowLocked(node.data)) {
                 hasLockedRecord = true;
             }
         });
         this._setRecordLockColumnVisible(hasLockedRecord);
     }
 
-    private _isRecordLocked(record: IRecord): boolean {
+    private _isRowLocked(record: IRecord): boolean {
         let isLocked = this._isLockedByRecord.get(record);
         if (isLocked === undefined) {
-            isLocked = this.locks.get({ record }).lockedBy === 'record';
+            isLocked = this.locks.isRowLocked(record);
             this._isLockedByRecord.set(record, isLocked);
         }
         return isLocked;
@@ -267,7 +267,7 @@ export class GridEditing implements IGridEditing {
     }
 
     private _onColumnHeaderAdornments = (adornments: IColumnHeaderAdornment[], header: IGridColumnHeader): void => {
-        if (this.locks.get({ columnName: header.getColDef().colId }).lockedBy !== 'column') {
+        if (!this.locks.isColumnLocked(header.getColDef().colId!)) {
             return;
         }
         adornments.push({

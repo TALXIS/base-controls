@@ -70,20 +70,24 @@ const LOCK_LABELS = {
 const isBillable = (record: IRecord) => record.getValue('billable') === '1'
 
 const onSetup = (grid: IGrid) => {
-    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-        const employee = columnDefs.find(colDef => colDef.colId === 'employee')!
-        employee.context = { ...employee.context, isLocked: true }
-    })
     //the locks belong to the editing module
-    grid.modules.observe('editing', editing => editing.locks.hooks.lock.add((result, { record, columnName }) => {
-        //a record without a columnName asks about the whole row
-        if (record && !columnName && Number(record.getValue('status')) === APPROVED) {
-            result.isLocked = true
-        }
-        if (record && columnName === 'rate' && !isBillable(record)) {
-            result.isLocked = true
-        }
-    }))
+    grid.modules.observe('editing', editing => {
+        editing.locks.hooks.column.add((result, { columnName }) => {
+            if (columnName === 'employee') {
+                result.isLocked = true
+            }
+        })
+        editing.locks.hooks.row.add((result, { record }) => {
+            if (Number(record.getValue('status')) === APPROVED) {
+                result.isLocked = true
+            }
+        })
+        editing.locks.hooks.cell.add((result, { record, columnName }) => {
+            if (columnName === 'rate' && !isBillable(record)) {
+                result.isLocked = true
+            }
+        })
+    })
 }
 
 const GridExample = () => <LabelsProvider labels={LOCK_LABELS}>

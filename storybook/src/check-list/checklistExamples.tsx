@@ -73,8 +73,8 @@ const onSetup = (grid: IGrid) => {
         }
     })
     //a finished item's name and due date cannot be edited
-    grid.modules.observe('editing', editing => editing.locks.hooks.lock.add((result: IGridLock, { record, columnName }: IGridLockHookParameters) => {
-        if (record && (columnName === 'name' || columnName === 'duedate') && isDone(record)) {
+    grid.modules.observe('editing', editing => editing.locks.hooks.cell.add((result: IGridLock, { record, columnName }: IGridCellLockParameters) => {
+        if ((columnName === 'name' || columnName === 'duedate') && isDone(record)) {
             result.isLocked = true
         }
     }))

@@ -44,8 +44,8 @@ Once a \`hooks.validation\` hook exists, the grid's validation replaces a script
 
 | When | What happens |
 |---|---|
-| There is no editing module, the column is locked, or the record is locked as a whole | A disabled expression cannot open the cell |
-| A column has \`context: { isLocked: false }\` and metadata \`IsValidForUpdate: false\` | Its cells stay locked: return \`false\` from a \`setDisabledExpression\` on it too, or unlock them in a lock hook of yours |
+| There is no editing module, or the column, row or a cell hook locks the cell | A disabled expression cannot open the cell |
+| A column hook opens a column with metadata \`IsValidForUpdate: false\` | Its cells stay locked: return \`false\` from a \`setDisabledExpression\` on it too |
 | Rows are grouped | A script's background is repainted with the grid's; its text colour stays |
 | A group row or the totals row has expressions | They apply too: see *Summary rows* on [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview) |
 

@@ -33,15 +33,15 @@ Cell and header hooks run for every column, so a hook meant for one column check
 
 ## Locks
 
-One lock hook decides three levels. The context it receives says which one the grid is asking about:
+Each level has its own hook point, and each starts from the level above:
 
-| Level | Context |
-|---|---|
-| A column | \`{ columnName }\` |
-| A record's row | \`{ record }\` |
-| A cell | \`{ record, columnName }\` |
+| Hook point | Receives | Starts locked when |
+|---|---|---|
+| \`locks.hooks.column\` | \`{ columnName }\` | Its metadata is not \`IsValidForUpdate\` |
+| \`locks.hooks.row\` | \`{ record }\` | The record is inactive |
+| \`locks.hooks.cell\` | \`{ record, columnName }\` | Its column or its row is locked |
 
-Check the context before you read it. A hook that reads \`record\` without checking fails for a column, and a hook that ignores the context locks every column and every row. How each level is drawn is under *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
+A hook may lock or open, and the cell hook has the last word. Set \`result.isLocked\` only when you mean to change it: assigning a condition to it in a cell hook opens cells their column or row locked. How each level is drawn is under *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview).
 
 ## Validation
 
@@ -118,7 +118,7 @@ Every header hook receives an \`IGridColumnHeader\`:
 | \`hooks.control\` | \`cells\` | \`result.control\`: the control that draws a cell, and its \`bindings\` |
 | \`hooks.controlParameters\` | \`cells\` | The parameters a cell's control receives |
 | \`hooks.height\` | \`rows\` | \`result.height\`, in pixels |
-| \`hooks.lock\` | \`editing.locks\` | \`result.isLocked\` for a column, a row or a cell |
+| \`hooks.column\`, \`hooks.row\`, \`hooks.cell\` | \`editing.locks\` | \`result.isLocked\` for a column, a row or a cell |
 | \`hooks.validation\` | \`validation\` | \`result.error\`, \`result.errorMessage\` |
 | \`hooks.columnDefinitions\` | \`columns\` | The column definitions AG Grid receives: see *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview) |
 | \`hooks.menuSections\` | \`columns.headers\` | A menu's sections |

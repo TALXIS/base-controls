@@ -89,7 +89,6 @@ What the grid reads from a column's \`context\`. What a column's cells and heade
 |---|---|---|
 | \`isPrimary\` | \`boolean\` | Draws the value as a link to the record. |
 | \`isRequired\` | \`boolean\` | Draws the required marker in the header; the editing module sets it from \`RequiredLevel\`. Validates nothing. |
-| \`isLocked\` | \`boolean\` | With editing, locks the column for good; defaults to \`!IsValidForUpdate\`. See *Locks* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
 | \`alignment\` | \`'left' \\| 'center' \\| 'right'\` | Which edge the value reads from; numbers and currency default to \`'right'\`. |
 | \`widthOffset\` | \`number\` | Pixels added for what a module draws in the column, such as grouping's indent. Not saved. |
 | \`cell.isRowResizable\` | \`boolean\` | Draws the grip a row is dragged taller by. |

@@ -146,9 +146,8 @@ const GridExample = () => {
     const skipSummaryRowsRef = React.useRef(skipSummaryRows)
     const gridRef = React.useRef<IGrid>()
 
-    const lockSubmittedEntries = (result: IGridLock, { record, columnName }: IGridLockHookParameters) => {
-        //only a record without a columnName asks about the whole row
-        if (!record || columnName || (skipSummaryRowsRef.current && isSummaryRow(record))) {
+    const lockSubmittedEntries = (result: IGridLock, { record }: IGridRowLockParameters) => {
+        if (skipSummaryRowsRef.current && isSummaryRow(record)) {
             return
         }
         if (![DRAFT, REJECTED].includes(Number(record.getValue('status')))) {
@@ -166,7 +165,7 @@ const GridExample = () => {
 
     const onSetup = (grid: IGrid) => {
         gridRef.current = grid
-        grid.modules.observe('editing', editing => editing.locks.hooks.lock.add(lockSubmittedEntries))
+        grid.modules.observe('editing', editing => editing.locks.hooks.row.add(lockSubmittedEntries))
     }
 
     return <DatasetControl onLoad={async () => ({ provider: timesheets })}>
