@@ -17,7 +17,7 @@ export interface IIsolatedFrameParameters extends IIsolatedComponentParameters {
 
 const MOUNT_ID = 'isolated-frame-mount';
 
-const FRAME_DOCUMENT = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body,#${MOUNT_ID}{height:100%;margin:0}</style></head><body><div id="${MOUNT_ID}"></div></body></html>`;
+const FRAME_DOCUMENT = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body,#${MOUNT_ID}{margin:0}</style></head><body><div id="${MOUNT_ID}"></div></body></html>`;
 
 //only set while the bundle evaluates its modules
 const RUNNING_SCRIPT = (document.currentScript as HTMLScriptElement | null)?.src || undefined;

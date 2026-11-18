@@ -6,7 +6,7 @@ import { IsolatedFrameHost } from "./IsolatedFrameHost";
 
 /** How one frame is drawn, given as its `frame` prop. */
 export interface IIsolatedFrameProps {
-    /** Put on the iframe, which fills its parent by default. */
+    /** Put on the iframe, which is as wide as its parent and as tall as what it draws. */
     className?: string;
     /** The frame's accessible name. */
     title?: string;

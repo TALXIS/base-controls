@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ErrorMessageBoundary } from "@ui";
 import { IIsolatedFrameParameters, IsolatedFrame } from "../runtime/IsolatedFrame";
 import { IsolatedFrameUiFrame } from "../ui/IsolatedFrameUiFrame";
@@ -36,17 +36,14 @@ const IsolatedFrameView = (props: IIsolatedFrameViewProps) => {
     useEffect(() => frame.render(props.contentProps));
     useEffect(() => () => frame.destroy(), []);
 
-    const onIframe = useCallback(async (iframe: HTMLIFrameElement | null) => {
-        if (!iframe) {
-            return;
-        }
+    const onLoad = async (iframe: HTMLIFrameElement) => {
         try {
             await frame.load(iframe);
         }
         catch (error) {
             props.onLoadFailed(error);
         }
-    }, []);
+    };
 
-    return <IsolatedFrameUiFrame ref={onIframe} title={props.title} className={props.className} />;
+    return <IsolatedFrameUiFrame onLoad={onLoad} title={props.title} className={props.className} />;
 };
