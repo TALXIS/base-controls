@@ -51,7 +51,7 @@ export const GridRoot = (props: IGridProps) => {
         getLabelsService: () => labelsServiceRef.current,
     });
 
-    return <RuntimeHost<GridRuntime> createRuntime={createRuntime} onSetup={grid => propsRef.current.onSetup?.(grid)} className={styles.runtime}>
+    return <RuntimeHost<GridRuntime> createRuntime={createRuntime} onSetup={grid => propsRef.current.onSetup?.(grid)} onReady={grid => propsRef.current.onReady?.(grid)} className={styles.runtime}>
         <GridMount {...props} />
     </RuntimeHost>;
 };

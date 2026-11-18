@@ -26,8 +26,7 @@ Inside the control, any component gets it from \`useDatasetControl()\`, as the t
 
 | Event | Raised when |
 |---|---|
-| \`onReady\` | The load succeeded, and the parts are drawn on \`getProvider()\`. |
-| \`onInitFailed(error)\` | The load failed: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview). |
+| \`onStatusChanged(status)\` | The status changed; \`'failed'\` means the load failed: see [**Error handling**](?path=/docs/controls-datasetcontrol-error-handling--overview). |
 | \`onRemountRequested\` | The control is about to mount anew, by \`loadView\`, \`reload\` or \`lifecycle.remount\`. |
 | \`onDestroyed\` | The mount goes, before its modules and provider are destroyed. |
 

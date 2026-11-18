@@ -19,7 +19,7 @@ export const MapRoot = (props: IMapProps) => {
         </MapUiContainer>,
     };
 
-    return <RuntimeHost<MapRuntime> createRuntime={createRuntime} onSetup={map => propsRef.current.onSetup?.(map)} components={{ container: runtimeContainer, placeholder: loading, mountError: errorMessage }}>
+    return <RuntimeHost<MapRuntime> createRuntime={createRuntime} onSetup={map => propsRef.current.onSetup?.(map)} onReady={map => propsRef.current.onReady?.(map)} components={{ container: runtimeContainer, placeholder: loading, mountError: errorMessage }}>
         <MapMount {...props} />
     </RuntimeHost>;
 };

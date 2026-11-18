@@ -1,6 +1,6 @@
 import type { ITheme } from "@fluentui/react";
 import { IAvailableRelatedColumn, IColumn, IDataProvider, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { HookRegistry, IStateStore, ModuleLoader, Runtime, RuntimeLifecycle, ServiceRegistry, IHookPoint } from "@core";
+import { HookRegistry, IStateStore, ModuleLoader, Runtime, ServiceRegistry, IHookPoint } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlProps } from "../adapters/root/Root";
 import { IDatasetControl, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceRegistry, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
@@ -46,10 +46,6 @@ export interface IDatasetControlRuntimeParameters {
 }
 
 export class DatasetControlRuntime extends Runtime implements IDatasetControlInternal {
-    public readonly lifecycle = new RuntimeLifecycle({
-        onInit: () => this._init(),
-        onDestroy: () => this._destroy(),
-    });
     private _services = new ServiceRegistry<IDatasetControlServiceMap>();
     private _moduleLoader = new ModuleLoader<IDatasetControlModuleMap, IDatasetControlInternal>();
     private _surfaces = new DatasetControlSurfaces();
@@ -136,7 +132,7 @@ export class DatasetControlRuntime extends Runtime implements IDatasetControlInt
         await this._remountBehindBlocker(this._viewId);
     }
 
-    private _destroy(): void {
+    protected onDestroy(): void {
         //before the provider is released, which the modules may still read
         this._moduleLoader.destroy();
         if (this._provider) {
@@ -160,7 +156,7 @@ export class DatasetControlRuntime extends Runtime implements IDatasetControlInt
         await provider.executeWithUnsavedChangesBlocker(remount);
     }
 
-    private async _init(): Promise<void> {
+    protected async onInit(): Promise<void> {
         await this._moduleLoader.load(this._getProps().modules ?? [], this);
         const { provider, views = [], destroyProviderOnUnmount } = await this._getProps().onLoad(this);
         this._isProviderOwned = destroyProviderOnUnmount !== false;

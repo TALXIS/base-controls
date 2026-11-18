@@ -63,7 +63,7 @@ const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The provider is created', hook: 'onLoad', text: '`onLoad(control)` returns `{ provider, views }`, and the modules add their views.' },
     { title: 'The view is picked', text: 'The control picks the view asked for, or the one the user was on while it is listed, else the first.' },
     { title: 'The view is applied', hook: 'resolve', text: 'The view\'s `resolve(provider)` sets the provider up, then the control sets its linking and columns and puts back what the user changed in the view.' },
-    { title: 'The first page loads', hook: 'onReady', text: 'Unless `onLoad` already requested it, the provider loads its first page, then the parts show and `control.lifecycle.events` raises `onReady`.' },
+    { title: 'The first page loads', hook: 'onReady', text: 'Unless `onLoad` already requested it, the provider loads its first page, then the parts show, the status turns `ready` and the `onReady` prop is called.' },
     { title: 'The control unmounts', hook: 'onDestroyed', text: 'On the next load or when the page removes the control, `control.lifecycle.events` raises `onDestroyed`, then its modules are destroyed, and its provider unless `onLoad` returned `destroyProviderOnUnmount: false`.' },
 ]
 

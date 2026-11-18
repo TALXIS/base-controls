@@ -3,13 +3,13 @@ import type { IEventSubscriber } from "../events";
 import type { IRuntimeExecutor } from "./RuntimeExecutor";
 import type { IRuntimeLoading } from "./RuntimeLoading";
 
-export type RuntimeStatus = 'initializing' | 'ready' | 'failed' | 'destroyed';
+/** `rendering`: the control is drawn while its parts finish; `ready` follows once they have. */
+export type RuntimeStatus = 'initializing' | 'rendering' | 'ready' | 'failed' | 'destroyed';
 
 /** What every runtime raises over its one mount. */
 export interface IRuntimeEvents {
-    /** Init succeeded; the control is drawn and usable. */
-    onReady: () => void;
-    onInitFailed: (error: unknown) => void;
+    /** `failed` means init or a promise it waited for threw; `getError()` holds what. */
+    onStatusChanged: (status: RuntimeStatus) => void;
     /** The runtime asks the host to replace it with a new one. */
     onRemountRequested: () => void;
     onDestroyed: () => void;
@@ -24,6 +24,8 @@ export interface IRuntimeLifecycle {
     isDestroyed(): boolean;
     /** Replaces the runtime with a new one; this one is destroyed. */
     remount(): void;
+    /** Holds the status back from `ready` until the promise settles; a rejection fails the mount. */
+    waitUntil(promise: Promise<unknown>): void;
 }
 
 /** What every runtime offers the code that uses it; a control's public interface extends this. */
@@ -37,10 +39,8 @@ export interface IRuntime {
 }
 
 export interface IRuntimeLifecycleParameters {
-    /** Prepares what the control needs before it is shown; the runtime is ready at once without it. */
-    onInit?: () => Promise<void>;
-    /** Releases what the runtime holds, after `onDestroyed`. */
-    onDestroy?: () => void;
+    onInit: () => Promise<void>;
+    onDestroy: () => void;
 }
 
 /** One mount's status, error and events; a runtime owns one, and the host drives it. */
@@ -49,9 +49,9 @@ export class RuntimeLifecycle implements IRuntimeLifecycle {
     private _parameters: IRuntimeLifecycleParameters;
     private _status: RuntimeStatus = 'initializing';
     private _error?: unknown;
-    private _isInitCalled = false;
+    private _pending: Promise<unknown>[] = [];
 
-    constructor(parameters: IRuntimeLifecycleParameters = {}) {
+    constructor(parameters: IRuntimeLifecycleParameters) {
         this._parameters = parameters;
     }
 
@@ -68,39 +68,71 @@ export class RuntimeLifecycle implements IRuntimeLifecycle {
     }
 
     public remount(): void {
-        if (!this.isDestroyed()) {
-            this.events.dispatchEvent('onRemountRequested');
-        }
+        this.events.dispatchEvent('onRemountRequested');
     }
 
-    /** Called once by the host; a second call throws, as a remount makes a new runtime instead. */
+    public waitUntil(promise: Promise<unknown>): void {
+        this._pending.push(promise);
+    }
+
+    /** Holds the parent back from `ready` until this mount is ready, has failed or is gone. */
+    public attachParent(parent: IRuntimeLifecycle | undefined): void {
+        parent?.waitUntil(new Promise<void>(resolve => {
+            const stopListening = this.events.addEventListener('onStatusChanged', status => {
+                if (status !== 'rendering') {
+                    stopListening();
+                    resolve();
+                }
+            });
+        }));
+    }
+
+    /** Called once by the host; a failure sets `failed`, then rethrows. */
     public async init(): Promise<void> {
-        if (this._isInitCalled) {
-            throw new Error('A runtime is initialized only once: remount() makes a new one.');
-        }
-        this._isInitCalled = true;
         try {
-            await this._parameters.onInit?.();
+            await this._parameters.onInit();
         }
         catch (error) {
-            if (!this.isDestroyed()) {
-                this._error = error;
-                this._status = 'failed';
-                this.events.dispatchEvent('onInitFailed', error);
-            }
-            return;
+            this._fail(error);
+            throw error;
         }
-        if (!this.isDestroyed()) {
-            this._status = 'ready';
-            this.events.dispatchEvent('onReady');
-        }
+        this._setStatus('rendering');
     }
 
-    /** Called once by the host as the mount goes. */
+    /** Called by the host once it has drawn the control; a failure sets `failed`, then rethrows. */
+    public async awaitReady(): Promise<void> {
+        try {
+            await Promise.all(this._pending);
+        }
+        catch (error) {
+            this._fail(error);
+            throw error;
+        }
+        this._setStatus('ready');
+    }
+
+    /** Called by the host as the mount goes; later calls do nothing. */
     public destroy(): void {
-        this._status = 'destroyed';
+        if (this.isDestroyed()) {
+            return;
+        }
+        this._setStatus('destroyed');
         this.events.dispatchEvent('onDestroyed');
-        this._parameters.onDestroy?.();
+        this._parameters.onDestroy();
         this.events.clearEventListeners();
+    }
+
+    //a mount destroyed while it waited stays destroyed
+    private _setStatus(status: RuntimeStatus): void {
+        if (this.isDestroyed()) {
+            return;
+        }
+        this._status = status;
+        this.events.dispatchEvent('onStatusChanged', status);
+    }
+
+    private _fail(error: unknown): void {
+        this._error = error;
+        this._setStatus('failed');
     }
 }

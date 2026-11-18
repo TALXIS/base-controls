@@ -49,6 +49,8 @@ export interface IGridProps {
     stateKey?: string;
     /** Called with each new grid, before it loads; subscribe and keep refs here. */
     onSetup?: (grid: IGrid) => void;
+    /** Called once per mount when the control has loaded and is drawn. */
+    onReady?: (grid: IGrid) => void;
     /** Awaited after the modules load and before AG Grid renders, on every mount. */
     onLoad?: (grid: IGrid) => void | Promise<void>;
 }

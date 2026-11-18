@@ -19,7 +19,11 @@ const GridExample = () => {
 
     //counts each failed load beside what the control shows
     const onSetup = (control: IDatasetControl) => {
-        control.lifecycle.events.addEventListener('onInitFailed', () => setFailures(count => count + 1))
+        control.lifecycle.events.addEventListener('onStatusChanged', status => {
+            if (status === 'failed') {
+                setFailures(count => count + 1)
+            }
+        })
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>

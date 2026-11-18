@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { IRuntime, IRuntimeEvents, IStateStore, RuntimeLifecycle, StateContext, useEventEmitter, useLatest, useRerender, useStateStore } from "@core";
 import { useOpenErrorDialog } from "@pcf";
 import { ErrorMessageBoundary } from "@ui/error-message-bar";
@@ -22,6 +22,8 @@ export interface IRuntimeHostProps<TRuntime extends IHostedRuntime> {
     createRuntime: () => TRuntime;
     /** Called with each new runtime, before its init; subscribe to its events here. */
     onSetup?: (runtime: TRuntime) => void;
+    /** Called once per mount when everything the control draws is ready. */
+    onReady?: (runtime: TRuntime) => void;
     /** Rendered once the runtime is ready; reads it with `useRuntime()`. */
     children?: React.ReactNode;
     /** Put on the box the host draws everything in. */
@@ -29,8 +31,6 @@ export interface IRuntimeHostProps<TRuntime extends IHostedRuntime> {
     /** Replacements for what the host draws itself. */
     components?: Partial<IRuntimeHostComponents>;
 }
-
-const STATUS_EVENTS: (keyof IRuntimeEvents)[] = ['onReady', 'onInitFailed'];
 
 /** One runtime per mount: creates it, drives its lifecycle, shows a failed init with a retry, and makes a new one on remount. */
 export const RuntimeHost = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<TRuntime>) => {
@@ -40,23 +40,38 @@ export const RuntimeHost = <TRuntime extends IHostedRuntime>(props: IRuntimeHost
 
 const RuntimeMount = <TRuntime extends IHostedRuntime>(props: IRuntimeHostProps<TRuntime> & { onRemount: () => void }) => {
     const propsRef = useLatest(props);
+    const parentRuntime = useContext(RuntimeContext);
     const runtime = useMemo(() => props.createRuntime(), []);
     const { lifecycle } = runtime;
     const { rerender } = useRerender();
     const openErrorDialog = useOpenErrorDialog();
 
     //subscribed in the commit, before the init below starts
-    useEventEmitter<IRuntimeEvents>(lifecycle.events, STATUS_EVENTS, rerender);
+    useEventEmitter<IRuntimeEvents>(lifecycle.events, 'onStatusChanged', rerender);
     useEventEmitter<IRuntimeEvents>(lifecycle.events, 'onRemountRequested', () => propsRef.current.onRemount());
+    useEventEmitter<IRuntimeEvents>(lifecycle.events, 'onStatusChanged', status => {
+        if (status === 'ready') {
+            propsRef.current.onReady?.(runtime);
+        }
+    });
 
-    //before the paint, so a runtime that loads without waiting is drawn ready
+    //before the paint, so a runtime that loads without waiting is drawn at once
     useLayoutEffect(() => {
         propsRef.current.onSetup?.(runtime);
+        //a nested control that fails shows its own error, and its parent still gets ready
+        lifecycle.attachParent(parentRuntime?.lifecycle);
         lifecycle.init();
         return () => lifecycle.destroy();
     }, []);
 
     const status = lifecycle.getStatus();
+
+    //runs after the children's effects, so every part drawn has added what to wait for
+    useEffect(() => {
+        if (status === 'rendering') {
+            lifecycle.awaitReady();
+        }
+    }, [status]);
 
     return <RuntimeContext.Provider value={runtime}>
         <RuntimeStatusContext.Provider value={status}>

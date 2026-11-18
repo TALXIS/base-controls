@@ -1,5 +1,6 @@
 import { IInternalDataProvider } from "@talxis/client-libraries";
 import { DATASET_CONTROL_LABELS } from "../adapters/root/labels";
+import type { RuntimeStatus } from "@core";
 import type { IDatasetControlInternal } from "./DatasetControlRuntime";
 
 export interface IDatasetControlUnsavedChangesGuardParameters {
@@ -12,12 +13,15 @@ export class DatasetControlUnsavedChangesGuard {
 
     constructor(parameters: IDatasetControlUnsavedChangesGuardParameters) {
         this._runtime = parameters.runtime;
-        this._runtime.lifecycle.events.addEventListener('onReady', this._onReady);
+        this._runtime.lifecycle.events.addEventListener('onStatusChanged', this._onStatusChanged);
         this._runtime.lifecycle.events.addEventListener('onDestroyed', this._onDestroyed);
     }
 
-    private _onReady = (): void => {
-        (this._runtime.getProvider() as IInternalDataProvider).setInterceptor('__unsavedChangesBlocker', this._onBlock);
+    //the provider is there once init has loaded it
+    private _onStatusChanged = (status: RuntimeStatus): void => {
+        if (status === 'rendering') {
+            (this._runtime.getProvider() as IInternalDataProvider).setInterceptor('__unsavedChangesBlocker', this._onBlock);
+        }
     };
 
     //the provider has no way to drop an interceptor

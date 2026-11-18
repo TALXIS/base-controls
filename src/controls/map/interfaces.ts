@@ -43,6 +43,8 @@ export interface IMapProps {
     modules: IMapModule[];
     /** Called with the runtime of each mount, before its init; subscribe here. */
     onSetup?: (map: IMap) => void;
+    /** Called once per mount when the control has loaded and is drawn. */
+    onReady?: (map: IMap) => void;
     /** Called once as the map loads, after its modules. */
     onLoad?: (map: IMap) => void | Promise<void>;
     /** A length such as `'480px'`; left out, the map fills its parent. */

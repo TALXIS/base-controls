@@ -1,20 +1,22 @@
 import { useTheme } from "@theme";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 
 import type { Dayjs } from "dayjs";
 import { useControlStateStore, useEventEmitter, useLatest, useRerender } from "@core";
 import { useLabelsService } from "@labels";
 import { useProvideDatasetControlPart } from "@controls/dataset-control/adapters/root";
+import { RuntimeHost, useRuntime } from "@controls/runtime-host";
 import { useTaskRuntime } from "../adapters/root/context";
 import { GanttRuntime } from "./runtime";
 import { GanttContext } from "./context";
-import type { IGanttEvents, IGanttModule } from "./interfaces";
+import type { IGantt, IGanttEvents, IGanttModule } from "./interfaces";
 import type { IGanttThemeEvents } from "./theme";
 import { GanttOverlayLayer } from "./adapters/overlay";
 import { GanttSkeletonLayer } from "./adapters/skeleton";
 import { GanttUiChart, IGanttUiChartComponents } from "./ui/chart";
 import type { IGanttUiOverlayComponents } from "./ui/overlay";
-import type { IGanttUiSkeletonComponents } from "./ui/skeleton";
+import { GanttUiSkeleton, IGanttUiSkeletonComponents } from "./ui/skeleton";
+import { getTaskGanttStyles } from "./styles";
 
 export interface ITaskGanttProps {
     /** Read once, at mount; must include a library module. */
@@ -24,6 +26,10 @@ export interface ITaskGanttProps {
     /** How far the timeline scrolls (default today ± 25 years), widened to fit the tasks. */
     timelineLimits?: { start?: Dayjs; end?: Dayjs };
     components?: ITaskGanttComponents;
+    /** Called with the runtime of each mount, before its init; add hooks and subscribe here. */
+    onSetup?: (gantt: IGantt) => void;
+    /** Called once per mount when the control has loaded and is drawn. */
+    onReady?: (gantt: IGantt) => void;
 }
 
 /** The replaceable pieces of the Gantt, by the part they belong to. */
@@ -42,10 +48,22 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
     const state = useControlStateStore(props.stateKey);
     const propsRef = useLatest(props);
     const labelsServiceRef = useLatest(useLabelsService());
-    const gantt = useProvideDatasetControlPart('gantt', () => new GanttRuntime({ taskRuntime, state, getLabelsService: () => labelsServiceRef.current, getProps: () => propsRef.current }));
+    const styles = useMemo(() => getTaskGanttStyles(), []);
+
+    const createRuntime = () => new GanttRuntime({ taskRuntime, state, getLabelsService: () => labelsServiceRef.current, getProps: () => propsRef.current });
+    const placeholder = { onRender: () => <GanttUiSkeleton components={props.components?.skeleton} /> };
+
+    return <RuntimeHost<GanttRuntime> createRuntime={createRuntime} onSetup={gantt => propsRef.current.onSetup?.(gantt)} onReady={gantt => propsRef.current.onReady?.(gantt)} className={styles.runtime} components={{ placeholder }}>
+        <GanttMount {...props} />
+    </RuntimeHost>;
+};
+
+/** One mount of the Gantt: the chart, drawn once its modules have loaded. */
+const GanttMount = (props: ITaskGanttProps) => {
+    const runtime = useRuntime<GanttRuntime>();
+    const gantt = useProvideDatasetControlPart('gantt', () => runtime);
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
-    const [error, setError] = useState<unknown>();
     const { rerender } = useRerender();
     const isChartReady = !!gantt.services.find('chart');
     const stylesVersion = gantt.theme.getVersion();
@@ -54,22 +72,8 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
     useEventEmitter<IGanttEvents>(gantt.events, 'onChartReady', rerender);
     useEventEmitter<IGanttThemeEvents>(gantt.theme.events, 'onStylesChanged', rerender);
 
-    useEffect(() => {
-        const mount = async () => {
-            try {
-                await gantt.mount(containerRef.current!);
-            }
-            catch (error) {
-                setError(error);
-            }
-        };
-        mount();
-        return () => gantt.destroy();
-    }, []);
+    useEffect(() => gantt.mount(containerRef.current!), []);
 
-    if (error) {
-        throw error;
-    }
     return <GanttContext.Provider value={gantt}>
         <GanttUiChart chartRef={containerRef} moduleStyles={moduleStyles} components={props.components?.chart}>
             {isChartReady && gantt.surfaces.getSurfaces().map(surface => <Fragment key={surface.key}>{surface.onRender()}</Fragment>)}

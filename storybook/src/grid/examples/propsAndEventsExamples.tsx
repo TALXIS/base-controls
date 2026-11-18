@@ -36,7 +36,7 @@ const GridExample = () => {
 
     const onSetup = (grid: IGrid) => {
         log('onSetup')
-        grid.lifecycle.events.addEventListener('onReady', () => log('lifecycle onReady'))
+        grid.lifecycle.events.addEventListener('onStatusChanged', status => log('lifecycle ' + status))
         grid.services.observe('gridApi', () => {
             log('gridApi', 'AG Grid is ready')
             return () => log('gridApi cleanup', 'AG Grid still answers')

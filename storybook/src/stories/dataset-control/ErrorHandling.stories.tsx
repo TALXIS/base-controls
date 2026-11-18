@@ -42,7 +42,7 @@ The control shows the failure either way. To also log it, or show it elsewhere, 
 
 | Event | On | Arguments | Fires for |
 |---|---|---|---|
-| \`onInitFailed\` | \`control.lifecycle.events\` | \`error\` | A failed load |
+| \`onStatusChanged\` | \`control.lifecycle.events\` | \`status\`; \`'failed'\` for a failed load, with the error in \`lifecycle.getError()\` | A failed load |
 | \`onExecuteFailed\` | \`control.executor.events\` | \`error\`, \`title\` | A failed user view, or a failed \`control.execute\` |
 | \`onExecuteFailed\` | The ribbon's \`executor.events\` | \`error\`, \`title\` | A failed command, or a failed later \`onLoad\` of the ribbon |
 

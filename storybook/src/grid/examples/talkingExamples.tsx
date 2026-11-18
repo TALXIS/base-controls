@@ -74,7 +74,7 @@ const GridExample = () => {
 
     const onSetup = (grid: IGrid) => {
         log('onSetup: the grid hands itself to your code')
-        grid.lifecycle.events.addEventListener('onReady', () => log('lifecycle onReady: the modules have loaded'))
+        grid.lifecycle.events.addEventListener('onStatusChanged', status => log('lifecycle ' + status))
         grid.services.observe('gridApi', gridApi => {
             log('gridApi: AG Grid is ready')
             //the cleanup runs while AG Grid still works

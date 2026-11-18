@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
 
-const DEAL_SUMMARY_CODE = `import { Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
+const DEAL_SUMMARY_CODE = `import { Runtime, RuntimeHost, useRuntime } from '@talxis/base-controls'
 import { DefaultButton, getTheme, Stack, Text, Toggle } from '@fluentui/react'
 
 const theme = getTheme()
@@ -22,8 +22,6 @@ const OPEN_DEALS = [4000, 21500, 9000]
 const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
 class DealSummaryRuntime extends Runtime {
-    //runs onInit when the host starts the mount, and keeps the status, the error and the events
-    public readonly lifecycle = new RuntimeLifecycle({ onInit: () => this._init() })
     private _total = 0
     private _isServiceDown: () => boolean
 
@@ -36,14 +34,16 @@ class DealSummaryRuntime extends Runtime {
         return this._total
     }
 
-    //a throw here shows the error with Try again
-    private async _init(): Promise<void> {
+    //the host runs it when it starts the mount; a throw here shows the error with Try again
+    protected async onInit(): Promise<void> {
         await callServer(1000)
         if (this._isServiceDown()) {
             throw new Error('The deals service is not reachable.')
         }
         this._total = OPEN_DEALS.reduce((sum, value) => sum + value, 0)
     }
+
+    protected onDestroy(): void { }
 }
 
 //drawn once the runtime is ready, so it reads what the runtime loaded
@@ -62,7 +62,7 @@ const DealSummary = () => {
 //the lifecycle events of every mount, oldest first
 const EventLog = (props: { entries: string[] }) => <Stack tokens={{ childrenGap: 4 }} styles={{ root: { padding: 12, borderRadius: 8, backgroundColor: theme.palette.neutralLighterAlt } }}>
     <Text variant='small' styles={{ root: { color: theme.palette.neutralSecondary, fontWeight: 600 } }}>Lifecycle events</Text>
-    {props.entries.map((entry, index) => <Text key={index} variant='small' styles={{ root: { fontFamily: 'Consolas, monospace', color: entry.startsWith('onInitFailed') ? theme.palette.redDark : theme.palette.neutralPrimary } }}>{entry}</Text>)}
+    {props.entries.map((entry, index) => <Text key={index} variant='small' styles={{ root: { fontFamily: 'Consolas, monospace', color: entry.startsWith('onStatusChanged, failed') ? theme.palette.redDark : theme.palette.neutralPrimary } }}>{entry}</Text>)}
 </Stack>
 
 const GridExample = () => {
@@ -73,8 +73,10 @@ const GridExample = () => {
     //called with every new runtime, so subscribe here
     const onSetup = (runtime: DealSummaryRuntime) => {
         log('onSetup')
-        runtime.lifecycle.events.addEventListener('onReady', () => log('onReady'))
-        runtime.lifecycle.events.addEventListener('onInitFailed', error => log(\`onInitFailed: \${(error as Error).message}\`))
+        runtime.lifecycle.events.addEventListener('onStatusChanged', status => {
+            const error = status === 'failed' ? \`: \${(runtime.lifecycle.getError() as Error).message}\` : ''
+            log(\`onStatusChanged, \${status}\${error}\`)
+        })
         runtime.lifecycle.events.addEventListener('onDestroyed', () => log('onDestroyed'))
     }
 
@@ -89,7 +91,7 @@ const GridExample = () => {
 }
 `
 
-const KEEP_STATE_CODE = `import { IStateStore, Runtime, RuntimeHost, RuntimeLifecycle, Spinner, useControlStateStore, useRuntime } from '@talxis/base-controls'
+const KEEP_STATE_CODE = `import { IStateStore, Runtime, RuntimeHost, Spinner, useControlStateStore, useRuntime } from '@talxis/base-controls'
 import { Dropdown, Text } from '@fluentui/react'
 
 const DEALS = [
@@ -101,7 +103,6 @@ const DEALS = [
 const OWNERS = ['Everyone', 'Anna Novak', 'Ben Carter']
 
 class DealSummaryRuntime extends Runtime {
-    public readonly lifecycle = new RuntimeLifecycle({ onInit: () => this._init() })
     private _store: IStateStore
     private _total = 0
 
@@ -124,11 +125,13 @@ class DealSummaryRuntime extends Runtime {
         return this._total
     }
 
-    private async _init(): Promise<void> {
+    protected async onInit(): Promise<void> {
         await new Promise(resolve => setTimeout(resolve, 800))
         const owner = this.getOwner()
         this._total = DEALS.filter(deal => owner === 'Everyone' || deal.owner === owner).reduce((sum, deal) => sum + deal.value, 0)
     }
+
+    protected onDestroy(): void { }
 }
 
 //shown while the runtime loads; it can read the runtime too
@@ -155,7 +158,7 @@ const GridExample = () => {
 }
 `
 
-const RUN_ACTIONS_CODE = `import { Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
+const RUN_ACTIONS_CODE = `import { Runtime, RuntimeHost, useRuntime } from '@talxis/base-controls'
 import { DefaultButton, getTheme, PrimaryButton, Stack, Text } from '@fluentui/react'
 
 const theme = getTheme()
@@ -179,8 +182,11 @@ const postToFinance = async (total: number) => {
 }
 
 class DealSummaryRuntime extends Runtime {
-    public readonly lifecycle = new RuntimeLifecycle()
     private _total = 34500
+
+    protected async onInit(): Promise<void> { }
+
+    protected onDestroy(): void { }
 
     public getTotal(): number {
         return this._total
@@ -228,7 +234,7 @@ const GridExample = () => (
 )
 `
 
-const OWN_UI_CODE = `import { NotificationMessageBar, Runtime, RuntimeHost, RuntimeLifecycle, useRuntime } from '@talxis/base-controls'
+const OWN_UI_CODE = `import { NotificationMessageBar, Runtime, RuntimeHost, useRuntime } from '@talxis/base-controls'
 import { DefaultButton, getTheme, Icon, IMessageBarProps, PrimaryButton, ProgressIndicator, Shimmer, ShimmerElementType, Stack, Text, Toggle } from '@fluentui/react'
 
 const theme = getTheme()
@@ -244,7 +250,6 @@ const CARD_STYLE: React.CSSProperties = {
 }
 
 class DealSummaryRuntime extends Runtime {
-    public readonly lifecycle = new RuntimeLifecycle({ onInit: () => this._init() })
     private _isServiceDown: () => boolean
     private _total = 0
 
@@ -261,10 +266,12 @@ class DealSummaryRuntime extends Runtime {
         await this.execute(() => this._callServer(1500), { loading: { message: 'Sending to finance...' }, error: { title: 'The summary could not be sent to finance.', rethrow: false } })
     }
 
-    private async _init(): Promise<void> {
+    protected async onInit(): Promise<void> {
         await this._callServer(1500)
         this._total = 34500
     }
+
+    protected onDestroy(): void { }
 
     //stands in for a server call, which fails while the service is down
     private async _callServer(ms: number): Promise<void> {

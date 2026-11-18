@@ -3699,13 +3699,13 @@ declare const createLocalStorageUserQueriesModule: <TData>(parameters: {
 
 
 
-type RuntimeStatus = 'initializing' | 'ready' | 'failed' | 'destroyed';
+/** rendering: the control is drawn while its parts finish; ready follows once they have. */
+type RuntimeStatus = 'initializing' | 'rendering' | 'ready' | 'failed' | 'destroyed';
 
 /** What every runtime raises over its one mount. */
 interface IRuntimeEvents {
-    /** Init succeeded; the control is drawn and usable. */
-    onReady: () => void;
-    onInitFailed: (error: unknown) => void;
+    /** failed means init or a promise it waited for threw; getError() holds what. */
+    onStatusChanged: (status: RuntimeStatus) => void;
     /** The runtime asks the host to replace it with a new one. */
     onRemountRequested: () => void;
     onDestroyed: () => void;
@@ -3722,6 +3722,8 @@ interface IRuntimeLifecycle {
     isDestroyed(): boolean;
     /** Replaces the runtime with a new one; this one is destroyed. */
     remount(): void;
+    /** Holds the status back from ready until the promise settles; a rejection fails the mount. */
+    waitUntil(promise: Promise<unknown>): void;
 }
 
 /** Whether something the runtime runs is waited on. */
@@ -3834,12 +3836,16 @@ declare const Ribbon: (props: IRibbonProps) => JSX.Element;
 declare const RuntimeHost: typeof import('@talxis/base-controls').RuntimeHost;
 /** One mount's status, error and events; a runtime owns one, and the host drives it. */
 declare const RuntimeLifecycle: typeof import('@talxis/base-controls').RuntimeLifecycle;
-/** What a runtime is built on: loading, executor and execute beside the lifecycle it creates. */
+/** What a runtime is built on: its lifecycle, loading and executor. */
 declare abstract class Runtime implements IRuntime {
-    abstract readonly lifecycle: IRuntimeLifecycle;
+    readonly lifecycle: IRuntimeLifecycle;
     readonly loading: IRuntimeLoading;
     readonly executor: IRuntimeExecutor;
     readonly execute: IRuntimeExecutor['execute'];
+    /** Prepares what the control needs before it is drawn; the host runs it once per mount. */
+    protected abstract onInit(): Promise<void>;
+    /** Releases what the runtime holds, after onDestroyed. */
+    protected abstract onDestroy(): void;
 }
 /** The runtime of the nearest RuntimeHost; for the control's own mount component only. */
 declare const useRuntime: typeof import('@talxis/base-controls').useRuntime;
@@ -4035,6 +4041,8 @@ interface IDatasetControlProps<TData = unknown> {
     components?: { container?: Partial<IDatasetControlContainerComponents>; skeleton?: { onRender?: (props: any) => JSX.Element | null } } & Partial<Omit<IRuntimeHostComponents, 'container' | 'placeholder'>>;
     /** Called with the control of each mount, before its init; subscribe to its events here. */
     onSetup?: (control: IDatasetControl<TData>) => void;
+    /** Called once per mount when the control has loaded and is drawn. */
+    onReady?: (control: IDatasetControl<TData>) => void;
 }
 
 /** One failure of execute, waiting to be dismissed. */
@@ -4950,7 +4958,7 @@ declare const getDateTimeTaskColumns: (...visibleColumnNames: string[]) => IColu
 
 /** A feature of the Gantt, loaded on every mount before the chart is drawn. */
 /** One mount of a TaskGantt: what its modules load on and what its parts read. */
-interface IGantt {
+interface IGantt extends IRuntime {
     /** onChartReady(chart), onTasksParsed(isFirstLoad) and onDestroyed. */
     readonly events: { addEventListener(event: 'onChartReady' | 'onTasksParsed' | 'onDestroyed', listener: (...args: any[]) => void): () => void };
     /** taskRuntime, schedule, theme, overlay, state and labels from the start; chart, timeline, dragging, zooming, grid and tasks once the chart is drawn. */
@@ -5076,6 +5084,10 @@ declare const TaskGantt: ((props: {
     timelineLimits?: { start?: Dayjs; end?: Dayjs };
     /** chart: onRender, onRenderChart; overlay: onRender; skeleton: onRender, onRenderSkeleton. */
     components?: { [piece: string]: { [slot: string]: (props: any) => JSX.Element | null } };
+    /** Called with the runtime of each mount, before its init; add hooks and subscribe here. */
+    onSetup?: (gantt: IGantt) => void;
+    /** Called once per mount when the control has loaded and is drawn. */
+    onReady?: (gantt: IGantt) => void;
 }) => JSX.Element) & {
     /** The Gantt's zoom; goes in the header. */
     ZoomSlider: (props: { components?: { [slot: string]: unknown } }) => JSX.Element;

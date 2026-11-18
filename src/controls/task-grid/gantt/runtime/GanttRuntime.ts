@@ -2,7 +2,7 @@ import type { GanttStatic } from "dhtmlx-gantt";
 import dayjs from "dayjs";
 import type { GridApi } from "ag-grid-community";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
-import { HookRegistry, IServiceLocator, IStateStore, ModuleLoader, ServiceRegistry } from "@core";
+import { HookRegistry, IServiceLocator, IStateStore, ModuleLoader, Runtime, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
@@ -34,7 +34,7 @@ export interface IGanttRuntimeParameters {
     getProps: () => ITaskGanttProps;
 }
 
-export class GanttRuntime implements IGantt {
+export class GanttRuntime extends Runtime implements IGantt {
     public readonly events = new EventEmitter<IGanttEvents>();
     public readonly services = new ServiceRegistry<IGanttServiceMap>();
     public readonly surfaces = new GanttSurfaces();
@@ -51,13 +51,14 @@ export class GanttRuntime implements IGantt {
     private _gridApi?: GridApi<IRecord>;
     private _taskRange?: IGanttSpan;
     private _isTaskRangeStale = true;
-    private _isDestroyed = false;
+    private _resolveDrawn?: () => void;
 
     public get modules(): IServiceLocator<IGanttModuleMap> {
         return this._moduleLoader.modules;
     }
 
     constructor(parameters: IGanttRuntimeParameters) {
+        super();
         this._taskRuntime = parameters.taskRuntime;
         this._datasetControl = parameters.taskRuntime.services.get('datasetControl');
         this._getProps = parameters.getProps;
@@ -71,7 +72,7 @@ export class GanttRuntime implements IGantt {
         this.services.provide('overlay', overlay, { onDestroy: () => overlay.destroy() });
         this._unsubscribes.push(this._datasetControl.parts.observe('ribbon', ribbon => ribbon.hooks.commands.add(this._addCommands)));
         //while the dataset control still holds what the chart's teardown reads
-        this._unsubscribes.push(this._datasetControl.lifecycle.events.addEventListener('onDestroyed', () => this.destroy()));
+        this._unsubscribes.push(this._datasetControl.lifecycle.events.addEventListener('onDestroyed', () => this.lifecycle.destroy()));
     }
 
     public getProps(): ITaskGanttProps {
@@ -94,27 +95,29 @@ export class GanttRuntime implements IGantt {
         this.services.find('chart')?.render();
     }
 
-    /** Loads the modules and draws the chart once the grid beside it is ready. */
-    public async mount(container: HTMLElement): Promise<void> {
-        await this._loadModules();
-        if (this._isDestroyed) {
-            return;
-        }
+    /** Draws the chart into the container once the grid beside it is ready. */
+    public mount(container: HTMLElement): void {
         this._unsubscribes.push(this._datasetControl.parts.observe('grid', grid => {
             const taskGrid = grid as IGrid<ITaskGridServiceMap>;
             return taskGrid.services.observe('gridApi', gridApi => {
                 if (!this.services.find('chart')) {
                     this._draw(container, taskGrid, gridApi);
+                    this._resolveDrawn?.();
                 }
             });
         }));
     }
 
-    public destroy(): void {
-        if (this._isDestroyed) {
-            return;
+    protected async onInit(): Promise<void> {
+        const modules = this._getProps().modules;
+        if (!modules.some(module => module.name === 'library')) {
+            throw new Error('TaskGantt needs a library module: createLibraryModule() or createProLibraryModule({ Gantt }).');
         }
-        this._isDestroyed = true;
+        await this._moduleLoader.load(modules, this);
+        this.lifecycle.waitUntil(new Promise<void>(resolve => this._resolveDrawn = resolve));
+    }
+
+    protected onDestroy(): void {
         this.events.dispatchEvent('onDestroyed');
         this._unsubscribes.forEach(unsubscribe => unsubscribe());
         this._datasetControl.parts.find('ribbon')?.reload();
@@ -124,14 +127,6 @@ export class GanttRuntime implements IGantt {
         }
         this._moduleLoader.destroy();
         this.services.destroy();
-    }
-
-    private async _loadModules(): Promise<void> {
-        const modules = this._getProps().modules;
-        if (!modules.some(module => module.name === 'library')) {
-            throw new Error('TaskGantt needs a library module: createLibraryModule() or createProLibraryModule({ Gantt }).');
-        }
-        await this._moduleLoader.load(modules, this);
     }
 
     //config hooks run before init and the services are provided after it

@@ -29,6 +29,8 @@ export interface IDatasetControlProps<TData = unknown> {
     components?: IDatasetControlComponents;
     /** Called with the control of each mount, before its init; subscribe to its events here. */
     onSetup?: (control: IDatasetControl<TData>) => void;
+    /** Called once per mount when the control has loaded and is drawn. */
+    onReady?: (control: IDatasetControl<TData>) => void;
 }
 
 /** Loads the provider and holds every part of the control; every load mounts it anew. */
@@ -57,7 +59,7 @@ export const Root = <TData,>(props: IDatasetControlProps<TData>) => {
         onRender: () => <DatasetControlUi.Skeleton height={props.height} components={skeleton} />,
     };
 
-    return <RuntimeHost<DatasetControlRuntime> createRuntime={createRuntime} onSetup={runtime => propsRef.current.onSetup?.(runtime)} components={{ container: runtimeContainer, mountError, placeholder, loadingOverlay, executeError }}>
+    return <RuntimeHost<DatasetControlRuntime> createRuntime={createRuntime} onSetup={runtime => propsRef.current.onSetup?.(runtime)} onReady={runtime => propsRef.current.onReady?.(runtime)} components={{ container: runtimeContainer, mountError, placeholder, loadingOverlay, executeError }}>
         {/* the mount never reads view data */}
         <DatasetControlMount {...props as IDatasetControlProps} />
     </RuntimeHost>;

@@ -49,11 +49,13 @@ export class LeafletRuntime implements ILeafletInternal {
     private _parameters: ILeafletParameters;
     private _instance?: LeafletMap;
     private _stopListening: () => void;
+    private _resolveInstanceReady?: () => void;
 
     constructor(parameters: ILeafletConstructorParameters) {
         this._viewport = parameters.map.services.get('viewport');
         this._parameters = parameters.parameters;
         this._stopListening = this._viewport.events.addEventListener('onViewRequested', this._onViewRequested);
+        parameters.map.lifecycle.waitUntil(new Promise<void>(resolve => this._resolveInstanceReady = resolve));
     }
 
     public getInstance(): LeafletMap | undefined {
@@ -75,6 +77,7 @@ export class LeafletRuntime implements ILeafletInternal {
         this._instance = instance;
         this._viewport.fit();
         this.events.dispatchEvent('onInstanceReady', instance);
+        this._resolveInstanceReady?.();
         return () => {
             if (this._instance === instance) {
                 this._instance = undefined;

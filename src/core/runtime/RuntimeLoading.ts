@@ -1,5 +1,6 @@
 import { EventEmitter } from "@talxis/client-libraries";
 import type { IEventSubscriber } from "../events";
+import type { IRuntimeLifecycle, RuntimeStatus } from "./RuntimeLifecycle";
 
 export interface IRuntimeLoadingEvents {
     /** Fires when the loading is shown, taken away, or its message changes. */
@@ -19,6 +20,11 @@ export interface IRuntimeLoading {
     getMessage(): string | undefined;
 }
 
+export interface IRuntimeLoadingParameters {
+    /** Shown while it is `rendering`, until its parts are drawn. */
+    lifecycle: IRuntimeLifecycle;
+}
+
 interface IShowing {
     message?: string;
 }
@@ -26,6 +32,11 @@ interface IShowing {
 export class RuntimeLoading implements IRuntimeLoading {
     public readonly events = new EventEmitter<IRuntimeLoadingEvents>();
     private _showings: IShowing[] = [];
+    private _hideRendering?: () => void;
+
+    constructor(parameters: IRuntimeLoadingParameters) {
+        parameters.lifecycle.events.addEventListener('onStatusChanged', this._onStatusChanged);
+    }
 
     public show(message?: string): () => void {
         const showing: IShowing = { message };
@@ -41,6 +52,15 @@ export class RuntimeLoading implements IRuntimeLoading {
     public getMessage(): string | undefined {
         return this._showings[this._showings.length - 1]?.message;
     }
+
+    private _onStatusChanged = (status: RuntimeStatus): void => {
+        if (status === 'rendering') {
+            this._hideRendering = this.show();
+        }
+        else {
+            this._hideRendering?.();
+        }
+    };
 
     //a caller hiding twice takes nothing from the others
     private _hide(showing: IShowing): void {

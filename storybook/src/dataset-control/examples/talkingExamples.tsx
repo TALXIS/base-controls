@@ -53,8 +53,7 @@ const GridExample = () => {
     const onSetup = (control: IDatasetControl) => {
         controlRef.current = control
         write('onSetup')
-        control.lifecycle.events.addEventListener('onReady', () => write(\`onReady, view \${control.getViewId()}\`))
-        control.lifecycle.events.addEventListener('onInitFailed', () => write('onInitFailed'))
+        control.lifecycle.events.addEventListener('onStatusChanged', status => write(\`onStatusChanged, \${status}\`))
         control.lifecycle.events.addEventListener('onRemountRequested', () => write('onRemountRequested'))
         control.lifecycle.events.addEventListener('onDestroyed', () => write('onDestroyed'))
     }

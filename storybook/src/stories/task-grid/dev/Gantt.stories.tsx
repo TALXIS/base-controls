@@ -2,6 +2,7 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { GanttDateTimeTaskGrid, GanttTaskGrid } from '../../../task-grid/dev/GanttTaskGrid'
 import { GanttStressTaskGrid } from '../../../task-grid/dev/GanttStressTaskGrid'
+import { FlakyGanttTaskGrid } from '../../../task-grid/dev/FlakyGanttTaskGrid'
 
 const meta = {
     title: 'Dev/TaskGrid/Gantt',
@@ -37,4 +38,11 @@ export const GanttStress: Story = {
     name: 'Stress (10k tasks)',
     parameters: { layout: 'fullscreen' },
     render: () => <div style={{ height: '100vh', padding: 18, boxSizing: 'border-box' }}><GanttStressTaskGrid /></div>,
+}
+
+/** A Gantt whose modules fail to load about every other time, to watch the runtimes' ready and failure. */
+export const GanttFlaky: Story = {
+    name: 'Flaky Gantt load',
+    parameters: { layout: 'fullscreen' },
+    render: () => <div style={{ height: '100vh', padding: 18, boxSizing: 'border-box' }}><FlakyGanttTaskGrid /></div>,
 }

@@ -21,7 +21,7 @@ Code that holds a runtime, such as the one \`onSetup\` hands over, reads its mou
 
 | Member | Does |
 |---|---|
-| \`getStatus()\` | \`'initializing'\`, \`'ready'\`, \`'failed'\` or \`'destroyed'\` |
+| \`getStatus()\` | \`'initializing'\`, \`'rendering'\`, \`'ready'\`, \`'failed'\` or \`'destroyed'\` |
 | \`getError()\` | What the load threw, while the status is \`'failed'\` |
 | \`isDestroyed()\` | Whether the mount has ended |
 | \`remount()\` | Ends this runtime and starts a new one, which loads again |
@@ -29,8 +29,7 @@ Code that holds a runtime, such as the one \`onSetup\` hands over, reads its mou
 
 | Event | Fires |
 |---|---|
-| \`onReady\` | When the load succeeds |
-| \`onInitFailed(error)\` | When the load throws |
+| \`onStatusChanged(status)\` | When the status changes; \`'failed'\` when the load throws, with the error in \`getError()\` |
 | \`onRemountRequested\` | When \`remount()\` is called, before the host replaces the runtime |
 | \`onDestroyed\` | When the mount ends |
 
@@ -42,7 +41,7 @@ A remount makes a new runtime, so anything that must survive it, such as what th
 
 ## Write a runtime
 
-A runtime is a class that extends \`Runtime\`, calls \`super()\` first in its constructor, and creates its own \`lifecycle\`: a \`RuntimeLifecycle\` given \`onInit\`, which loads what the control needs and throws when it cannot, and optionally \`onDestroy\`, which releases what the runtime holds. Without \`onInit\`, the runtime is ready at once. \`Runtime\` adds \`loading\`, \`executor\` and \`execute\`, described in *Run actions*. The runtime's own members, such as \`getTotal()\` in the example, sit beside \`lifecycle\`. An optional \`getStateStore()\` returns the store the controls inside the host keep their state in; without it, they use the store around the host.
+A runtime is a class that extends \`Runtime\`, calls \`super()\` first in its constructor, and implements \`onInit\`, which loads what the control needs and throws when it cannot, and \`onDestroy\`, which releases what the runtime holds. \`Runtime\` adds \`lifecycle\`, \`loading\`, \`executor\` and \`execute\`, described in *Run actions*. The runtime's own members, such as \`getTotal()\` in the example, sit beside \`lifecycle\`. An optional \`getStateStore()\` returns the store the controls inside the host keep their state in; without it, they use the store around the host.
 
 A control built on the host can take \`components\` from its own users and pass them on to the host, as \`Ribbon\` and \`DatasetControl\` do, so they get the same choice of how it looks.
 
@@ -102,7 +101,7 @@ const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The runtime is created', hook: 'createRuntime', text: 'The host calls `createRuntime` for a new runtime, whose status is `initializing`.' },
     { title: 'The mount starts', hook: 'onSetup', text: '`onSetup` gets the runtime before it loads, so subscribe to its events here.' },
     { title: 'It loads', hook: 'onInit', text: 'The host starts the lifecycle before the first paint, which runs `onInit` once while the host draws the loading state.' },
-    { title: 'It is ready, or it failed', hook: 'onReady', text: '`onReady` fires and the host draws the control, or `onInitFailed` fires and the host shows the error with a retry.' },
+    { title: 'It is ready, or it failed', hook: 'onReady', text: 'The host draws the control, waits for what it draws, then the status turns `ready` and the `onReady` prop is called; or the status turns `failed` and the host shows the error with a retry.' },
     { title: 'It remounts', hook: 'remount()', text: '`remount()`, or the retry, ends the runtime and starts again from the first step.' },
     { title: 'It is destroyed', hook: 'onDestroy', text: '`onDestroyed` fires, then `onDestroy` releases what the runtime holds.' },
 ]

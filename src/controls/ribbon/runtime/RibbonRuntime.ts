@@ -1,5 +1,5 @@
 import { EventEmitter } from "@talxis/client-libraries";
-import { HookRegistry, IEventSubscriber, IRuntime, Runtime, RuntimeLifecycle, IHookPoint } from "@core";
+import { HookRegistry, IEventSubscriber, IRuntime, Runtime, IHookPoint } from "@core";
 import { IRibbonActionCommand, IRibbonCommand } from "../interfaces";
 
 /** What the ribbon raises; its init and teardown are on `lifecycle.events`. */
@@ -35,10 +35,6 @@ export interface IRibbonRuntimeParameters {
 }
 
 export class RibbonRuntime extends Runtime implements IRibbon {
-    public readonly lifecycle = new RuntimeLifecycle({
-        onInit: () => this._init(),
-        onDestroy: () => this._destroy(),
-    });
     public readonly events = new EventEmitter<IRibbonEvents>();
     private _onLoad?: (ribbon: IRibbon) => IRibbonCommand[] | Promise<IRibbonCommand[]>;
     public readonly hooks = {
@@ -64,7 +60,8 @@ export class RibbonRuntime extends Runtime implements IRibbon {
 
     public async reload(): Promise<void> {
         //init applies the hooks itself
-        if (this.lifecycle.getStatus() !== 'ready') {
+        const status = this.lifecycle.getStatus();
+        if (status !== 'rendering' && status !== 'ready') {
             return;
         }
         const reload = this._loadCommands();
@@ -84,11 +81,11 @@ export class RibbonRuntime extends Runtime implements IRibbon {
         this.events.dispatchEvent('onAfterExecute', command);
     }
 
-    private async _init(): Promise<void> {
+    protected async onInit(): Promise<void> {
         this._commands = await this._loadCommands();
     }
 
-    private _destroy(): void {
+    protected onDestroy(): void {
         this._latestReload = undefined;
         this.events.clearEventListeners();
     }

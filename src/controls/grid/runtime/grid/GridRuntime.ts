@@ -3,7 +3,7 @@ import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowId
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
-import { HookRegistry, IStateStore, ModuleLoader, Runtime, RuntimeLifecycle, ServiceRegistry } from "@core";
+import { HookRegistry, IStateStore, ModuleLoader, Runtime, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import { RowLoading } from "../../adapters/rows/loading";
 import { LoadingOverlay } from "../../adapters/overlays/loading";
@@ -71,10 +71,6 @@ export interface IGridRuntimeParameters {
 }
 
 export class GridRuntime extends Runtime implements IGrid {
-    public readonly lifecycle = new RuntimeLifecycle({
-        onInit: () => this._init(),
-        onDestroy: () => this._destroy(),
-    });
     private _services = new ServiceRegistry<IGridServiceMapInternal>();
     private _moduleLoader = new ModuleLoader<IGridModuleMap, IGrid>();
     private _getProps: () => IGridProps;
@@ -87,6 +83,7 @@ export class GridRuntime extends Runtime implements IGrid {
     /** What AG Grid was last handed. */
     private _appliedAgGridOptions: ManagedGridOptions<IRecord> = {};
     private _removeGridApi?: () => void;
+    private _resolveGridReady?: () => void;
     private _columnDefs?: ColDef<IRecord>[];
     public readonly events: IEventEmitter<IGridEvents> = new EventEmitter<IGridEvents>();
 
@@ -176,7 +173,7 @@ export class GridRuntime extends Runtime implements IGrid {
         this._provider.openDatasetItem(parameters.reference, { columnName: parameters.columnName });
     }
 
-    private async _init(): Promise<void> {
+    protected async onInit(): Promise<void> {
         const modules = this._getProps().modules;
         await this._moduleLoader.load(modules, this);
         if (this.lifecycle.isDestroyed()) {
@@ -190,9 +187,10 @@ export class GridRuntime extends Runtime implements IGrid {
         await this._getProps().onLoad?.(this);
         //after the modules so their api and provider listeners run first
         this._services.observe('gridApi', () => this._onGridApiAvailable());
+        this.lifecycle.waitUntil(new Promise<void>(resolve => this._resolveGridReady = resolve));
     }
 
-    private _destroy(): void {
+    protected onDestroy(): void {
         //AG Grid may unmount after this, so its api listeners clean up while it still answers
         this._removeGridApi?.();
         this._moduleLoader.destroy();
@@ -259,6 +257,7 @@ export class GridRuntime extends Runtime implements IGrid {
 
     private _onGridReady = (event: GridReadyEvent<IRecord>): void => {
         this._removeGridApi = this._services.provide('gridApi', event.api);
+        this._resolveGridReady?.();
     };
 
     private _onGridPreDestroyed = (): void => {

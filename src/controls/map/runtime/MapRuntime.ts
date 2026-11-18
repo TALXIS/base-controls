@@ -1,5 +1,5 @@
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IRuntime, IServiceRegistry, ModuleLoader, Runtime, RuntimeLifecycle, ServiceRegistry } from "@core";
+import { IRuntime, IServiceRegistry, ModuleLoader, Runtime, ServiceRegistry } from "@core";
 import type { IMapModuleLocator, IMapModuleMap, IMapPoint, IMapProps } from "../interfaces";
 import { MapViewport } from "./viewport/MapViewport";
 
@@ -25,10 +25,6 @@ export interface IMapRuntimeParameters {
 }
 
 export class MapRuntime extends Runtime implements IMap {
-    public readonly lifecycle = new RuntimeLifecycle({
-        onInit: () => this._init(),
-        onDestroy: () => this._destroy(),
-    });
     public readonly services = new ServiceRegistry<IMapServiceMap>();
     private _moduleLoader = new ModuleLoader<IMapModuleMap, IMap>();
     private _getProps: () => IMapProps;
@@ -58,7 +54,7 @@ export class MapRuntime extends Runtime implements IMap {
         }
     }
 
-    private async _init(): Promise<void> {
+    protected async onInit(): Promise<void> {
         const modules = this._getProps().modules;
         if (!modules.some(module => module.name === 'library')) {
             throw new Error('Map needs a library module: use GoogleMap or LeafletMap, or give a library module of your own and draw its map as a child.');
@@ -67,7 +63,7 @@ export class MapRuntime extends Runtime implements IMap {
         await this._getProps().onLoad?.(this);
     }
 
-    private _destroy(): void {
+    protected onDestroy(): void {
         this._moduleLoader.destroy();
         this.services.destroy();
     }

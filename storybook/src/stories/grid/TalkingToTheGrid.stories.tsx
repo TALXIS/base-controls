@@ -20,7 +20,7 @@ Outside the grid, such as in the ribbon above, keep the grid \`onSetup\` passes 
 | \`services\` | The grid's services, by key. See *Services* below. |
 | \`modules\` | The modules the grid was given, by name. See *Modules* below. |
 | \`events\` | \`onDataLoaded\`. See *Events* on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). |
-| \`lifecycle\` | The mount's status and events, such as \`onReady\` and \`onDestroyed\`. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
+| \`lifecycle\` | The mount's status and events, such as \`onStatusChanged\` and \`onDestroyed\`. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`loading\`, \`execute(operation, parameters?)\` | Cover the grid with a spinner while your code works, and run an action whose failure is shown to the user. See *Run actions* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`hooks.agGridOptions\`, \`hooks.agGridInitialOptions\`, \`refreshAgGridOptions\` | AG Grid's own options. See [**AG Grid**](?path=/docs/controls-grid-extending-ag-grid--overview). |
 | \`hooks.openRecord\` | What opening a record does. See *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview). |
@@ -69,7 +69,7 @@ They return the service, not its state. To redraw when it changes, subscribe to 
 
 | Emitter | Event | Arguments | When it fires |
 |---|---|---|---|
-| \`grid.lifecycle.events\` | \`onReady\`, \`onInitFailed\`, \`onDestroyed\` | See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) | The mount is ready, failed to load, or ends. |
+| \`grid.lifecycle.events\` | \`onStatusChanged\`, \`onDestroyed\` | See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) | The mount is ready, failed to load, or ends. |
 | \`editing.events\` | \`onEditedCellChanged\` | \`previous?\`, \`next?\` | See *Members* on [**Editing**](?path=/docs/controls-grid-modules-editing--overview). |
 | \`filtering.events\` | \`onFilterOpened\` | \`columnName\` | A column's filter callout opens. |
 | \`filtering.events\` | \`onFilterClosed\` | None | The filter callout closes. |
@@ -148,7 +148,7 @@ const LIFECYCLE: ILifecycleStep[] = [
     { title: 'The grid is set up', hook: 'onSetup', text: '`onSetup` gets each new `IGrid` before it loads, for code outside the grid to keep and subscribe to.' },
     { title: 'The modules load', hook: 'onLoad', text: 'Each module\'s `onLoad` gets the `IGrid` before AG Grid exists, lowest `priority` first, and a promise it returns is awaited. A module that throws shows the error inside the grid with *Try again*.' },
     { title: 'The grid loads', hook: 'onLoad', text: 'The `onLoad` prop is awaited, after the modules and before AG Grid renders.' },
-    { title: 'The grid is ready', hook: 'onReady', text: '`grid.lifecycle.events` fires `onReady`, and AG Grid is created with the options the initial option hooks set.' },
+    { title: 'The grid is ready', hook: 'onReady', text: 'AG Grid is created with the options the initial option hooks set, then the status turns `ready` and the `onReady` prop is called.' },
     { title: 'AG Grid is ready', hook: "observe('gridApi')", text: 'The `gridApi` service is provided, so its observers run, and the grid draws the provider\'s data if it has loaded, firing `onDataLoaded`.' },
     { title: 'The provider loads', hook: 'onDataLoaded', text: 'After every load of the provider, the grid draws its new columns and rows and fires `onDataLoaded`.' },
     { title: 'The grid unmounts', hook: 'onDestroyed', text: '`grid.lifecycle.events` fires `onDestroyed`, then the `gridApi` service unregisters, so the cleanups its observers returned run while AG Grid still works.' },

@@ -1,5 +1,5 @@
 import type { GanttStatic } from "dhtmlx-gantt";
-import type { IEventSubscriber, IRuntimeModule, IServiceLocator, IServiceRegistry, IStateStore, IHookPoint } from "@core";
+import type { IEventSubscriber, IRuntime, IRuntimeModule, IServiceLocator, IServiceRegistry, IStateStore, IHookPoint } from "@core";
 import type { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IGrid } from "@controls/grid";
 import type { ITaskGridServiceMap } from "../services";
@@ -68,7 +68,7 @@ export interface IGanttHooks {
 }
 
 /** One mount of a `TaskGantt`: what its modules load on and its parts read. */
-export interface IGantt {
+export interface IGantt extends IRuntime {
     readonly events: IEventSubscriber<IGanttEvents>;
     readonly services: IGanttServiceRegistry;
     readonly modules: IGanttModuleLocator;

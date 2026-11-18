@@ -19,6 +19,8 @@ export interface IRibbonProps {
     disabled?: boolean;
     /** Called with the runtime of each mount, before its init; add hooks and subscribe here. */
     onSetup?: (ribbon: IRibbon) => void;
+    /** Called once per mount when the control has loaded and is drawn. */
+    onReady?: (ribbon: IRibbon) => void;
     /** Replacements for what the ribbon and its host draw. */
     components?: IRibbonComponents;
 }
@@ -33,7 +35,7 @@ export const RibbonRoot = (props: IRibbonProps) => {
         onRender: () => <RibbonUiShimmer align={props.align} components={shimmer} />,
     };
 
-    return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} className={props.className} components={{ container, mountError, placeholder, loadingOverlay, executeError }}>
+    return <RuntimeHost<RibbonRuntime> createRuntime={createRuntime} onSetup={ribbon => propsRef.current.onSetup?.(ribbon)} onReady={ribbon => propsRef.current.onReady?.(ribbon)} className={props.className} components={{ container, mountError, placeholder, loadingOverlay, executeError }}>
         <RibbonMount {...props} />
     </RuntimeHost>;
 };

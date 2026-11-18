@@ -52,11 +52,13 @@ export class GoogleMapsRuntime implements IGoogleMapsInternal {
     private _instance?: google.maps.Map;
     private _openRecordId?: string;
     private _stopListening: () => void;
+    private _resolveInstanceReady?: () => void;
 
     constructor(parameters: IGoogleMapsConstructorParameters) {
         this._viewport = parameters.map.services.get('viewport');
         this._parameters = parameters.parameters;
         this._stopListening = this._viewport.events.addEventListener('onViewRequested', this._onViewRequested);
+        parameters.map.lifecycle.waitUntil(new Promise<void>(resolve => this._resolveInstanceReady = resolve));
     }
 
     public getInstance(): google.maps.Map | undefined {
@@ -75,6 +77,7 @@ export class GoogleMapsRuntime implements IGoogleMapsInternal {
         this._instance = instance;
         this._viewport.fit();
         this.events.dispatchEvent('onInstanceReady', instance);
+        this._resolveInstanceReady?.();
         return () => {
             if (this._instance === instance) {
                 this._instance = undefined;
