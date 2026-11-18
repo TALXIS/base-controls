@@ -73,8 +73,8 @@ export class GridLocks implements IGridLocks {
     public isColumnLocked(columnName: string): boolean {
         let isLocked = this._isLockedByColumn.get(columnName);
         if (isLocked === undefined) {
-            const metadata = this._services.get('provider').getColumnsMap()[columnName]?.metadata;
-            const result: IGridLock = { isLocked: !metadata?.IsValidForUpdate };
+            const column = this._services.get('provider').getColumnsMap()[columnName];
+            const result: IGridLock = { isLocked: !!column && !column.metadata?.IsValidForUpdate };
             this.hooks.column.apply(result, { columnName });
             isLocked = result.isLocked;
             this._isLockedByColumn.set(columnName, isLocked);
