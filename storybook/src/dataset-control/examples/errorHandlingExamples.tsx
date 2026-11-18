@@ -65,17 +65,19 @@ const GridExample = () => {
     const [log, setLog] = React.useState<string[]>([])
     const write = (line: string) => setLog(log => [line, ...log].slice(0, 3))
 
-    //logs each failure beside the error dialog
+    //logs each failure beside the error dialog: a user view can fail while the control loads
     const onSetup = (control: IDatasetControl) => {
-        //a failed user view
         control.executor.events.addEventListener('onExecuteFailed', error => write(\`views: \${(error as Error).message}\`))
-        //a failed command, on the ribbon's own executor
-        control.parts.observe('ribbon', ribbon => ribbon.executor.events.addEventListener('onExecuteFailed', error => write(\`ribbon: \${(error as Error).message}\`)))
+    }
+
+    //a failed command, on the ribbon's own executor
+    const onReady = (control: IDatasetControl) => {
+        control.parts.get('ribbon').executor.events.addEventListener('onExecuteFailed', error => write(\`ribbon: \${(error as Error).message}\`))
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Server is down' inlineLabel onChange={(_, checked) => { server.isDown = !!checked }} />
-        <DatasetControl modules={[userViews]} onLoad={loadDeals} onSetup={onSetup} height='420px'>
+        <DatasetControl modules={[userViews]} onLoad={loadDeals} onSetup={onSetup} onReady={onReady} height='420px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher>

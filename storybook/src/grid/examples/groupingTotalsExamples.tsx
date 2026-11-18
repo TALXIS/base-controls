@@ -120,7 +120,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <ClientSideGrid modules={[createGroupingModule()]}
-                onSetup={grid => { gridRef.current = grid }}
+                onReady={grid => { gridRef.current = grid }}
                 height='440px' />
         </DatasetControl.Body>
     </DatasetControl>

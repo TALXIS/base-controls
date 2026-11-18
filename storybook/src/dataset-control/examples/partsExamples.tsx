@@ -62,12 +62,13 @@ const QUICK_FIND_CODE = `const GridExample = () => {
     const [draft, setDraft] = React.useState('')
 
     //follows the query as it is typed, before it is searched
-    const onSetup = (control: IDatasetControl) => {
-        control.parts.observe('quickFind', quickFind => quickFind.events.addEventListener('onQueryChanged', () => setDraft(quickFind.getQuery())))
+    const onReady = (control: IDatasetControl) => {
+        const quickFind = control.parts.get('quickFind')
+        quickFind.events.addEventListener('onQueryChanged', () => setDraft(quickFind.getQuery()))
     }
 
     return <Stack tokens={{ childrenGap: 8 }}>
-        <DatasetControl onLoad={async () => ({ provider: createDealsProvider() })} onSetup={onSetup} height='440px'>
+        <DatasetControl onLoad={async () => ({ provider: createDealsProvider() })} onReady={onReady} height='440px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.End>
                     <DatasetControl.QuickFind />

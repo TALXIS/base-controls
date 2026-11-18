@@ -34,7 +34,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <ClientSideGrid modules={[columnOrderLock]}
-                onSetup={grid => { gridRef.current = grid }}
+                onReady={grid => { gridRef.current = grid }}
                 height='420px' />
         </DatasetControl.Body>
     </DatasetControl>
@@ -80,7 +80,7 @@ const GridExample = () => {
         </DatasetControl.Header>
         <DatasetControl.Body>
             <ClientSideGrid modules={[highlightChangesModule]}
-                onSetup={grid => { gridRef.current = grid }}
+                onReady={grid => { gridRef.current = grid }}
                 height='400px' />
         </DatasetControl.Body>
     </DatasetControl>

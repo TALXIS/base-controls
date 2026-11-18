@@ -47,7 +47,8 @@ The \`gridApi\` service is AG Grid's \`GridApi<IRecord>\`, provided once AG Grid
 | From | Reach it with |
 |---|---|
 | A module's \`onLoad\`, or \`onSetup\` and \`onLoad\` on the grid | \`grid.services.observe('gridApi', gridApi => { ... })\`. \`find('gridApi')\` is still \`undefined\` there, as AG Grid renders after them. |
-| Code outside the grid, such as a ribbon command | Keep the grid \`onSetup\` passes you, and call \`grid.services.find('gridApi')\` |
+| \`onReady\` on the grid | \`grid.services.get('gridApi')\`: AG Grid is there by then |
+| Code outside the grid, such as a ribbon command | Keep the grid \`onReady\` passes you, and call \`grid.services.get('gridApi')\` |
 | A component the grid draws | \`useGridService('gridApi')\`, which can be \`undefined\` on the first render |
 
 Each row node's \`data\` is its \`IRecord\`, and its id is the record's id: \`gridApi.getRowNode(record.getRecordId())\`. What you change through the api stays in AG Grid. Widths you autosize are not written to the provider and fire no \`onColumnsChanged\`, and a value written with \`node.setDataValue\` never reaches the record, so use \`record.setValue\`. An option a hook also sets is overwritten the next time the hook's value changes, so set it through a hook rather than \`gridApi.setGridOption\`.

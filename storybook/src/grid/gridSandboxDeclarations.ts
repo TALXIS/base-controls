@@ -3029,6 +3029,8 @@ interface IGridProps {
     stateKey?: string;
     /** Called with each new grid, before it loads; subscribe and keep refs here. */
     onSetup?: (grid: IGrid) => void;
+    /** Called once per mount when the control has loaded and is drawn. */
+    onReady?: (grid: IGrid) => void;
     /** Awaited after the modules load and before AG Grid renders, on every mount. */
     onLoad?: (grid: IGrid) => void | Promise<void>;
 }
@@ -3819,6 +3821,8 @@ interface IRibbonProps {
     disabled?: boolean;
     /** Called with the runtime of each mount, before its init; add hooks and subscribe here. */
     onSetup?: (ribbon: IRibbon) => void;
+    /** Called once per mount when the control has loaded and is drawn. */
+    onReady?: (ribbon: IRibbon) => void;
     components?: {
         /** The commands' bar. */
         commandBar?: Partial<{ onRender: (props: import('@fluentui/react').ICommandBarProps) => JSX.Element | null }>;

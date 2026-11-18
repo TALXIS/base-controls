@@ -12,7 +12,7 @@ Your code can do what the user does through the parts: switch the view, reload, 
 
 ## Get the control
 
-Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar above does. Outside it, \`onSetup\` hands it to you as each mount starts, so add your listeners there: every load is a new mount with a new \`IDatasetControl\`, as [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) explains.
+Inside the control, any component gets it from \`useDatasetControl()\`, as the toolbar above does. Outside it, \`onSetup\` hands it to you as each mount starts, so add listeners for the load there, and \`onReady\` once it has loaded and drawn its parts, for code that uses them straight away: every load is a new mount with a new \`IDatasetControl\`, as [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) explains.
 
 {{story: Watch the control load}}
 

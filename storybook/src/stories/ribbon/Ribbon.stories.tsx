@@ -41,6 +41,7 @@ When the first load throws, the error shows in place of the commands, with **Det
 | \`disabled\` | \`boolean\` | \`false\` | Live | Disables every command, menus included. |
 | \`className\` | \`string\` | None | Live | Added to the ribbon's box, which also holds the shimmer and a failed first load. |
 | \`onSetup\` | \`(ribbon: IRibbon) => void\` | None | At mount | Hands over the ribbon of each mount, before it loads. |
+| \`onReady\` | \`(ribbon: IRibbon) => void\` | None | Once loaded | Called once per mount when the control has loaded and is drawn. |
 | \`components\` | \`IRibbonComponents\` | Defaults | Live | See *Changing how it looks*. |
 
 ## From your code

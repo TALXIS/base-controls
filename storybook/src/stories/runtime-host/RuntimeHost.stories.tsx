@@ -88,6 +88,7 @@ To change the wording of the loading text, **Try again**, **Details** and the de
 |---|---|---|---|---|
 | \`createRuntime\` | \`() => TRuntime\` | Required | At mount | Makes the runtime of a mount. |
 | \`onSetup\` | \`(runtime: TRuntime) => void\` | None | At mount | Called with each new runtime, before it loads. |
+| \`onReady\` | \`(runtime: TRuntime) => void\` | None | Once loaded | Called once per mount when the control has loaded and is drawn. |
 | \`children\` | \`ReactNode\` | None | Live | The control, drawn once the runtime is ready; reads it with \`useRuntime()\`. |
 | \`className\` | \`string\` | None | Live | Put on the box the host draws everything in. |
 | \`components\` | \`IRuntimeHostComponents\` | Defaults | Live | See *Changing how it looks*. |

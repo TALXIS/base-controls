@@ -47,7 +47,7 @@ const GridExample = () => {
     }
 
     return <>
-        <Ribbon onLoad={onLoad} onSetup={ribbon => { ribbonRef.current = ribbon }} />
+        <Ribbon onLoad={onLoad} onReady={ribbon => { ribbonRef.current = ribbon }} />
         <Text>Invoice INV-0042: {status}</Text>
     </>
 }

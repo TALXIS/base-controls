@@ -41,6 +41,7 @@ It moves again each time the provider loads new data; in between, the user pans 
 | \`children\` | \`ReactNode\` | None | Live | Drawn in the map's box under the library's map, once the modules have loaded. |
 | \`modules\` | \`IMapModule[]\` | None; required on \`Map\` | At mount | Further modules, loaded after the library. On \`Map\`, every module, with one named \`library\`: see *A library of your own* on [**Map libraries**](?path=/docs/controls-map-map-libraries--overview). |
 | \`onSetup\` | \`(map: IMap) => void\` | None | At mount | Called with each new map, before it loads: see [**Talking to the map**](?path=/docs/controls-map-talking-to-the-map--overview). |
+| \`onReady\` | \`(map: IMap) => void\` | None | Once loaded | Called once per mount when the control has loaded and is drawn. |
 | \`onLoad\` | \`(map: IMap) => void \\| Promise<void>\` | None | At mount | Called once the modules have loaded; the map waits for a promise it returns. |
 | \`height\` | \`string\` | Fills its parent | Live | A length such as \`'480px'\`; left out, the map fills its parent: see [**Layout**](?path=/docs/controls-map-layout--overview). |
 | \`className\` | \`string\` | None | Live | A class for the map's box. |

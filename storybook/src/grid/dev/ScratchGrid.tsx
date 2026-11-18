@@ -489,8 +489,8 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                         (window as any).__scratchGrid = grid
                         grid.services.get('columns').hooks.columnDefinitions.add(changeScratchColumns, GRID_MODULE_PRIORITY.clipboard + 1)
                         grid.services.get('validation').hooks.validation.add(validateEstimate)
-                        grid.services.observe('gridApi', gridApi => { (window as any).__scratchGridApi = gridApi })
-                    }} />
+                    }}
+                    onReady={grid => { (window as any).__scratchGridApi = grid.services.get('gridApi') }} />
             </DatasetControl.Body>
         </DatasetControl>
     </div>

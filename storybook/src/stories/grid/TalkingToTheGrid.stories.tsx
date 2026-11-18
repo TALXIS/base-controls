@@ -13,7 +13,7 @@ Every mounted grid hands your code one object, an \`IGrid\`, through which it re
 
 ## Get the grid
 
-Outside the grid, such as in the ribbon above, keep the grid \`onSetup\` passes you, a new one on every mount; inside a DatasetControl, the control's \`parts.find('grid')\` returns it too (see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Inside the grid, a module's \`onLoad\` receives it, as on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). When each runs is under *From mount to unmount* below.
+Outside the grid, such as in the ribbon above, keep the grid \`onReady\` passes you, a new one on every mount; \`onSetup\` hands it over earlier, before it loads, for hooks; inside a DatasetControl, the control's \`parts.find('grid')\` returns it too (see [**Talking to the control**](?path=/docs/controls-datasetcontrol-talking-to-the-control--overview)). Inside the grid, a module's \`onLoad\` receives it, as on [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview). When each runs is under *From mount to unmount* below.
 
 | Member | Description |
 |---|---|

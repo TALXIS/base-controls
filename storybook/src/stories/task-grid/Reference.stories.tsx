@@ -17,6 +17,7 @@ Every other prop works as on a [**DatasetControl**](?path=/docs/controls-dataset
 | \`enableDeletion\` | \`boolean\` | \`false\` | At mount | *Delete* for the selected tasks. |
 | \`defaultCreatePosition\` | \`'first' \\| 'last'\` | \`'first'\` | At mount | Where among its siblings a new task goes when the call names no place of its own. |
 | \`onSetup\` | \`(control: IDatasetControl<ITaskViewData>) => void\` | None | At mount | Gets the DatasetControl of each mount, before it loads its modules and tasks. |
+| \`onReady\` | \`(control: IDatasetControl<ITaskViewData>) => void\` | None | Once loaded | Called once per mount when the control has loaded and is drawn. |
 
 ## TaskDatasetControl parts
 

@@ -22,7 +22,8 @@ The **task runtime** runs the task grid in one mount of \`TaskDatasetControl\`: 
 |---|---|
 | In \`onLoad\` | Its argument, as since [**Your first task grid**](?path=/docs/controls-taskgrid-guide-basics-your-first-task-grid--overview) |
 | In a component inside the control, such as \`PlanToolbar\` | \`useTaskRuntime()\` |
-| In \`onSetup\` on \`TaskDatasetControl\` | \`control.modules.observe('taskRuntime', …)\`, or \`control.modules.get('taskRuntime')\` in a hook that runs once the control has loaded |
+| In \`onReady\` on \`TaskDatasetControl\` | \`control.modules.get('taskRuntime')\` |
+| In \`onSetup\` on \`TaskDatasetControl\` | \`control.modules.observe('taskRuntime', …)\`, for hooks that must be there before the tasks load |
 | In a task module | \`datasetControl.modules.get('taskRuntime')\` |
 | In a Gantt module | \`gantt.getTaskRuntime()\` |
 
@@ -48,7 +49,7 @@ The **task runtime** runs the task grid in one mount of \`TaskDatasetControl\`: 
 ## Remember
 
 - The task runtime makes the changes the user makes, with the same overlay, the same errors and the same \`enable…\` props.
-- Reach it with \`useTaskRuntime()\` inside the control, and through \`onSetup\` or a module outside it.
+- Reach it with \`useTaskRuntime()\` inside the control, and through \`onReady\` or a module outside it.
 - \`taskEvents\` report each change to the tree, whoever made it.
 - Commands of your own go in the ribbon's \`hooks.commands\`; \`hooks.ribbonCommandUi\` changes how any item is drawn.
 

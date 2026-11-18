@@ -52,7 +52,8 @@ Subscribe in \`onSetup\`, which receives each new grid before it loads. Listener
 | \`className\` | \`string\` | None | Live | Added to the grid's root element. |
 | \`components\` | \`IGridComponents\` | \`{}\` | Live | The overlays and the loading and error rows. See [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview). |
 | \`stateKey\` | \`string\` | None | At mount | The key the user's place is kept under. See [**State**](?path=/docs/controls-grid-state--overview). |
-| \`onSetup\` | \`(grid: IGrid) => void\` | None | At mount | Gets each new grid before it loads; keep it and subscribe here. See [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). |
+| \`onSetup\` | \`(grid: IGrid) => void\` | None | At mount | Gets each new grid before it loads; add hooks and subscribe here. See [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview). |
+| \`onReady\` | \`(grid: IGrid) => void\` | None | Once loaded and drawn | Gets the grid once its modules and AG Grid are there; keep it here. |
 | \`onLoad\` | \`(grid: IGrid) => void \\| Promise<void>\` | None | At mount | Awaited after the modules load and before AG Grid renders, on every mount. |
 
 Columns, row heights, locks and what opening a record does are set with hooks in \`onSetup\`: see [**Columns**](?path=/docs/controls-grid-columns--overview) and [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview).
@@ -80,7 +81,7 @@ Columns, row heights, locks and what opening a record does are set with hooks in
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Talking to the grid', iconName: 'Plug', href: '?path=/docs/controls-grid-talking-to-the-grid--overview', text: 'Keep the grid onSetup passes you and drive it from your code.' },
+    { title: 'Talking to the grid', iconName: 'Plug', href: '?path=/docs/controls-grid-talking-to-the-grid--overview', text: 'Keep the grid onReady passes you and drive it from your code.' },
     { title: 'Modules', iconName: 'Puzzle', href: '?path=/docs/controls-grid-modules--overview', text: 'The features you pass in modules, and their options.' },
     { title: 'Editing', iconName: 'Edit', href: '?path=/docs/controls-grid-modules-editing--overview', text: 'Edit values in place and save them, one by one or all at once.' },
 ]
