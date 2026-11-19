@@ -149,6 +149,13 @@ const GridExample = () => {
 `
 
 export const BrandExample = () => <GridExampleRunner seedCode={BRAND_CODE} />
-export const RedRowsExample = () => <GridExampleRunner seedCode={RED_ROWS_CODE} dataset='tickets' />
+export const RedRowsExample = () => <GridExampleRunner seedCode={[{ name: 'GridExample.tsx', code: RED_ROWS_CODE }, { name: 'types.ts', code: `//names the module for TypeScript
+declare module '@talxis/base-controls' {
+    interface IGridModuleMap {
+        //its onLoad returns nothing
+        escalatedTickets: void
+    }
+}
+` }]} dataset='tickets' />
 export const ReadableTagsExample = () => <GridExampleRunner seedCode={READABLE_TAGS_CODE} tabs={['preview', 'code']} />
 export const DerivedThemesExample = () => <GridExampleRunner seedCode={DERIVED_CODE} tabs={['preview', 'code']} />

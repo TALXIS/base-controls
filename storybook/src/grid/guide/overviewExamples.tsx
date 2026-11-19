@@ -493,6 +493,23 @@ const SHOWCASE_FILES: IGridExampleFile[] = withDealGrid(GRID_EXAMPLE,
     { name: 'pipelineReview.tsx', code: PIPELINE_REVIEW },
     { name: 'closingDeals.ts', code: CLOSING_DEALS },
     { name: 'features.tsx', code: FEATURES },
+    { name: 'types.ts', code: `//names each module for TypeScript; none of their onLoads returns anything
+declare module '@talxis/base-controls' {
+    interface IGridModuleMap {
+        statusIcons: void
+        colourRules: void
+        headerExtras: void
+        overdueActions: void
+        quickViews: void
+        openInForm: void
+        recurringSwitch: void
+        dealCommands: void
+        closedDealColours: void
+        lockClosedDeals: void
+        pinnedName: void
+    }
+}
+` },
 )
 
 const FEATURE_GROUPS: IShowcaseFeatureGroup[] = [

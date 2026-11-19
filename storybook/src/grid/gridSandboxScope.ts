@@ -37,7 +37,7 @@ import { CHECKLIST_COLUMN, CHECKLIST_ITEMS, createChecklistItems } from '../task
 import { createDependencies, DEPENDENCIES, DEPENDENCY_COLUMNS } from '../task-grid/memoryDependencyData'
 import { COLUMNS as TASK_COLUMNS, DATE_TIME_COLUMNS as DATE_TIME_TASK_COLUMNS, DATE_TIME_TASKS, ENTITY_METADATA as TASK_METADATA, getDateTimeQueryColumns as getDateTimeTaskColumns, getQueryColumns as getTaskColumns, LOOKUP_MANY_VALUES, takeLookupManyValues, TASKS } from '../task-grid/memoryTaskData'
 import { createStressTasks } from '../task-grid/stressTaskData'
-import { createDealsProvider, createLaunchPlanProvider, createProductsProvider, createTicketsProvider, createTimesheetsProvider, DEAL_COLUMNS, DEAL_DETAIL_COLUMNS, DEAL_PRIMARY_ID, DEAL_ROWS } from './data'
+import { createDealsProvider, createLaunchPlanProvider, createTicketsProvider, DEAL_COLUMNS, DEAL_DETAIL_COLUMNS, DEAL_PRIMARY_ID, DEAL_ROWS } from './data'
 
 /** Everything a snippet may use without importing it, apart from the injected `provider`. */
 export const GRID_SANDBOX_SCOPE = {
@@ -222,9 +222,7 @@ export const GRID_SANDBOX_SCOPE = {
     createIsolatedComponent,
     createIsolatedHost,
     defineIsolatedContent,
-    createTimesheetsProvider,
     createTicketsProvider,
-    createProductsProvider,
     createLaunchPlanProvider,
     Checklist,
     CompletionCell,

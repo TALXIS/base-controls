@@ -1,6 +1,25 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
+import type { IGridExampleFile } from '../GridLivePreview'
 import { DEAL_LIST_TABS, withDealGrid } from '../guide/dealGridFiles'
+
+const COLUMN_ORDER_LOCK_TYPES_FILE: IGridExampleFile = { name: 'types.ts', code: `//names the module for TypeScript
+declare module '@talxis/base-controls' {
+    interface IGridModuleMap {
+        //its onLoad returns nothing
+        columnOrderLock: void
+    }
+}
+` }
+
+const HIGHLIGHT_CHANGES_TYPES_FILE: IGridExampleFile = { name: 'types.ts', code: `//names the module for TypeScript
+declare module '@talxis/base-controls' {
+    interface IGridModuleMap {
+        //its onLoad returns nothing
+        highlightChanges: void
+    }
+}
+` }
 
 const REARRANGE_COLUMNS_CODE = `import { ClientSideGrid, DatasetControl, IGrid, IGridModule } from '@talxis/base-controls'
 import { Toggle } from '@fluentui/react'
@@ -89,6 +108,6 @@ const GridExample = () => {
 }
 `
 
-export const RearrangeColumnsExample = () => <GridExampleRunner seedCode={withDealGrid(REARRANGE_COLUMNS_CODE)} tabs={DEAL_LIST_TABS} />
+export const RearrangeColumnsExample = () => <GridExampleRunner seedCode={withDealGrid(REARRANGE_COLUMNS_CODE, COLUMN_ORDER_LOCK_TYPES_FILE)} tabs={DEAL_LIST_TABS} />
 
-export const JumpToTheNextDealToCloseExample = () => <GridExampleRunner seedCode={withDealGrid(JUMP_TO_THE_NEXT_DEAL_TO_CLOSE_CODE)} tabs={DEAL_LIST_TABS} />
+export const JumpToTheNextDealToCloseExample = () => <GridExampleRunner seedCode={withDealGrid(JUMP_TO_THE_NEXT_DEAL_TO_CLOSE_CODE, HIGHLIGHT_CHANGES_TYPES_FILE)} tabs={DEAL_LIST_TABS} />

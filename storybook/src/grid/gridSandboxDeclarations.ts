@@ -884,12 +884,8 @@ declare const DEAL_COLUMNS: IColumn[];
 declare const DEAL_DETAIL_COLUMNS: IColumn[];
 /** The id attribute of the deals. */
 declare const DEAL_PRIMARY_ID: string;
-/** A new, unloaded provider over a consulting team's 24 timesheet entries of last week. */
-declare function createTimesheetsProvider(): MemoryDataProvider;
 /** A new, unloaded provider over a support desk's 36 tickets. */
 declare function createTicketsProvider(): MemoryDataProvider;
-/** A new, unloaded provider over an office furniture shop's 16 products. */
-declare function createProductsProvider(): MemoryDataProvider;
 /** A new, unloaded provider over a product launch's checklist of 6 items: name, completed, stackrank, priority, owner, duedate and estimate, a duration in minutes that is totalled. */
 declare function createLaunchPlanProvider(): MemoryDataProvider;
 
@@ -2254,17 +2250,33 @@ declare const ToastTitle: typeof import('@fluentui/react-components').ToastTitle
 declare const ToastBody: typeof import('@fluentui/react-components').ToastBody;
 declare const useToastController: typeof import('@fluentui/react-components').useToastController;
 
-/** An optional feature a grid can be given. */
 /** What a module's onLoad gets besides its host. */
 interface IModuleLoadParameters {
     /** Aborted when the mount goes or another module fails, so a load can cancel what it started. */
     signal: AbortSignal;
 }
 
-/** TName is the module's name in IGridModuleMap. */
-interface IGridModule<TName extends string = string> {
+/** The instances grid modules provide, by name; extend it for a module of your own. */
+interface IGridModuleMap {
+    rowModel: any;
+    rowSelection: any;
+    cellSelection: any;
+    clipboard: any;
+    editing: any;
+    sorting: any;
+    filtering: any;
+    grouping: any;
+    aggregation: any;
+    legacyClientApiCompatibility: any;
+    license: void;
+    checklist: any;
+    taskTree: any;
+}
+
+/** An optional feature a grid can be given; TName is its name in IGridModuleMap. */
+interface IGridModule<TName extends keyof IGridModuleMap = keyof IGridModuleMap> {
     /** Unique within the grid; what onLoad returns is provided under it. */
-    name: string;
+    name: TName;
     /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
     priority?: number;
     /** AG Grid modules the feature needs. */
@@ -5321,8 +5333,6 @@ declare module 'react-dom';
 declare module 'dhtmlx-gantt-pro';
 declare module '@talxis/base-controls/gantt' { export { TaskGantt, TaskTooltip, useMarker, createLibraryModule, createProLibraryModule, createMarkersModule, createMemoryMarkersModule, createNonWorkingDaysModule, createMemoryNonWorkingDaysModule, createBarDraggingModule, createTaskDrawingModule, createTaskSelectionModule, createTaskTooltipModule, createLinksModule, IGanttModule, IMarker, INonWorkingDay, IMemoryMarker, IMemoryNonWorkingDay, IGantt, IGanttSpan, IMarkersStore, INonWorkingDaysStore, useGantt, useGanttService, useGanttModule, useTaskTooltip, LinkTooltip, useLinkTooltip } from '@talxis/base-controls'; export interface IGanttModuleMap {} }
 
-/** The instances grid modules provide, by name; extend it for a module of your own. */
-interface IGridModuleMap {}
 /** The instances DatasetControl modules provide, by name; extend it for a module of your own. */
 interface IDatasetControlModuleMap {}
 
