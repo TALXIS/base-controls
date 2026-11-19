@@ -1,13 +1,19 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
+import { DEAL_LIST_TABS, withDealGrid } from '../guide/dealGridFiles'
 
-export const REARRANGE_COLUMNS_CODE = `const createColumnOrderLock = (isUnlocked: () => boolean): IGridModule => ({
+const REARRANGE_COLUMNS_CODE = `import { ClientSideGrid, DatasetControl, IGrid, IGridModule } from '@talxis/base-controls'
+import { Toggle } from '@fluentui/react'
+import { loadDeals } from './deals'
+
+const createColumnOrderLock = (isUnlocked: () => boolean): IGridModule => ({
     name: 'columnOrderLock',
     onLoad: grid => {
-        //screen readers read the rows in the order the page holds them
+        //read only when AG Grid is created
         grid.hooks.agGridInitialOptions.add(result => {
             result.options.ensureDomOrder = true
         })
+        //read again on every refreshAgGridOptions()
         grid.hooks.agGridOptions.add(result => {
             result.options.suppressMovableColumns = !isUnlocked()
         })
@@ -15,78 +21,74 @@ export const REARRANGE_COLUMNS_CODE = `const createColumnOrderLock = (isUnlocked
 })
 
 const GridExample = () => {
-    const [isArranging, setIsArranging] = React.useState(false)
-    const isArrangingRef = React.useRef(isArranging)
+    const isArranging = React.useRef(false)
     const gridRef = React.useRef<IGrid>()
-    const columnOrderLock = React.useMemo(() => createColumnOrderLock(() => isArrangingRef.current), [])
 
     const toggleArranging = (checked: boolean) => {
-        isArrangingRef.current = checked
-        setIsArranging(checked)
+        isArranging.current = checked
         gridRef.current?.refreshAgGridOptions()
     }
 
-    return <DatasetControl onLoad={async () => ({ provider: provider })}>
+    return <DatasetControl onLoad={loadDeals} height='480px'>
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
-                <Toggle label='Rearrange columns' inlineLabel checked={isArranging} onChange={(_, checked) => toggleArranging(!!checked)} />
+                <Toggle label='Rearrange columns' inlineLabel onChange={(_, checked) => toggleArranging(!!checked)} />
             </DatasetControl.Header.Start>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <ClientSideGrid modules={[columnOrderLock]}
-                onReady={grid => { gridRef.current = grid }}
-                height='420px' />
+            <ClientSideGrid modules={[createColumnOrderLock(() => isArranging.current)]} onReady={grid => { gridRef.current = grid }} />
         </DatasetControl.Body>
     </DatasetControl>
 }
 `
 
-export const JUMP_TO_NEWEST_TICKET_CODE = `//\`flashCells\` needs an AG Grid module the grid does not register itself
-const highlightChangesModule: IGridModule = { name: 'highlightChanges', agGridModules: [HighlightChangesModule], onLoad: () => { } }
+const JUMP_TO_THE_NEXT_DEAL_TO_CLOSE_CODE = `import { ClientSideGrid, DatasetControl, IGrid, IGridModule, IRibbonCommand } from '@talxis/base-controls'
+import { IRecord } from '@talxis/client-libraries'
+import { loadDeals } from './deals'
 
-const getNewestTicket = (tickets: IRecord[]) => tickets.reduce((newest, ticket) => dayjs(ticket.getValue('createdon')).isAfter(newest.getValue('createdon')) ? ticket : newest)
+const WON = 4
+const LOST = 5
 
-//opens sorted by deadline
-const createQueueByDeadline = () => {
-    const tickets = createTicketsProvider()
-    tickets.setSorting([{ name: 'duedate', sortDirection: 0 }])
-    return tickets
-}
+//flashCells needs HighlightChangesModule from ag-grid-community
+const highlightChanges: IGridModule = { name: 'highlightChanges', agGridModules: [HighlightChangesModule], onLoad: () => { } }
+
+const isOpen = (deal: IRecord) => ![WON, LOST].includes(Number(deal.getValue('stage')))
+
+//the open deal that closes first from today on
+const findNextToClose = (deals: IRecord[]) => deals
+    .filter(deal => isOpen(deal) && deal.getValue('closedate') && !dayjs(deal.getValue('closedate')).isBefore(dayjs(), 'day'))
+    .sort((a, b) => dayjs(a.getValue('closedate')).diff(b.getValue('closedate')))[0]
 
 const GridExample = () => {
-    const tickets = React.useMemo(createQueueByDeadline, [])
     const gridRef = React.useRef<IGrid>()
 
-    const jumpToNewestTicket = () => {
-        const gridApi = gridRef.current?.services.find('gridApi')
-        const node = gridApi?.getRowNode(getNewestTicket(tickets.getRecords()).getRecordId())
-        if (!gridApi || !node) {
-            return
-        }
+    const jumpToNextToClose = () => {
+        const gridApi = gridRef.current!.services.get('gridApi')
+        const deal = findNextToClose(gridRef.current!.services.get('provider').getRecords())
+        //a row's id is its record's id
+        const node = gridApi.getRowNode(deal.getRecordId())!
         gridApi.ensureNodeVisible(node, 'middle')
         //the grid draws the row it scrolled to a frame later
         requestAnimationFrame(() => requestAnimationFrame(() => gridApi.flashCells({ rowNodes: [node] })))
     }
 
     const loadCommands = async (): Promise<IRibbonCommand[]> => [
-        { id: 'newest', label: 'Jump to the newest ticket', iconName: 'Ringer', onExecute: jumpToNewestTicket },
+        { id: 'nextToClose', label: 'Jump to the next deal to close', iconName: 'Calendar', onExecute: jumpToNextToClose },
     ]
 
-    return <DatasetControl onLoad={async () => ({ provider: tickets })}>
+    return <DatasetControl onLoad={loadDeals} height='480px'>
         <DatasetControl.Header>
-            <DatasetControl.Header.Start>
+            <DatasetControl.Header.End>
                 <DatasetControl.Ribbon onLoad={loadCommands} />
-            </DatasetControl.Header.Start>
+            </DatasetControl.Header.End>
         </DatasetControl.Header>
         <DatasetControl.Body>
-            <ClientSideGrid modules={[highlightChangesModule]}
-                onReady={grid => { gridRef.current = grid }}
-                height='400px' />
+            <ClientSideGrid modules={[highlightChanges]} onReady={grid => { gridRef.current = grid }} />
         </DatasetControl.Body>
     </DatasetControl>
 }
 `
 
-export const RearrangeColumnsExample = () => <GridExampleRunner seedCode={REARRANGE_COLUMNS_CODE} dataset='products' />
+export const RearrangeColumnsExample = () => <GridExampleRunner seedCode={withDealGrid(REARRANGE_COLUMNS_CODE)} tabs={DEAL_LIST_TABS} />
 
-export const JumpToNewestTicketExample = () => <GridExampleRunner seedCode={JUMP_TO_NEWEST_TICKET_CODE} tabs={['preview', 'code']} />
+export const JumpToTheNextDealToCloseExample = () => <GridExampleRunner seedCode={withDealGrid(JUMP_TO_THE_NEXT_DEAL_TO_CLOSE_CODE)} tabs={DEAL_LIST_TABS} />

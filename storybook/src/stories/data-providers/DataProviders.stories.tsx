@@ -167,7 +167,7 @@ When your API sorts, filters and pages itself, extend \`DataProvider\`. Set the 
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Load the deals', iconName: 'Download', href: '?path=/docs/controls-datasetcontrol-guide-basics-load-the-deals--overview', text: 'Load a provider for each view a DatasetControl shows.' },
-    { title: 'Data', iconName: 'Table', href: '?path=/docs/controls-grid-data--overview', text: 'How the grid draws the columns and records of its provider.' },
+    { title: 'Your first deal grid', iconName: 'Table', href: '?path=/docs/controls-grid-guide-basics-your-first-deal-grid--overview', text: 'How the grid draws the columns and records of its provider.' },
     { title: 'State persistence', iconName: 'History', href: '?path=/docs/concepts-state-persistence--overview', text: 'Keep the sorting, search and paging a user set when they come back.' },
 ]
 

@@ -36,7 +36,7 @@ every claim against `src/` before you write it.
 A control with a guide teaches it as one path through `…/Guide/<Stage>/<Step>` pages. Its stages and
 steps are listed in order in the guide's config, such as `storybook/src/task-grid/guide/taskGridGuide.ts`,
 which passes them to `createGuide` in `storybook/src/grid/showcase/Guide.tsx`. The TaskGrid guide is the
-model; DatasetControl and Map have guides of the same shape. The library-wide guide, `storybook/src/concepts/guide/startGuide.ts`, lives under
+model; DatasetControl, Grid and Map have guides of the same shape. The library-wide guide, `storybook/src/concepts/guide/startGuide.ts`, lives under
 `Concepts/Guide/…` with Concepts › Introduction as its overview.
 
 - **One storyline:** every step runs on the same sample scenario, such as the office move, and adds one
@@ -126,7 +126,17 @@ Each fact lives on one page; every other page links to it.
 | A failed DatasetControl load | DatasetControl › Guide › Basics › When loading fails |
 | What a DatasetControl keeps, and its `stateKey` | DatasetControl › Guide › Your data › Back where they left off |
 | Every DatasetControl slot | DatasetControl › Reference |
-| Grid props, defaults and save events | Grid › Props and events |
+| Grid props, their defaults and timing; every Grid hook, service key and slot | Grid › Reference |
+| What the grid raises, save events included; `IGrid`; `onSetup`, `onReady` and `onLoad` on a grid; a prop read at mount | Grid › Guide › Advanced › From your code |
+| How a grid value commits, saving and the save status | Grid › Guide › Basics › Edit and save |
+| Required, read-only and built-in checks, and a refused save | Grid › Guide › Basics › Check what users enter |
+| AG Grid Enterprise modules and the licence | Grid › Guide › Features › Select and copy |
+| Summary rows | Grid › Guide › Features › Group and total |
+| What a grid hook is, `priority` and `GRID_MODULE_PRIORITY`; locks and inactive records | Grid › Guide › Features › Lock closed deals |
+| What the grid keeps, and its `stateKey` | Grid › Guide › Features › Back where they left off |
+| Row models and `ServerSideGrid` | Grid › Guide › Features › Open groups on demand |
+| The grid's services and the column definitions hook | Grid › Guide › Make it yours › Shape the columns |
+| Redrawing the grid after a hook's input changes | Grid › Guide › Advanced › Hooks |
 | Where a map looks on its own, `fieldMapping`, and Leaflet's stylesheet | Map › Guide › Basics › Your first map |
 | A map's size | Map › Guide › Basics › Make it fit |
 | The map libraries, their props, and the Google Maps key | Map › Guide › Basics › Pick the tiles |

@@ -18,7 +18,7 @@ Anna closes deals and corrects them where she sees them. She ticks deals and mar
 
 This step adds a ribbon to the header and two modules to the grid of [**Search and page**](?path=/docs/controls-datasetcontrol-guide-features-search-and-page--overview). In **Code**, the new lines carry \`//new:\`.
 
-**Grid modules.** A grid module adds a feature to the grid, listed in its \`modules\`: \`createRowSelectionModule({ mode: 'multiple' })\` puts a checkbox on each row, and \`createEditingModule()\` opens a cell's editor on a double-click. Every module the grid offers is on Grid's [**Modules**](?path=/docs/controls-grid-modules--overview).
+**Grid modules.** A grid module adds a feature to the grid, listed in its \`modules\`: \`createRowSelectionModule({ mode: 'multiple' })\` puts a checkbox on each row, and \`createEditingModule()\` opens a cell's editor on a double-click. Every module the grid offers is under *Modules* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview).
 
 **The ribbon.** \`DatasetControl.Ribbon\` is a bar of commands above the records. Its \`onLoad\` returns the commands, and runs again whenever the selection changes, so it returns the ones that fit the ticked deals. \`DealsRibbon\` reads the control's provider with \`useDataProvider()\`, which any component inside the control can call, and offers **Mark N as won** while open deals are ticked. A command that changes what applies without changing the selection calls \`ribbon.reload()\`, as **Mark N as won** does once the deals are won.
 

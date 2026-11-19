@@ -22,11 +22,11 @@ The list is the one from [**Your first list**](?path=/docs/concepts-guide-basics
 
 | Control | Its modules | See |
 |---|---|---|
-| Grid | Editing, selection, sorting, filtering, grouping, totals and more | [**Modules**](?path=/docs/controls-grid-modules--overview) |
+| Grid | Editing, selection, sorting, filtering, grouping, totals and more | *Modules* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview) |
 | DatasetControl | The user's own views | [**Views of their own**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview) |
 | TaskGrid | People, dependencies, checklists, templates, and the Gantt's own | [**How modules work**](?path=/docs/controls-taskgrid-guide-features-how-modules-work--overview) |
 
-The total under *Floor area (m²)* comes from \`aggregation: { aggregationFunction: 'sum' }\` on its column in *stores.ts*, and the aggregation module draws it in a row pinned under the grid: see [**Grouping and totals**](?path=/docs/controls-grid-modules-grouping-and-totals--overview).
+The total under *Floor area (m²)* comes from \`aggregation: { aggregationFunction: 'sum' }\` on its column in *stores.ts*, and the aggregation module draws it in a row pinned under the grid: see [**Group and total**](?path=/docs/controls-grid-guide-features-group-and-total--overview).
 
 **Saving.** An edited value stays on its record as an **unsaved change** until it is saved. \`DatasetControl.Ribbon\` is a bar of commands in the header: \`enableSave\` adds **Save**, which saves every changed store, and \`enableDiscard\` adds **Discard changes**, which undoes them; each shows only while there are unsaved changes. While there are, the browser asks before the stores load again, such as on a sort. The ribbon's commands and that question are on [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview).
 

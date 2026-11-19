@@ -53,7 +53,7 @@ Read the theme with \`useTheme()\` from \`@talxis/base-controls\` and take colou
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Fluent UI', iconName: 'Design', href: '?path=/docs/concepts-fluent-ui--overview', text: 'Which Fluent UI and Base Controls components to use beside the controls.' },
-    { title: 'Appearance', iconName: 'Color', href: '?path=/docs/controls-grid-appearance--overview', text: 'Colour the grid\'s cells, rows and headers.' },
+    { title: 'Colours and density', iconName: 'Color', href: '?path=/docs/controls-grid-guide-make-it-yours-colours-and-density--overview', text: 'Colour the grid\'s cells, rows and headers.' },
     { title: 'Pieces and slots', iconName: 'Edit', href: '?path=/docs/concepts-pieces-and-slots--overview', text: 'Replace what a part draws with components in your own look.' },
 ]
 
@@ -96,7 +96,7 @@ export const RedRows: Story = {
     parameters: {
         docs: {
             description: {
-                story: `Escalated tickets drawn red by a cell theme, which [**Appearance**](?path=/docs/controls-grid-appearance--overview) explains. Try: open the **Status** list of a red ticket, which opens in the app theme.`,
+                story: `Escalated tickets drawn red by a cell theme, which [**Colours and density**](?path=/docs/controls-grid-guide-make-it-yours-colours-and-density--overview) explains. Try: open the **Status** list of a red ticket, which opens in the app theme.`,
             },
         },
     },

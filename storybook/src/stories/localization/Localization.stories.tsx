@@ -16,7 +16,7 @@ Every string the controls draw is a *label*: a key such as \`'quickFind.searchPl
 |---|---|
 | A provider leaves a key out | The key falls back to the provider above, then to English, so a page sets its language once and one control can still reword a label. |
 | A label holds \`{{ placeholders }}\` | It is a Liquid template: keep the placeholders and any filters in a translation. |
-| Labels change after mount | Components draw again with them, but what a control has built, such as grid cells or headers, keeps its text: remount the control with a new \`key\`, as the example does, or redraw the grid as *Redrawing* on [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) describes. |
+| Labels change after mount | Components draw again with them, but what a control has built, such as grid cells or headers, keeps its text: remount the control with a new \`key\`, as the example does, or redraw the grid as *Redrawing* on [**Hooks**](?path=/docs/controls-grid-guide-advanced-hooks--overview) describes. |
 | A name comes from your data | View, column and option names are data, not labels: translate them where you define them, as the example does with its columns. |
 | A date or number is drawn | It follows the culture of the provider's \`formatting\`, not the labels. Hand the provider the one from \`usePcfContext()\`, as the example does: see *Pick a provider* on [**Data providers**](?path=/docs/concepts-data-providers--overview). |
 
@@ -38,7 +38,7 @@ Give a component of yours labels the way the library's own do, rather than hard-
 const EXPLORE: IExploreCard[] = [
     { title: 'Your first list', iconName: 'Rocket', href: '?path=/docs/concepts-guide-basics-your-first-list--overview', text: 'Where the LabelsProvider sits among the providers at the root.' },
     { title: 'PCF context', iconName: 'PlugConnected', href: '?path=/docs/concepts-pcf-context--overview', text: 'Set the user\'s culture, which formats dates, numbers and money.' },
-    { title: 'Talking to the grid', iconName: 'Chat', href: '?path=/docs/controls-grid-talking-to-the-grid--overview', text: 'Redraw the grid\'s cells and headers from your code.' },
+    { title: 'Hooks', iconName: 'Plug', href: '?path=/docs/controls-grid-guide-advanced-hooks--overview', text: 'Redraw the grid\'s cells and headers from your code.' },
 ]
 
 const meta = {

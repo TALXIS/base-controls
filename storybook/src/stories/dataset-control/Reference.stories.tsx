@@ -138,7 +138,7 @@ Every part provides itself on the control under its key while it is drawn.
 | \`pageSizeSwitcher\` | \`DatasetControl.PageSizeSwitcher\` | *Page size switcher* below |
 | \`pagination\` | \`DatasetControl.Pagination\` | *Pagination* below |
 | \`notifications\` | \`DatasetControl.Notifications\` | *Messages* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview), and *Notifications* below |
-| \`grid\` | The grid in the body | [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) |
+| \`grid\` | The grid in the body | Grid's [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview) |
 
 \`control.parts\` finds a part by its key with \`get\`, \`find\`, \`has\` and \`observe\`, as under *Parts* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). Declare a part of your own on \`IDatasetControlPartMap\` in \`declare module '@talxis/base-controls'\`, so its key is typed.
 

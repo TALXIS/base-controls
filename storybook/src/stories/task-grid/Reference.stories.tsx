@@ -38,7 +38,7 @@ Every other prop works as on a [**DatasetControl**](?path=/docs/controls-dataset
 
 ## TaskGrid props
 
-Every other prop works as on a Grid: see [**Props and events**](?path=/docs/controls-grid-props-and-events--overview).
+Every other prop works as on a Grid: see *Props* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview).
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
@@ -453,7 +453,7 @@ Inside anything \`TaskGrid\` draws, such as a cell, \`useTaskGridService(key)\` 
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
-| \`TaskGrid\` | \`overlays\`, \`rows\` | The Grid's, as on [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview) | | |
+| \`TaskGrid\` | \`overlays\`, \`rows\` | The Grid's, under *The grid's own pieces* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview) | | |
 | \`TaskDatasetControl.Ribbon\`, \`TaskDatasetControl.PageSizeSwitcher\` | Their DatasetControl parts' | Under *Slots* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview) | | |
 | \`TaskDatasetControl.Settings\` | Top level | \`onRender\`, \`onRenderButton\` | \`TaskGridUiSettingsMenuComponents\` | The tooltip around the settings button, and the button with its menu |
 | \`TaskGantt\` | \`chart\` | \`onRender\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` has to pass on its \`ref\` |
@@ -483,7 +483,7 @@ Inside anything \`TaskGrid\` draws, such as a cell, \`useTaskGridService(key)\` 
 | | \`tooltip.fieldList\` | \`onRender\` | \`FieldListComponents\` | The list holding the two tasks |
 | | \`tooltip.predecessor\`, \`tooltip.successor\` | \`onRender\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`FieldValueComponents\` | The task on each end of the link |
 
-The task grid's own cells take their slots like every grid cell: through \`cellRendererParams\`, or \`headerComponentParams\` for a header, set from a column definitions hook at \`TASK_GRID_PRIORITY.tree + 1\`, after the task tree gives the columns their cells. How to add such a hook is on [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview).
+The task grid's own cells take their slots like every grid cell: through \`cellRendererParams\`, or \`headerComponentParams\` for a header, set from a column definitions hook at \`TASK_GRID_PRIORITY.tree + 1\`, after the task tree gives the columns their cells. How to add such a hook is on [**Cells and headers of your own**](?path=/docs/controls-grid-guide-make-it-yours-cells-and-headers-of-your-own--overview).
 
 | Column | Draws with | Slots | Default | Draws |
 |---|---|---|---|---|

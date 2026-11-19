@@ -20,7 +20,7 @@ A checklist stores nothing itself: every tick, rename, drag, new item and delete
 | Adds an item in the bottom row | Creates a record with \`provider.newRecord()\` and ranks it after the last item. |
 | Deletes an item | Asks for confirmation, then calls \`provider.deleteRecords()\`. |
 
-With the default editing module, each change saves its record at once. With \`createEditingModule()\` in \`modules\` and no auto-save, changes wait until you save them, as [**Editing**](?path=/docs/controls-grid-modules-editing--overview) describes. A delete always goes to the provider straight away.
+With the default editing module, each change saves its record at once. With \`createEditingModule()\` in \`modules\` and no auto-save, changes wait until you save them, as Grid's [**Edit and save**](?path=/docs/controls-grid-guide-basics-edit-and-save--overview) describes. A delete always goes to the provider straight away.
 
 ## Save to your API
 
@@ -33,7 +33,7 @@ The provider decides where a save goes. Extend it and override \`onRecordSave\` 
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Write a provider of your own that saves to your API.' },
-    { title: 'Editing', iconName: 'Edit', href: '?path=/docs/controls-grid-modules-editing--overview', text: 'Save each change at once, or wait until you save them.' },
+    { title: 'Edit and save', iconName: 'Edit', href: '?path=/docs/controls-grid-guide-basics-edit-and-save--overview', text: 'The grid\'s editing module: save each change at once, or wait until you save them.' },
     { title: 'Customisation', iconName: 'Settings', href: '?path=/docs/controls-checklist-customisation--overview', text: 'Make the list read-only, add grid features and replace its cells.' },
 ]
 

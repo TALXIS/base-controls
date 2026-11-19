@@ -31,7 +31,7 @@ A task grid shows a plan as a tree of tasks, each task under the one it is part 
 | Part | Does | Takes |
 |---|---|---|
 | \`TaskDatasetControl\` | Holds the tasks: loads them through the store \`onLoad\` returns, opens the views, says what the user may change, and lays out the header and the body. It is a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview) whose records are tasks. | Task modules, such as lookup many, the checklist and dependencies |
-| \`TaskGrid\` | Draws the tasks as a tree, in \`DatasetControl.Body\`. It is a [**Grid**](?path=/docs/controls-grid-get-started--overview), without grouping and totals. | Grid modules, such as editing, row selection and filtering |
+| \`TaskGrid\` | Draws the tasks as a tree, in \`DatasetControl.Body\`. It is a [**Grid**](?path=/docs/controls-grid-overview--overview), without grouping and totals. | Grid modules, such as editing, row selection and filtering |
 | \`TaskGantt\` | Draws the same tasks on a timeline, row for row with the grid, beside it in \`TaskGantt.Split\`. It comes from \`@talxis/base-controls/gantt\`. | Gantt modules, such as dragging bars, links and markers |
 
 [**How modules work**](?path=/docs/controls-taskgrid-guide-features-how-modules-work--overview) says which module goes in which part.

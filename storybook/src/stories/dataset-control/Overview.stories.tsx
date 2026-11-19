@@ -7,7 +7,7 @@ import { GuideMap } from '../../dataset-control/guide/datasetControlGuide'
 import { DealListExample } from '../../dataset-control/guide/overviewExamples'
 
 const DESCRIPTION = `
-A DatasetControl is the frame around a list of records: it loads them for the view the user has open and holds the parts around them, such as a view switcher, a ribbon, a search field and paging. You pick the parts and put them in it, and what draws the records is one of them, usually a [**Grid**](?path=/docs/controls-grid-get-started--overview). Try it below: tick two deals and press **Mark 2 as won**, then switch to *Won deals*.
+A DatasetControl is the frame around a list of records: it loads them for the view the user has open and holds the parts around them, such as a view switcher, a ribbon, a search field and paging. You pick the parts and put them in it, and what draws the records is one of them, usually a [**Grid**](?path=/docs/controls-grid-overview--overview). Try it below: tick two deals and press **Mark 2 as won**, then switch to *Won deals*.
 
 {{canvas: The deal list}}
 
@@ -71,7 +71,7 @@ In a model-driven app? Do *Basics*, then [**Where views are kept**](?path=/docs/
 const EXPLORE: IExploreCard[] = [
     { title: 'Your first deal list', iconName: 'Education', href: '?path=/docs/controls-datasetcontrol-guide-basics-your-first-deal-list--overview', text: 'Start the guide: the team\'s deals in a read-only grid.' },
     { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-datasetcontrol-reference--overview', text: 'Every prop, member, part key and slot of the DatasetControl.' },
-    { title: 'Grid', iconName: 'GridViewSmall', href: '?path=/docs/controls-grid-get-started--overview', text: 'What draws the records: columns, editing, sorting and the grid\'s own modules.' },
+    { title: 'Grid', iconName: 'GridViewSmall', href: '?path=/docs/controls-grid-overview--overview', text: 'What draws the records: columns, editing, sorting and the grid\'s own modules.' },
 ]
 
 const meta = {

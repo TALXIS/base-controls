@@ -1,198 +1,161 @@
 import React from 'react'
 import { GridExampleRunner } from '../GridExampleRunner'
+import { DEAL_LIST_TABS, withDealGrid } from '../guide/dealGridFiles'
 
-export const TICKET_RECOMMENDATIONS_CODE = `const NEW = 1
-const IN_PROGRESS = 2
-const RESOLVED = 4
-const CURRENT_AGENT = 'Eva Horák'
+const RECOMMEND_NEXT_STEPS_CODE = `import { ClientSideGrid, createLegacyClientApiCompatibilityModule, DatasetControl, IGrid } from '@talxis/base-controls'
+import { IAddControlNotificationOptions, IRecord } from '@talxis/client-libraries'
+import { loadDeals } from './deals'
 
-const getStatus = (record: IRecord) => Number(record.getValue('status'))
-const isOpen = (record: IRecord) => getStatus(record) !== RESOLVED
-const isOverdue = (record: IRecord) => [NEW, IN_PROGRESS].includes(getStatus(record)) && dayjs(record.getValue('duedate')).isBefore(dayjs())
-//two-options values read back as '1' or '0'
-const isEscalated = (record: IRecord) => record.getValue('escalated') === '1'
+const WON = 4
+const LOST = 5
 
-const update = (record: IRecord, values: { [columnName: string]: any }) => {
-    Object.entries(values).forEach(([columnName, value]) => record.setValue(columnName, value))
-    record.save()
+const isOpen = (deal: IRecord) => ![WON, LOST].includes(Number(deal.getValue('stage')))
+const isOverdue = (deal: IRecord) => isOpen(deal) && dayjs(deal.getValue('closedate')).isBefore(dayjs(), 'day')
+
+//sets the values and saves the deal
+const update = (deal: IRecord, values: { [columnName: string]: unknown }) => {
+    Object.entries(values).forEach(([columnName, value]) => deal.setValue(columnName, value))
+    deal.save()
 }
 
-const assignToMe = (record: IRecord) => update(record, { assignee: CURRENT_AGENT, status: IN_PROGRESS })
-
-const getRecommendations = (record: IRecord): IAddControlNotificationOptions[] => {
+const getRecommendations = (deal: IRecord): IAddControlNotificationOptions[] => {
     const notifications: IAddControlNotificationOptions[] = []
-    if (isOverdue(record)) {
+    if (isOverdue(deal)) {
+        //two actions open a callout on a click
         notifications.push({
             uniqueId: 'overdue',
             iconName: 'Clock',
             text: 'Overdue',
-            messages: ['The customer was due a first answer by ' + record.getFormattedValue('duedate') + '.'],
+            messages: ['This deal was due to close on ' + deal.getFormattedValue('closedate') + '.'],
+            buttonProps: { iconOnly: true },
             actions: [
-                { message: 'Assign to me', iconName: 'AddFriend', actions: [() => assignToMe(record)] },
-                { message: 'Escalate', iconName: 'Up', actions: [() => update(record, { escalated: true })] },
+                { message: 'Push a week', iconName: 'Forward', actions: [() => update(deal, { closedate: dayjs(deal.getValue('closedate')).add(7, 'day').toDate() })] },
+                { message: 'Mark as lost', iconName: 'Cancel', actions: [() => update(deal, { stage: LOST })] },
             ],
         })
     }
-    if (isOpen(record) && !record.getValue('assignee')) {
+    if (isOpen(deal) && deal.getValue('nextstep') === 'Send the proposal') {
+        //one action runs at once on a click
         notifications.push({
-            uniqueId: 'unassigned',
-            iconName: 'AddFriend',
-            text: 'Assign to me',
+            uniqueId: 'sendProposal',
+            iconName: 'Send',
+            text: 'Send the proposal',
             messages: [],
             buttonProps: { iconOnly: true },
-            actions: [{ actions: [() => assignToMe(record)] }],
-        })
-    }
-    if (isOpen(record) && isEscalated(record)) {
-        notifications.push({
-            uniqueId: 'escalated',
-            iconName: 'Up',
-            text: 'Escalated',
-            messages: ['The second line is looking into it. Resolve the ticket once they answer, or take it back.'],
-            buttonProps: { renderedInOverflow: true },
-            actions: [
-                { message: 'Resolve', iconName: 'CheckMark', actions: [() => update(record, { status: RESOLVED })] },
-                { message: 'Take it back', iconName: 'Undo', actions: [() => update(record, { escalated: false })] },
-            ],
+            actions: [{ actions: [() => update(deal, { nextstep: 'Follow up on the proposal' })] }],
         })
     }
     return notifications
 }
 
-const supportDeskScript: IGridModule = {
-    name: 'supportDeskScript',
-    onLoad: grid => {
-        const tickets = grid.services.get('provider')
-        const addRecommendations = (record: IRecord) => record.expressions.ui.setNotificationsExpression('title', () => getRecommendations(record))
-        tickets.getRecords().forEach(addRecommendations)
-        //a reload or a save clears a record's expressions
-        const unsubscribe = tickets.addEventListener('onRecordLoaded', addRecommendations)
-        //the provider outlives the grid
-        grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
-    },
+const runDealScript = (grid: IGrid) => {
+    const provider = grid.services.get('provider')
+    const addRecommendations = (deal: IRecord) => deal.expressions.ui.setNotificationsExpression('nextstep', () => getRecommendations(deal))
+    provider.getRecords().forEach(addRecommendations)
+    //a reload or a save clears a record's expressions
+    const unsubscribe = provider.addEventListener('onRecordLoaded', addRecommendations)
+    //the provider outlives the grid
+    grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
 }
 
-const onSetup = (grid: IGrid) => {
-    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-        //room for the notifications beside the title
-        columnDefs.find(colDef => colDef.colId === 'title')!.initialWidth = 380
-    })
-}
-
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+const GridExample = () => <DatasetControl onLoad={loadDeals} height='480px'>
     <DatasetControl.Body>
-        <ClientSideGrid
-            modules={[
-                createLegacyClientApiCompatibilityModule(),
-                supportDeskScript,
-            ]}
-            onSetup={onSetup}
-            height='420px' />
+        <ClientSideGrid modules={[createLegacyClientApiCompatibilityModule()]} onSetup={runDealScript} />
     </DatasetControl.Body>
 </DatasetControl>
 `
 
-export const STOCK_SCRIPT_CODE = `const LOCKED_WHEN_DISCONTINUED = ['price', 'instock', 'reorderlevel', 'supplier']
+const COLOUR_LOCK_AND_LOAD_CODE = `import { ClientSideGrid, createEditingModule, createLegacyClientApiCompatibilityModule, DatasetControl, IGrid, IRibbonCommand, useDataProvider } from '@talxis/base-controls'
+import { IRecord } from '@talxis/client-libraries'
+import { loadDeals } from './deals'
 
-let isSyncingStock = false
+const WON = 4
+const LOST = 5
+//the columns a won or lost deal locks
+const LOCKED_WHEN_CLOSED = ['value', 'discount', 'probability', 'closedate']
 
-//two-options values read back as '1' or '0'
-const isDiscontinued = (record: IRecord) => record.getValue('discontinued') === '1'
+let isSyncing = false
 
-//the grid picks a readable text colour for a background
-const getStockFormatting = (record: IRecord) => {
-    const inStock = Number(record.getValue('instock') ?? 0)
-    if (inStock === 0) {
-        return { backgroundColor: '#d13438' }
+const isClosed = (deal: IRecord) => [WON, LOST].includes(Number(deal.getValue('stage')))
+
+//the grid picks a readable text colour for each background
+const getProbabilityColours = (deal: IRecord) => {
+    const probability = Number(deal.getValue('probability'))
+    if (probability >= 70) {
+        return { backgroundColor: '#107c10' }
     }
-    if (inStock <= Number(record.getValue('reorderlevel') ?? 0)) {
-        return { backgroundColor: '#ffb900' }
+    return probability < 30 ? { backgroundColor: '#d13438' } : undefined
+}
+
+const addDealScript = (deal: IRecord) => {
+    deal.expressions.ui.setCustomFormattingExpression('probability', () => getProbabilityColours(deal))
+    deal.expressions.ui.setLoadingExpression('probability', () => isSyncing)
+    LOCKED_WHEN_CLOSED.forEach(columnName => deal.expressions.setDisabledExpression(columnName, () => isClosed(deal)))
+}
+
+const runDealScript = (grid: IGrid) => {
+    const provider = grid.services.get('provider')
+    provider.getRecords().forEach(addDealScript)
+    //a reload or a save clears a record's expressions
+    const unsubscribe = provider.addEventListener('onRecordLoaded', addDealScript)
+    grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
+}
+
+//drawn inside the DatasetControl to reach its provider
+const SyncRibbon = () => {
+    const provider = useDataProvider()
+    const syncFromCrm = async () => {
+        isSyncing = true
+        //a cell redraws by itself only when its own record changes
+        provider.requestRender()
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        isSyncing = false
+        provider.requestRender()
     }
-    return undefined
+    const loadCommands = async (): Promise<IRibbonCommand[]> => [{ id: 'sync', label: 'Sync from the CRM', iconName: 'Sync', onExecute: syncFromCrm }]
+    return <DatasetControl.Ribbon onLoad={loadCommands} />
 }
 
-const addStockScript = (record: IRecord) => {
-    record.expressions.ui.setCustomFormattingExpression('instock', () => getStockFormatting(record))
-    record.expressions.ui.setLoadingExpression('instock', () => isSyncingStock)
-    LOCKED_WHEN_DISCONTINUED.forEach(columnName => record.expressions.setDisabledExpression(columnName, () => isDiscontinued(record)))
-}
-
-const stockScript: IGridModule = {
-    name: 'stockScript',
-    onLoad: grid => {
-        const products = grid.services.get('provider')
-        products.getRecords().forEach(addStockScript)
-        const unsubscribe = products.addEventListener('onRecordLoaded', addStockScript)
-        grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
-    },
-}
-
-const waitForWarehouse = () => new Promise(resolve => setTimeout(resolve, 1500))
-
-//a cell redraws by itself only when its own record changes
-const syncStock = async () => {
-    isSyncingStock = true
-    provider.requestRender()
-    await waitForWarehouse()
-    isSyncingStock = false
-    provider.requestRender()
-}
-
-const GridExample = () => {
-    //the ribbon disables a command while it runs
-    const loadCommands = async (): Promise<IRibbonCommand[]> => [{ id: 'sync', label: 'Sync stock', iconName: 'Sync', onExecute: syncStock }]
-
-    return <DatasetControl onLoad={async () => ({ provider: provider })}>
-        <DatasetControl.Header>
-            <DatasetControl.Header.Start>
-                <DatasetControl.Ribbon onLoad={loadCommands} />
-            </DatasetControl.Header.Start>
-        </DatasetControl.Header>
-        <DatasetControl.Body>
-            <ClientSideGrid
-                modules={[
-                    createEditingModule({ enableAutoSave: true }),
-                    createLegacyClientApiCompatibilityModule(),
-                    stockScript,
-                ]}
-                height='420px' />
-        </DatasetControl.Body>
-    </DatasetControl>
-}
+const GridExample = () => <DatasetControl onLoad={loadDeals} height='480px'>
+    <DatasetControl.Header>
+        <DatasetControl.Header.End>
+            <SyncRibbon />
+        </DatasetControl.Header.End>
+    </DatasetControl.Header>
+    <DatasetControl.Body>
+        <ClientSideGrid modules={[createEditingModule({ enableAutoSave: true }), createLegacyClientApiCompatibilityModule()]} onSetup={runDealScript} />
+    </DatasetControl.Body>
+</DatasetControl>
 `
 
-export const EMPTY_VALUE_PLACEHOLDERS_CODE = `const NEW = 1
+const SAY_WHY_A_VALUE_IS_EMPTY_CODE = `import { ClientSideGrid, createEditingModule, createLegacyClientApiCompatibilityModule, DatasetControl, IGrid } from '@talxis/base-controls'
+import { IRecord } from '@talxis/client-libraries'
+import { loadDeals } from './deals'
 
-const addAssigneePlaceholder = (record: IRecord) => record.expressions.ui.setControlParametersExpression('assignee', parameters => ({
+const QUALIFY = 1
+
+const addCloseDatePlaceholder = (deal: IRecord) => deal.expressions.ui.setControlParametersExpression('closedate', parameters => ({
     ...parameters,
-    Placeholder: { raw: Number(record.getValue('status')) === NEW ? 'Waiting for triage' : 'Unassigned' },
+    Placeholder: { raw: Number(deal.getValue('stage')) === QUALIFY ? 'Set once qualified' : 'Not set' },
 }))
 
-const triageScript: IGridModule = {
-    name: 'triageScript',
-    onLoad: grid => {
-        const tickets = grid.services.get('provider')
-        tickets.getRecords().forEach(addAssigneePlaceholder)
-        const unsubscribe = tickets.addEventListener('onRecordLoaded', addAssigneePlaceholder)
-        grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
-    },
+const runDealScript = (grid: IGrid) => {
+    const provider = grid.services.get('provider')
+    provider.getRecords().forEach(addCloseDatePlaceholder)
+    //a reload or a save clears a record's expressions
+    const unsubscribe = provider.addEventListener('onRecordLoaded', addCloseDatePlaceholder)
+    grid.lifecycle.events.addEventListener('onDestroyed', unsubscribe)
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: provider })}>
+const GridExample = () => <DatasetControl onLoad={loadDeals} height='480px'>
     <DatasetControl.Body>
-        <ClientSideGrid
-            modules={[
-                createEditingModule({ enableAutoSave: true }),
-                createLegacyClientApiCompatibilityModule(),
-                triageScript,
-            ]}
-            height='400px' />
+        <ClientSideGrid modules={[createEditingModule(), createLegacyClientApiCompatibilityModule()]} onSetup={runDealScript} />
     </DatasetControl.Body>
 </DatasetControl>
 `
 
-export const TicketRecommendationsExample = () => <GridExampleRunner seedCode={TICKET_RECOMMENDATIONS_CODE} dataset='tickets' />
+export const RecommendNextStepsExample = () => <GridExampleRunner seedCode={withDealGrid(RECOMMEND_NEXT_STEPS_CODE)} tabs={DEAL_LIST_TABS} />
 
-export const StockScriptExample = () => <GridExampleRunner seedCode={STOCK_SCRIPT_CODE} dataset='products' />
+export const ColourLockAndLoadExample = () => <GridExampleRunner seedCode={withDealGrid(COLOUR_LOCK_AND_LOAD_CODE)} tabs={DEAL_LIST_TABS} />
 
-export const EmptyValuePlaceholdersExample = () => <GridExampleRunner seedCode={EMPTY_VALUE_PLACEHOLDERS_CODE} dataset='tickets' />
+export const SayWhyAValueIsEmptyExample = () => <GridExampleRunner seedCode={withDealGrid(SAY_WHY_A_VALUE_IS_EMPTY_CODE)} tabs={DEAL_LIST_TABS} />

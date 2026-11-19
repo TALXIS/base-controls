@@ -880,6 +880,8 @@ declare const SANDBOX_FRAME_SCRIPTS: IsolatedFrameScript[];
 declare const DEAL_ROWS: IRawRecord[];
 /** The columns of the deals. */
 declare const DEAL_COLUMNS: IColumn[];
+/** The deals' other columns: email, phone, website, nextstep, discount, lastcontact, language, timezone, contract, logo, notes. */
+declare const DEAL_DETAIL_COLUMNS: IColumn[];
 /** The id attribute of the deals. */
 declare const DEAL_PRIMARY_ID: string;
 /** A new, unloaded provider over a consulting team's 24 timesheet entries of last week. */

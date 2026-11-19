@@ -45,8 +45,8 @@ Each store is a **record**: a row with a value in each column. A **data provider
 |---|---|
 | \`createStoresProvider\` | In *stores.ts*: a \`MemoryDataProvider\`, which keeps the records of \`STORES\` in memory and saves changes back into them. Every kind of provider is on [**Data providers**](?path=/docs/concepts-data-providers--overview). |
 | \`onLoad\` | Returns \`{ provider }\`. The control calls it on every load, so \`loadStores\` makes a new provider each time, over the same \`STORES\`: see [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview). |
-| \`DatasetControl.Body\`, \`ClientSideGrid\` | The body holds what draws the records: here a grid, which takes no provider of its own and draws the control's. See [**Grid**](?path=/docs/controls-grid-get-started--overview). |
-| \`enableOptionSetColors\` | Draws each option that has a colour, such as each status in \`STATUSES\`, as a tag in that colour. Every prop of the grid is on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview). |
+| \`DatasetControl.Body\`, \`ClientSideGrid\` | The body holds what draws the records: here a grid, which takes no provider of its own and draws the control's. See [**Grid**](?path=/docs/controls-grid-overview--overview). |
+| \`enableOptionSetColors\` | Draws each option that has a colour, such as each status in \`STATUSES\`, as a tag in that colour. Every prop of the grid is under *Props* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview). |
 
 The examples use \`React\` and \`dayjs\` without importing them; your own files import them.
 

@@ -13,7 +13,7 @@ Base Controls is a React library of controls for business applications: grids, t
 
 ## Why build from parts
 
-Business applications need the same things again and again: lists that sort, filter, edit and save, views of those lists, forms, task plans and maps. Writing them anew for every application leaves many slightly different copies to maintain, each with its own behaviour and its own bugs. An AI agent that generates them from scratch each time does the same, and the code base grows large and inconsistent. Base Controls gives you these as finished, tested parts, and you build the application by putting them together, as the example above does, so the code you own is the code specific to your business. When a part does not fit, you do not start over: you change an option, replace one piece of what it draws with a slot (see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview)), add behaviour with a hook or a module (see [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview)), or write a part of your own on the same runtime (see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview)). If you work with an AI agent, point it at these parts and their extension points instead of letting it write new ones.
+Business applications need the same things again and again: lists that sort, filter, edit and save, views of those lists, forms, task plans and maps. Writing them anew for every application leaves many slightly different copies to maintain, each with its own behaviour and its own bugs. An AI agent that generates them from scratch each time does the same, and the code base grows large and inconsistent. Base Controls gives you these as finished, tested parts, and you build the application by putting them together, as the example above does, so the code you own is the code specific to your business. When a part does not fit, you do not start over: you change an option, replace one piece of what it draws with a slot (see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview)), add behaviour with a hook or a module (see Grid's [**Write a module**](?path=/docs/controls-grid-guide-advanced-write-a-module--overview)), or write a part of your own on the same runtime (see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview)). If you work with an AI agent, point it at these parts and their extension points instead of letting it write new ones.
 
 ## What you see
 
@@ -33,7 +33,7 @@ An application sets up its host and its look once, at the root, as [**Your first
 
 | To show | Use |
 |---|---|
-| A list of records | A data provider, loaded by a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview) and drawn by a [**Grid**](?path=/docs/controls-grid-get-started--overview), [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview) or [**Checklist**](?path=/docs/controls-checklist-get-started--overview) |
+| A list of records | A data provider, loaded by a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview) and drawn by a [**Grid**](?path=/docs/controls-grid-overview--overview), [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview) or [**Checklist**](?path=/docs/controls-checklist-get-started--overview) |
 | A single record | A [**Form**](?path=/docs/controls-form-get-started--overview) |
 | Records with a position | A [**Map**](?path=/docs/controls-map-overview--overview) |
 
@@ -45,7 +45,7 @@ You customise a control from a single option down to what each part draws:
 
 | To | Use |
 |---|---|
-| Change what a control does | Its props, and for the grid its modules, column definitions and hooks: see [**Modules**](?path=/docs/controls-grid-modules--overview) |
+| Change what a control does | Its props, and for the grid its modules, column definitions and hooks: see [**Grid**](?path=/docs/controls-grid-overview--overview) |
 | Change how a part looks | Its \`components\`, which replace what the part draws: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview) |
 | Add a part of your own | A component placed among the built-in parts: see DatasetControl's [**Your own UI**](?path=/docs/controls-datasetcontrol-guide-advanced-your-own-ui--overview) |
 | Draw a field yourself | A control of your own inside \`Form.Field\`: see the form's [**Your own UI**](?path=/docs/controls-form-your-own-ui--overview) |
@@ -112,7 +112,7 @@ const CONCEPTS: IExploreCard[] = [
 
 const CONTROLS: IExploreCard[] = [
     { title: 'DatasetControl', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-overview--overview', text: 'The frame around a list of records: loading, views, a ribbon, quick find, column editing and paging.' },
-    { title: 'Grid', iconName: 'Table', href: '?path=/docs/controls-grid-get-started--overview', text: 'An editable table on AG Grid: sorting, filtering, grouping, totals and more, module by module.' },
+    { title: 'Grid', iconName: 'Table', href: '?path=/docs/controls-grid-overview--overview', text: 'An editable table on AG Grid: sorting, filtering, grouping, totals and more, module by module.' },
     { title: 'TaskGrid', iconName: 'Timeline', href: '?path=/docs/controls-taskgrid-overview--overview', text: 'Tasks as a tree, with commands to build the plan and an optional Gantt chart.' },
     { title: 'Checklist', iconName: 'CheckList', href: '?path=/docs/controls-checklist-get-started--overview', text: 'A to-do list over a provider: tick items off, rename, reorder, add and delete them.' },
     { title: 'Form', iconName: 'Questionnaire', href: '?path=/docs/controls-form-get-started--overview', text: 'A record laid out in tabs and sections, with validation, change tracking and saving.' },

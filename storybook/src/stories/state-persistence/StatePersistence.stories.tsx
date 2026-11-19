@@ -41,7 +41,7 @@ Take your scope with \`useControlStateStore\`, so it also keeps per view inside 
 
 A child's \`stateKey\` scopes from the nearest store, not from its parent's scope. For children to land inside a component's own entry, the component hands its scope down in a \`StateProvider\`, as the planner in the example above does.
 
-A DatasetControl hands down the store of the view it shows, as a \`StateProvider\` would, so each view keeps its own. The DatasetControl in the example at the top keeps \`{ deals: { viewId, views: { [viewId]: { provider, parts: { grid } } } } }\`. The DatasetControl's [**Back where they left off**](?path=/docs/controls-datasetcontrol-guide-your-data-back-where-they-left-off--overview) and the grid's [**State**](?path=/docs/controls-grid-state--overview) list what each keeps.
+A DatasetControl hands down the store of the view it shows, as a \`StateProvider\` would, so each view keeps its own. The DatasetControl in the example at the top keeps \`{ deals: { viewId, views: { [viewId]: { provider, parts: { grid } } } } }\`. The DatasetControl's [**Back where they left off**](?path=/docs/controls-datasetcontrol-guide-your-data-back-where-they-left-off--overview) and the grid's [**Back where they left off**](?path=/docs/controls-grid-guide-features-back-where-they-left-off--overview) list what each keeps.
 
 ## Save state for later
 

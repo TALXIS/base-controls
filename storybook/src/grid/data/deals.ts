@@ -52,8 +52,8 @@ const NOTES = [
 const NEXT_STEPS = ['Send the proposal', 'Book a demo', 'Chase the signature', 'Agree the scope', 'Review the contract']
 const LANGUAGES = [1033, 1029, 1031]
 const TIME_ZONES = [85, 105, 190]
-//a 1x1 PNG, so the logo column has something to show without fetching anything
-const PIXEL = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+//a small blue PNG, so the logo column has something to show without fetching anything
+const LOGO_PNG = 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAUCAIAAABj86gYAAAAH0lEQVR42mNgqLhCWzRqwagFoxaMWjBqwagFoxYQgwCZvT4u6QB0+wAAAABJRU5ErkJggg=='
 //in minutes, as a duration column holds them
 const TIME_SPENT = [30, 90, 240, 480, 960, 1440, 2880]
 
@@ -88,11 +88,11 @@ export const DEAL_ROWS: IRawRecord[] = Array.from({ length: 30 }, (_, index) => 
     'contract.filesizeinbytes': 40960 + index * 1024,
     'contract.mimetype': 'application/pdf',
     'contract.fileurl': `https://example.com/contracts/deal-${index + 1}.pdf`,
-    logo: PIXEL,
+    logo: LOGO_PNG,
     'logo.filename': `${slugOf(ACCOUNTS[index % ACCOUNTS.length])}.png`,
-    'logo.filesizeinbytes': 68,
+    'logo.filesizeinbytes': 88,
     'logo.mimetype': 'image/png',
-    'logo.thumbnailurl': `data:image/png;base64,${PIXEL}`,
+    'logo.thumbnailurl': `data:image/png;base64,${LOGO_PNG}`,
 }))
 
 /** Columns of every other data type, for the examples that show them. */

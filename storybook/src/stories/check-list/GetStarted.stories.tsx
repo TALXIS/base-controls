@@ -6,7 +6,7 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 import { BasicUsageExample, LaunchPlanExample } from '../../check-list/checklistExamples'
 
 const DESCRIPTION = `
-A checklist is a to-do list built on a [**Grid**](?path=/docs/controls-grid-get-started--overview): users tick items off, rename them, drag them into a new order, add items in the bottom row and delete them. Each item is a record of a data provider, so the list is stored wherever the provider stores it. Try it below: tick an item off, then drag it to a new place.
+A checklist is a to-do list built on a [**Grid**](?path=/docs/controls-grid-overview--overview): users tick items off, rename them, drag them into a new order, add items in the bottom row and delete them. Each item is a record of a data provider, so the list is stored wherever the provider stores it. Try it below: tick an item off, then drag it to a new place.
 
 {{canvas: Plan a launch}}
 
@@ -28,7 +28,7 @@ Each of the three must be a column of the provider, or the checklist throws. A r
 
 ## Props
 
-\`Checklist\` takes every grid prop on [**Props and events**](?path=/docs/controls-grid-props-and-events--overview), \`onSetup\` included. These are its own, or differ:
+\`Checklist\` takes every grid prop under *Props* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview), \`onSetup\` included. These are its own, or differ:
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|

@@ -31,7 +31,7 @@ Every member of the part, and how the bar folds several messages, is under *Mess
 
 **A later load that fails.** A load that fails as the control mounts takes the place of the parts, as in [**When loading fails**](?path=/docs/controls-datasetcontrol-guide-basics-when-loading-fails--overview). A later load of the provider, such as a search, another page or **Refresh**, leaves the parts in place: the control adds the provider's error to the bar, beside your messages, and removes it once a load succeeds. **Break the connection** calls \`provider.setError(true, message)\`, as a provider does when a load fails. Every failure, and where it shows, is under *Failures* on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 
-**Nothing to show.** A grid draws an empty state of its own when there are no records: see Grid's [**Overlays and rows**](?path=/docs/controls-grid-appearance-overlays-and-rows--overview). Anything else in the body goes inside \`DatasetControl.EmptyState\`, which shows *No records found.* in its place while the provider has no records, and keeps it while the provider loads. To change the text, see [**Localization**](?path=/docs/concepts-localization--overview).
+**Nothing to show.** A grid draws an empty state of its own when there are no records: see Grid's [**Loading and nothing to show**](?path=/docs/controls-grid-guide-make-it-yours-loading-and-nothing-to-show--overview). Anything else in the body goes inside \`DatasetControl.EmptyState\`, which shows *No records found.* in its place while the provider has no records, and keeps it while the provider loads. To change the text, see [**Localization**](?path=/docs/concepts-localization--overview).
 
 ## A list of your own
 

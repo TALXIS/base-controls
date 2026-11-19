@@ -35,7 +35,7 @@ On this page the nearest store is the page's own, kept in memory, so the state o
 | For each view, the provider's state: its columns and the related entities they come from, sorting, filtering, page, page size, search and selection | As the view's mount goes, on a view switch, a load or an unmount | The next time the view loads, before its first page |
 | For each view, what the parts keep, such as where the grid is scrolled | As the user works | The next time the view is shown |
 
-What was kept wins over what the view and \`onLoad\` set up, so a view the user has not opened yet starts from the view, and one they have opened starts from what was kept. The grid keeps its own state only with a \`stateKey\` of its own, unique within the control; what it keeps is on [**State**](?path=/docs/controls-grid-state--overview) in Grid. A component of your own keeps its state for each view with \`useControlStateStore(key)\`, as on [**State persistence**](?path=/docs/concepts-state-persistence--overview).
+What was kept wins over what the view and \`onLoad\` set up, so a view the user has not opened yet starts from the view, and one they have opened starts from what was kept. The grid keeps its own state only with a \`stateKey\` of its own, unique within the control; what it keeps is on Grid's [**Back where they left off**](?path=/docs/controls-grid-guide-features-back-where-they-left-off--overview). A component of your own keeps its state for each view with \`useControlStateStore(key)\`, as on [**State persistence**](?path=/docs/concepts-state-persistence--overview).
 
 ### Start over
 

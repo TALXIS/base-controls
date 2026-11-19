@@ -21,7 +21,7 @@ Only *GridExample.tsx* changes, and in **Code** its new lines carry \`//new:\`. 
 | In the code | Keeps | See |
 |---|---|---|
 | \`stateKey='start.stores'\` on \`DatasetControl\` | The view the user is on and, for each view, its sorting, filters, search and selection | [**Back where they left off**](?path=/docs/controls-datasetcontrol-guide-your-data-back-where-they-left-off--overview) in the DatasetControl guide |
-| \`stateKey='grid'\` on the grid | The row at the top and the focused cell, for each view | [**State**](?path=/docs/controls-grid-state--overview) in Grid |
+| \`stateKey='grid'\` on the grid | The row at the top and the focused cell, for each view | [**Back where they left off**](?path=/docs/controls-grid-guide-features-back-where-they-left-off--overview) in the Grid guide |
 
 Both are kept in the nearest state store. On this page that is the page's own, in memory, so the list comes back as it was after the toggle, but not after a reload of the page. To keep them longer, save the store, as [**State persistence**](?path=/docs/concepts-state-persistence--overview) describes.
 

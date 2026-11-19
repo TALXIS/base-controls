@@ -12,7 +12,7 @@ Apart from its three columns, a checklist is a grid, so you customise it the way
 
 ## Add grid features
 
-The checklist's columns take everything a grid column does, through a column definitions hook in \`onSetup\`, as *Change a column* on [**Columns**](?path=/docs/controls-grid-columns--overview) describes, and the grid's hooks on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview) reach its cells. The release board above colours overdue dates, locks finished items and adds *Assign to me* with theme, lock and commands hooks, and totals the estimates.
+The checklist's columns take everything a grid column does, through a column definitions hook in \`onSetup\`, as [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview) describes, and the grid's hooks under *Hooks* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview) reach its cells. The release board above colours overdue dates, locks finished items and adds *Assign to me* with theme, lock and commands hooks, and totals the estimates.
 
 \`modules\` replaces the default editing module. Add \`createLicenseModule\`, \`createEditingModule\`, \`createRowSelectionModule\`, \`createClipboardModule\`, \`createAggregationModule\`, \`createLegacyClientApiCompatibilityModule\` or a module of your own. Leave out sorting, filtering and grouping, which change the order, and cell selection, which turns dragging off.
 
@@ -24,17 +24,17 @@ Without the editing module, \`modules={[]}\`, nothing can be ticked, renamed, ad
 
 ## Open an item
 
-Make the name column primary to draw names as links, and add a \`grid.hooks.openRecord\` hook to decide what opening one does, as *Link to the record* on [**Columns**](?path=/docs/controls-grid-columns--overview) describes. Here it opens the item in a [**Form**](?path=/docs/controls-form-get-started--overview) in a panel.
+Make the name column primary to draw names as links, and add a \`grid.hooks.openRecord\` hook to decide what opening one does, as *Link to the record* on [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview) describes. Here it opens the item in a [**Form**](?path=/docs/controls-form-get-started--overview) in a panel.
 
 {{story: Open an item in a panel}}
 
 ## From your code
 
-The checklist adds a module to the grid: \`useGridModule('checklist')\` returns it in a part the grid draws, \`grid.modules.get('checklist')\` on the grid \`onReady\` passes you, and \`find\` on the one \`onSetup\` passes you, as the release board does. It offers \`isItem(record)\`, which tells an item from the row that adds one, \`isCompleted(record)\` and \`getFieldMapping()\`. Everything else is the grid's: see [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview).
+The checklist adds a module to the grid: \`useGridModule('checklist')\` returns it in a part the grid draws, \`grid.modules.get('checklist')\` on the grid \`onReady\` passes you, and \`find\` on the one \`onSetup\` passes you, as the release board does. It offers \`isItem(record)\`, which tells an item from the row that adds one, \`isCompleted(record)\` and \`getFieldMapping()\`. Everything else is the grid's: see [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview) in the Grid guide.
 
 ## Changing how it looks
 
-The checkbox and name columns are drawn by the checklist's own cells. On their column definitions, \`cellRendererParams.components\` take the grid cell's keys from [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview), plus a key of their own. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+The checkbox and name columns are drawn by the checklist's own cells. On their column definitions, \`cellRendererParams.components\` take the grid cell's keys under *Cells* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview), plus a key of their own. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
 | Column | Key | Slots | Default | Draws |
 |---|---|---|---|---|
@@ -52,8 +52,8 @@ Replacing a slot keeps the cell's behaviour, so ticking and saving work as befor
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Saving changes', iconName: 'Save', href: '?path=/docs/controls-checklist-saving-changes--overview', text: 'What every tick, drag, new item and delete writes, and sending it to your API.' },
-    { title: 'Columns', iconName: 'TripleColumn', href: '?path=/docs/controls-grid-columns--overview', text: 'Everything a column definitions hook can do to a column.' },
-    { title: 'Custom cells', iconName: 'Edit', href: '?path=/docs/controls-grid-appearance-custom-cells--overview', text: 'The grid cell\'s pieces and slots, which the checklist\'s cells take too.' },
+    { title: 'Shape the columns', iconName: 'TripleColumn', href: '?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview', text: 'Pin, size and link columns, and edit them in place, from a column definitions hook.' },
+    { title: 'Cells and headers of your own', iconName: 'Edit', href: '?path=/docs/controls-grid-guide-make-it-yours-cells-and-headers-of-your-own--overview', text: 'Give a column\'s cells slots of your own, which the checklist\'s cells take too.' },
 ]
 
 const meta = {

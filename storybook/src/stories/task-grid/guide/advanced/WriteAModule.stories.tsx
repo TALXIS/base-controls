@@ -24,7 +24,7 @@ A module is an object with a \`name\`, unique where it is loaded, and an \`onLoa
 | A grid module | \`TaskGrid\`'s \`modules\` | The grid, before AG Grid exists: its services, such as \`cells\`, \`columns\` and \`provider\` | \`IGridModuleMap\` of \`@talxis/base-controls\` |
 | A Gantt module | \`TaskGantt\`'s \`modules\` | The Gantt, before the chart is drawn: \`getTaskRuntime()\`, \`services\`, \`surfaces\` and \`hooks.chartConfig\` | \`IGanttModuleMap\` of \`@talxis/base-controls/gantt\` |
 
-What \`onLoad\` returns is the module's instance, which \`modules.get(name)\` hands to other code. *types.ts* names each module and the type of its instance by augmenting the package, \`void\` when \`onLoad\` returns nothing; it does not run on this page, so it sits in **Code** beside the example. \`priority\`, \`onDestroy\` and the \`signal\` that \`onLoad\` gets are under *A module* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview), and the Grid's [**Write a module**](?path=/docs/controls-grid-extending-write-a-module--overview) has the rest for a grid module.
+What \`onLoad\` returns is the module's instance, which \`modules.get(name)\` hands to other code. *types.ts* names each module and the type of its instance by augmenting the package, \`void\` when \`onLoad\` returns nothing; it does not run on this page, so it sits in **Code** beside the example. \`priority\`, \`onDestroy\` and the \`signal\` that \`onLoad\` gets are under *A module* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview), and the Grid's [**Write a module**](?path=/docs/controls-grid-guide-advanced-write-a-module--overview) has the rest for a grid module.
 
 **The task module above** reaches the grid while \`TaskGrid\` is drawn, with \`datasetControl.parts.observe('grid', …)\`: the callback returns the hook's remover, so the hook goes with the grid. Its \`commands\` hook on the cells adds *Duplicate* to the cell of \`TASK_COMMANDS_COLUMN_KEY\`, the column of a row's **+**, at \`TASK_GRID_PRIORITY.tree + 1\` so that it comes after the **+**; with two commands, the cell draws them as a menu. The copy is made with \`taskRuntime.tasks.create\`, so it needs \`enableCreation\` as **+** does.
 
@@ -32,7 +32,7 @@ What \`onLoad\` returns is the module's instance, which \`modules.get(name)\` ha
 
 {{canvas: A grid module}}
 
-A grid module of a task grid is a grid module like any other: its \`onLoad(grid)\` adds hooks to the grid's services, as on [**Hooks**](?path=/docs/controls-grid-extending-hooks--overview). In a task grid, the grid's \`provider\` service is the task provider of [**From your code**](?path=/docs/controls-taskgrid-guide-advanced-from-your-code--overview), tree and all. Here a \`theme\` hook on the cells turns the due date red on any task of *Move to the new office* that ends after 27 March.
+A grid module of a task grid is a grid module like any other: its \`onLoad(grid)\` adds hooks to the grid's services, as on [**Hooks**](?path=/docs/controls-grid-guide-advanced-hooks--overview). In a task grid, the grid's \`provider\` service is the task provider of [**From your code**](?path=/docs/controls-taskgrid-guide-advanced-from-your-code--overview), tree and all. Here a \`theme\` hook on the cells turns the due date red on any task of *Move to the new office* that ends after 27 March.
 
 ## A Gantt module
 
