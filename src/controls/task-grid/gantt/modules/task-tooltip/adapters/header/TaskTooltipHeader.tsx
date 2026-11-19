@@ -1,10 +1,10 @@
 import { useGanttModule } from "../../../../context";
-import { Card, ICardHeaderPartsComponents, IOptionTagComponents, OptionTag } from "@ui";
+import { Card, ICardHeaderPartsComponents, IFieldOptionSetComponents, Field } from "@ui";
 import { useTaskTooltip } from "../task-tooltip-surface/context";
 
 /** The replaceable pieces of the task tooltip's header, by the part they belong to. */
 export interface ITaskTooltipHeaderComponents extends ICardHeaderPartsComponents {
-    status?: Partial<IOptionTagComponents>;
+    status?: Partial<IFieldOptionSetComponents>;
 }
 
 export interface ITaskTooltipHeaderProps {
@@ -31,7 +31,7 @@ export const TaskTooltipHeader = (props: ITaskTooltipHeaderProps) => {
             <Card.Title components={components.title}>{task.text}</Card.Title>
         </Card.Header.Start>
         {status && <Card.Header.End components={components.headerEnd}>
-            <OptionTag label={status.text} color={status.color} components={components.status} />
+            <Field.OptionSet label={status.text} color={status.color} components={components.status} />
         </Card.Header.End>}
     </Card.Header>;
 };

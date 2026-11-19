@@ -1,10 +1,10 @@
 import { Card } from "@ui";
 import { LinkTooltipCallout } from "../callout";
 import { LinkTooltipHeader } from "../header";
-import { LinkTooltipFieldRows } from "../field-rows";
-import { LinkTooltipPredecessorRow } from "../predecessor-row";
-import { LinkTooltipSuccessorRow } from "../successor-row";
-import { LinkTooltipDateRangeRow } from "../date-range-row";
+import { LinkTooltipFieldList } from "../field-list";
+import { LinkTooltipPredecessor } from "../predecessor";
+import { LinkTooltipSuccessor } from "../successor";
+import { LinkTooltipDateRange } from "../date-range";
 import { ILinkTooltipRendererComponents } from "./components";
 
 export interface ILinkTooltipRendererProps {
@@ -17,15 +17,15 @@ export const LinkTooltipRenderer = (props: ILinkTooltipRendererProps) => {
     return <LinkTooltipCallout components={components.callout}>
         <LinkTooltipHeader components={components.header} />
         <Card.Body components={components.body}>
-            <LinkTooltipFieldRows components={components.fieldRows}>
-                <LinkTooltipPredecessorRow components={components.predecessor} />
-                <LinkTooltipSuccessorRow components={components.successor} />
-            </LinkTooltipFieldRows>
+            <LinkTooltipFieldList components={components.fieldList}>
+                <LinkTooltipPredecessor components={components.predecessor} />
+                <LinkTooltipSuccessor components={components.successor} />
+            </LinkTooltipFieldList>
         </Card.Body>
         <Card.Footer components={components.footer}>
-            <LinkTooltipFieldRows components={components.fieldRows}>
-                <LinkTooltipDateRangeRow components={components.dateRange} />
-            </LinkTooltipFieldRows>
+            <LinkTooltipFieldList components={components.fieldList}>
+                <LinkTooltipDateRange components={components.dateRange} />
+            </LinkTooltipFieldList>
         </Card.Footer>
     </LinkTooltipCallout>;
 };

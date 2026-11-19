@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { getColorfulOptionsStyles } from "./styles";
 import { IPcfContext, IMultiSelectOptionSetProperty } from "@pcf/interfaces";
 
-import { OptionTag } from "@ui";
+import { Field } from "@ui";
 
 interface IColorfulOptionsProps {
     value: IMultiSelectOptionSetProperty;
@@ -20,7 +20,7 @@ export const ColorfulOptions = (props: IColorfulOptionsProps) => {
         <div className={styles.root}>
             {value.raw?.map((selected, index) => {
                 const option = options.find(option => option.Value == selected);
-                return <OptionTag
+                return <Field.OptionSet
                     key={index}
                     label={option?.Label}
                     //an option with no colour of its own carries an empty string rather than nothing

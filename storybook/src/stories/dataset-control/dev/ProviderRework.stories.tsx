@@ -299,7 +299,7 @@ A part often names a column by itself, such as a map popup's or a Gantt tooltip'
 
 - **Two answers to one question.** \`record.getValue(columnName)\` returns \`null\` for a column the provider does not have, but \`record.getField(columnName)\` and \`record.getFormattedValue(columnName)\` throw \`ColumnDoesNotExists\` (client-libraries \`Record._getField\`).
 - **The throw changes the provider.** It is a \`DataProviderError\`, whose constructor puts the provider into an error state, so even a caught read can leave the provider failed.
-- **What it breaks:** \`Map.Popup.FieldRow\` and \`TaskTooltip.FieldRow\` call \`getFormattedValue\` with the column they are given, so naming one the open view lacks throws instead of drawing nothing.
+- **What it breaks:** \`Map.Popup.Field\` and \`TaskTooltip.Field\` call \`getFormattedValue\` with the column they are given, so naming one the open view lacks throws instead of drawing nothing.
 
 ### What every provider should do
 

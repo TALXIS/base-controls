@@ -114,10 +114,10 @@ const StorePopup = (props: IStoreMapProps) => {
     return <>
         <Map.Popup.Header statusColumnName='status' />
         <Map.Popup.Body>
-            <Map.Popup.FieldRows>
-                <Map.Popup.FieldRow columnName='manager' iconName='Contact' />
-                <Map.Popup.FieldRow columnName='openingdate' iconName='Calendar' />
-            </Map.Popup.FieldRows>
+            <Map.Popup.FieldList>
+                <Map.Popup.Field columnName='manager' iconName='Contact' />
+                <Map.Popup.Field columnName='openingdate' iconName='Calendar' />
+            </Map.Popup.FieldList>
             <Link onClick={() => props.onOpenStore(store)}>Open the store</Link>
         </Map.Popup.Body>
     </>

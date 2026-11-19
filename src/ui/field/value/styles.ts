@@ -1,0 +1,21 @@
+import { ITheme, mergeStyleSets } from "@fluentui/react";
+
+export const getFieldValueStyles = (theme: ITheme) => mergeStyleSets({
+    fieldValue: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        fontSize: theme.fonts.small.fontSize,
+        lineHeight: '20px',
+    },
+    icon: {
+        color: theme.palette.neutralSecondary,
+        width: 14,
+        textAlign: 'center',
+    },
+    label: {
+        width: 96,
+        flexShrink: 0,
+        color: theme.palette.neutralSecondary,
+    },
+});

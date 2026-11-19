@@ -23,7 +23,7 @@ The pins and the popups they open are drawn through slots you can replace, so a 
 | \`GoogleMap\` | \`map\` | \`onRender\` | \`GoogleMapsUiComponents\` | The vis.gl map. |
 | Both | \`marker.pin\` | \`onRender\`, \`onRenderPin\`, \`onRenderDot\` | \`MapUiMarkerComponents\` | Each pin, \`Map.Ui.Marker\`: its box, the teardrop, and the white dot in it. A \`color\` in \`onRenderPin\`'s props fills the teardrop. |
 | Both | \`marker.popup\` | \`onRender\`, with no props | \`Map.Popup.Renderer\` | The whole content of the popup a pin opens: see *Your own popup*. |
-| Both | \`marker.popup.header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRender\`; \`status\`: \`onRender\`, \`onRenderLabel\` | \`CardHeaderComponents\`, \`CardHeaderStartComponents\`, \`CardHeaderEndComponents\`, \`CardTitleComponents\`, \`OptionTagComponents\` | The default popup's header, with the record's name. |
+| Both | \`marker.popup.header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRender\`; \`status\`: \`onRender\`, \`onRenderLabel\` | \`CardHeaderComponents\`, \`CardHeaderStartComponents\`, \`CardHeaderEndComponents\`, \`CardTitleComponents\`, \`FieldOptionSetComponents\` | The default popup's header, with the record's name. |
 | \`LeafletMap\` | \`marker.popup.container\` | \`onRender\`, with react-leaflet's \`Popup\` props | \`LeafletUiPopupComponents\` | Leaflet's popup, drawn as a Fluent callout. |
 | \`GoogleMap\` | \`marker.popup.container\` | \`onRender\`, with vis.gl's \`InfoWindow\` props | \`GoogleMapsUiPopupComponents\` | Google's info window, drawn as a Fluent callout. |
 
@@ -35,15 +35,15 @@ A slot under \`marker\` is drawn inside the pin, so a component of yours reads t
 
 ## Your own popup
 
-\`marker.popup.onRender\` replaces the popup's content with your own, composed from \`Map.Popup\`'s parts, which read the record of their pin, and the shared \`Card\` and \`FieldList\` parts, which take any value:
+\`marker.popup.onRender\` replaces the popup's content with your own, composed from \`Map.Popup\`'s parts, which read the record of their pin, and the shared \`Card\` and \`Field\` parts, which take any value:
 
 | Part | Draws |
 |---|---|
 | \`Map.Popup.Renderer\` | The default popup: the header. Takes \`components\` as \`{ header }\`. |
 | \`Map.Popup.Header\` | The record's name; \`statusColumnName\` adds an option set column as a tag in its option's colour. |
-| \`Map.Popup.FieldRows\` | Holds the field rows. |
-| \`Map.Popup.FieldRow\` | One column under its display name, given \`columnName\` and an optional \`iconName\`; nothing while empty. |
-| \`FieldList.Row\`, \`FieldList.Progress\`, \`FieldList.DateRange\` | A row with a \`label\` and any value, a bar with \`percent\` and \`text\`, and a \`range\` with an optional \`duration\`, from the package root. |
+| \`Map.Popup.FieldList\` | Holds the field rows. |
+| \`Map.Popup.Field\` | One column under its display name, given \`columnName\` and an optional \`iconName\`; nothing while empty. |
+| \`Field.Value\`, \`Field.Progress\`, \`Field.DateRange\` | A row with a \`label\` and any value, a bar with \`percent\` and \`text\`, and a \`range\` with an optional \`duration\`, from the package root. |
 
 {{story: A postcard for each capital}}
 
@@ -62,7 +62,7 @@ Each part is also exported as plain UI that takes only props, for a map with no 
 | \`Map.Ui\` | \`Container\`: the map's box. \`Marker\`: the Fluent pin, its tip at the bottom centre of its 32 by 40 box. \`MarkerPin\`: its teardrop, in an optional \`color\` or the theme's primary colour. \`Skeleton\`: a placeholder shaped like a \`DatasetControl\` with a map body: see [**In a DatasetControl**](?path=/docs/controls-map-in-a-datasetcontrol--overview). |
 | \`LeafletUi\` | The Leaflet map over \`tileUrl\` and \`attribution\`, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children. \`LeafletUi.Popup\`: Leaflet's popup as a Fluent callout, for inside a react-leaflet marker. |
 | \`GoogleMapsUi\` | The Google map under \`mapId\`, starting at \`defaultCenter\` and \`defaultZoom\`, with pins in its children; it goes inside vis.gl's \`APIProvider\`. \`GoogleMapsUi.Popup\`: Google's info window as a Fluent callout, for an Advanced Marker. |
-| From the package root | \`Card\` with \`Card.Header\`, \`Card.Body\` and \`Card.Footer\`, \`FieldList\` with \`FieldList.Row\`, \`FieldList.DateRange\` and \`FieldList.Progress\`, and \`OptionTag\`: the pieces the map's popups and the Gantt's tooltips are drawn from. |
+| From the package root | \`Card\` with \`Card.Header\`, \`Card.Body\` and \`Card.Footer\`, \`Field\` with \`Field.List\`, \`Field.Value\`, \`Field.OptionSet\`, \`Field.DateRange\` and \`Field.Progress\`: the pieces the map's popups and the Gantt's tooltips are drawn from. |
 
 ## Where next
 

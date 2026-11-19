@@ -1,0 +1,34 @@
+import { useTheme } from "@theme";
+import { useMemo } from "react";
+import { mergeStyles } from "@fluentui/react";
+import { IFieldOptionSetComponents, FieldOptionSetComponents } from "./components";
+import { getFieldOptionSetStyles } from "./styles";
+
+export interface IFieldOptionSetProps {
+    label?: string;
+    /** The colour it is drawn in. Without one it is drawn in the colour of whatever holds it. */
+    color?: string;
+    /** Placement from what holds it, over the tag's own. */
+    className?: string;
+    components?: Partial<IFieldOptionSetComponents>;
+}
+
+/**
+ * One option as a tag: its label over a tint of its own colour.
+ *
+ * What draws an option wherever one is drawn - a cell of the grid, the field a choice is made in - so a
+ * set of them reads the same however it was reached.
+ */
+export const FieldOptionSet = (props: IFieldOptionSetProps) => {
+    const theme = useTheme();
+    //an option with no colour of its own is drawn in the surface's, so a set of them still reads as one
+    //kind of thing whatever theme it is in
+    const color = props.color || theme.palette.neutralSecondary;
+    const styles = useMemo(() => getFieldOptionSetStyles(theme, color), [theme, color]);
+    const components = { ...FieldOptionSetComponents, ...props.components };
+
+    return components.onRender({
+        className: mergeStyles(styles.fieldOptionSet, props.className),
+        children: components.onRenderLabel({ className: styles.label, title: props.label, children: props.label }),
+    });
+};

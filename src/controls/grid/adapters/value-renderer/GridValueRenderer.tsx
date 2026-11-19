@@ -1,5 +1,5 @@
 import { DataTypes } from "@talxis/client-libraries";
-import { getSelectedOptions } from "../../ui/value-renderer/option-set-renderer";
+import { getSelectedOptions } from "@data";
 import { IFileValue } from "../../ui/value-renderer/field-file";
 import { ICellUiValueRendererValue, CellUiValueRenderer } from "../../ui/value-renderer/CellUiValueRenderer";
 import { IGridValueRenderer } from "./interfaces";

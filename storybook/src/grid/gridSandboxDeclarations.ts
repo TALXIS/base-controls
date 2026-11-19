@@ -5075,13 +5075,13 @@ declare const LinkTooltip: {
     /** The dependency's type, slots by part: header, headerStart, title. */
     Header: (props: { components?: { [part: string]: TaskTooltipSlots } }) => JSX.Element | null;
     /** Holds the rows: onRender. */
-    FieldRows: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
+    FieldList: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The predecessor's name: onRender, onRenderIcon, onRenderLabel, onRenderValue. */
-    PredecessorRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    Predecessor: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The successor's name: onRender, onRenderIcon, onRenderLabel, onRenderValue. */
-    SuccessorRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    Successor: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The dates the link joins: onRender, onRenderIcon, onRenderRange, onRenderDuration. */
-    DateRangeRow: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
+    DateRange: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
 };
 interface IDatasetControlPartMap {
     /** The TaskGantt in the body, while one is drawn. */
@@ -5183,19 +5183,19 @@ declare const TaskTooltip: {
     /** The task's name and status pill, slots by part: header, headerStart, headerEnd, title, status. */
     Header: (props: { components?: { [part: string]: TaskTooltipSlots } }) => JSX.Element | null;
     /** Holds the field rows: onRender. */
-    FieldRows: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
+    FieldList: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** Any column: onRender, onRenderIcon, onRenderLabel, onRenderValue. */
-    FieldRow: (props: { columnName: string; iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    Field: (props: { columnName: string; iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The start from the timeline, not the record. */
-    StartDateRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    StartDate: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The end from the timeline, not the record. */
-    EndDateRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    EndDate: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The duration from the timeline's start and end. */
-    DurationRow: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
+    Duration: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The start, end and duration from the timeline, on one line. */
-    DateRangeRow: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
+    DateRange: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The mapped percentComplete as a bar. */
-    ProgressRow: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
+    Progress: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
 };
 
 /** What a bar says when the pointer is on it, composed from TaskTooltip's parts. */
@@ -5295,7 +5295,7 @@ type ILeafletMarkerComponents = import('@talxis/base-controls').ILeafletMarkerCo
 type ILeafletMarkerPopupComponents = import('@talxis/base-controls').ILeafletMarkerPopupComponents;
 type IMapPopupRendererComponents = import('@talxis/base-controls').IMapPopupRendererComponents;
 type ICardHeaderPartsComponents = import('@talxis/base-controls').ICardHeaderPartsComponents;
-type IFieldListRowComponents = import('@talxis/base-controls').IFieldListRowComponents;
+type IFieldValueComponents = import('@talxis/base-controls').IFieldValueComponents;
 type ILeafletUiPopupComponents = import('@talxis/base-controls').ILeafletUiPopupComponents;
 type IGoogleMapsUiComponents = import('@talxis/base-controls').IGoogleMapsUiComponents;
 type IGoogleMapsUiPopupComponents = import('@talxis/base-controls').IGoogleMapsUiPopupComponents;
@@ -5311,9 +5311,8 @@ type IMapUiMarkerComponents = import('@talxis/base-controls').IMapUiMarkerCompon
 declare const LeafletUi: typeof import('@talxis/base-controls').LeafletUi;
 declare const LeafletUiComponents: typeof import('@talxis/base-controls').LeafletUiComponents;
 declare const MapPopup: typeof import('@talxis/base-controls').MapPopup;
-declare const OptionTag: typeof import('@talxis/base-controls').OptionTag;
-/** Labelled read-only values: FieldList.Row, FieldList.DateRange and FieldList.Progress. */
-declare const FieldList: typeof import('@talxis/base-controls').FieldList;
+/** A record's fields as read-only values: Field.List, Field.Value, Field.OptionSet, Field.DateRange and Field.Progress. */
+declare const Field: typeof import('@talxis/base-controls').Field;
 declare const LeafletUiPopupComponents: typeof import('@talxis/base-controls').LeafletUiPopupComponents;
 declare const GoogleMapsUi: typeof import('@talxis/base-controls').GoogleMapsUi;
 declare const GoogleMapsUiComponents: typeof import('@talxis/base-controls').GoogleMapsUiComponents;

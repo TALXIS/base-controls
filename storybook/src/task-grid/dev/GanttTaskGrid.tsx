@@ -187,16 +187,16 @@ const GridExample = () => {
                 onRender: () => <TaskTooltip.Callout>
                     <TaskTooltip.Header />
                     <TaskTooltip.Body>
-                        <TaskTooltip.FieldRows>
-                            <TaskTooltip.ProgressRow />
-                            <TaskTooltip.FieldRow columnName='assignedto' />
-                            <TaskTooltip.FieldRow columnName='priority' />
-                        </TaskTooltip.FieldRows>
+                        <TaskTooltip.FieldList>
+                            <TaskTooltip.Progress />
+                            <TaskTooltip.Field columnName='assignedto' />
+                            <TaskTooltip.Field columnName='priority' />
+                        </TaskTooltip.FieldList>
                     </TaskTooltip.Body>
                     <TaskTooltip.Footer>
-                        <TaskTooltip.FieldRows>
-                            <TaskTooltip.DateRangeRow />
-                        </TaskTooltip.FieldRows>
+                        <TaskTooltip.FieldList>
+                            <TaskTooltip.DateRange />
+                        </TaskTooltip.FieldList>
                     </TaskTooltip.Footer>
                 </TaskTooltip.Callout>,
             },

@@ -1,7 +1,7 @@
 import { useTheme } from "@theme";
 import { useMemo } from "react";
 import { Icon, Link } from "@fluentui/react";
-import { IOptionTagComponents, OptionTag, OptionTagComponents } from "@ui";
+import { IFieldOptionSetComponents, Field, FieldOptionSetComponents } from "@ui";
 import { getClassNames } from "@core";
 import { getLookupManyUiPillStyles } from "./styles";
 
@@ -18,7 +18,7 @@ export interface ILookupManyUiPillProps {
     color?: string;
     className?: string;
     /** The pieces of the option tag it is drawn as. */
-    components?: Partial<IOptionTagComponents>;
+    components?: Partial<IFieldOptionSetComponents>;
 }
 
 /** One record of a lookup-many value. */
@@ -27,7 +27,7 @@ export const LookupManyUiPill = (props: ILookupManyUiPillProps) => {
     const theme = useTheme();
     const color = props.color || theme.palette.neutralSecondary;
     const styles = useMemo(() => getLookupManyUiPillStyles(theme, color), [theme, color]);
-    const components = { ...OptionTagComponents, ...props.components };
+    const components = { ...FieldOptionSetComponents, ...props.components };
 
     //a picker takes the mouse down for itself
     const onOpenClick = (event: React.MouseEvent) => {
@@ -35,11 +35,11 @@ export const LookupManyUiPill = (props: ILookupManyUiPillProps) => {
         onOpen?.(reference);
     };
 
-    const onRenderLabel: IOptionTagComponents['onRenderLabel'] = labelProps => onOpen
+    const onRenderLabel: IFieldOptionSetComponents['onRenderLabel'] = labelProps => onOpen
         ? <Link className={styles.link} onMouseDown={event => event.stopPropagation()} onClick={onOpenClick}>{components.onRenderLabel(labelProps)}</Link>
         : components.onRenderLabel(labelProps);
 
-    const onRenderContainer: IOptionTagComponents['onRender'] = containerProps => components.onRender({
+    const onRenderContainer: IFieldOptionSetComponents['onRender'] = containerProps => components.onRender({
         ...containerProps,
         children: <>
             {containerProps.children}
@@ -49,5 +49,5 @@ export const LookupManyUiPill = (props: ILookupManyUiPillProps) => {
         </>,
     });
 
-    return <OptionTag label={reference.name} color={color} className={getClassNames([styles.pill, props.className])} components={{ ...components, onRenderLabel, onRender: onRenderContainer }} />;
+    return <Field.OptionSet label={reference.name} color={color} className={getClassNames([styles.pill, props.className])} components={{ ...components, onRenderLabel, onRender: onRenderContainer }} />;
 };

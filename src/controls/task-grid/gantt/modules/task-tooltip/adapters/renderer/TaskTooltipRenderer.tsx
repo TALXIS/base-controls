@@ -2,9 +2,9 @@ import { Card } from "@ui";
 import { useTaskTooltip } from "../task-tooltip-surface/context";
 import { TaskTooltipCallout } from "../callout";
 import { TaskTooltipHeader } from "../header";
-import { TaskTooltipFieldRows } from "../field-rows";
-import { TaskTooltipProgressRow } from "../progress-row";
-import { TaskTooltipDateRangeRow } from "../date-range-row";
+import { TaskTooltipFieldList } from "../field-list";
+import { TaskTooltipProgress } from "../progress";
+import { TaskTooltipDateRange } from "../date-range";
 import { ITaskTooltipRendererComponents } from "./components";
 
 export interface ITaskTooltipRendererProps {
@@ -20,14 +20,14 @@ export const TaskTooltipRenderer = (props: ITaskTooltipRendererProps) => {
     return <TaskTooltipCallout components={components.callout}>
         <TaskTooltipHeader components={components.header} />
         {isProgressMapped && <Card.Body components={components.body}>
-            <TaskTooltipFieldRows components={components.fieldRows}>
-                <TaskTooltipProgressRow components={components.progress} />
-            </TaskTooltipFieldRows>
+            <TaskTooltipFieldList components={components.fieldList}>
+                <TaskTooltipProgress components={components.progress} />
+            </TaskTooltipFieldList>
         </Card.Body>}
         <Card.Footer components={components.footer}>
-            <TaskTooltipFieldRows components={components.fieldRows}>
-                <TaskTooltipDateRangeRow components={components.dateRange} />
-            </TaskTooltipFieldRows>
+            <TaskTooltipFieldList components={components.fieldList}>
+                <TaskTooltipDateRange components={components.dateRange} />
+            </TaskTooltipFieldList>
         </Card.Footer>
     </TaskTooltipCallout>;
 };

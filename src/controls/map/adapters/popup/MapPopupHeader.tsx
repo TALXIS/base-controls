@@ -1,9 +1,9 @@
-import { Card, ICardHeaderPartsComponents, IOptionTagComponents, OptionTag } from "@ui";
+import { Card, ICardHeaderPartsComponents, IFieldOptionSetComponents, Field } from "@ui";
 import { useMap, useMapRecord } from "../../context";
 
 /** The replaceable pieces of the popup's header, by the part they belong to. */
 export interface IMapPopupHeaderComponents extends ICardHeaderPartsComponents {
-    status?: Partial<IOptionTagComponents>;
+    status?: Partial<IFieldOptionSetComponents>;
 }
 
 export interface IMapPopupHeaderProps {
@@ -32,7 +32,7 @@ export const MapPopupHeader = (props: IMapPopupHeaderProps) => {
             <Card.Title components={components.title}>{record.getNamedReference().name ?? record.getRecordId()}</Card.Title>
         </Card.Header.Start>
         {status && <Card.Header.End components={components.headerEnd}>
-            <OptionTag label={status.text} color={status.color} components={components.status} />
+            <Field.OptionSet label={status.text} color={status.color} components={components.status} />
         </Card.Header.End>}
     </Card.Header>;
 };

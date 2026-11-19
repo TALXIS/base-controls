@@ -276,7 +276,7 @@ const GridExample = () => <DataProviderScope provider={cities}>
 
 export const RegionPinsExample = () => run(REGION_PINS_CODE, citiesFile('population', 'region'))
 
-const POSTCARD_CODE = `import { DataProviderScope, FieldList, LeafletMap, Map, useMapRecord, useMapRecords } from '@talxis/base-controls'
+const POSTCARD_CODE = `import { DataProviderScope, Field, LeafletMap, Map, useMapRecord, useMapRecords } from '@talxis/base-controls'
 import { cities, FIELD_MAPPING } from './data'
 
 //drawn inside the pin's popup, so Map.Popup's parts and the hooks reach the pin's record
@@ -289,12 +289,12 @@ const Postcard = () => {
         {/* the region beside the name, as a tag in its option's colour */}
         <Map.Popup.Header statusColumnName='region' />
         <Map.Popup.Body>
-            <Map.Popup.FieldRows>
-                <Map.Popup.FieldRow columnName='country' iconName='Flag' />
-                {/* the shared FieldList parts take any value */}
-                <FieldList.Row label='In the EU since' iconName='Calendar'>{capital.getValue('euSince')}</FieldList.Row>
-                <FieldList.Progress percent={share} text={\`\${Math.round(share)}% of \${largest.getFormattedValue('name')}\`} />
-            </Map.Popup.FieldRows>
+            <Map.Popup.FieldList>
+                <Map.Popup.Field columnName='country' iconName='Flag' />
+                {/* the shared Field parts take any value */}
+                <Field.Value label='In the EU since' iconName='Calendar'>{capital.getValue('euSince')}</Field.Value>
+                <Field.Progress percent={share} text={\`\${Math.round(share)}% of \${largest.getFormattedValue('name')}\`} />
+            </Map.Popup.FieldList>
         </Map.Popup.Body>
     </>
 }
@@ -531,9 +531,9 @@ const CityCard = () => {
     return <>
         <Map.Popup.Header statusColumnName='status' />
         <Map.Popup.Body>
-            <Map.Popup.FieldRows>
-                {columns.map(column => <Map.Popup.FieldRow key={column.name} columnName={column.name} />)}
-            </Map.Popup.FieldRows>
+            <Map.Popup.FieldList>
+                {columns.map(column => <Map.Popup.Field key={column.name} columnName={column.name} />)}
+            </Map.Popup.FieldList>
             <Link onClick={toggle}>{isSelected ? 'Deselect' : 'Select'}</Link>
         </Map.Popup.Body>
     </>

@@ -48,11 +48,11 @@ The lookup-many module of [**People and tags**](?path=/docs/controls-taskgrid-gu
 |---|---|
 | \`TaskTooltip.Callout\` | The box beside the pointer, around the other parts |
 | \`TaskTooltip.Header\` | The task's name, with the option of \`statusColumnName\` as a pill in its colour |
-| \`TaskTooltip.FieldRows\`, \`TaskTooltip.FieldRow\` | Rows of a label and a value; \`FieldRow\` shows a column of the task, nothing while it is empty |
-| \`TaskTooltip.ProgressRow\` | The \`percentComplete\` as a bar |
-| \`TaskTooltip.DateRangeRow\`, \`StartDateRow\`, \`EndDateRow\`, \`DurationRow\` | When the task runs, read from its bar, so they follow a bar being dragged |
+| \`TaskTooltip.FieldList\`, \`TaskTooltip.Field\` | Fields of a label and a value; \`Field\` shows a column of the task, an option set as tags, nothing while it is empty |
+| \`TaskTooltip.Progress\` | The \`percentComplete\` as a bar |
+| \`TaskTooltip.DateRange\`, \`StartDate\`, \`EndDate\`, \`Duration\` | When the task runs, read from its bar, so they follow a bar being dragged |
 
-A part of yours reads the task under the pointer with \`useTaskTooltip()\`: its \`record\`, the chart's \`task\`, the bar's \`span\` or the \`milestone\`, the \`duration\` in minutes, the bar's \`color\` and the \`gantt\`. \`FieldList.Row\` draws a row like the library's. The tooltip lets clicks through to the chart, so it cannot hold a button.
+A part of yours reads the task under the pointer with \`useTaskTooltip()\`: its \`record\`, the chart's \`task\`, the bar's \`span\` or the \`milestone\`, the \`duration\` in minutes, the bar's \`color\` and the \`gantt\`. \`Field.Value\` draws a field like the library's. The tooltip lets clicks through to the chart, so it cannot hold a button.
 
 ## Content on the bars
 
