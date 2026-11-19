@@ -11,6 +11,7 @@ import { DealsRibbon } from './DealsRibbon'
 import { dealViews, saveDealViewData } from './userViews'
 import { showSyncMessage } from './syncMessage'
 
+//new: the total value of the selected deals
 const getTotal = (provider: IDataProvider) => provider.getSelectedRecordIds().reduce((sum, id) => sum + Number(provider.getRecordsMap()[id].getValue('value')), 0)
 
 //new: a part of your own that redraws on every selection
@@ -42,6 +43,7 @@ const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeal
     <DatasetControl.Footer>
         <DatasetControl.Footer.Start>
             <DatasetControl.PageSizeSwitcher />
+            {/* new: the part of your own beside the page size */}
             <SelectedValue />
         </DatasetControl.Footer.Start>
         <DatasetControl.Footer.End>

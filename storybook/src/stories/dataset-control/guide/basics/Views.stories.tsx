@@ -18,14 +18,7 @@ The team looks at the same deals in different ways: all of them, only the won on
 
 The deal list is the one from the last step, with views and a view switcher; in **Code**, the lines this step adds carry a \`//new:\` comment.
 
-**Views.** \`onLoad\` returns the views beside the provider, and \`DatasetControl.ViewSwitcher\`, in the start of the header, lists them by name; the first view opens first. A view has these keys:
-
-| Key | What it is |
-|---|---|
-| \`id\` | Unique among the control's views. |
-| \`name\` | Shown in the view switcher. |
-| \`group\` | \`{ id, name }\`: the header the view is listed under, such as *Reports*. Views without one are listed under *System views*. |
-| \`resolve(provider)\` | Runs as the view opens, and may be async. It sets the provider up, such as its filter or sorting, and returns what the view shows. |
+**Views.** \`onLoad\` returns the views beside the provider, and \`DatasetControl.ViewSwitcher\`, in the start of the header, lists them by name; the first view opens first. A view has an \`id\`, unique among the control's views, a \`name\` for the switcher, and a \`resolve(provider)\`, which runs as the view opens: it sets the provider up, such as its filter or sorting, and returns what the view shows, at once or as a promise. An optional \`group\`, \`{ id, name }\`, lists the view under a header such as *Reports*; views without one are listed under *System views*. Every key is under *A view* on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 
 \`resolve\` returns the view's \`columns\`, in the order they show, and two optional keys: \`linking\`, the related entities its columns come from, and \`data\`, anything else the view carries. Never set the columns or the linking on the provider in \`resolve\`, and never call \`addAggregation\` or \`addGroupBy\` there: return totals and grouping on the columns instead, as \`aggregation\` and \`grouping\`.
 

@@ -29,7 +29,7 @@ The deal list is the one from the last step, with *My deals* first; in **Code**,
 | Saving a new view, or closing **Manage views** | [**Views of their own**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview) |
 | \`control.loadView(viewId)\` or \`control.reload()\` | [**From your code**](?path=/docs/controls-datasetcontrol-guide-advanced-from-your-code--overview) |
 
-**Load what the views need first.** \`loadDeals\` waits for \`loadSignedInUser()\` before it returns, and \`createDealViews(user)\` makes the views for that user: *My deals* filters by them, with \`owner\` hidden, as *Views* says. It runs on every load, so the placeholder waits for the user on every switch too.
+**Load what the views need first.** \`loadDeals\` waits for \`loadSignedInUser()\` before it returns, and \`createDealViews(user)\` makes the views for that user: *My deals* filters by them, with \`owner\` hidden, as on [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview). It runs on every load, so the placeholder waits for the user on every switch too.
 
 **One provider per load.** Each load makes its own provider, and the control destroys it when it lets it go: on the next load, when the load fails and when the control unmounts. The deals stay in \`deals\`, outside \`onLoad\`, so every new provider starts from them. To keep a provider that the rest of your page uses, return \`destroyProviderOnUnmount: false\` beside it and destroy it yourself: see *Lifetime* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 

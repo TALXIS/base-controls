@@ -29,17 +29,17 @@ Every factory takes the same \`enable…\` flags for the commands. The two Datav
 
 ### A store of your own
 
-\`createStore\` gets the control of every load and returns the store, which the module asks for the views:
+\`createStore\` gets the control of every load and returns the store, which the module calls as the user works:
 
-| Store member | Does |
+| The user | The store gets |
 |---|---|
-| \`getViews()\` | Returns the views to list, as \`{ id, name }\`, as each load starts. |
-| \`getView(viewId)\` | Returns a view as it was saved, \`{ columns, linking, data }\`, as it opens. |
-| \`createView(name, view)\` | Saves a new view and returns its id; the control then opens it. |
-| \`updateView(viewId, view)\` | Saves the view again, for **Save changes**. |
-| \`createManageProvider()\` | Returns the provider *Manage views* edits the views in. |
+| Opens the list, or another view | \`getViews()\` as the load starts, for the views under *My views* |
+| Opens one of their own views | \`getView(viewId)\`, for the view as it was saved: \`{ columns, linking, data }\` |
+| Picks **Save as new view** | \`createView(name, view)\`, which returns the new view's id; the control then opens it |
+| Picks **Save changes** | \`updateView(viewId, view)\` |
+| Picks **Manage views** | \`createManageProvider()\`, once per load, for the provider the panel edits the views in |
 
-The manage provider holds one record per view, with the view's id as its primary id and a \`name\` column, as \`ManageViewsProvider\` does over a \`MemoryDataProvider\`. *Manage views* draws it in an editable grid with **Save** and **Delete**: a rename reaches the provider's \`onRecordSave\` and a delete its \`onRecordsDelete\`, so pass both on to your store. \`LocalStorageUserQueriesStore\` and \`DataverseUserQueriesStore\` are exported too, to extend.
+The manage provider holds one record per view, with the view's id as its primary id and a \`name\` column, as \`ManageViewsProvider\` does over a \`MemoryDataProvider\`. *Manage views* draws it in an editable grid with **Save** and **Delete**: a rename reaches the provider's \`onRecordSave\` and a delete its \`onRecordsDelete\`, so pass both on to your store. \`LocalStorageUserQueriesStore\` and \`DataverseUserQueriesStore\` are exported too, to extend, and every member of a store is under *A user views store* on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 
 ### When the store fails
 

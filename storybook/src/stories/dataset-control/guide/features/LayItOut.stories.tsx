@@ -38,7 +38,7 @@ Any part works in any region, and the parts keep the order you write them in. A 
 | \`'100%'\` | Fills its parent, which needs a height of its own; the header is inset 15px from the edges |
 | Left out | As tall as what it holds |
 
-A grid in the body follows the control: with a control \`height\`, the grid fills the body and its own \`height\` is ignored; without one, the grid's own \`height\` applies, or it grows with its rows up to \`maxVisibleRows\`.
+A grid in the body follows the control: with a control \`height\`, the grid fills the body and its own \`height\` is ignored; without one, the grid's own \`height\` applies, or it grows with its rows up to \`maxVisibleRows\`, as *Size the grid* on Grid's [**Colours and density**](?path=/docs/controls-grid-guide-make-it-yours-colours-and-density--overview) shows.
 
 **Narrowing.** The layout follows the control's own width, not the window's. As the control narrows:
 

@@ -16,7 +16,7 @@ Each salesperson sorts and filters the deals their own way, and wants the list l
 
 ## How it works
 
-A **module** adds a feature to the control. Pass it in the control's \`modules\`, and every load loads it anew before \`onLoad\`, as the grid's modules of [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview) load with the grid. \`createLocalStorageUserQueriesModule\` adds the user's own views, kept in this browser under \`storageKey\`. Most deal lists in this guide use the same key, so a view saved on one shows on the others. [**Where views are kept**](?path=/docs/controls-datasetcontrol-guide-your-data-where-views-are-kept--overview) keeps them elsewhere.
+The control takes modules too, as the grid does in [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview): pass them in the control's \`modules\`, and every load loads them anew, before \`onLoad\`. \`createLocalStorageUserQueriesModule\` adds the user's own views, kept in this browser under \`storageKey\`. Most deal lists in this guide use the same key, so a view saved on one shows on the others. [**Where views are kept**](?path=/docs/controls-datasetcontrol-guide-your-data-where-views-are-kept--overview) keeps them elsewhere.
 
 The module lists the user's views under *My views* in the view switcher, and adds three commands below them:
 
@@ -34,7 +34,7 @@ A **user view** keeps its columns, hidden ones too, with their order, width, gro
 
 \`saveWithView(key, getter, applier?)\` on the module keeps more, and returns its remover. On every save, \`getter\` returns the value to keep under \`key\`; as the view opens, \`applier(value, provider)\` puts it back on the provider before the first page. Leave the applier out for a value only your own UI reads, through \`getView().data\` (see [**Your own UI**](?path=/docs/controls-datasetcontrol-guide-advanced-your-own-ui--overview)). A getter that returns \`undefined\` keeps nothing under its key, a getter that throws stops the save, and a second call for the same key throws.
 
-\`saveDealViewData\` keeps the sorting, the filter and the search. It runs in \`onSetup\` after \`showSyncMessage\`. \`onSetup\` gets the control of every load before its modules load, and \`modules.observe\` calls back once the module has loaded; [**From your code**](?path=/docs/controls-datasetcontrol-guide-advanced-from-your-code--overview) covers \`onSetup\`. *types.ts*, new here, declares each key on \`IUserQuerySavedValueMap\`, so the getter and the applier are typed. The grid's sorting module, new here too, lets the user sort from a column's header.
+\`saveDealViewData\` keeps the sorting, the filter and the search. It runs in \`onSetup\` after \`showSyncMessage\`. \`onSetup\` gets the control of every load before its modules load, and \`modules.observe\` calls back once the module has loaded; [**From your code**](?path=/docs/controls-datasetcontrol-guide-advanced-from-your-code--overview) covers \`onSetup\`. *types.ts*, new here, declares each key on \`IUserQuerySavedValueMap\`, so the getter and the applier are typed. The grid's sorting module, new here too, lets the user sort from a column's header, as on Grid's [**Sort and filter**](?path=/docs/controls-grid-guide-basics-sort-and-filter--overview).
 
 ## Try it
 

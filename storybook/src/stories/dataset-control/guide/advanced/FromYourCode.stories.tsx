@@ -39,20 +39,13 @@ Every part on the page provides itself on the control under its key, such as \`'
 | \`control.parts.find(key)\` | \`control.parts.find('ribbon')?.reload()\` | Returns \`undefined\` |
 | \`control.parts.observe(key, callback)\` | \`showSyncMessage\`, from \`onSetup\` | Calls back once it is drawn, and again for each new one |
 
-Use a shortcut, or \`get\`, from \`onReady\` on or in code a part runs, such as a button's \`onClick\`; code that runs before the parts are drawn, such as \`onSetup\` or a module, waits with \`observe\`. \`control.notifications\` is the shortcut of the \`notifications\` part, and every member of \`control.parts\` is under *Parts* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). Each part's key and members are on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
+Use a shortcut, or \`get\`, from \`onReady\` on or in code a part runs, such as a button's \`onClick\`; code that runs before the parts are drawn, such as \`onSetup\` or a module, waits with \`observe\`. \`control.notifications\` is the shortcut of the \`notifications\` part, and every member of \`control.parts\` is under *Parts* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). Each part's key and members are on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview), and the grid's on Grid's [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview).
 
 ### A module of your own
 
-A module is an object in the control's \`modules\`, beside the library's own, such as \`dealViews\`:
+A module is an object in the control's \`modules\`, beside the library's own, such as \`dealViews\`. Its \`onLoad(control)\` runs on every load, before the control's \`onLoad\`, and what it returns is provided under the module's \`name\`, unique within the control. An optional \`priority\` orders the modules, and an optional \`onDestroy\` releases what \`onLoad\` made; every member is under *A module* on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 
-| Member | Description |
-|---|---|
-| \`name\` | Unique within the control; two modules of one name fail the load. What \`onLoad\` returns is provided under it, for \`control.modules\`. |
-| \`priority\` | Optional, \`0\` by default. Lower loads first, and modules of the same priority load at the same time. |
-| \`onLoad(control, { signal })\` | Can be async. \`signal\` is aborted when the load goes or another module fails. A throw fails the load. |
-| \`onDestroy(instance)\` | Optional. Called with what \`onLoad\` returned, as the load goes, the last loaded first. |
-
-The control a module gets adds \`hooks.views\`, which runs on the views \`onLoad\` returns, so a module can add a view as \`closingSoonModule\` does. \`control.modules\` finds a module with \`get\`, \`find\` and \`observe\`, as \`saveDealViewData\` does, and \`useDatasetControlModule(name)\` finds it inside the control. *types.ts* declares what each module's \`onLoad\` returns on \`IDatasetControlModuleMap\`, so \`control.modules.get\` is typed. A module draws a dialog or a panel of its own with \`control.surfaces.hooks.surfaces.add\`.
+The control a module gets adds \`hooks.views\`, which runs on the views \`onLoad\` returns, so a module can add a view as \`closingSoonModule\` does. \`control.modules\` finds a module with \`get\`, \`find\`, \`has\` and \`observe\`, as \`saveDealViewData\` does, and \`useDatasetControlModule(name)\` finds it inside the control. *types.ts* declares what each module's \`onLoad\` returns on \`IDatasetControlModuleMap\`, so \`control.modules.get\` is typed. A module draws a dialog or a panel of its own with \`control.surfaces.hooks.surfaces.add\`.
 
 ## Watch it load
 
@@ -66,13 +59,7 @@ Each load runs these steps:
 
 \`control.lifecycle.events\` raises \`onStatusChanged\`, \`onRemountRequested\` and \`onDestroyed\`, as on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). Subscribe in \`onSetup\`, since every load brings a new control.
 
-\`control.execute(operation, parameters?)\` runs work of your own, such as **Sync to CRM**: a spinner covers the control while it runs, and its error opens the error dialog, as *Run actions* on RuntimeHost describes. The control shows every failure itself; to log one too, or show it elsewhere, listen for it:
-
-| Event | On | Fires for |
-|---|---|---|
-| \`onStatusChanged\`, with \`'failed'\` | \`control.lifecycle.events\` | A failed load; \`lifecycle.getError()\` holds the error |
-| \`onExecuteFailed(error, title)\` | \`control.executor.events\` | A failed \`control.execute\`, or a user view that could not be saved or deleted |
-| \`onExecuteFailed(error, title)\` | The ribbon's \`executor.events\` | A failed command, or a failed later \`onLoad\` of the ribbon |
+\`control.execute(operation, parameters?)\` runs work of your own, such as **Sync to CRM**: a spinner covers the control while it runs, and its error opens the error dialog, as *Run actions* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) describes. The control shows every failure itself; to log one too, as the log does, listen for \`onStatusChanged\` with \`'failed'\` on \`control.lifecycle.events\`, and for \`onExecuteFailed(error, title)\` on \`control.executor.events\` and on the ribbon's. Every event, and what fires it, is under *Events* on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 
 ## Try it
 

@@ -867,7 +867,7 @@ interface IIsolatedComponentParameters {
     prepareWindow?: (frameWindow: Window) => void;
 }
 /** The frame's own settings; every other prop goes to the content. */
-type IIsolatedComponentProps = { frame?: { className?: string; title?: string } };
+type IIsolatedComponentProps = { frame?: { className?: string; title?: string; height?: string } };
 /** The component the page renders: an iframe that loads options.scripts and renders what they registered under key. */
 declare function createIsolatedHost<TProps extends object>(key: string, options?: IIsolatedComponentParameters): React.ComponentType<TProps & IIsolatedComponentProps>;
 /** Registers what frames render under key; outside a frame it does nothing. */

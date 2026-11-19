@@ -19,6 +19,7 @@ const loadDealsOrFail = async (): Promise<IDatasetControlLoadResult> => {
     return loadDeals()
 }
 
+//new: every load goes through loadDealsOrFail
 const GridExample = () => <DatasetControl onLoad={loadDealsOrFail} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>

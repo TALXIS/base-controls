@@ -34,7 +34,7 @@ class DealSummaryRuntime extends Runtime {
         return this._total
     }
 
-    //the host runs it when it starts the mount; a throw here shows the error with Try again
+    //a throw here shows the error with Try again
     protected async onInit(): Promise<void> {
         await callServer(1000)
         if (this._isServiceDown()) {
@@ -134,7 +134,7 @@ class DealSummaryRuntime extends Runtime {
     protected onDestroy(): void { }
 }
 
-//shown while the runtime loads; it can read the runtime too
+//the placeholder can read the runtime too
 const LoadingDeals = () => {
     const runtime = useRuntime<DealSummaryRuntime>()
     return <Spinner label={\`Loading the deals of \${runtime.getOwner()}...\`} />
@@ -211,7 +211,7 @@ const DealSummary = () => {
         setTotal(runtime.getTotal())
     }
 
-    //the host opens the error dialog under the title; rethrow: false resolves undefined instead
+    //the host opens the error dialog under this title
     const sendToFinance = () => runtime.execute(() => postToFinance(total), { error: { title: 'The summary could not be sent to finance.', rethrow: false } })
 
     return <>
@@ -273,7 +273,7 @@ class DealSummaryRuntime extends Runtime {
 
     protected onDestroy(): void { }
 
-    //stands in for a server call, which fails while the service is down
+    //a server call that fails while the service is down
     private async _callServer(ms: number): Promise<void> {
         await new Promise(resolve => setTimeout(resolve, ms))
         if (this._isServiceDown()) {
@@ -332,7 +332,7 @@ const GridExample = () => {
             },
             //a progress bar over the card while execute runs, above the message
             loadingOverlay: { onRenderSpinner: () => <ProgressIndicator styles={{ root: { width: 200 } }} /> },
-            //one notification bar in place of the error dialog, grouping the failures once there are several
+            //one notification bar in place of the error dialog
             executeError: {
                 onRender: ({ failures, onDismiss }) => <NotificationMessageBar messages={failures.map(failure => ({
                     level: 'ERROR',

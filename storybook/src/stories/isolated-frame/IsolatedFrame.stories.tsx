@@ -42,12 +42,13 @@ The default \`scripts\` works when everything is one bundle, as in a PCF. When y
 
 ## The frame prop
 
-A frame's own settings go in its \`frame\` prop, so every other prop goes to the content untouched. Both fields are Live, like the content props.
+A frame's own settings go in its \`frame\` prop, so every other prop goes to the content untouched. The iframe is as wide as its parent.
 
-| Field | Description |
-|---|---|
-| \`className\` | Added to the iframe, which fills its parent. |
-| \`title\` | The frame's accessible name. |
+| Field | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`className\` | \`string\` | None | Live | Added to the iframe. |
+| \`title\` | \`string\` | None | Live | The frame's accessible name. |
+| \`height\` | \`string\` | None | At mount | A fixed height, such as \`'400px'\` or \`'100%'\`, which the content fills. Without one, the iframe is as tall as what the content draws. |
 
 ## What crosses the frame's edge
 
@@ -58,7 +59,6 @@ Some things stay on their own side:
 | What | Inside the frame |
 |---|---|
 | Popups | Callouts, menus and dialogs cannot extend past the frame. |
-| Size | The frame fills its parent and does not grow with its content. |
 | Events | Clicks and key presses stay inside, so the page's shortcuts do not see them, and a click on the page does not close the frame's popups. |
 | Security | The frame shares the page's origin: it keeps out global styles and globals, not hostile code. |
 
@@ -74,7 +74,7 @@ const EXPLORE: IExploreCard[] = [
 ]
 
 const LIFECYCLE: ILifecycleStep[] = [
-    { title: 'The page renders the host', hook: 'frame', text: 'On the page, the component draws an empty iframe in its place; `frame` sets its class and title.' },
+    { title: 'The page renders the host', hook: 'frame', text: 'On the page, the component draws an empty iframe in its place; `frame` sets its class, title and height.' },
     { title: 'The frame window is prepared', hook: 'prepareWindow', text: 'The window is marked as a frame and takes the page\'s `lang` and `dir`; hand it anything else here.' },
     { title: 'The scripts load', hook: 'defineIsolatedContent', text: 'The frame loads `scripts` in order, and the code in them registers the content under the key.' },
     { title: 'The content renders', hook: 'content props', text: 'The frame renders the content with every prop but `frame`, and again on every render of the host.' },

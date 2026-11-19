@@ -39,7 +39,7 @@ v9 components need a \`FluentProvider\` around them, so the control's \`containe
 - A slot takes any component, so the parts can take any design system.
 - v9 needs its \`FluentProvider\`, which the \`container\` piece can draw.
 
-You have seen the whole DatasetControl. Every prop, member and slot is on Reference.
+You have seen the whole DatasetControl. Every prop, member and slot is on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 
 {{block: navigation}}
 `

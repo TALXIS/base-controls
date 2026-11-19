@@ -25,6 +25,7 @@ Code that holds a runtime, such as the one \`onSetup\` hands over, reads its mou
 | \`getError()\` | What the load threw, while the status is \`'failed'\` |
 | \`isDestroyed()\` | Whether the mount has ended |
 | \`remount()\` | Ends this runtime and starts a new one, which loads again |
+| \`waitUntil(promise)\` | Holds the status back from \`'ready'\` until the promise settles; a rejection fails the mount |
 | \`events\` | The events below; \`addEventListener\` returns a function that removes the listener |
 
 | Event | Fires |
@@ -97,7 +98,7 @@ A component provides a part with \`useProvidePart\`, which makes it once with \`
 | \`useProvidePart(key, create, parameters?)\` | The runtime of the nearest host, under a key of \`IRuntimePartMap\`, such as \`'notifications'\` |
 | \`useProvidePart(runtime, key, create, parameters?)\` | \`runtime\`, under a key of its part map, such as a DatasetControl from \`useDatasetControl()\` |
 
-The hook returns the part \`create\` made. With \`parameters.afterCommit\` set to \`true\`, the part is provided once React has committed instead of while the component draws, so a component that observes it may set state. A runtime's part map is its first type parameter and extends \`IRuntimePartMap\`. To add a part to a library control's map, such as \`IDatasetControlPartMap\`, declare it in \`declare module '@talxis/base-controls'\`, as *types.ts* on [**Your own UI**](?path=/docs/controls-datasetcontrol-guide-advanced-your-own-ui--overview) does.
+\`useProvidePart\` returns the part \`create\` made. With \`parameters.afterCommit\` set to \`true\`, the part is provided once React has committed instead of while the component draws, so a component that observes it may set state. A runtime's part map is its first type parameter and extends \`IRuntimePartMap\`. To add a part to a library control's map, such as \`IDatasetControlPartMap\`, declare it in \`declare module '@talxis/base-controls'\`, as *types.ts* on [**Your own UI**](?path=/docs/controls-datasetcontrol-guide-advanced-your-own-ui--overview) does.
 
 ## Messages
 
@@ -121,25 +122,30 @@ Two or more messages fold under a summary, which lists them on a click.
 
 ## Modules
 
-A runtime loads the modules its \`getModules()\` returns on every mount, before \`onInit\`, lower \`priority\` first, and destroys them after \`onDestroyed\`, before \`onDestroy\`. Override it to return the modules your control's users pass, as DatasetControl, Grid and Map do with their \`modules\` prop. Each is an \`IRuntimeModule\`, whose members are under *A module of your own* on [**From your code**](?path=/docs/controls-datasetcontrol-guide-advanced-from-your-code--overview); \`onLoad\` gets the runtime. \`runtime.modules\` finds what each module's \`onLoad\` returned by its name, with \`get\`, \`find\`, \`has\` and \`observe\`, and the runtime's module map, its second type parameter, types it.
+A runtime loads the modules its \`getModules()\` returns on every mount, before \`onInit\`, lower \`priority\` first, and destroys them after \`onDestroyed\`, before \`onDestroy\`. Override it to return the modules your control's users pass, as DatasetControl, Grid and Map do with their \`modules\` prop. Each is an \`IRuntimeModule\`, whose members are under *A module* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview); \`onLoad\` gets the runtime. \`runtime.modules\` finds what each module's \`onLoad\` returned by its name, with \`get\`, \`find\`, \`has\` and \`observe\`, and the runtime's module map, its second type parameter, types it.
 
 {{story: A message and a module}}
 
 ## Changing how it looks
 
-\`RuntimeHost\` takes \`components\` for what it draws itself, and a component in any of them can read the runtime with \`useRuntime()\`, as the spinner in *Keep the picked owner* does. \`RuntimeNotificationBar\` takes \`components\` too, its only prop. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+\`RuntimeHost\` takes \`components\` for what it draws itself, and a component in any of them can read the runtime with \`useRuntime()\`, as the spinner in *Keep the picked owner* does. How slots work: [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
 
-| Component | Key | Slots | Default | Draws |
-|---|---|---|---|---|
-| \`RuntimeHost\` | \`container\` | \`onRender\` | \`RuntimeHostUiContainerComponents\` | The box the host draws everything in; a control can draw its own root here |
-| | \`placeholder\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the runtime is ready |
-| | \`mountError\` | \`onRender\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, or an error the control threw while it drew |
-| | \`loadingOverlay\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the control while \`runtime.loading\` is shown, such as while \`execute\` runs |
-| | \`executeError\` | \`onRender\` | \`RuntimeExecuteErrorComponents\` | The failures of \`execute\` not yet dismissed, given \`failures\` and \`onDismiss(failure)\` |
-| \`RuntimeNotificationBar\` | Top level | \`onRenderMessageBar\`, given a \`variant\` of \`'single'\`, \`'group'\` or \`'child'\` | \`NotificationMessageBarComponents\` | Each bar: a lone message, the summary of several, and each message listed under it |
-| | | \`onRenderMessage\` | | A message's text, given as \`dangerouslySetInnerHTML\` |
-| | | \`onRenderToggleButton\` | | The chevron on the summary |
-| | | \`onRenderMenu\` | | The list of messages the summary unfolds |
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`container\` | \`onRender\` | \`RuntimeHostUiContainerComponents\` | The box the host draws everything in; a control can draw its own root here |
+| \`placeholder\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingBoundaryComponents\` | The loading state, until the runtime is ready |
+| \`mountError\` | \`onRender\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load, or an error the control threw while it drew |
+| \`loadingOverlay\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the control while \`runtime.loading\` is shown, such as while \`execute\` runs |
+| \`executeError\` | \`onRender\` | \`RuntimeExecuteErrorComponents\` | The failures of \`execute\` not yet dismissed, given \`failures\` and \`onDismiss(failure)\` |
+
+\`RuntimeNotificationBar\` takes \`components\` too, its only prop, with every slot at the top level:
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| Top level | \`onRenderMessageBar\`, given a \`variant\` of \`'single'\`, \`'group'\` or \`'child'\` | \`NotificationMessageBarComponents\` | Each bar: a lone message, the summary of several, and each message listed under it |
+| | \`onRenderMessage\` | | A message's text, given as \`dangerouslySetInnerHTML\` |
+| | \`onRenderToggleButton\` | | The chevron on the summary |
+| | \`onRenderMenu\` | | The list of messages the summary unfolds |
 
 {{story: Your own loading and errors}}
 
@@ -151,7 +157,7 @@ To change the wording of the loading text, **Try again**, **Details** and the de
 |---|---|---|---|---|
 | \`createRuntime\` | \`() => TRuntime\` | Required | At mount | Makes the runtime of a mount. |
 | \`onSetup\` | \`(runtime: TRuntime) => void\` | None | At mount | Called with each new runtime, before it loads. |
-| \`onReady\` | \`(runtime: TRuntime) => void\` | None | Once loaded | Called once per mount when the control has loaded and is drawn. |
+| \`onReady\` | \`(runtime: TRuntime) => void\` | None | At mount | Called once per mount when the control has loaded and is drawn. |
 | \`children\` | \`ReactNode\` | None | Live | The control, drawn once the runtime is ready; reads it with \`useRuntime()\`. |
 | \`className\` | \`string\` | None | Live | Put on the box the host draws everything in. |
 | \`components\` | \`IRuntimeHostComponents\` | Defaults | Live | See *Changing how it looks*. |

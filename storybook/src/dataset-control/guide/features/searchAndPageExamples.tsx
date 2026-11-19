@@ -5,6 +5,7 @@ import { DEAL_LIST_TABS, withDealList } from '../dealListFiles'
 const SEARCH_AND_PAGE_CODE = `import { ClientSideGrid, DatasetControl } from '@talxis/base-controls'
 import { loadDeals } from './deals'
 
+//new: loads with loadDeals again
 const GridExample = () => <DatasetControl onLoad={loadDeals} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>

@@ -36,12 +36,12 @@ When the first load throws, the error shows in place of the commands, with **Det
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
-| \`onLoad\` | \`(ribbon: IRibbon) => IRibbonCommand[] \\| Promise<IRibbonCommand[]>\` | None | Live | Returns the commands, directly or once loaded; returned directly, they show without a shimmer. Called at mount and on \`reload()\`. |
+| \`onLoad\` | \`(ribbon: IRibbon) => IRibbonCommand[] \\| Promise<…>\` | None | Live | Returns the commands, directly or once loaded; returned directly, they show without a shimmer. Called at mount and on \`reload()\`. |
 | \`align\` | \`'start' \\| 'end'\` | \`'start'\` | Live | The side the commands line up against. |
 | \`disabled\` | \`boolean\` | \`false\` | Live | Disables every command, menus included. |
 | \`className\` | \`string\` | None | Live | Added to the ribbon's box, which also holds the shimmer and a failed first load. |
 | \`onSetup\` | \`(ribbon: IRibbon) => void\` | None | At mount | Hands over the ribbon of each mount, before it loads. |
-| \`onReady\` | \`(ribbon: IRibbon) => void\` | None | Once loaded | Called once per mount when the control has loaded and is drawn. |
+| \`onReady\` | \`(ribbon: IRibbon) => void\` | None | At mount | Called once per mount when the control has loaded and is drawn. |
 | \`components\` | \`IRibbonComponents\` | Defaults | Live | See *Changing how it looks*. |
 
 ## From your code

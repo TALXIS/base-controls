@@ -17,7 +17,7 @@ const OTHER_APP_STYLES = \`
 
 //the page names the key, the props and the frame's scripts, never FramedDeals
 const IsolatedDeals = createIsolatedHost<{ theme: ITheme }>('deals', {
-    //your frame's entry script; here, the docs runner that runs these files
+    //replace with your frame's entry script
     scripts: SANDBOX_FRAME_SCRIPTS,
     //runs on the frame's window before its scripts load
     prepareWindow: frameWindow => Object.assign(frameWindow, { greeting: 'handed over by prepareWindow' }),
@@ -33,7 +33,7 @@ const GridExample = () => {
         return () => style.remove()
     }, [])
 
-    return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, height: 640 }}>
+    return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16 }}>
         <DealsGrid heading='In the page' />
         {/* frame sets up the iframe; every other prop goes to the content */}
         <IsolatedDeals theme={theme} frame={{ title: 'Deals' }} />
@@ -90,7 +90,7 @@ const createDeals = () => new MemoryDataProvider({
 
 export const DealsGrid = (props: { heading: string }) => <div>
     <Text>{props.heading}</Text>
-    <DatasetControl onLoad={async () => ({ provider: createDeals() })} height='560px'>
+    <DatasetControl onLoad={async () => ({ provider: createDeals() })} height='360px'>
         <DatasetControl.Header>
             <DatasetControl.Header.End>
                 {/* its panel opens in the window it was rendered in */}

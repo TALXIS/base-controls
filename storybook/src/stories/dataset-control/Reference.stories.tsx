@@ -8,7 +8,7 @@ Every prop, member, part key, module parameter and slot of the DatasetControl, i
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
-| \`onLoad\` | \`(control) => IDatasetControlLoadResult \\| Promise<IDatasetControlLoadResult>\` | Required | At mount | Returns the provider and the views, behind the placeholder, on every load. See *What onLoad returns* below. |
+| \`onLoad\` | \`(control) => IDatasetControlLoadResult \\| Promise<…>\` | Required | At mount | Returns the provider and the views, behind the placeholder, on every load. See *What onLoad returns* below. |
 | \`children\` | \`ReactNode\` | Required | Live | The parts, laid out in the regions. See *Parts* below. |
 | \`modules\` | \`IDatasetControlModule[]\` | None | At mount | The control's modules, such as user views, loaded on every load before \`onLoad\`. See *A module* below. |
 | \`height\` | \`string\` | None | Live | A length, such as \`'600px'\`, sets the control's height; \`'100%'\` fills its parent, which needs a height of its own; left out, the control is as tall as what it holds. See [**Lay it out**](?path=/docs/controls-datasetcontrol-guide-features-lay-it-out--overview). |
@@ -70,29 +70,22 @@ Every load mounts the control anew, with a new control, new modules and new part
 
 ## Parts
 
-Each part is a member of \`DatasetControl\`, such as \`DatasetControl.QuickFind\`. Parts go inside the control, in any region, and keep the order you write them in.
+Each part is a member of \`DatasetControl\`, such as \`DatasetControl.QuickFind\`. Parts go inside the control, in any region, and keep the order you write them in. Every part, the regions included, takes \`components\`, live: its pieces and slots are under *Slots* below. \`QuickFind\`, \`EditColumns\`, \`Pagination\`, \`Notifications\` and \`UserQueries\` take nothing else; the others take these:
 
 | Part | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|---|
 | \`Header\`, \`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\` | \`children\` | \`ReactNode\` | None | Live | What the region holds: \`Start\` and \`End\` in \`Header\` and \`Footer\`, the parts in the others. |
 | | \`className\` | \`string\` | None | Live | Added to the region's box. |
-| | \`components\` | \`Partial<IDatasetControlUiHeaderComponents>\` and the like | Defaults | Live | See *Slots* below. |
-| \`ViewSwitcher\` | \`children\` | \`ReactNode\` | None | Live | What adds to the switcher, such as \`DatasetControl.UserQueries\`. |
-| | \`components\` | \`IViewSwitcherComponents\` | Defaults | Live | See *Slots* below. |
-| \`UserQueries\` | \`components\` | \`IUserQueriesComponents\` | Defaults | Live | Goes inside \`ViewSwitcher\` and draws the *Manage views* panel; throws without a user views module. |
-| \`Ribbon\` | Every prop of [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview) but \`align\` and \`onSetup\` | | | | Such as \`onLoad\`, \`disabled\`, \`className\` and \`components\`. \`align\` follows the region, and \`control.parts\` takes the place of \`onSetup\`. |
+| \`ViewSwitcher\` | \`children\` | \`ReactNode\` | None | Live | What adds to the switcher, such as \`DatasetControl.UserQueries\`, which draws the *Manage views* panel and throws without a user views module. |
+| \`Ribbon\` | Every prop of [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview) | | | | Such as \`onLoad\` and \`disabled\`, but two: \`align\` follows the region, and \`control.parts\` takes the place of \`onSetup\`. |
 | | \`onReady\` | \`(ribbon: IRibbon) => void\` | None | At mount | Called each time the ribbon mounts, with every load of the control, once its commands are drawn. |
 | | \`enableSave\` | \`boolean\` | \`false\` | Live | **Save**, while there are unsaved changes: saves every changed record. |
 | | \`enableDiscard\` | \`boolean\` | \`false\` | Live | **Discard changes**, while there are unsaved changes: undoes them all. |
 | | \`enableRefresh\` | \`boolean\` | \`false\` | Live | **Refresh**: loads the records again, asking about unsaved changes first. |
-| \`QuickFind\` | \`components\` | \`Partial<IDatasetControlUiQuickFindComponents>\` | Defaults | Live | See *Slots* below. |
-| \`EditColumns\` | \`components\` | \`IEditColumnsComponents\` | Defaults | Live | See *Slots* below. |
-| \`PageSizeSwitcher\` | \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100 and 250 | At mount | The sizes the menu offers. |
-| | \`components\` | \`Partial<IDatasetControlUiPageSizeSwitcherComponents>\` | Defaults | Live | See *Slots* below. |
-| \`Pagination\` | \`components\` | \`Partial<IDatasetControlUiPaginationComponents>\` | Defaults | Live | See *Slots* below. |
-| \`Notifications\` | \`components\` | \`Partial<INotificationMessageBarComponents>\` | Defaults | Live | See *Slots* below. The part draws the messages of the \`notifications\` part, which it provides: see *Notifications* below. |
+| \`PageSizeSwitcher\` | \`pageSizes\` | \`number[]\` | 25, 50, 75, 100 and 250 | At mount | The sizes the menu offers; the default is exported as \`DEFAULT_PAGE_SIZES\`. |
 | \`EmptyState\` | \`children\` | \`ReactNode\` | None | Live | What shows the records while there are some, kept while the provider loads. |
-| | \`components\` | \`Partial<IDatasetControlUiEmptyStateComponents>\` | Defaults | Live | See *Slots* below. |
+
+\`Notifications\` draws the messages of the \`notifications\` part, which it provides: see *Notifications* below.
 
 ## The control
 
@@ -252,17 +245,22 @@ The \`notifications\` part holds every message the bar shows, yours and the cont
 
 A user views module adds **Save as new view**, **Save changes** and **Manage views** to the view switcher: see [**Views of their own**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview) and [**Where views are kept**](?path=/docs/controls-datasetcontrol-guide-your-data-where-views-are-kept--overview).
 
-| Factory | Parameter | Type | Default | Description |
-|---|---|---|---|---|
-| Every one | \`enableSaveAsNewView\` | \`boolean\` | \`true\` | **Save as new view**. |
-| | \`enableSaveChanges\` | \`boolean\` | \`true\` | **Save changes**, while a user view is open. |
-| | \`enableManageViews\` | \`boolean\` | \`true\` | **Manage views**. |
-| \`createLocalStorageUserQueriesModule\` | \`storageKey\` | \`string\` | Required | The localStorage entry the views are kept in, in this browser; one per control. |
-| \`createTalxisUserQueriesModule\`, \`createDataverseUserQueriesModule\` | \`entityName\` | \`string\` | Required | The entity the views are of. |
-| | \`recordId\` | \`string\` | None | Only the views of this record; without it, only views of no record. Needs \`recordId\` mapped. |
-| | \`ownerId\` | \`string\` | None | Only the views this user owns; without it, every view the user can read. |
-| \`createDataverseUserQueriesModule\` | \`table\` | \`IDataverseUserQueriesTable\` | Required | The table's \`name\`, and its \`fieldMapping\`: the columns holding the view's \`name\`, \`layout\` and entity (\`returnedTypeCode\`), and optionally \`description\` and \`recordId\`. \`createTalxisUserQueriesModule\` maps \`talxis_userquery\`. |
-| \`createUserQueriesModule\` | \`createStore\` | \`(control) => IUserQueriesStore\` | Required | Called on every load. See *A user views store* below. |
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| **Every factory** | | | |
+| \`enableSaveAsNewView\` | \`boolean\` | \`true\` | **Save as new view**. |
+| \`enableSaveChanges\` | \`boolean\` | \`true\` | **Save changes**, while a user view is open. |
+| \`enableManageViews\` | \`boolean\` | \`true\` | **Manage views**. |
+| **\`createLocalStorageUserQueriesModule\`** | | | |
+| \`storageKey\` | \`string\` | Required | The localStorage entry the views are kept in, in this browser; one per control. |
+| **\`createTalxisUserQueriesModule\`, \`createDataverseUserQueriesModule\`** | | | |
+| \`entityName\` | \`string\` | Required | The entity the views are of. |
+| \`recordId\` | \`string\` | None | Only the views of this record; without it, only views of no record. Needs \`recordId\` mapped. |
+| \`ownerId\` | \`string\` | None | Only the views this user owns; without it, every view the user can read. |
+| **\`createDataverseUserQueriesModule\`** | | | |
+| \`table\` | \`IDataverseUserQueriesTable\` | Required | The table's \`name\`, and its \`fieldMapping\`: the columns holding the view's \`name\`, \`layout\` and entity (\`returnedTypeCode\`), and optionally \`description\` and \`recordId\`. \`createTalxisUserQueriesModule\` maps \`talxis_userquery\`. |
+| **\`createUserQueriesModule\`** | | | |
+| \`createStore\` | \`(control) => IUserQueriesStore\` | Required | Called on every load. See *A user views store* below. |
 
 ### The module from your code
 
@@ -287,9 +285,9 @@ A user views module adds **Save as new view**, **Save changes** and **Manage vie
 
 \`LocalStorageUserQueriesStore\` and \`DataverseUserQueriesStore\` are exported, to extend.
 
-## Hooks for your own parts
+## Inside your own parts
 
-| Hook | Returns |
+| Call | Returns |
 |---|---|
 | \`useDataProviderEvents(events)\` | The provider, drawing the component again on each of the provider's \`events\`. |
 | \`useDataProvider()\` | The provider, without drawing again. |
@@ -305,38 +303,50 @@ A user views module adds **Save as new view**, **Save changes** and **Manage vie
 
 ## Slots
 
-The control and every part take \`components\`: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). *Top level* is the part's own slots; a blank default is not exported.
+The control and every part take \`components\`: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). *Top level* is the part's own slots. A default written \`…QuickFindComponents\` is exported as \`DatasetControlUiQuickFindComponents\`, and a blank one is not exported.
 
-| Part | Key | Slots | Default | Draws |
-|---|---|---|---|---|
-| \`DatasetControl\` | \`container\` | \`onRender\` | \`DatasetControlUiContainerComponents\` | The control's box |
-| | \`skeleton\` | \`onRender\` | \`DatasetControlUiSkeletonComponents\` | The placeholder while a load runs |
-| | \`mountError\` | \`onRender\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load |
-| | \`loadingOverlay\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the control while \`control.loading\` is shown, such as during \`control.execute\` |
-| | \`executeError\` | \`onRender\`, given \`failures\` and \`onDismiss(failure)\` | \`RuntimeExecuteErrorComponents\` | The error dialog for a failed user view or \`control.execute\` |
-| \`Header\` | Top level | \`onRender\` | \`DatasetControlUiHeaderComponents\` | The header's box, a \`WrapCompactProvider\` |
-| \`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\` | Top level | \`onRender\` | \`DatasetControlUiHeaderStartComponents\` and the like | The region's box |
-| \`ViewSwitcher\` | Top level | \`onRender\`, with the views as \`menuProps.items\` | \`DatasetControlUiViewSwitcherComponents\` | The button and its menu |
-| \`Ribbon\` | \`commandBar\` | \`onRender\`, with the commands as \`items\` | \`RibbonUiCommandBarComponents\` | The command bar |
-| | \`shimmer\` | \`onRender\` | \`RibbonUiShimmerComponents\` | The shimmer before the first load |
-| | \`mountError\` | As the control's \`mountError\` | \`ErrorMessageBarComponents\` | A failed first load |
-| | \`executeError\` | As the control's \`executeError\` | \`RuntimeExecuteErrorComponents\` | The error dialog for a failed command or later load |
-| | \`container\`, \`loadingOverlay\` | As on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview) | | The ribbon's box, and what covers it |
-| \`QuickFind\` | Top level | \`onRender\`, \`onRenderTextField\` | \`DatasetControlUiQuickFindComponents\` | The box and the search field |
-| | \`compact\` | \`onRender\` | \`DatasetControlUiQuickFindCompactButtonComponents\` | The search button in a compact header |
-| | \`callout\` | \`onRender\`, \`onRenderLikeWarning\`, \`onRenderDescription\`, \`onRenderColumns\`, \`onRenderColumn\` | \`DatasetControlUiQuickFindCalloutComponents\` | The callout listing the columns searched |
-| \`EditColumns\` | \`button\` | \`onRender\`, \`onRenderButton\` | \`DatasetControlUiEditColumnsButtonComponents\` | The button that opens the editor |
-| | \`panel\` | \`onRender\`, \`onRenderFooter\`, \`onRenderCommandBar\` | \`DatasetControlUiEditColumnsPanelComponents\` | The editor's panel, its **Save** and **Cancel**, and the commands above the pickers, drawn only when there are some |
-| | \`scopeSelector\`, \`columnSelector\` | \`onRenderSelector\`, \`onRenderOption\` | \`DatasetControlUiEditColumnsSelectorComponents\` | The *Column source* and column pickers |
-| | \`columnList\` | \`onRenderColumn\` | \`DatasetControlUiEditColumnsColumnListComponents\` | Each chosen column, with its commands |
-| | \`errorMessage\` | As the control's \`mountError\` | \`ErrorMessageBarComponents\` | A failed load of the columns |
-| \`Notifications\` | Top level | \`onRenderMessageBar\`, \`onRenderMessage\`, \`onRenderToggleButton\`, \`onRenderMenu\` | \`NotificationMessageBarComponents\` | Each bar, a message's text, the summary's chevron and the messages it unfolds; see *Changing how it looks* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) |
-| \`EmptyState\` | Top level | \`onRender\`, \`onRenderIcon\`, \`onRenderText\` | \`DatasetControlUiEmptyStateComponents\` | The empty state |
-| \`Pagination\` | Top level | \`onRender\`, with the buttons as \`items\` | \`DatasetControlUiPaginationComponents\` | The page buttons |
-| \`PageSizeSwitcher\` | Top level | \`onRender\`, with the sizes as \`menuProps.items\` | \`DatasetControlUiPageSizeSwitcherComponents\` | The range and its menu |
-| \`UserQueries\` | \`manageViewsPanel\` | \`onRender\`, \`onRenderCloseButton\` | \`UserQueriesUiManageViewsPanelComponents\` | The *Manage views* panel |
-| | \`manageViews.datasetControl\` | The control's, plus the keys \`header\`, \`body\`, \`footer\`, \`ribbon\`, \`quickFind\` and \`pagination\` | | The control inside *Manage views* |
-| | \`manageViews.grid\` | The \`Grid\`'s | | The grid inside *Manage views* |
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| **\`DatasetControl\`** | | | |
+| \`container\` | \`onRender\` | \`…ContainerComponents\` | The control's box |
+| \`skeleton\` | \`onRender\` | \`…SkeletonComponents\` | The placeholder while a load runs |
+| \`mountError\` | \`onRender\`, \`onRenderTooltip\`, \`onRenderTitle\`, \`onRenderCommandBar\` | \`ErrorMessageBarComponents\` | A failed load |
+| \`loadingOverlay\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderText\` | \`LoadingOverlayComponents\` | What covers the control while \`control.loading\` is shown, such as during \`control.execute\` |
+| \`executeError\` | \`onRender\`, given \`failures\` and \`onDismiss(failure)\` | \`RuntimeExecuteErrorComponents\` | The error dialog for a failed user view or \`control.execute\` |
+| **\`Header\`** | | | |
+| Top level | \`onRender\` | \`…HeaderComponents\` | The header's box, a \`WrapCompactProvider\` |
+| **\`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\`** | | | |
+| Top level | \`onRender\` | \`…HeaderStartComponents\` and the like | The region's box |
+| **\`ViewSwitcher\`** | | | |
+| Top level | \`onRender\`, with the views as \`menuProps.items\` | \`…ViewSwitcherComponents\` | The button and its menu |
+| **\`Ribbon\`** | | | |
+| \`commandBar\` | \`onRender\`, with the commands as \`items\` | \`RibbonUiCommandBarComponents\` | The command bar |
+| \`shimmer\` | \`onRender\` | \`RibbonUiShimmerComponents\` | The shimmer before the first load |
+| \`mountError\` | As the control's \`mountError\` | \`ErrorMessageBarComponents\` | A failed first load |
+| \`executeError\` | As the control's \`executeError\` | \`RuntimeExecuteErrorComponents\` | The error dialog for a failed command or later load |
+| \`container\`, \`loadingOverlay\` | As on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview) | | The ribbon's box, and what covers it |
+| **\`QuickFind\`** | | | |
+| Top level | \`onRender\`, \`onRenderTextField\` | \`…QuickFindComponents\` | The box and the search field |
+| \`compact\` | \`onRender\` | \`…QuickFindCompactButtonComponents\` | The search button in a compact header |
+| \`callout\` | \`onRender\`, \`onRenderLikeWarning\`, \`onRenderDescription\`, \`onRenderColumns\`, \`onRenderColumn\` | \`…QuickFindCalloutComponents\` | The callout listing the columns searched |
+| **\`EditColumns\`** | | | |
+| \`button\` | \`onRender\`, \`onRenderButton\` | \`…EditColumnsButtonComponents\` | The button that opens the editor |
+| \`panel\` | \`onRender\`, \`onRenderFooter\`, \`onRenderCommandBar\` | \`…EditColumnsPanelComponents\` | The editor's panel, its **Save** and **Cancel**, and the commands above the pickers, drawn only when there are some |
+| \`scopeSelector\`, \`columnSelector\` | \`onRenderSelector\`, \`onRenderOption\` | \`…EditColumnsSelectorComponents\` | The *Column source* and column pickers |
+| \`columnList\` | \`onRenderColumn\` | \`…EditColumnsColumnListComponents\` | Each chosen column, with its commands |
+| \`errorMessage\` | As the control's \`mountError\` | \`ErrorMessageBarComponents\` | A failed load of the columns |
+| **\`Notifications\`** | | | |
+| Top level | \`onRenderMessageBar\`, \`onRenderMessage\`, \`onRenderToggleButton\`, \`onRenderMenu\` | \`NotificationMessageBarComponents\` | Each bar, a message's text, the summary's chevron and the messages it unfolds; see *Changing how it looks* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) |
+| **\`EmptyState\`** | | | |
+| Top level | \`onRender\`, \`onRenderIcon\`, \`onRenderText\` | \`…EmptyStateComponents\` | The empty state |
+| **\`Pagination\`** | | | |
+| Top level | \`onRender\`, with the buttons as \`items\` | \`…PaginationComponents\` | The page buttons |
+| **\`PageSizeSwitcher\`** | | | |
+| Top level | \`onRender\`, with the sizes as \`menuProps.items\` | \`…PageSizeSwitcherComponents\` | The range and its menu |
+| **\`UserQueries\`** | | | |
+| \`manageViewsPanel\` | \`onRender\`, \`onRenderCloseButton\` | \`UserQueriesUiManageViewsPanelComponents\` | The *Manage views* panel |
+| \`manageViews.datasetControl\` | The control's, plus the keys \`header\`, \`body\`, \`footer\`, \`ribbon\`, \`quickFind\` and \`pagination\` | | The control inside *Manage views* |
+| \`manageViews.grid\` | The \`Grid\`'s | | The grid inside *Manage views* |
 
 To change the control's strings, see [**Localization**](?path=/docs/concepts-localization--overview).
 `

@@ -20,14 +20,7 @@ This step puts \`DatasetControl.Notifications\` between the header and the body 
 
 **Your messages.** \`DatasetControl.Notifications\` draws the bar and provides the control's \`notifications\` part, which holds the messages the bar shows. \`onSetup\` gets the control before its parts are drawn, so \`showSyncMessage\` waits for the bar with \`control.parts.observe('notifications', callback)\`: the callback adds the message each time a bar is drawn. Each load draws a new bar, so the message comes back on the next load even after the user closes it. Once the control is drawn, such as in \`onReady\` or a button's \`onClick\`, \`control.notifications\` returns the part itself.
 
-| Message key | Here |
-|---|---|
-| \`text\` | Drawn as HTML, so escape anything you did not write. |
-| \`level\` | \`'INFO'\`; \`'ERROR'\`, \`'WARNING'\` and \`'SUCCESS'\` are the others, and the most severe one sets the bar's colour. |
-| \`id\` | \`'sync'\`, which \`notifications.remove('sync')\` finds it by; a message added later with the same \`id\` takes its place. |
-| \`onDismiss\` | Puts a close button on the message, which calls it; here it removes the message. |
-
-Every member of the part, and how the bar folds several messages, is under *Messages* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
+A message has a \`text\`, drawn as HTML, and a \`level\`, here \`'INFO'\`. Its \`id\` lets \`notifications.remove('sync')\` find it, and \`onDismiss\` puts a close button on it. Every key and level, every member of the part, and how the bar folds several messages are under *Messages* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
 **A later load that fails.** A load that fails as the control mounts takes the place of the parts, as in [**When loading fails**](?path=/docs/controls-datasetcontrol-guide-basics-when-loading-fails--overview). A later load of the provider, such as a search, another page or **Refresh**, leaves the parts in place: the control adds the provider's error to the bar, beside your messages, and removes it once a load succeeds. **Break the connection** calls \`provider.setError(true, message)\`, as a provider does when a load fails. Every failure, and where it shows, is under *Failures* on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 
