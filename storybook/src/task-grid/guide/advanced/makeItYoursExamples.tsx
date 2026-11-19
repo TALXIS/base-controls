@@ -102,7 +102,7 @@ const GridExample = () => <TaskDatasetControl modules={[lookupManyModule]} onLoa
 </TaskDatasetControl>
 `
 
-const A_TOOLTIP_OF_YOUR_OWN_CODE = `import { createTaskEditingModule, DatasetControl, RecordCardFieldRow, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
+const A_TOOLTIP_OF_YOUR_OWN_CODE = `import { createTaskEditingModule, DatasetControl, FieldList, TaskDatasetControl, TaskGrid } from '@talxis/base-controls'
 import { createBarDraggingModule, createLibraryModule, createTaskTooltipModule, TaskGantt, TaskTooltip, useTaskTooltip } from '@talxis/base-controls/gantt'
 import { createLoadOffice } from './office'
 
@@ -112,7 +112,7 @@ const loadTasks = createLoadOffice()
 const HoursLeftRow = () => {
     const { record } = useTaskTooltip()
     const hoursLeft = Math.round(Number(record.getValue('effort')) * (100 - Number(record.getValue('done'))) / 100)
-    return <RecordCardFieldRow label='Hours left' iconName='Clock'>{hoursLeft} h</RecordCardFieldRow>
+    return <FieldList.Row label='Hours left' iconName='Clock'>{hoursLeft} h</FieldList.Row>
 }
 
 const tooltipModule = createTaskTooltipModule({

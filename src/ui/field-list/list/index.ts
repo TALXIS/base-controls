@@ -1,2 +1,2 @@
-export * from './RecordCard';
+export * from './FieldList';
 export * from './components';

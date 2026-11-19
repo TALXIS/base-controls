@@ -5,7 +5,7 @@ import { ILeafletUiPopupComponents, LeafletUiPopupComponents } from './component
 import { getLeafletUiPopupStyles } from './styles';
 
 export interface ILeafletUiPopupProps {
-    /** What the popup shows, such as a `RecordCard`. */
+    /** What the popup shows, such as `Map.Popup`'s parts. */
     children?: ReactNode;
     className?: string;
     /** Replacements for its slots. */

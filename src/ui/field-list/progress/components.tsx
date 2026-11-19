@@ -1,5 +1,5 @@
 /** The replaceable pieces of the progress bar. */
-export interface IRecordCardProgressComponents {
+export interface IFieldListProgressComponents {
     /** Holds the track and the text. */
     onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderTrack: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
@@ -8,8 +8,8 @@ export interface IRecordCardProgressComponents {
     onRenderText: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
 }
 
-/** The defaults for {@link IRecordCardProgressComponents}. */
-export const RecordCardProgressComponents: IRecordCardProgressComponents = {
+/** The defaults for {@link IFieldListProgressComponents}. */
+export const FieldListProgressComponents: IFieldListProgressComponents = {
     onRender: props => <div {...props} />,
     onRenderTrack: props => <div {...props} />,
     onRenderFill: props => <div {...props} />,

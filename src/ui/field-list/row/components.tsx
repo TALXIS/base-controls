@@ -1,7 +1,7 @@
 import { Icon, IIconProps } from "@fluentui/react";
 
 /** The replaceable pieces of a row showing one field. */
-export interface IRecordCardFieldRowComponents {
+export interface IFieldListRowComponents {
     /** Holds the icon, the label and the value. */
     onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     /** Drawn only with an icon name. */
@@ -10,8 +10,8 @@ export interface IRecordCardFieldRowComponents {
     onRenderValue: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
 }
 
-/** The defaults for {@link IRecordCardFieldRowComponents}. */
-export const RecordCardFieldRowComponents: IRecordCardFieldRowComponents = {
+/** The defaults for {@link IFieldListRowComponents}. */
+export const FieldListRowComponents: IFieldListRowComponents = {
     onRender: props => <div {...props} />,
     onRenderIcon: props => <Icon {...props} />,
     onRenderLabel: props => <span {...props} />,

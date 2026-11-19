@@ -1,10 +1,10 @@
-import { IRecordCardFieldRowComponents, RecordCardFieldRow } from "@ui";
+import { IFieldListRowComponents, FieldList } from "@ui";
 import { useMap, useMapRecord } from "../../context";
 
 export interface IMapPopupFieldRowProps {
     columnName: string;
     iconName?: string;
-    components?: Partial<IRecordCardFieldRowComponents>;
+    components?: Partial<IFieldListRowComponents>;
 }
 
 /** One column of the record under its display name, nothing while empty. */
@@ -16,5 +16,5 @@ export const MapPopupFieldRow = (props: IMapPopupFieldRowProps) => {
         return null;
     }
     const label = provider.getColumnsMap()[props.columnName]?.displayName ?? props.columnName;
-    return <RecordCardFieldRow label={label} iconName={props.iconName} components={props.components}>{value}</RecordCardFieldRow>;
+    return <FieldList.Row label={label} iconName={props.iconName} components={props.components}>{value}</FieldList.Row>;
 };

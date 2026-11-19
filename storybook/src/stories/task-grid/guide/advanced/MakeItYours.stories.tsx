@@ -52,7 +52,7 @@ The lookup-many module of [**People and tags**](?path=/docs/controls-taskgrid-gu
 | \`TaskTooltip.ProgressRow\` | The \`percentComplete\` as a bar |
 | \`TaskTooltip.DateRangeRow\`, \`StartDateRow\`, \`EndDateRow\`, \`DurationRow\` | When the task runs, read from its bar, so they follow a bar being dragged |
 
-A part of yours reads the task under the pointer with \`useTaskTooltip()\`: its \`record\`, the chart's \`task\`, the bar's \`span\` or the \`milestone\`, the \`duration\` in minutes, the bar's \`color\` and the \`gantt\`. \`RecordCardFieldRow\` draws a row like the library's. The tooltip lets clicks through to the chart, so it cannot hold a button.
+A part of yours reads the task under the pointer with \`useTaskTooltip()\`: its \`record\`, the chart's \`task\`, the bar's \`span\` or the \`milestone\`, the \`duration\` in minutes, the bar's \`color\` and the \`gantt\`. \`FieldList.Row\` draws a row like the library's. The tooltip lets clicks through to the chart, so it cannot hold a button.
 
 ## Content on the bars
 

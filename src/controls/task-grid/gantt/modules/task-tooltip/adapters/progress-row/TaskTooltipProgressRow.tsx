@@ -1,8 +1,8 @@
-import { IRecordCardProgressComponents, RecordCardProgress } from "@ui";
+import { IFieldListProgressComponents, FieldList } from "@ui";
 import { useTaskTooltip } from "../task-tooltip-surface/context";
 
 export interface ITaskTooltipProgressRowProps {
-    components?: Partial<IRecordCardProgressComponents>;
+    components?: Partial<IFieldListProgressComponents>;
 }
 
 /** The task's `percentComplete` as a bar, an empty value as 0 and nothing when unmapped. */
@@ -14,5 +14,5 @@ export const TaskTooltipProgressRow = (props: ITaskTooltipProgressRowProps) => {
     }
     const value = Number(record.getValue(columnName));
     const percent = Number.isFinite(value) ? value : 0;
-    return <RecordCardProgress percent={percent} text={`${Math.round(percent)}%`} color={color} components={props.components} />;
+    return <FieldList.Progress percent={percent} text={`${Math.round(percent)}%`} color={color} components={props.components} />;
 };

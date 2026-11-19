@@ -276,7 +276,7 @@ const GridExample = () => <DataProviderScope provider={cities}>
 
 export const RegionPinsExample = () => run(REGION_PINS_CODE, citiesFile('population', 'region'))
 
-const POSTCARD_CODE = `import { DataProviderScope, LeafletMap, Map, RecordCardFieldRow, RecordCardProgress, useMapRecord, useMapRecords } from '@talxis/base-controls'
+const POSTCARD_CODE = `import { DataProviderScope, FieldList, LeafletMap, Map, useMapRecord, useMapRecords } from '@talxis/base-controls'
 import { cities, FIELD_MAPPING } from './data'
 
 //drawn inside the pin's popup, so Map.Popup's parts and the hooks reach the pin's record
@@ -285,18 +285,18 @@ const Postcard = () => {
     const largest = useMapRecords().reduce((a, b) => Number(a.getValue('population')) >= Number(b.getValue('population')) ? a : b)
     const share = Number(capital.getValue('population')) / Number(largest.getValue('population')) * 100
 
-    return <Map.Popup.Card>
+    return <>
         {/* the region beside the name, as a tag in its option's colour */}
         <Map.Popup.Header statusColumnName='region' />
         <Map.Popup.Body>
             <Map.Popup.FieldRows>
                 <Map.Popup.FieldRow columnName='country' iconName='Flag' />
-                {/* the shared RecordCard parts take any value */}
-                <RecordCardFieldRow label='In the EU since' iconName='Calendar'>{capital.getValue('euSince')}</RecordCardFieldRow>
+                {/* the shared FieldList parts take any value */}
+                <FieldList.Row label='In the EU since' iconName='Calendar'>{capital.getValue('euSince')}</FieldList.Row>
+                <FieldList.Progress percent={share} text={\`\${Math.round(share)}% of \${largest.getFormattedValue('name')}\`} />
             </Map.Popup.FieldRows>
-            <RecordCardProgress percent={share} text={\`\${Math.round(share)}% of \${largest.getFormattedValue('name')}\`} />
         </Map.Popup.Body>
-    </Map.Popup.Card>
+    </>
 }
 
 const GridExample = () => <DataProviderScope provider={cities}>
@@ -528,7 +528,7 @@ const CityCard = () => {
     //the name is in the header; the hidden columns are the ones the map reads
     const columns = provider.getColumns().filter(column => !column.isHidden && !column.isPrimary)
 
-    return <Map.Popup.Card>
+    return <>
         <Map.Popup.Header statusColumnName='status' />
         <Map.Popup.Body>
             <Map.Popup.FieldRows>
@@ -536,7 +536,7 @@ const CityCard = () => {
             </Map.Popup.FieldRows>
             <Link onClick={toggle}>{isSelected ? 'Deselect' : 'Select'}</Link>
         </Map.Popup.Body>
-    </Map.Popup.Card>
+    </>
 }
 
 export const COMPONENTS: ILeafletComponents = {

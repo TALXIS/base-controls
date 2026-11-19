@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getRecordCardDateRangeStyles = (theme: ITheme) => mergeStyleSets({
+export const getFieldListDateRangeStyles = (theme: ITheme) => mergeStyleSets({
     dateRange: {
         ...theme.fonts.small,
         display: 'flex',

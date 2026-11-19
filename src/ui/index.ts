@@ -15,7 +15,7 @@ export * from './error-message-bar';
 export * from './loading-boundary';
 export * from './loading';
 export * from './option-tag';
-export * from './record-card';
+export * from './field-list';
 export * from './shimmer';
 export * from './spinner';
 export * from './layout';

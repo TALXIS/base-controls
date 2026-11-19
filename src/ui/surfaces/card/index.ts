@@ -1,6 +1,6 @@
 export * from './namespace';
 export type { ICardProps, ICardComponents } from './card';
-export type { ICardHeaderProps, ICardHeaderComponents } from './header';
+export type { ICardHeaderProps, ICardHeaderComponents, ICardHeaderPartsComponents } from './header';
 export type { ICardHeaderStartProps, ICardHeaderStartComponents } from './header-start';
 export type { ICardHeaderEndProps, ICardHeaderEndComponents } from './header-end';
 export type { ICardTitleProps, ICardTitleComponents } from './title';

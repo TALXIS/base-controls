@@ -1,10 +1,10 @@
-import type { IRecordCardFieldRowComponents } from "@ui";
+import type { IFieldListRowComponents } from "@ui";
 import { LinkTooltipTaskRow } from "../task-row";
 
 export interface ILinkTooltipSuccessorRowProps {
     /** Defaults to `Next`. */
     iconName?: string;
-    components?: Partial<IRecordCardFieldRowComponents>;
+    components?: Partial<IFieldListRowComponents>;
 }
 
 /** The name of the dependency's successor. */

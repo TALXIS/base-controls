@@ -5294,9 +5294,8 @@ type ILeafletMarkersComponents = import('@talxis/base-controls').ILeafletMarkers
 type ILeafletMarkerComponents = import('@talxis/base-controls').ILeafletMarkerComponents;
 type ILeafletMarkerPopupComponents = import('@talxis/base-controls').ILeafletMarkerPopupComponents;
 type IMapPopupRendererComponents = import('@talxis/base-controls').IMapPopupRendererComponents;
-type IRecordCardComponents = import('@talxis/base-controls').IRecordCardComponents;
-type IRecordCardHeaderPartsComponents = import('@talxis/base-controls').IRecordCardHeaderPartsComponents;
-type IRecordCardFieldRowComponents = import('@talxis/base-controls').IRecordCardFieldRowComponents;
+type ICardHeaderPartsComponents = import('@talxis/base-controls').ICardHeaderPartsComponents;
+type IFieldListRowComponents = import('@talxis/base-controls').IFieldListRowComponents;
 type ILeafletUiPopupComponents = import('@talxis/base-controls').ILeafletUiPopupComponents;
 type IGoogleMapsUiComponents = import('@talxis/base-controls').IGoogleMapsUiComponents;
 type IGoogleMapsUiPopupComponents = import('@talxis/base-controls').IGoogleMapsUiPopupComponents;
@@ -5312,13 +5311,9 @@ type IMapUiMarkerComponents = import('@talxis/base-controls').IMapUiMarkerCompon
 declare const LeafletUi: typeof import('@talxis/base-controls').LeafletUi;
 declare const LeafletUiComponents: typeof import('@talxis/base-controls').LeafletUiComponents;
 declare const MapPopup: typeof import('@talxis/base-controls').MapPopup;
-declare const RecordCard: typeof import('@talxis/base-controls').RecordCard;
 declare const OptionTag: typeof import('@talxis/base-controls').OptionTag;
-declare const RecordCardFieldRows: typeof import('@talxis/base-controls').RecordCardFieldRows;
-declare const RecordCardFieldRow: typeof import('@talxis/base-controls').RecordCardFieldRow;
-declare const RecordCardDateRange: typeof import('@talxis/base-controls').RecordCardDateRange;
-declare const RecordCardProgress: typeof import('@talxis/base-controls').RecordCardProgress;
-declare const RecordCardComponents: typeof import('@talxis/base-controls').RecordCardComponents;
+/** Labelled read-only values: FieldList.Row, FieldList.DateRange and FieldList.Progress. */
+declare const FieldList: typeof import('@talxis/base-controls').FieldList;
 declare const LeafletUiPopupComponents: typeof import('@talxis/base-controls').LeafletUiPopupComponents;
 declare const GoogleMapsUi: typeof import('@talxis/base-controls').GoogleMapsUi;
 declare const GoogleMapsUiComponents: typeof import('@talxis/base-controls').GoogleMapsUiComponents;

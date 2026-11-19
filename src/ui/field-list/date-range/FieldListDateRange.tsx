@@ -1,21 +1,21 @@
 import { useTheme } from "@theme";
 import { useMemo } from "react";
 
-import { IRecordCardDateRangeComponents, RecordCardDateRangeComponents } from "./components";
-import { getRecordCardDateRangeStyles } from "./styles";
+import { IFieldListDateRangeComponents, FieldListDateRangeComponents } from "./components";
+import { getFieldListDateRangeStyles } from "./styles";
 
-export interface IRecordCardDateRangeProps {
+export interface IFieldListDateRangeProps {
     /** Such as `3 Feb – 18 Feb 2026`, or a single date. */
     range: string;
     duration?: string;
-    components?: Partial<IRecordCardDateRangeComponents>;
+    components?: Partial<IFieldListDateRangeComponents>;
 }
 
 /** When something runs, with how long it runs after it. */
-export const RecordCardDateRange = (props: IRecordCardDateRangeProps) => {
-    const components = { ...RecordCardDateRangeComponents, ...props.components };
+export const FieldListDateRange = (props: IFieldListDateRangeProps) => {
+    const components = { ...FieldListDateRangeComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getRecordCardDateRangeStyles(theme), [theme]);
+    const styles = useMemo(() => getFieldListDateRangeStyles(theme), [theme]);
 
     return components.onRender({
         className: styles.dateRange,

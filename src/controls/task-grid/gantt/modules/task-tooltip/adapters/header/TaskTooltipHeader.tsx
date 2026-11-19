@@ -1,9 +1,14 @@
 import { useGanttModule } from "../../../../context";
-import { Card, IRecordCardHeaderPartsComponents, OptionTag } from "@ui";
+import { Card, ICardHeaderPartsComponents, IOptionTagComponents, OptionTag } from "@ui";
 import { useTaskTooltip } from "../task-tooltip-surface/context";
 
+/** The replaceable pieces of the task tooltip's header, by the part they belong to. */
+export interface ITaskTooltipHeaderComponents extends ICardHeaderPartsComponents {
+    status?: Partial<IOptionTagComponents>;
+}
+
 export interface ITaskTooltipHeaderProps {
-    components?: IRecordCardHeaderPartsComponents;
+    components?: ITaskTooltipHeaderComponents;
 }
 
 /** The task's name, with the status from the module's `statusColumnName` beside it. */

@@ -1,25 +1,25 @@
 import { useTheme } from "@theme";
 import { ReactNode, useMemo } from "react";
 
-import { IRecordCardFieldRowComponents, RecordCardFieldRowComponents } from "./components";
-import { getRecordCardFieldRowStyles } from "./styles";
+import { IFieldListRowComponents, FieldListRowComponents } from "./components";
+import { getFieldListRowStyles } from "./styles";
 
-export interface IRecordCardFieldRowProps {
+export interface IFieldListRowProps {
     label: string;
     iconName?: string;
     /** The field's value. */
     children?: ReactNode;
-    components?: Partial<IRecordCardFieldRowComponents>;
+    components?: Partial<IFieldListRowComponents>;
 }
 
 /** One field: its icon, its label and its value. */
-export const RecordCardFieldRow = (props: IRecordCardFieldRowProps) => {
-    const components = { ...RecordCardFieldRowComponents, ...props.components };
+export const FieldListRow = (props: IFieldListRowProps) => {
+    const components = { ...FieldListRowComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getRecordCardFieldRowStyles(theme), [theme]);
+    const styles = useMemo(() => getFieldListRowStyles(theme), [theme]);
 
     return components.onRender({
-        className: styles.fieldRow,
+        className: styles.fieldListRow,
         children: <>
             {props.iconName && components.onRenderIcon({ iconName: props.iconName, className: styles.icon })}
             {components.onRenderLabel({ className: styles.label, children: props.label })}

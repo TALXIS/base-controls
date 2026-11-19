@@ -10,5 +10,6 @@ export const getTooltipUiCalloutStyles = (theme: ITheme) => mergeStyleSets({
     },
     container: {
         pointerEvents: 'none',
+        width: 280,
     },
 });

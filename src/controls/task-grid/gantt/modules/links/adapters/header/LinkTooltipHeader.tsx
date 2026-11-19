@@ -1,10 +1,10 @@
 import { useLabels } from "@labels";
 import { LINKS_LABELS } from "../../labels";
-import { Card, IRecordCardHeaderPartsComponents } from "@ui";
+import { Card, ICardHeaderPartsComponents } from "@ui";
 import { useLinkTooltip } from "../link-tooltip-surface/context";
 
 export interface ILinkTooltipHeaderProps {
-    components?: IRecordCardHeaderPartsComponents;
+    components?: ICardHeaderPartsComponents;
 }
 
 /** The dependency's type. */

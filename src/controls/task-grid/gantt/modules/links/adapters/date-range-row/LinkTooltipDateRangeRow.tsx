@@ -1,10 +1,10 @@
 import type { IRecord } from "@talxis/client-libraries";
 import type { GanttSpanEdge } from "../../../../schedule";
-import { IRecordCardDateRangeComponents, RecordCardDateRange } from "@ui";
+import { IFieldListDateRangeComponents, FieldList } from "@ui";
 import { useLinkTooltip } from "../link-tooltip-surface/context";
 
 export interface ILinkTooltipDateRangeRowProps {
-    components?: Partial<IRecordCardDateRangeComponents>;
+    components?: Partial<IFieldListDateRangeComponents>;
 }
 
 /** The dates the dependency links, from the predecessor's edge to the successor's. */
@@ -23,5 +23,5 @@ export const LinkTooltipDateRangeRow = (props: ILinkTooltipDateRangeRowProps) =>
     if (!from || !to) {
         return null;
     }
-    return <RecordCardDateRange range={`${from} → ${to}`} components={props.components} />;
+    return <FieldList.DateRange range={`${from} → ${to}`} components={props.components} />;
 };

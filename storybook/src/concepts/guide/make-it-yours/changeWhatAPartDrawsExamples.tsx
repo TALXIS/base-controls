@@ -111,7 +111,7 @@ const StorePin = (props: IMapUiMarkerPinProps) => {
 //new: a pin's popup with a link that opens the store, as its name in the grid does
 const StorePopup = (props: IStoreMapProps) => {
     const store = useMapRecord()
-    return <Map.Popup.Card>
+    return <>
         <Map.Popup.Header statusColumnName='status' />
         <Map.Popup.Body>
             <Map.Popup.FieldRows>
@@ -120,7 +120,7 @@ const StorePopup = (props: IStoreMapProps) => {
             </Map.Popup.FieldRows>
             <Link onClick={() => props.onOpenStore(store)}>Open the store</Link>
         </Map.Popup.Body>
-    </Map.Popup.Card>
+    </>
 }
 
 export const StoreMap = (props: IStoreMapProps) => <LeafletMap fieldMapping={{ latitude: 'lat', longitude: 'lng' }} components={{

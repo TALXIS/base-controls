@@ -1,7 +1,7 @@
 import { Icon, IIconProps } from "@fluentui/react";
 
 /** The replaceable pieces of the date range. */
-export interface IRecordCardDateRangeComponents {
+export interface IFieldListDateRangeComponents {
     /** Holds the icon, the range and the duration. */
     onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderIcon: (props: IIconProps) => JSX.Element | null;
@@ -10,8 +10,8 @@ export interface IRecordCardDateRangeComponents {
     onRenderDuration: (props: React.HTMLAttributes<HTMLSpanElement>) => JSX.Element | null;
 }
 
-/** The defaults for {@link IRecordCardDateRangeComponents}. */
-export const RecordCardDateRangeComponents: IRecordCardDateRangeComponents = {
+/** The defaults for {@link IFieldListDateRangeComponents}. */
+export const FieldListDateRangeComponents: IFieldListDateRangeComponents = {
     onRender: props => <div {...props} />,
     onRenderIcon: props => <Icon {...props} />,
     onRenderRange: props => <span {...props} />,

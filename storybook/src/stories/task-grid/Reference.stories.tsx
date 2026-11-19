@@ -474,13 +474,13 @@ Inside anything \`TaskGrid\` draws, such as a cell, \`useTaskGridService(key)\` 
 | Non-working days module | \`tooltip\` | \`onRender\`, \`onRenderContainer\`, \`onRenderDescription\` | \`NonWorkingDaysUiTooltipComponents\` | The tooltip of a shaded day on the scale |
 | Tooltip module | \`onRender\` | The whole tooltip, of \`TaskTooltip\`'s parts; \`useTaskTooltip()\` reads the task | \`TaskTooltip.Renderer\` | What a bar says under the pointer |
 | | \`callout\` | \`onRender\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the pointer |
-| | \`header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\` (\`onRender\`); \`status\` (\`onRender\`, \`onRenderLabel\`) | \`RecordCardHeaderComponents\`, \`RecordCardHeaderStartComponents\`, \`RecordCardHeaderEndComponents\`, \`RecordCardTitleComponents\`, \`OptionTagComponents\` | The name and the status pill |
-| | \`progress\` | \`onRender\`, \`onRenderTrack\`, \`onRenderFill\`, \`onRenderText\` | \`RecordCardProgressComponents\` | The progress bar |
-| | \`dateRange\` | \`onRender\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`RecordCardDateRangeComponents\` | The dates and the duration |
+| | \`header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\` (\`onRender\`); \`status\` (\`onRender\`, \`onRenderLabel\`) | \`CardHeaderComponents\`, \`CardHeaderStartComponents\`, \`CardHeaderEndComponents\`, \`CardTitleComponents\`, \`OptionTagComponents\` | The name and the status pill |
+| | \`progress\` | \`onRender\`, \`onRenderTrack\`, \`onRenderFill\`, \`onRenderText\` | \`FieldListProgressComponents\` | The progress bar |
+| | \`dateRange\` | \`onRender\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`FieldListDateRangeComponents\` | The dates and the duration |
 | Links module | \`tooltip.onRender\` | A link's whole tooltip, of \`LinkTooltip\`'s parts; \`useLinkTooltip()\` reads the link | \`LinkTooltip.Renderer\` | What a link says under the pointer |
 | | \`tooltip.callout\`, \`tooltip.header\`, \`tooltip.dateRange\` | As the tooltip module's keys of the same name | | The callout, the type of the link, and the dates it joins |
-| | \`tooltip.fieldRows\` | \`onRender\` | \`RecordCardFieldRowsComponents\` | The box of the two task rows |
-| | \`tooltip.predecessor\`, \`tooltip.successor\` | \`onRender\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`RecordCardFieldRowComponents\` | The task on each end of the link |
+| | \`tooltip.fieldRows\` | \`onRender\` | \`FieldListComponents\` | The box of the two task rows |
+| | \`tooltip.predecessor\`, \`tooltip.successor\` | \`onRender\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`FieldListRowComponents\` | The task on each end of the link |
 
 The task grid's own cells take their slots like every grid cell: through \`cellRendererParams\`, or \`headerComponentParams\` for a header, set from a column definitions hook at \`TASK_GRID_PRIORITY.tree + 1\`, after the task tree gives the columns their cells. How to add such a hook is on [**Custom cells**](?path=/docs/controls-grid-appearance-custom-cells--overview).
 

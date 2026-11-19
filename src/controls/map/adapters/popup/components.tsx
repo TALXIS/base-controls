@@ -1,13 +1,12 @@
-import type { IRecordCardComponents, IRecordCardHeaderPartsComponents } from "@ui";
+import type { IMapPopupHeaderComponents } from "./MapPopupHeader";
 
 /** The replaceable pieces of the default popup, by the part they belong to. */
 export interface IMapPopupRendererComponents {
-    card?: Partial<IRecordCardComponents>;
-    header?: IRecordCardHeaderPartsComponents;
+    header?: IMapPopupHeaderComponents;
 }
 
 /** A pin's popup content: the whole of it, or the default's parts. */
 export interface IMapPopupComponents extends IMapPopupRendererComponents {
-    /** The whole content, composed from `MapPopup`'s parts; `card` and `header` go unused with it. */
+    /** The whole content, composed from `MapPopup`'s parts; `header` goes unused with it. */
     onRender?: () => JSX.Element | null;
 }

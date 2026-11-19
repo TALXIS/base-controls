@@ -1,12 +1,12 @@
 import { useLabels } from "@labels";
 import { TASK_TOOLTIP_LABELS } from "../../labels";
-import { IRecordCardFieldRowComponents, RecordCardFieldRow } from "@ui";
+import { IFieldListRowComponents, FieldList } from "@ui";
 import { useTaskTooltip } from "../task-tooltip-surface/context";
 
 export interface ITaskTooltipDurationRowProps {
     /** Defaults to `Clock`. */
     iconName?: string;
-    components?: Partial<IRecordCardFieldRowComponents>;
+    components?: Partial<IFieldListRowComponents>;
 }
 
 /** How long the task takes, estimated from its bar while it is dragged. */
@@ -17,5 +17,5 @@ export const TaskTooltipDurationRow = (props: ITaskTooltipDurationRowProps) => {
         return null;
     }
     const text = gantt.services.get('schedule').formatDuration(duration);
-    return <RecordCardFieldRow label={labels.get('taskTooltip.duration')} iconName={props.iconName ?? 'Clock'} components={props.components}>{text}</RecordCardFieldRow>;
+    return <FieldList.Row label={labels.get('taskTooltip.duration')} iconName={props.iconName ?? 'Clock'} components={props.components}>{text}</FieldList.Row>;
 };

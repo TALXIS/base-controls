@@ -1,8 +1,8 @@
-import { IRecordCardDateRangeComponents, RecordCardDateRange } from "@ui";
+import { IFieldListDateRangeComponents, FieldList } from "@ui";
 import { useTaskTooltip } from "../task-tooltip-surface/context";
 
 export interface ITaskTooltipDateRangeRowProps {
-    components?: Partial<IRecordCardDateRangeComponents>;
+    components?: Partial<IFieldListDateRangeComponents>;
 }
 
 /** The task's start, end and duration as the timeline draws them, not as the record holds them. */
@@ -14,5 +14,5 @@ export const TaskTooltipDateRangeRow = (props: ITaskTooltipDateRangeRowProps) =>
         return null;
     }
     const formattedDuration = duration !== undefined ? schedule.formatDuration(duration) : undefined;
-    return <RecordCardDateRange range={range} duration={formattedDuration} components={props.components} />;
+    return <FieldList.DateRange range={range} duration={formattedDuration} components={props.components} />;
 };

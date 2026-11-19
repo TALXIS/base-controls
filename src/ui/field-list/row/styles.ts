@@ -1,7 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getRecordCardFieldRowStyles = (theme: ITheme) => mergeStyleSets({
-    fieldRow: {
+export const getFieldListRowStyles = (theme: ITheme) => mergeStyleSets({
+    fieldListRow: {
         display: 'flex',
         alignItems: 'center',
         gap: 8,

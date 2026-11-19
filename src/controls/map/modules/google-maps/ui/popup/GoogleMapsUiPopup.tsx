@@ -7,7 +7,7 @@ import { getGoogleMapsUiPopupStyles, GOOGLE_MAPS_UI_POPUP_CLASS } from './styles
 export interface IGoogleMapsUiPopupProps {
     /** The marker it opens over. */
     anchor?: google.maps.marker.AdvancedMarkerElement | null;
-    /** What the popup shows, such as a `RecordCard`. */
+    /** What the popup shows, such as `Map.Popup`'s parts. */
     children?: ReactNode;
     /** Called when Google closes it, such as on Escape. */
     onClose?: () => void;

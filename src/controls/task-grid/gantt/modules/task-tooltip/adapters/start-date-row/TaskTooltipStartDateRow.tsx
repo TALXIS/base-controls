@@ -1,10 +1,10 @@
-import { IRecordCardFieldRowComponents, RecordCardFieldRow } from "@ui";
+import { IFieldListRowComponents, FieldList } from "@ui";
 import { useTaskTooltip } from "../task-tooltip-surface/context";
 
 export interface ITaskTooltipStartDateRowProps {
     /** Defaults to `Calendar`. */
     iconName?: string;
-    components?: Partial<IRecordCardFieldRowComponents>;
+    components?: Partial<IFieldListRowComponents>;
 }
 
 /** The task's start as the timeline draws it, not as the record holds it. */
@@ -15,5 +15,5 @@ export const TaskTooltipStartDateRow = (props: ITaskTooltipStartDateRowProps) =>
     if (!text) {
         return null;
     }
-    return <RecordCardFieldRow label={schedule.getColumnLabels().start} iconName={props.iconName ?? 'Calendar'} components={props.components}>{text}</RecordCardFieldRow>;
+    return <FieldList.Row label={schedule.getColumnLabels().start} iconName={props.iconName ?? 'Calendar'} components={props.components}>{text}</FieldList.Row>;
 };

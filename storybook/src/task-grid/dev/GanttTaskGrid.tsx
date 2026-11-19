@@ -187,8 +187,8 @@ const GridExample = () => {
                 onRender: () => <TaskTooltip.Callout>
                     <TaskTooltip.Header />
                     <TaskTooltip.Body>
-                        <TaskTooltip.ProgressRow />
                         <TaskTooltip.FieldRows>
+                            <TaskTooltip.ProgressRow />
                             <TaskTooltip.FieldRow columnName='assignedto' />
                             <TaskTooltip.FieldRow columnName='priority' />
                         </TaskTooltip.FieldRows>

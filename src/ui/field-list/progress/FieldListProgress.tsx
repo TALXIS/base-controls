@@ -1,24 +1,24 @@
 import { useTheme } from "@theme";
 import { useMemo } from "react";
 
-import { IRecordCardProgressComponents, RecordCardProgressComponents } from "./components";
-import { getRecordCardProgressStyles } from "./styles";
+import { IFieldListProgressComponents, FieldListProgressComponents } from "./components";
+import { getFieldListProgressStyles } from "./styles";
 
-export interface IRecordCardProgressProps {
+export interface IFieldListProgressProps {
     /** From 0 to 100. */
     percent: number;
     /** Such as `40%`. */
     text: string;
     /** The fill's colour, the theme's by default. */
     color?: string;
-    components?: Partial<IRecordCardProgressComponents>;
+    components?: Partial<IFieldListProgressComponents>;
 }
 
 /** A bar filled to the progress, with the progress after it. */
-export const RecordCardProgress = (props: IRecordCardProgressProps) => {
-    const components = { ...RecordCardProgressComponents, ...props.components };
+export const FieldListProgress = (props: IFieldListProgressProps) => {
+    const components = { ...FieldListProgressComponents, ...props.components };
     const theme = useTheme();
-    const styles = useMemo(() => getRecordCardProgressStyles(theme), [theme]);
+    const styles = useMemo(() => getFieldListProgressStyles(theme), [theme]);
     const percent = Math.min(100, Math.max(0, props.percent));
 
     return components.onRender({

@@ -1,13 +1,10 @@
 import { FontWeights, ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getRecordCardProgressStyles = (theme: ITheme) => mergeStyleSets({
+export const getFieldListProgressStyles = (theme: ITheme) => mergeStyleSets({
     progress: {
         display: 'flex',
         alignItems: 'center',
         gap: 10,
-        ':not(:last-child)': {
-            marginBottom: 12,
-        },
     },
     track: {
         flexGrow: 1,

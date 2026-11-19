@@ -1,10 +1,15 @@
-import { Card, IRecordCardHeaderPartsComponents, OptionTag } from "@ui";
+import { Card, ICardHeaderPartsComponents, IOptionTagComponents, OptionTag } from "@ui";
 import { useMap, useMapRecord } from "../../context";
+
+/** The replaceable pieces of the popup's header, by the part they belong to. */
+export interface IMapPopupHeaderComponents extends ICardHeaderPartsComponents {
+    status?: Partial<IOptionTagComponents>;
+}
 
 export interface IMapPopupHeaderProps {
     /** An option set column shown beside the name as a tag in its option's colour. */
     statusColumnName?: string;
-    components?: IRecordCardHeaderPartsComponents;
+    components?: IMapPopupHeaderComponents;
 }
 
 /** The record's name, with its status beside it. */
