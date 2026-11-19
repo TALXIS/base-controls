@@ -16,7 +16,7 @@ The team works on the stores that have not opened yet, looks a store up by name,
 
 ## How it works
 
-The list is the one from [**Edit and save**](?path=/docs/concepts-guide-basics-edit-and-save--overview); in **Code**, the new lines carry \`//new:\`, and *StoresRibbon.tsx* is new. A **view** is a named way to look at the stores. Its \`resolve\` sets the provider up as the view opens, as *Not open yet* filters out the open stores and sorts the rest by opening date, and returns the columns the view shows. Each part has a step of its own in the DatasetControl guide:
+The list is the one from [**Edit and save**](?path=/docs/concepts-guide-basics-edit-and-save--overview); in **Code**, the new lines carry \`//new:\`, and *StoresRibbon.tsx* is new. A **view** is a named way to look at the stores. Its \`resolve\` sets the provider up as the view opens, as *Not open yet* filters out the open stores and sorts the rest by opening date, and returns the columns the view shows. The view switcher, the ribbon, **Edit columns** and the search field are **parts**: components you put inside the control, which work on its provider. Each has a step of its own in the DatasetControl guide:
 
 | In the code | Does | See |
 |---|---|---|
@@ -29,7 +29,7 @@ The list is the one from [**Edit and save**](?path=/docs/concepts-guide-basics-e
 ## Try it
 
 - Switch to *Not open yet*: four stores, the soonest to open first.
-- Tick *Kraków Kazimierz* and *Ghent Korenmarkt*, and press **Mark 2 as open**: both read *Open*, and the command goes, since no store ticked is still to open.
+- Tick *Kraków Kazimierz* and *Ghent Korenmarkt*, and press **Mark 2 as open**: both read *Open*, and the command goes, since no store ticked is still to open. They stay in the view until it loads again.
 - Switch to *All stores*: Kraków and Ghent are open there too. Search for *Porto*: one store is left.
 - Press **Edit columns**, add *Seats* and press **Save**: the grid shows *Seats* first.
 

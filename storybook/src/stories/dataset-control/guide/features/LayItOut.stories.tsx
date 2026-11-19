@@ -16,7 +16,7 @@ The deal list opens on a wide screen, in a side panel and on a phone. Its parts 
 
 ## How it works
 
-This step puts the list of [**Messages and nothing to show**](?path=/docs/controls-datasetcontrol-guide-features-messages-and-nothing-to-show--overview) in a box 480px tall under a *Width (%)* slider, and adds an export button of your own to the header; **Break the connection** has done its job and goes. In **Code**, the new lines carry \`//new:\`.
+This step puts the list of [**Messages and nothing to show**](?path=/docs/controls-datasetcontrol-guide-features-messages-and-nothing-to-show--overview) in a box 480px tall under a *Width (%)* slider, and adds an export button of your own to the header. \`showSyncMessage\` moves to *syncMessage.ts* as it was, and **Break the connection** has done its job and goes. In **Code**, the new lines carry \`//new:\`.
 
 **Regions.** The control lays its parts out in regions:
 

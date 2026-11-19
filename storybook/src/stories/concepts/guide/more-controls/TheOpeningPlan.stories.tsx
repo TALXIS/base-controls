@@ -46,6 +46,8 @@ Most of what the plan does comes from modules, as in [**Edit and save**](?path=/
 - Controls nest: the store's form holds a task grid of its own.
 - The TaskGrid guide teaches every line of the plan.
 
+Your app is complete. Each step after this one starts from it and changes one thing.
+
 {{block: navigation}}
 `
 

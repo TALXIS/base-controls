@@ -26,7 +26,7 @@ This step starts from the app of [**The opening plan**](?path=/docs/concepts-gui
 | \`StorePin\` | \`marker.pin\`, \`onRenderPin\` | The pin's teardrop, as \`Map.Ui.MarkerPin\` draws it, in the colour of the store's status from \`useMapRecord()\` |
 | \`StorePopup\` | \`marker.popup\`, \`onRender\` | The popup, from \`Map.Popup\`'s parts, with a link that calls \`onOpenStore\` |
 
-A slot replaces only what it draws: the pins still follow the search and open their popup. *GridExample.tsx* hands \`StoreMap\` the same \`onOpenStore\` as the grid, so **Open the store** opens the store in the same panel. How slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview), and every piece of the map on [**Your own UI**](?path=/docs/controls-map-your-own-ui--overview) in Map. The app now matches the one on [**Introduction**](?path=/docs/concepts-introduction--overview).
+A slot replaces only what it draws: the pins still follow the search and open their popup. *GridExample.tsx* hands \`StoreMap\` the same \`onOpenStore\` as the grid, so **Open the store** opens the store in the same panel. How slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview), and every piece of the map under *Slots* on the Map [**Reference**](?path=/docs/controls-map-reference--overview). The app now matches the one on [**Introduction**](?path=/docs/concepts-introduction--overview).
 
 ## Try it
 
@@ -37,7 +37,7 @@ A slot replaces only what it draws: the pins still follow the search and open th
 ## Remember
 
 - A slot replaces one thing a part draws, and the part keeps its behaviour.
-- A component in a slot reads what it draws through the part's hooks, such as \`useMapRecord()\`.
+- A component in a slot reads the record it draws with \`useMapRecord()\`.
 
 {{block: navigation}}
 `

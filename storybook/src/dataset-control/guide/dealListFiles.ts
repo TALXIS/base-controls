@@ -70,6 +70,21 @@ export const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
 `,
 }
 
+/** The sync message of Messages and nothing to show, for each step after it. */
+export const SYNC_MESSAGE_FILE: IGridExampleFile = {
+    name: 'syncMessage.ts',
+    code: `import { IDatasetControl } from '@talxis/base-controls'
+
+//adds the sync message to each notification bar the control draws
+export const showSyncMessage = (control: IDatasetControl) => control.parts.observe('notifications', notifications => notifications.add({
+    id: 'sync',
+    text: 'Deals are synced from the CRM every night.',
+    level: 'INFO',
+    onDismiss: () => notifications.remove('sync'),
+}))
+`,
+}
+
 /** The deal list ribbon, with Mark N as won and the built-in commands. */
 export const DEALS_RIBBON_FILE: IGridExampleFile = {
     name: 'DealsRibbon.tsx',

@@ -1,13 +1,14 @@
 import React from 'react'
 import { GridExampleRunner } from '../../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../../grid/GridLivePreview'
-import { withDealList } from '../dealListFiles'
+import { SYNC_MESSAGE_FILE, withDealList } from '../dealListFiles'
 
 const FLUENT_V9_CODE = `import { createLocalStorageUserQueriesModule, DatasetControl } from '@talxis/base-controls'
 import { loadDeals } from './deals'
 import { DealsRibbon, failNextLoad } from './DealsRibbon'
 import { V9 } from './v9'
 import { RecordDataGrid } from './RecordDataGrid'
+import { showSyncMessage } from './syncMessage'
 
 //fails once after the ribbon's Fail the next load
 const onLoad = async () => {
@@ -21,7 +22,7 @@ const onLoad = async () => {
 
 const userViews = createLocalStorageUserQueriesModule({ storageKey: 'docs.fluentV9DealViews' })
 
-const GridExample = () => <DatasetControl modules={[userViews]} onLoad={onLoad} height='560px' components={V9.control}>
+const GridExample = () => <DatasetControl modules={[userViews]} onLoad={onLoad} onSetup={showSyncMessage} height='560px' components={V9.control}>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             {/* save a view of your own, then open Manage views to see its drawer in v9 */}
@@ -36,7 +37,7 @@ const GridExample = () => <DatasetControl modules={[userViews]} onLoad={onLoad} 
         </DatasetControl.Header.End>
     </DatasetControl.Header>
     {/* with Break the connection, both messages fold under a summary */}
-    <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} components={V9.notifications} />
+    <DatasetControl.Notifications components={V9.notifications} />
     <DatasetControl.Body>
         {/* search for something no deal has to see the empty state */}
         <DatasetControl.EmptyState components={V9.emptyState}>
@@ -144,15 +145,15 @@ export const RecordDataGrid = (props: { editable?: boolean }) => {
 
 const V9_FILE: IGridExampleFile = {
     name: 'v9.tsx',
-    code: `import { IErrorMessageBarComponents, NOTIFICATION_MESSAGE_BAR_LABELS, useLabels, useTheme } from '@talxis/base-controls'
-import { ContextualMenuItemType, IButtonProps, ICommandBarItemProps, ICommandBarProps, IContextualMenuItem, Icon, IIconProps, IPanelProps } from '@fluentui/react'
+    code: `import { IErrorMessageBarComponents, INotificationMessageBarComponents, useTheme } from '@talxis/base-controls'
+import { ContextualMenuItemType, IButtonProps, ICommandBarItemProps, ICommandBarProps, IContextualMenuItem, Icon, IIconProps, IPanelProps, MessageBarType } from '@fluentui/react'
 import {
     Button, Caption1, DrawerBody, DrawerFooter, DrawerHeader, DrawerHeaderTitle, FluentProvider, Input, Menu, MenuButton, MenuDivider, MenuGroup,
-    MenuGroupHeader, MenuItem, MenuList, MenuPopover, MenuTrigger, MessageBar, MessageBarActions, MessageBarBody, MessageBarGroup, MessageBarTitle, OverlayDrawer,
+    MenuGroupHeader, MenuItem, MenuList, MenuPopover, MenuTrigger, MessageBar, MessageBarActions, MessageBarBody, MessageBarTitle, OverlayDrawer,
     Overflow, OverflowItem, Popover, PopoverSurface, Subtitle2, Tag, Toolbar, ToolbarButton, Tooltip, useIsOverflowItemVisible, useOverflowMenu, webDarkTheme, webLightTheme,
 } from '@fluentui/react-components'
 import {
-    ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ChevronUpRegular, ColumnEditRegular, CopyRegular,
+    ArrowClockwiseRegular, ArrowLeftRegular, ArrowPreviousRegular, ArrowRightRegular, ArrowUndoRegular, CheckmarkRegular, ChevronDownRegular, ColumnEditRegular, CopyRegular,
     DeleteRegular, DismissRegular, SaveEditRegular, SaveRegular, SettingsRegular, DocumentSearchRegular, InfoRegular, MoreHorizontalRegular, PlugDisconnectedRegular, SearchRegular, TrophyRegular, WarningRegular,
 } from '@fluentui/react-icons'
 import { RecordDataGrid } from './RecordDataGrid'
@@ -265,34 +266,26 @@ const MenuFromButton = (props: IButtonProps) => <Menu onOpenChange={(_, data) =>
     </MenuPopover>
 </Menu>
 
-const getIntent = (messages: { level: string }[]) => messages.some(message => message.level === 'ERROR') ? 'error' : messages.some(message => message.level === 'WARNING') ? 'warning' : 'info'
+const INTENTS: { [type: number]: 'error' | 'warning' | 'success' } = {
+    [MessageBarType.error]: 'error',
+    [MessageBarType.warning]: 'warning',
+    [MessageBarType.success]: 'success',
+}
 
-//more than one message collapses under a summary
-const Notifications = (props: { messages?: { text: string, level: 'ERROR' | 'WARNING' | 'INFO' }[] }) => {
-    const [isExpanded, setIsExpanded] = React.useState(false)
-    //the default bar's summary label
-    const labels = useLabels(NOTIFICATION_MESSAGE_BAR_LABELS)
-    const messages = props.messages ?? []
-    if (messages.length === 0) {
-        return null
-    }
-    if (messages.length === 1) {
-        return <MessageBar intent={getIntent(messages)} style={{ margin: '0 8px 8px' }}><MessageBarBody>{messages[0].text}</MessageBarBody></MessageBar>
-    }
-    const summary = labels.get('notificationMessageBar.groupedNotificationsSummary', { count: messages.length })
-    return <div style={{ margin: '0 8px 8px', display: 'grid', gap: 4 }}>
-        <MessageBar intent={getIntent(messages)}>
-            <MessageBarBody>{summary}</MessageBarBody>
-            <MessageBarActions>
-                <Button size='small' icon={isExpanded ? <ChevronUpRegular /> : <ChevronDownRegular />} onClick={() => setIsExpanded(!isExpanded)}>{isExpanded ? 'Hide' : 'Show'}</Button>
-            </MessageBarActions>
-        </MessageBar>
-        {isExpanded && <MessageBarGroup style={{ display: 'grid', gap: 4 }}>
-            {messages.map(message => <MessageBar key={message.text} intent={getIntent([message])}>
-                <MessageBarBody>{message.text}</MessageBarBody>
-            </MessageBar>)}
-        </MessageBarGroup>}
-    </div>
+//the bar of one message, the summary of several, and each message unfolded under it
+const notifications: Partial<INotificationMessageBarComponents> = {
+    onRenderMessageBar: props => <MessageBar intent={INTENTS[props.messageBarType ?? MessageBarType.info] ?? 'info'} style={props.variant === 'child' ? undefined : { margin: '0 8px 8px' }}>
+        <MessageBarBody>{props.children}</MessageBarBody>
+        {(props.actions || props.onDismiss) && <MessageBarActions containerAction={props.onDismiss && <Button appearance='transparent' size='small' icon={<DismissRegular />} aria-label='Close' onClick={event => props.onDismiss!(event as any)} />}>
+            {props.actions}
+        </MessageBarActions>}
+    </MessageBar>,
+    //a click anywhere on the summary unfolds the messages
+    onRenderToggleButton: () => <Button appearance='transparent' size='small' icon={<ChevronDownRegular />} aria-label='Show the messages' />,
+    //a list under the summary in place of a menu
+    onRenderMenu: props => <div style={{ display: 'grid', gap: 4, margin: '0 8px 8px' }}>
+        {props.items.map(item => <React.Fragment key={item.key}>{props.onRenderContextualMenuItem?.(item)}</React.Fragment>)}
+    </div>,
 }
 
 /** A v8 panel's props as a v9 drawer. */
@@ -382,9 +375,7 @@ export const V9 = {
         },
         errorMessage: errorBar,
     },
-    notifications: {
-        onRender: props => <Notifications {...props} />,
-    },
+    notifications,
     emptyState: {
         onRenderIcon: () => <DocumentSearchRegular fontSize={48} />,
         onRenderText: props => <Subtitle2>{props.children}</Subtitle2>,
@@ -419,4 +410,4 @@ export const V9 = {
 }
 
 //no grid draws the deals for the Data tab to follow
-export const FluentV9Example = () => <GridExampleRunner seedCode={withDealList(FLUENT_V9_CODE, DEALS_RIBBON_FILE, RECORD_DATA_GRID_FILE, V9_FILE)} tabs={['preview', 'code']} />
+export const FluentV9Example = () => <GridExampleRunner seedCode={withDealList(FLUENT_V9_CODE, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, RECORD_DATA_GRID_FILE, V9_FILE)} tabs={['preview', 'code']} />

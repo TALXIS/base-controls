@@ -14,9 +14,9 @@ import {
     DEFAULT_COLUMN_WIDTH, FilteringUi, getColumnContext, getTextColorForBackground, getTintColors, mixColors, Grid, GRID_AGGREGATION_LABELS, GRID_FILTERING_LABELS, GRID_GROUPING_LABELS, GRID_LABELS,
     GRID_MODULE_PRIORITY, GRID_SORTING_LABELS, GridFilteringIconComponents, GridGroupingIconComponents, GridSortingIconComponents, GridValueRenderer, GroupCell, GroupExpansionHeader,
     GROUP_EXPANSION_COLUMN_KEY, GroupingUi, LOCKED_RECORD_ROW_CLASS, NotificationCard, NotificationCardComponents, NotificationMessageBar, NotificationMessageBarComponents, OptionSetRenderer, RECORD_LOCK_COLUMN_KEY, SELECTION_COLUMN_KEY,
-    CommandBar, DataProviderScope, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useDatasetControlRegion, useDatasetControlModule, useProvidePart, createTalxisUserQueriesModule, createDataverseUserQueriesModule, DataverseUserQueriesStore, useCompact, useCompactItem, CompactContext, WrapCompactProvider, BreakpointCompactProvider, useDatasetControlHeader, DatasetControlUiViewSwitcherComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, RibbonUiCommandBar, RibbonUiCommandBarComponents, RibbonUiShimmerComponents, RuntimeHost, Runtime, RuntimeLifecycle, useRuntime, Form, FormUi, FormV2, useFormV2, Card, useField, NestedControlRenderer, BaseControls, createMemoryRecord, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, AppThemeProvider, Callout, useAppTheme, useSurfaceMenuProps, useTheme, useThemeBuilder, TooltipHost, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext,
+    CommandBar, DataProviderScope, DatasetControl, createUserQueriesModule, createLocalStorageUserQueriesModule, StateProvider, StateStore, useStateStore, useControlStateStore, useDatasetControl, useDatasetControlRegion, useDatasetControlModule, useProvidePart, createTalxisUserQueriesModule, createDataverseUserQueriesModule, DataverseUserQueriesStore, useCompact, useCompactItem, CompactContext, WrapCompactProvider, BreakpointCompactProvider, useDatasetControlHeader, DatasetControlUiViewSwitcherComponents, ErrorMessageBarComponents, LoadingBoundaryComponents, Ribbon, RibbonUiCommandBar, RibbonUiCommandBarComponents, RibbonUiShimmerComponents, RuntimeHost, Runtime, RuntimeLifecycle, useRuntime, Form, FormUi, FormV2, useFormV2, Card, useField, NestedControlRenderer, BaseControls, createMemoryRecord, Panel, RECORD_SAVE_COLUMN_KEY, RowSelectionUi, createThemeBuilder, ThemeProvider, AppThemeProvider, Callout, useAppTheme, useSurfaceMenuProps, useTheme, useThemeBuilder, TooltipHost, TotalCell, useDataProvider, useDataProviderEvents, useGridCell, useGridColumnHeader, useGridField, useGridModule, useGridService, usePcfContext, RuntimeNotificationBar, RuntimeNotifications,
 } from '@talxis/base-controls'
-import { CellUiValueRendererComponents, CellColumnControlComponents, CellUiCommandsComponents, RecordSaveUiIndicatorComponents, RecordSaveUiErrorCalloutComponents, RowSelectionUiCheckboxComponents, RowSelectionUiHeaderCheckboxComponents, GroupingUiToggleComponents, GroupingUiCountComponents, AggregationUiTotalValueComponents, GroupingUiExpandCollapseComponents, FilteringUiCalloutComponents, ThemeContext, Dialog, XrmForm, ControlComponents, useForm, useValidationSummary, Map, useEventEmitter, useMap, useMapModule, useMapRecords, useMapRecord, GoogleMap, LeafletMap, MapUi, MapUiContainerComponents, MapUiMarkerComponents, MapUiMarkerPin, LeafletUi, LeafletUiComponents, MapPopup, Field, LeafletUiPopupComponents, GoogleMapsUi, GoogleMapsUiComponents, GoogleMapsUiPopupComponents } from '@talxis/base-controls'
+import { CellUiValueRendererComponents, CellColumnControlComponents, CellUiCommandsComponents, RecordSaveUiIndicatorComponents, RecordSaveUiErrorCalloutComponents, RowSelectionUiCheckboxComponents, RowSelectionUiHeaderCheckboxComponents, GroupingUiToggleComponents, GroupingUiCountComponents, AggregationUiTotalValueComponents, GroupingUiExpandCollapseComponents, FilteringUiCalloutComponents, ThemeContext, Dialog, XrmForm, ControlComponents, useForm, useValidationSummary, Map, useEventEmitter, useMap, useMapModule, useMapRecords, useMapRecord, GoogleMap, LeafletMap, MapUi, MapUiContainerComponents, MapUiMarkerComponents, MapUiMarkerPin, LeafletUi, LeafletUiComponents, MapPopup, MapRecordContext, Field, LeafletUiPopupComponents, GoogleMapsUi, GoogleMapsUiComponents, GoogleMapsUiPopupComponents } from '@talxis/base-controls'
 import { CircleMarker, Popup } from 'react-leaflet'
 import * as FluentV8 from '@fluentui/react'
 import * as FluentV9 from '@fluentui/react-components'
@@ -99,6 +99,8 @@ export const GRID_SANDBOX_SCOPE = {
     RuntimeHost,
     Runtime,
     RuntimeLifecycle,
+    RuntimeNotificationBar,
+    RuntimeNotifications,
     useRuntime,
     FormUi,
     useField,
@@ -117,6 +119,7 @@ export const GRID_SANDBOX_SCOPE = {
     useEventEmitter,
     useMapRecords,
     useMapRecord,
+    MapRecordContext,
     GoogleMap,
     LeafletMap,
     MapUi,

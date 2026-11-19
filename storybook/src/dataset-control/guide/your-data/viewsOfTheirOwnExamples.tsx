@@ -1,10 +1,11 @@
 import React from 'react'
 import { GridExampleRunner } from '../../../grid/GridExampleRunner'
-import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, USER_VIEW_TYPES_FILE, withDealList } from '../dealListFiles'
+import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEW_TYPES_FILE, withDealList } from '../dealListFiles'
 
 const VIEWS_OF_THEIR_OWN_CODE = `import { ClientSideGrid, createEditingModule, createLocalStorageUserQueriesModule, createRowSelectionModule, createSortingModule, DatasetControl, IDatasetControl } from '@talxis/base-controls'
 import { loadDeals } from './deals'
 import { DealsRibbon } from './DealsRibbon'
+import { showSyncMessage } from './syncMessage'
 
 //new: keeps each user's views in this browser
 const dealViews = createLocalStorageUserQueriesModule({ storageKey: 'docs.dealList.views' })
@@ -19,7 +20,7 @@ const saveDealViewData = (control: IDatasetControl) => {
 }
 
 //new: the user queries module, with saveDealViewData run on every load
-const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeals} onSetup={saveDealViewData} height='480px'>
+const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeals} onSetup={control => { showSyncMessage(control); saveDealViewData(control) }} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher>
@@ -33,7 +34,7 @@ const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeal
             <DatasetControl.QuickFind />
         </DatasetControl.Header.End>
     </DatasetControl.Header>
-    <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
+    <DatasetControl.Notifications />
     <DatasetControl.Body>
         {/* new: sorting by a column's header */}
         <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule(), createSortingModule()]} />
@@ -49,4 +50,4 @@ const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeal
 </DatasetControl>
 `
 
-export const ViewsOfTheirOwnExample = () => <GridExampleRunner seedCode={withDealList(VIEWS_OF_THEIR_OWN_CODE, DEALS_RIBBON_FILE, USER_VIEW_TYPES_FILE)} tabs={DEAL_LIST_TABS} />
+export const ViewsOfTheirOwnExample = () => <GridExampleRunner seedCode={withDealList(VIEWS_OF_THEIR_OWN_CODE, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEW_TYPES_FILE)} tabs={DEAL_LIST_TABS} />

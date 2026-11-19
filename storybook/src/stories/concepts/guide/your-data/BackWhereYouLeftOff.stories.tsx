@@ -36,7 +36,7 @@ Both are kept in the nearest state store. On this page that is the page's own, i
 - A \`stateKey\` brings a control back as the user left it.
 - The state lasts as long as its store: save the store to keep it past the page.
 
-Your app saves where you keep your data, runs in Power Apps and remembers each user. Make it yours draws it your way.
+Your app saves where you keep your data, runs in Power Apps and brings users back where they left off. Make it yours draws it your way.
 
 {{block: navigation}}
 `

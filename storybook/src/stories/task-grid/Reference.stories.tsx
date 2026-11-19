@@ -371,6 +371,7 @@ Gantt modules come from \`@talxis/base-controls/gantt\` and go in \`TaskGantt\`'
 | \`hooks.ribbonCommandUi\` | Changes every item \`TaskDatasetControl.Ribbon\` draws, those in its menus too. |
 | \`getRibbonCommandItems(items)\` | Copies of \`items\` with every ribbon command UI hook applied. |
 | \`lifecycle\` | The mount's status and events. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
+| \`parts\`, \`notifications\` | The DatasetControl's parts, and its \`notifications\` part while \`DatasetControl.Notifications\` is drawn. See *Parts* and *Messages* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`services\` | \`get\`, \`find\` and \`observe\` by key. See *Services* below. |
 
 ### Task actions

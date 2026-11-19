@@ -1,26 +1,27 @@
 import React from 'react'
 import { GridExampleRunner } from '../../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../../grid/GridLivePreview'
-import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, USER_VIEW_TYPES_FILE, USER_VIEWS_FILE, withDealList } from '../dealListFiles'
+import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEW_TYPES_FILE, USER_VIEWS_FILE, withDealList } from '../dealListFiles'
 
-const YOUR_OWN_UI_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, createSortingModule, DatasetControl, useDataProviderEvents, useProvideDatasetControlPart } from '@talxis/base-controls'
+const YOUR_OWN_UI_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, createSortingModule, DatasetControl, useDataProviderEvents, useDatasetControl, useProvidePart } from '@talxis/base-controls'
 import { IDataProvider } from '@talxis/client-libraries'
 import { Text } from '@fluentui/react'
 import { loadDeals } from './deals'
 import { DealsRibbon } from './DealsRibbon'
 import { dealViews, saveDealViewData } from './userViews'
+import { showSyncMessage } from './syncMessage'
 
 const getTotal = (provider: IDataProvider) => provider.getSelectedRecordIds().reduce((sum, id) => sum + Number(provider.getRecordsMap()[id].getValue('value')), 0)
 
 //new: a part of your own that redraws on every selection
 const SelectedValue = () => {
     const provider = useDataProviderEvents(['onRecordsSelected'])
-    //new: provides it for control.parts under the key types.ts declares
-    useProvideDatasetControlPart('selectedValue', () => ({ getTotal: () => getTotal(provider) }))
+    //new: provides it on the control under the key types.ts declares
+    useProvidePart(useDatasetControl(), 'selectedValue', () => ({ getTotal: () => getTotal(provider) }))
     return <Text>Selected: {getTotal(provider).toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</Text>
 }
 
-const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeals} onSetup={saveDealViewData} height='480px'>
+const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeals} onSetup={control => { showSyncMessage(control); saveDealViewData(control) }} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher>
@@ -34,7 +35,7 @@ const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeal
             <DatasetControl.QuickFind components={{ callout: { onRenderColumn: ({ column }) => <Text>{column.displayName} ({column.name})</Text> } }} />
         </DatasetControl.Header.End>
     </DatasetControl.Header>
-    <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
+    <DatasetControl.Notifications />
     <DatasetControl.Body>
         <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule(), createSortingModule()]} />
     </DatasetControl.Body>
@@ -151,6 +152,6 @@ export const DealBoard = () => {
 `,
 }
 
-export const YourOwnUiExample = () => <GridExampleRunner seedCode={withDealList(YOUR_OWN_UI_CODE, DEALS_RIBBON_FILE, USER_VIEWS_FILE, SELECTED_VALUE_TYPES_FILE)} tabs={DEAL_LIST_TABS} />
+export const YourOwnUiExample = () => <GridExampleRunner seedCode={withDealList(YOUR_OWN_UI_CODE, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEWS_FILE, SELECTED_VALUE_TYPES_FILE)} tabs={DEAL_LIST_TABS} />
 //the board draws no grid for the Data tab to follow
 export const BoardPerViewExample = () => <GridExampleRunner seedCode={withDealList(BOARD_PER_VIEW_CODE, DEAL_BOARD_FILE)} tabs={['preview', 'code']} />

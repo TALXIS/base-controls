@@ -17,7 +17,7 @@ export const STATUSES = [
     { Value: OPEN, Label: 'Open', Color: '#107c10' },
 ]
 
-//every column of a store, each as wide as the grid draws it
+//every column of a store, with its width in the grid
 const COLUMNS: IColumn[] = [
     //the primary column, drawn as a link in the grid
     { name: 'name', displayName: 'Store', dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 160 },
@@ -76,11 +76,13 @@ const API_FILE: IGridExampleFile = {
     name: 'api.ts',
     code: `import type { IRawRecord } from '@talxis/client-libraries'
 
+const MIN_FLOOR_AREA = 50
+
 //stands in for your server
 export const saveStore = async (store: IRawRecord) => {
     await new Promise(resolve => setTimeout(resolve, 600))
-    if (store.floorarea < 50) {
-        throw new Error('The floor area must be at least 50 m².')
+    if (store.floorarea < MIN_FLOOR_AREA) {
+        throw new Error(\`The floor area must be at least \${MIN_FLOOR_AREA} m².\`)
     }
 }
 `,
