@@ -109,7 +109,7 @@ Create a provider once and keep it while it is used, such as in \`React.useState
 
 ## Your own provider
 
-To work with your API, extend a shipped provider and override only what differs. A provider makes copies of itself from its constructor options, such as one per group, so take one options object and pass it to \`super\`.
+To work with your API, extend a shipped provider and override only what differs. A provider makes copies of itself, such as one per group, by calling its constructor again with the argument it got, so take one argument and pass it to \`super\`.
 
 Extend \`MemoryDataProvider\` to keep sorting and paging in the browser:
 
@@ -167,7 +167,7 @@ When your API sorts, filters and pages itself, extend \`DataProvider\`. Set the 
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Load the deals', iconName: 'Download', href: '?path=/docs/controls-datasetcontrol-guide-basics-load-the-deals--overview', text: 'Load a provider for each view a DatasetControl shows.' },
-    { title: 'Your first deal grid', iconName: 'Table', href: '?path=/docs/controls-grid-guide-basics-your-first-deal-grid--overview', text: 'How the grid draws the columns and records of its provider.' },
+    { title: 'Your first deal grid', iconName: 'Education', href: '?path=/docs/controls-grid-guide-basics-your-first-deal-grid--overview', text: 'How the grid draws the columns and records of its provider.' },
     { title: 'State persistence', iconName: 'History', href: '?path=/docs/concepts-state-persistence--overview', text: 'Keep the sorting, search and paging a user set when they come back.' },
 ]
 
@@ -267,7 +267,7 @@ export const PageOnYourServer: Story = {
     parameters: {
         docs: {
             description: {
-                story: `A read-only \`DataProvider\` over a stand-in server in \`api.ts\`, which sorts, searches and pages the products. Try: sort by **Price**, then move to the next page.`,
+                story: `A read-only \`DataProvider\` over a stand-in server in *api.ts*, which sorts, searches and pages the products. Try: sort by **Price**, then move to the next page.`,
             },
         },
     },

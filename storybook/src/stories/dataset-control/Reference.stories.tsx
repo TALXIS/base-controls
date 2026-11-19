@@ -76,9 +76,9 @@ Each part is a member of \`DatasetControl\`, such as \`DatasetControl.QuickFind\
 |---|---|---|---|---|---|
 | \`Header\`, \`Header.Start\`, \`Header.End\`, \`Body\`, \`Footer\`, \`Footer.Start\`, \`Footer.End\` | \`children\` | \`ReactNode\` | None | Live | What the region holds: \`Start\` and \`End\` in \`Header\` and \`Footer\`, the parts in the others. |
 | | \`className\` | \`string\` | None | Live | Added to the region's box. |
-| \`ViewSwitcher\` | \`children\` | \`ReactNode\` | None | Live | What adds to the switcher, such as \`DatasetControl.UserQueries\`, which draws the *Manage views* panel and throws without a user views module. |
+| \`ViewSwitcher\` | \`children\` | \`ReactNode\` | None | Live | What adds to the switcher, such as \`UserQueries\`, which draws the *Manage views* panel and throws without a user views module. |
 | \`Ribbon\` | Every prop of [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview) | | | | Such as \`onLoad\` and \`disabled\`, but two: \`align\` follows the region, and \`control.parts\` takes the place of \`onSetup\`. |
-| | \`onReady\` | \`(ribbon: IRibbon) => void\` | None | At mount | Called each time the ribbon mounts, with every load of the control, once its commands are drawn. |
+| | \`onReady\` | \`(ribbon) => void\` | None | At mount | Called with the \`IRibbon\` each time the ribbon mounts, with every load of the control, once its commands are drawn. |
 | | \`enableSave\` | \`boolean\` | \`false\` | Live | **Save**, while there are unsaved changes: saves every changed record. |
 | | \`enableDiscard\` | \`boolean\` | \`false\` | Live | **Discard changes**, while there are unsaved changes: undoes them all. |
 | | \`enableRefresh\` | \`boolean\` | \`false\` | Live | **Refresh**: loads the records again, asking about unsaved changes first. |
@@ -258,9 +258,11 @@ A user views module adds **Save as new view**, **Save changes** and **Manage vie
 | \`recordId\` | \`string\` | None | Only the views of this record; without it, only views of no record. Needs \`recordId\` mapped. |
 | \`ownerId\` | \`string\` | None | Only the views this user owns; without it, every view the user can read. |
 | **\`createDataverseUserQueriesModule\`** | | | |
-| \`table\` | \`IDataverseUserQueriesTable\` | Required | The table's \`name\`, and its \`fieldMapping\`: the columns holding the view's \`name\`, \`layout\` and entity (\`returnedTypeCode\`), and optionally \`description\` and \`recordId\`. \`createTalxisUserQueriesModule\` maps \`talxis_userquery\`. |
+| \`table\` | \`IDataverseUserQueriesTable\` | Required | The table's \`name\`, and its \`fieldMapping\`: the columns holding the view's \`name\`, \`layout\` and entity (\`returnedTypeCode\`), and optionally \`description\` and \`recordId\`. |
 | **\`createUserQueriesModule\`** | | | |
 | \`createStore\` | \`(control) => IUserQueriesStore\` | Required | Called on every load. See *A user views store* below. |
+
+\`createTalxisUserQueriesModule\` is \`createDataverseUserQueriesModule\` with \`table\` set to TALXIS's \`talxis_userquery\`.
 
 ### The module from your code
 
@@ -287,7 +289,7 @@ A user views module adds **Save as new view**, **Save changes** and **Manage vie
 
 ## Inside your own parts
 
-| Call | Returns |
+| React hook | Returns |
 |---|---|
 | \`useDataProviderEvents(events)\` | The provider, drawing the component again on each of the provider's \`events\`. |
 | \`useDataProvider()\` | The provider, without drawing again. |
@@ -303,7 +305,7 @@ A user views module adds **Save as new view**, **Save changes** and **Manage vie
 
 ## Slots
 
-The control and every part take \`components\`: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). *Top level* is the part's own slots. A default written \`…QuickFindComponents\` is exported as \`DatasetControlUiQuickFindComponents\`, and a blank one is not exported.
+The control and every part take \`components\`: see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). *Top level* is the part's own slots. A default written \`…QuickFindComponents\` is exported as \`DatasetControlUiQuickFindComponents\`, \`…ManageViewsPanelComponents\` as \`UserQueriesUiManageViewsPanelComponents\`, and a blank one is not exported.
 
 | Key | Slots | Default | Draws |
 |---|---|---|---|
@@ -344,9 +346,8 @@ The control and every part take \`components\`: see [**Pieces and slots**](?path
 | **\`PageSizeSwitcher\`** | | | |
 | Top level | \`onRender\`, with the sizes as \`menuProps.items\` | \`…PageSizeSwitcherComponents\` | The range and its menu |
 | **\`UserQueries\`** | | | |
-| \`manageViewsPanel\` | \`onRender\`, \`onRenderCloseButton\` | \`UserQueriesUiManageViewsPanelComponents\` | The *Manage views* panel |
-| \`manageViews.datasetControl\` | The control's, plus the keys \`header\`, \`body\`, \`footer\`, \`ribbon\`, \`quickFind\` and \`pagination\` | | The control inside *Manage views* |
-| \`manageViews.grid\` | The \`Grid\`'s | | The grid inside *Manage views* |
+| \`manageViewsPanel\` | \`onRender\`, \`onRenderCloseButton\` | \`…ManageViewsPanelComponents\` | The *Manage views* panel |
+| \`manageViews\` | \`datasetControl\`: the control's, plus the keys \`header\`, \`body\`, \`footer\`, \`ribbon\`, \`quickFind\` and \`pagination\`; \`grid\`: the \`Grid\`'s | | The control inside *Manage views*, and its grid |
 
 To change the control's strings, see [**Localization**](?path=/docs/concepts-localization--overview).
 `

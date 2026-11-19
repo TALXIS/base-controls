@@ -55,11 +55,11 @@ You customise a control from a single option down to what each part draws:
 
 ## The guide
 
-The guide builds the app above one step at a time.
+The guide builds the app above one step at a time, from a list of stores to a control of your own.
 
 {{block: guide}}
 
-Basics and More controls build the app; each step after them changes one thing in it. In Power Apps? Do *Basics*, then [**In Power Apps**](?path=/docs/concepts-guide-your-data-in-power-apps--overview).
+*Basics* and *More controls* build the app; each step after them changes one thing in it. In Power Apps? Do *Basics*, then [**In Power Apps**](?path=/docs/concepts-guide-your-data-in-power-apps--overview).
 
 ## Words you will meet
 
@@ -98,7 +98,7 @@ DatasetControl, Grid, TaskGrid and Map each open on a guide of their own, which 
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Your first list', iconName: 'Education', href: '?path=/docs/concepts-guide-basics-your-first-list--overview', text: 'Start the guide: install the packages, set up the root and show the stores in a grid.' },
+    { title: 'Your first list', iconName: 'Rocket', href: '?path=/docs/concepts-guide-basics-your-first-list--overview', text: 'Start the guide: install the packages, set up the root and show the stores in a grid.' },
     { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Put your records in a provider, from memory, Dataverse or your own API.' },
     { title: 'DatasetControl', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-overview--overview', text: 'The frame around a list of records: loading, views, a ribbon, quick find, column editing and paging.' },
 ]
@@ -116,7 +116,7 @@ const CONCEPTS: IExploreCard[] = [
 
 const CONTROLS: IExploreCard[] = [
     { title: 'DatasetControl', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-overview--overview', text: 'The frame around a list of records: loading, views, a ribbon, quick find, column editing and paging.' },
-    { title: 'Grid', iconName: 'Table', href: '?path=/docs/controls-grid-overview--overview', text: 'An editable table on AG Grid: sorting, filtering, grouping, totals and more, module by module.' },
+    { title: 'Grid', iconName: 'GridViewSmall', href: '?path=/docs/controls-grid-overview--overview', text: 'An editable table on AG Grid: sorting, filtering, grouping, totals and more, module by module.' },
     { title: 'TaskGrid', iconName: 'Timeline', href: '?path=/docs/controls-taskgrid-overview--overview', text: 'Tasks as a tree, with commands to build the plan and an optional Gantt chart.' },
     { title: 'Checklist', iconName: 'CheckList', href: '?path=/docs/controls-checklist-get-started--overview', text: 'A to-do list over a provider: tick items off, rename, reorder, add and delete them.' },
     { title: 'Form', iconName: 'Questionnaire', href: '?path=/docs/controls-form-get-started--overview', text: 'A record laid out in tabs and sections, with validation, change tracking and saving.' },

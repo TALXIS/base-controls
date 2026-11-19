@@ -16,7 +16,7 @@ Each pin takes the colour of its capital's region, and the largest capitals carr
 
 ## How it works
 
-This step draws the pins of [**Your first map**](?path=/docs/controls-map-guide-basics-your-first-map--overview) your way. \`data.ts\` adds each capital's \`population\` and \`region\`, and the regions as an option set, \`REGIONS\`, with a colour for each. In **Code**, the new lines carry \`//new:\`.
+This step draws the pins of [**Your first map**](?path=/docs/controls-map-guide-basics-your-first-map--overview) your way. *data.ts* adds each capital's \`population\` and \`region\`, and the regions as an option set, \`REGIONS\`, with a colour for each. In **Code**, the new lines carry \`//new:\`.
 
 **Pieces.** \`components\` on \`LeafletMap\` and \`GoogleMap\` holds the map's pieces, each with slots of its own; \`Map\` itself, which [**A library of your own**](?path=/docs/controls-map-guide-advanced-a-library-of-your-own--overview) uses, takes only \`container\`, \`loading\` and \`errorMessage\`. How slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview), and every slot is under *Slots* on [**Reference**](?path=/docs/controls-map-reference--overview).
 
@@ -43,7 +43,7 @@ This step draws the pins of [**Your first map**](?path=/docs/controls-map-guide-
 
 - Five pins carry a star: Berlin, Madrid, Paris, Rome and Vienna.
 - Change \`2000000\` to \`1000000\`: eleven pins carry one.
-- In \`data.ts\`, set Eastern Europe's \`Color\` to \`'#d13438'\`: six pins turn red, Prague's among them.
+- In *data.ts*, set Eastern Europe's \`Color\` to \`'#d13438'\`: six pins turn red, Prague's among them.
 - Delete the \`onRenderDot\` line: every pin has its dot again.
 
 ## Remember

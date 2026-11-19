@@ -34,7 +34,7 @@ The provider decides where a save goes. Extend it and override \`onRecordSave\` 
 const EXPLORE: IExploreCard[] = [
     { title: 'Data providers', iconName: 'Database', href: '?path=/docs/concepts-data-providers--overview', text: 'Write a provider of your own that saves to your API.' },
     { title: 'Edit and save', iconName: 'Edit', href: '?path=/docs/controls-grid-guide-basics-edit-and-save--overview', text: 'The grid\'s editing module: save each change at once, or wait until you save them.' },
-    { title: 'Customisation', iconName: 'Settings', href: '?path=/docs/controls-checklist-customisation--overview', text: 'Make the list read-only, add grid features and replace its cells.' },
+    { title: 'Customisation', iconName: 'Edit', href: '?path=/docs/controls-checklist-customisation--overview', text: 'Make the list read-only, add grid features and replace its cells.' },
 ]
 
 const meta = {

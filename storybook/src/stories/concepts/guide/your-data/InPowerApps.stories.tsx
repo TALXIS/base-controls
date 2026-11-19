@@ -16,7 +16,7 @@ This step starts from the app of [**The opening plan**](?path=/docs/concepts-gui
 
 ## How it works
 
-*StoresRibbon.tsx* and *GridExample.tsx* change, and in **Code** their new lines carry \`//new:\`; *index.tsx* is new. The **PCF context** holds what only the host knows: the user, their culture, the host's dialogs and its data. Every control reads it from the \`PcfContextProvider\` at the root.
+The app is the one from [**The opening plan**](?path=/docs/concepts-guide-more-controls-the-opening-plan--overview), and *StoresRibbon.tsx* and *GridExample.tsx* change. In **Code**, the new lines carry \`//new:\`, and *index.tsx* is new. The **PCF context** holds what only the host knows: the user, their culture, the host's dialogs and its data. Every control reads it from the \`PcfContextProvider\` at the root.
 
 | In the code | Is | See |
 |---|---|---|

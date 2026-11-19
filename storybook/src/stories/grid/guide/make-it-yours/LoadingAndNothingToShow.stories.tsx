@@ -43,7 +43,7 @@ Each piece's \`onRender\` draws its box. The empty state also has \`onRenderIcon
 - The grid's \`components\` draw its overlays, and the loading and failed rows of a \`ServerSideGrid\`.
 - The loading text is the provider's message, and the empty state's text is a label.
 
-Your grid looks as your app does. Advanced hands it to your code.
+Your grid looks as your app does. *Advanced* hands it to your code.
 
 {{block: navigation}}
 `

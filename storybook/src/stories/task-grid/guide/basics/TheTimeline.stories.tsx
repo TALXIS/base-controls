@@ -51,7 +51,7 @@ A bar is filled as far as the task's \`percentComplete\`, and a task with subtas
 | Click, Ctrl+click or Shift+drag | Selects the task, adds it to the selection, or selects the bars under the band | \`createTaskSelectionModule()\` |
 | Double-click a bar | Opens the task | \`createTaskSelectionModule()\` |
 
-A dropped bar saves its dates as an edit in a cell does, so dragging bars needs \`enableEditing\` and \`createTaskEditingModule()\` in \`TaskGrid\`, both from *Let users plan*. Drawing a task needs \`enableCreation\`.
+A dropped bar saves its dates as an edit in a cell does, so dragging bars needs \`enableEditing\` and \`createTaskEditingModule()\` in \`TaskGrid\`, both from [**Let users plan**](?path=/docs/controls-taskgrid-guide-basics-let-users-plan--overview). Drawing a task needs \`enableCreation\`.
 
 ## Try it
 
@@ -65,7 +65,7 @@ A dropped bar saves its dates as an edit in a cell does, so dragging bars needs 
 - Every feature of the chart is a module, and a library module is always one of them.
 - Dragging a bar saves like an edit in the grid, so it needs \`enableEditing\` and the editing module.
 
-You have a working plan: tasks your users create, edit and move, organised in views and laid out on a timeline. Features adds what plans need beside their tasks.
+Your plan lets users create, edit and move tasks, in views and on a timeline. *Features* adds what a plan needs beside its tasks.
 
 {{block: navigation}}
 `

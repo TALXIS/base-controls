@@ -10,13 +10,13 @@ const STEP = 'Where tasks are kept'
 const DESCRIPTION = `
 {{block: progress}}
 
-So far the plan has lived in memory. This step moves it to where your tasks really live, Dataverse or TALXIS, by changing only what \`onLoad\` returns, and shows exactly what the task grid asks of the store.
+So far the plan has lived in memory. This step moves it to where your tasks live, Dataverse or TALXIS, by changing only what \`onLoad\` returns, and shows exactly what the task grid asks of the store.
 
 {{canvas: Where tasks are kept}}
 
 ## How it works
 
-*GridExample.tsx* returns the memory store. *dataverse.ts* and *talxis.ts* load the same plan in a model-driven app, so they do not run on this page: each exports what \`onLoad\` returns, and *talxis.ts* the modules for \`TaskDatasetControl\`'s \`modules\` too. The control and the grid stay as they are, and each module's factory for every backend is under *Task modules* on [**Reference**](?path=/docs/controls-taskgrid-reference--overview).
+*GridExample.tsx* returns the memory store of [**Your first task grid**](?path=/docs/controls-taskgrid-guide-basics-your-first-task-grid--overview). *dataverse.ts* and *talxis.ts* load the same plan in a model-driven app, so they do not run on this page: each exports what \`onLoad\` returns, and *talxis.ts* the modules for \`TaskDatasetControl\`'s \`modules\` too. The control and the grid stay as they are, and each module's factory for every backend is under *Task modules* on [**Reference**](?path=/docs/controls-taskgrid-reference--overview).
 
 | \`onLoad\` returns | What it is |
 |---|---|
@@ -70,7 +70,7 @@ With \`duration\` mapped, a bar dragged or drawn on the timeline writes the task
 
 ## What reaches the store
 
-The store loads every task of the view at once. Sorting, filtering, search and opening the tree then work in the page, and only what the user changes goes back to the store. This example writes down each call under the grid.
+The store loads every task of the view at once. Sorting, filtering, search and opening the tree then work in the page, and only what the user changes goes back to the store. This example writes down each call under the grid. In **Code**, the new lines carry \`//new:\`.
 
 {{canvas: What reaches the store}}
 

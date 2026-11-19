@@ -17,6 +17,8 @@ Your own buttons and modules can do what the user does with the parts: open a vi
 
 ## How it works
 
+This step adds a module of your own and a row of buttons to the list of [**Views of their own**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview). In **Code**, the new lines carry \`//new:\`.
+
 **The control** is an \`IDatasetControl\`, and every load makes a new one, with new modules and new parts, as on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). Reach the control of the current load where your code runs:
 
 | Your code runs | Reach the control with |
@@ -30,7 +32,7 @@ Your own buttons and modules can do what the user does with the parts: open a vi
 
 ### The parts
 
-Every part on the page provides itself on the control under its key, such as \`'quickFind'\` or \`'editColumns'\`, for as long as it is drawn. The parts are drawn once the load has succeeded, and there are two ways to reach one:
+Every part on the page provides itself on the control under its key, such as \`'quickFind'\` or \`'editColumns'\`, for as long as it is drawn. The parts are drawn once the load has succeeded, and there are four ways to reach one:
 
 | Reach a part with | Such as | When the part is not drawn |
 |---|---|---|

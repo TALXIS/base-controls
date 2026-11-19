@@ -16,7 +16,7 @@ A row shows a store at a glance, and the team edits the whole store in one place
 
 ## How it works
 
-The list is the one from [**Views and commands**](?path=/docs/concepts-guide-basics-views-and-commands--overview); in **Code**, the new lines carry \`//new:\`, and *StoreForm.tsx* is new.
+The list is the one from [**Views and commands**](?path=/docs/concepts-guide-basics-views-and-commands--overview). In **Code**, the new lines carry \`//new:\`, and *StoreForm.tsx* is new.
 
 **Hooks.** A **hook** is a function you add where a control asks for one, and it changes one thing the control does. \`grid.hooks.openRecord\` asks what opening a record does, such as a click on a store's name: the hook sets \`request.isHandled\`, so the provider does not open the store itself, and hands the record to \`onOpenStore\`. What an open request holds is under *Link to the record* on [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview), and every hook of the grid is under *Hooks* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview). The grid calls \`onSetup\` with each new grid before it loads, the place to add a hook: see Grid's [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview).
 
@@ -35,7 +35,7 @@ The list is the one from [**Views and commands**](?path=/docs/concepts-guide-bas
 - A hook changes one thing a control does, such as what opening a record does.
 - The form and the grid share one record.
 
-Your list edits and saves the stores, switches views and opens each store in a form. More controls shows the same stores on a map and plans each opening.
+Your list edits and saves the stores, switches views and opens each store in a form. *More controls* shows the same stores on a map and plans each opening.
 
 {{block: navigation}}
 `

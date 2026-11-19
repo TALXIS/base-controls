@@ -16,7 +16,9 @@ The plan works, and now it should read at a glance: what is waiting, who does th
 
 ## How it works
 
-Each example starts from the plan of [**The timeline**](?path=/docs/controls-taskgrid-guide-basics-the-timeline--overview), cut to what its change needs, and its new lines carry \`//new:\`. There are three ways to change how something is drawn, and the colours above use all three:
+Each example starts from the plan of [**The timeline**](?path=/docs/controls-taskgrid-guide-basics-the-timeline--overview), cut to what its change needs. In **Code**, the new lines carry \`//new:\`.
+
+There are three ways to change how something is drawn, and the colours above use all three:
 
 | To change | Use | Above |
 |---|---|---|

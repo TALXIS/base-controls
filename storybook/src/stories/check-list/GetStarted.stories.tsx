@@ -28,7 +28,7 @@ Each of the three must be a column of the provider, or the checklist throws. A r
 
 ## Props
 
-\`Checklist\` takes every grid prop under *Props* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview), \`onSetup\` included. These are its own, or differ:
+\`Checklist\` takes every grid prop under *Grid props* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview), \`onSetup\` included. These are its own, or differ:
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|

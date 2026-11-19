@@ -22,9 +22,9 @@ Do not \`set\` or \`delete\` an id you use as a scope: the scope keeps writing t
 
 ## Hand a store down
 
-\`StateProvider\` hands a store to the components below it: the one you pass, or a new in-memory one. Without a provider, the whole page shares one in-memory store. A component reads it with one of two calls:
+\`StateProvider\` hands a store to the components below it: the one you pass, or a new in-memory one. Without a provider, the whole page shares one in-memory store. A component reads it with one of two React hooks:
 
-| Call | Returns |
+| React hook | Returns |
 |---|---|
 | \`useStateStore()\` | The nearest store, which inside a DatasetControl is the store of the view it shows; scope it yourself with \`scope(id)\`. |
 | \`useControlStateStore(stateKey)\` | \`useStateStore().scope(stateKey)\`, so it too keeps per view inside a DatasetControl. Without a \`stateKey\`, a throwaway store, so nothing survives a remount. |
@@ -47,7 +47,7 @@ A DatasetControl hands down the store of the view it shows, as a \`StateProvider
 
 A store lives as long as its \`StateProvider\`, or the page without one. To keep state longer, save the dictionary it writes into: for the session, hand it to \`context.mode.setControlState\` in a PCF (see [**PCF context**](?path=/docs/concepts-pcf-context--overview)); across sessions, save it as JSON, such as in \`localStorage\` or a table, as its entries are plain data.
 
-In a PCF, build the store over the dictionary the host hands \`init\`, and save it once React has unmounted, as \`index.tsx\` in the example at the top does.
+In a PCF, build the store over the dictionary the host hands \`init\`, and save it once React has unmounted, as *index.tsx* in the example at the top does.
 
 ## Where next
 

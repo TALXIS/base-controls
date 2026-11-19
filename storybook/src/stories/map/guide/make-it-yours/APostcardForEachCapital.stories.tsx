@@ -16,7 +16,7 @@ A pin opens a postcard: the capital's region, its country, the year it joined an
 
 ## How it works
 
-The pins of [**Pins coloured by region**](?path=/docs/controls-map-guide-make-it-yours-pins-coloured-by-region--overview) move to *RegionPin.tsx* as they were, and \`data.ts\` adds each capital's \`country\` and \`euSince\`. In **Code**, the new lines carry \`//new:\`.
+The pins of [**Pins coloured by region**](?path=/docs/controls-map-guide-make-it-yours-pins-coloured-by-region--overview) move to *RegionPin.tsx* as they were, and *data.ts* adds each capital's \`country\` and \`euSince\`. In **Code**, the new lines carry \`//new:\`.
 
 **The popup.** By default, a pin opens \`Map.Popup.Renderer\`: the record's name, and its visible columns that hold a value. \`marker.popup.onRender\` replaces the popup's whole content, as \`Postcard\` does; to restyle the default instead, use \`marker.popup.header\`, \`body\`, \`fieldList\` and \`field\`, which go unused beside \`onRender\`.
 

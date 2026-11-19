@@ -48,7 +48,7 @@ Every part is split in two. The *UI* takes plain props and owns the look: its st
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Your own UI', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-guide-advanced-your-own-ui--overview', text: 'Pieces and parts of your own in a DatasetControl.' },
-    { title: 'Cells and headers of your own', iconName: 'Color', href: '?path=/docs/controls-grid-guide-make-it-yours-cells-and-headers-of-your-own--overview', text: 'Replace what the grid\'s cells and headers draw.' },
+    { title: 'Cells and headers of your own', iconName: 'Edit', href: '?path=/docs/controls-grid-guide-make-it-yours-cells-and-headers-of-your-own--overview', text: 'Replace what the grid\'s cells and headers draw.' },
     { title: 'Fluent UI', iconName: 'Design', href: '?path=/docs/concepts-fluent-ui--overview', text: 'The Fluent components the defaults draw with.' },
 ]
 

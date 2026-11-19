@@ -7,7 +7,7 @@ import { GuideMap } from '../../task-grid/guide/taskGridGuide'
 import { OfficeMoveExample } from '../../task-grid/examples/overviewExamples'
 
 const DESCRIPTION = `
-A task grid shows a plan as a tree of tasks, each task under the one it is part of, with a Gantt chart beside it that draws the same tasks on a timeline. It is for React and Power Apps applications whose users plan work where they see it: they add tasks, rename them, change their dates, drag them about and delete them, and each feature beyond the tree, such as people, dependencies or holidays, is a module you add. Try it below: drag the bar of *Paint the meeting rooms* a week later.
+A task grid shows a plan as a tree of tasks, each task under the one it is part of, with a Gantt chart beside it that draws the same tasks on a timeline. Users add, rename, move, reschedule and delete tasks where they see them, and each feature beyond the tree, such as people, dependencies or holidays, is a module you add. Try it below: drag the bar of *Paint the meeting rooms* a week later.
 
 {{canvas: The office move}}
 
@@ -28,11 +28,11 @@ A task grid shows a plan as a tree of tasks, each task under the one it is part 
 
 \`TaskDatasetControl\` holds the tasks, and \`TaskGrid\` and \`TaskGantt\` draw them. Both draw the same tasks, so a change in one shows in the other at once: drag a row under another task and its bar moves with it, and rename a task in the grid and the tooltip on its bar says the new name.
 
-| Part | Does | Takes |
+| Part | Does | Works on |
 |---|---|---|
-| \`TaskDatasetControl\` | Holds the tasks: loads them through the store \`onLoad\` returns, opens the views, says what the user may change, and lays out the header and the body. It is a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview) whose records are tasks. | Task modules, such as lookup many, the checklist and dependencies |
-| \`TaskGrid\` | Draws the tasks as a tree, in \`DatasetControl.Body\`. It is a [**Grid**](?path=/docs/controls-grid-overview--overview), without grouping and totals. | Grid modules, such as editing, row selection and filtering |
-| \`TaskGantt\` | Draws the same tasks on a timeline, row for row with the grid, beside it in \`TaskGantt.Split\`. It comes from \`@talxis/base-controls/gantt\`. | Gantt modules, such as dragging bars, links and markers |
+| \`TaskDatasetControl\` | Holds the tasks: loads them through the store, opens the views, says what the user may change, and lays out the header and the body. It is a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview) whose records are tasks, and takes task modules, such as lookup many, the checklist and dependencies. | What \`onLoad\` returns: the store, the field mapping and the views |
+| \`TaskGrid\` | Draws the tasks as a tree, in \`DatasetControl.Body\`. It is a [**Grid**](?path=/docs/controls-grid-overview--overview) without grouping and totals, and takes grid modules, such as editing, row selection and filtering. | The control's tasks |
+| \`TaskGantt\` | Draws the tasks on a timeline, beside the grid in \`TaskGantt.Split\`, and takes Gantt modules, such as dragging bars, links and markers. It comes from \`@talxis/base-controls/gantt\`. | The control's tasks, row for row with the grid |
 
 [**How modules work**](?path=/docs/controls-taskgrid-guide-features-how-modules-work--overview) says which module goes in which part.
 
@@ -42,7 +42,7 @@ The guide builds the office move above one step at a time, from a read-only tree
 
 {{block: guide}}
 
-On Dataverse or TALXIS? Do *Basics* first, then go on to [**Where tasks are kept**](?path=/docs/controls-taskgrid-guide-your-data-where-tasks-are-kept--overview).
+On Dataverse or TALXIS? Do *Basics*, then [**Where tasks are kept**](?path=/docs/controls-taskgrid-guide-your-data-where-tasks-are-kept--overview).
 
 ## Words you will meet
 
@@ -66,8 +66,8 @@ On Dataverse or TALXIS? Do *Basics* first, then go on to [**Where tasks are kept
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Your first task grid', iconName: 'Education', href: '?path=/docs/controls-taskgrid-guide-basics-your-first-task-grid--overview', text: 'Start the guide: the office move as a tree, from your own rows.' },
-    { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-taskgrid-reference--overview', text: 'Every prop, module parameter, runtime member and slot.' },
-    { title: 'DatasetControl', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-overview--overview', text: 'The control a TaskDatasetControl is: views, search, Edit columns and state.' },
+    { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-taskgrid-reference--overview', text: 'Every prop, module parameter, runtime member, field mapping key and slot of the task grid.' },
+    { title: 'DatasetControl', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-overview--overview', text: 'The control a TaskDatasetControl is: views, search, Edit columns and state.' },
 ]
 
 const meta = {

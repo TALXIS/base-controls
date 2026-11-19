@@ -70,7 +70,7 @@ In a model-driven app? Do *Basics*, then [**Where views are kept**](?path=/docs/
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Your first deal list', iconName: 'Education', href: '?path=/docs/controls-datasetcontrol-guide-basics-your-first-deal-list--overview', text: 'Start the guide: the team\'s deals in a read-only grid.' },
-    { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-datasetcontrol-reference--overview', text: 'Every prop, member, part key and slot of the DatasetControl.' },
+    { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-datasetcontrol-reference--overview', text: 'Every prop, member, part key, module parameter and slot of the DatasetControl.' },
     { title: 'Grid', iconName: 'GridViewSmall', href: '?path=/docs/controls-grid-overview--overview', text: 'What draws the records: columns, editing, sorting and the grid\'s own modules.' },
 ]
 

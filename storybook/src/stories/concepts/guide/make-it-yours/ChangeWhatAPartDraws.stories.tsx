@@ -16,7 +16,7 @@ This step starts from the app of [**The opening plan**](?path=/docs/concepts-gui
 
 ## How it works
 
-*StoreMap.tsx* and *GridExample.tsx* change, and in **Code** their new lines carry \`//new:\`. A part draws what you see through small functions you can replace, handed to it in its \`components\`:
+The app is the one from [**The opening plan**](?path=/docs/concepts-guide-more-controls-the-opening-plan--overview), and *StoreMap.tsx* and *GridExample.tsx* change. In **Code**, the new lines carry \`//new:\`. A part draws what you see through small functions you can replace, handed to it in its \`components\`:
 
 - A **slot** is a function, named \`onRender…\`, that draws one thing of a part.
 - A **piece** is a key of \`components\` that names something inside the part and holds its slots.

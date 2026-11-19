@@ -42,7 +42,7 @@ Use \`ClientSideGrid\` unless users group by a column with many values, or into 
 - A group's records come from a provider of the group's own.
 - \`ServerSideGrid\` needs AG Grid Enterprise.
 
-Your grid has the tools a sales team works with. Make it yours shapes it to your app.
+Your grid has the tools a sales team works with. *Make it yours* shapes it to your app.
 
 {{block: navigation}}
 `

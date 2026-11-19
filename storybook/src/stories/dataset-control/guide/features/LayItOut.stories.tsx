@@ -61,7 +61,7 @@ The header is a \`WrapCompactProvider\`, so a part of your own turns compact wit
 - \`height='100%'\` fills a parent with a height of its own, and a grid in the body follows the control.
 - The header turns compact by its own width; \`useCompact()\` lets your own parts follow it.
 
-Your list has every part. Next, keep what users make of it.
+Your list has every part, laid out to fit. *Your data* keeps the views users save and the state they leave.
 
 {{block: navigation}}
 `

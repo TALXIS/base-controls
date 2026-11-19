@@ -16,7 +16,7 @@ Anna Novak opens the list on *My deals*, her own deals, so every load first asks
 
 ## How it works
 
-The deal list is the one from the last step, with *My deals* first; in **Code**, the new lines carry \`//new:\`.
+The deal list is the one from [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview), with *My deals* first. In **Code**, the new lines carry \`//new:\`.
 
 **Every load mounts the control anew.** The control holds no records of its own: each load calls \`onLoad\`, picks the view and calls its \`resolve\`, loads the first page, and then draws the parts on it. Until then the placeholder stands in for every part, the view switcher included, so put what must show at once, such as a page title, outside the control.
 

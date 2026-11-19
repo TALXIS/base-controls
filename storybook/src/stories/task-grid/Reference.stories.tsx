@@ -40,7 +40,7 @@ It provides the \`taskSettings\` part, so \`control.parts.get('taskSettings')\` 
 
 ## TaskGrid props
 
-Every other prop works as on a Grid: see *Props* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview).
+Every other prop works as on a Grid: see *Grid props* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview).
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
@@ -236,8 +236,8 @@ User views, \`userQueries\`, come from DatasetControl's factories, under *User v
 | \`columns\` | \`{ [columnName]: ILookupManyColumn }\` | Required | The lookup-many columns by name. |
 | \`components\` | \`ILookupManyComponents\` | Defaults | See *Slots* below. |
 | **\`createMemoryLookupManyModule\`** | | | |
-| \`sources\` | \`{ [entityName]: { records, metadata, columns } }\` | Required | The records to pick from, by table name; \`records\` is a \`MemoryTable\`. |
-| \`values\` | \`MemoryTable<IMemoryLookupManyValues>\` | Required | Each task's picks, as \`{ taskId, values }\` keyed by \`taskId\`, \`values\` by column name. |
+| \`sources\` | \`{ [entityName]: IMemoryLookupManySource }\` | Required | The records to pick from, by table name: a \`MemoryTable\` of \`records\`, with their \`metadata\` and \`columns\`. |
+| \`values\` | \`MemoryTable<IMemoryLookupManyValues>\` | Required | Each task's picks, keyed by \`taskId\`, with its \`values\` by column name. |
 | **\`createDataverseLookupManyModule\`** | | | |
 | \`hostRecord\` | \`{ entityName, id?, data? }\` | None | The record the grid sits on, as \`hostRecord\` in each column's FetchXML. |
 | **\`createLookupManyModule\`** | | | |
@@ -288,10 +288,10 @@ User views, \`userQueries\`, come from DatasetControl's factories, under *User v
 | \`components\` | \`ITaskChecklistComponents\` | Defaults | See *Slots* below. |
 | **\`createMemoryTaskChecklistModule\`** | | | |
 | \`items\` | \`MemoryTable<IMemoryTaskChecklistItem>\` | Required | The items, keyed by \`id\`, each with a \`taskId\`, a \`name\` and \`isCompleted\`. |
-| **\`createTalxisTaskChecklistModule\`** | | | |
-| No parameters | | | Reads each task's \`talxis_checklistjson\`, a JSON array of \`{ id, name, isCompleted }\`. |
 | **\`createTaskChecklistModule\`** | | | |
 | \`createStore\` | \`(taskRuntime) => ITaskChecklistStore\` | Required | Called on every mount; the store's \`loadItems(taskIds)\` returns the items by task id, and its optional \`destroy()\` runs when the mount goes. |
+
+\`createTalxisTaskChecklistModule\` takes only the parameters of every factory, and reads each task's \`talxis_checklistjson\`, a JSON array of \`{ id, name, isCompleted }\`.
 
 ### Dependencies
 
@@ -307,10 +307,10 @@ User views, \`userQueries\`, come from DatasetControl's factories, under *User v
 | \`predecessorAttribute\`, \`successorAttribute\` | \`string\` | Required | Its two lookups to the task table. |
 | \`typeAttribute\` | \`string\` | Required | Its option set of the type. |
 | \`dependencyTypeCodes\` | \`{ [value: number]: TaskDependencyType }\` | Required | Every value of that option set, and the type it stands for; a value left out fails the load. |
-| **\`createTalxisDependenciesModule\`** | | | |
-| No parameters | | | The Dataverse factory with \`talxis_taskdependency\` mapped. |
 | **\`createDependenciesModule\`** | | | |
 | \`createStore\` | \`(taskRuntime) => IDependenciesStore\` | Required | Called on every mount. |
+
+\`createTalxisDependenciesModule\` takes only the parameters of every factory: it is the Dataverse factory with \`talxis_taskdependency\` mapped.
 
 | Dependency field | Description |
 |---|---|
@@ -499,15 +499,20 @@ Inside anything \`TaskGrid\` draws, such as a cell, \`useTaskGridService(key)\` 
 
 \`TaskGrid\` and the Gantt's parts take \`components\` as a prop. How slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). \`TaskDatasetControl.Ribbon\` and \`TaskDatasetControl.PageSizeSwitcher\` take the slots of their DatasetControl parts, under *Slots* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 
-| Component | Key | Slots | Default | Draws |
-|---|---|---|---|---|
-| \`TaskGrid\` | \`overlays\`, \`rows\` | The Grid's, under *The grid's own pieces* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview) | | |
-| \`TaskDatasetControl.Settings\` | Top level | \`onRender\`, \`onRenderButton\` | \`TaskGridUiSettingsMenuComponents\` | The tooltip around the settings button, and the button with its menu |
-| \`TaskGantt\` | \`chart\` | \`onRender\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` has to pass on its \`ref\` |
-| | \`overlay\` | \`onRender\` | \`GanttUiOverlayComponents\` | The cover the Gantt's \`overlay\` service shows over the chart |
-| | \`skeleton\` | \`onRender\`, \`onRenderSkeleton\` | \`GanttUiSkeletonComponents\` | The placeholder until the chart is drawn |
-| \`TaskGantt.Split\` | Top level | \`onRender\`, \`onRenderGridPane\`, \`onRenderGanttPane\`, \`onRenderHandle\` | \`GridGanttUiSplitComponents\` | The two panes and the handle between them |
-| \`TaskGantt.ZoomSlider\` | Top level | \`onRender\`, \`onRenderSlider\`, \`onRenderZoomButton\` | \`GanttUiZoomSliderComponents\` | The slider and its two zoom buttons |
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| **\`TaskGrid\`** | | | |
+| \`overlays\`, \`rows\` | The Grid's, under *The grid's own pieces* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview) | | |
+| **\`TaskDatasetControl.Settings\`** | | | |
+| Top level | \`onRender\`, \`onRenderButton\` | \`TaskGridUiSettingsMenuComponents\` | The tooltip around the settings button, and the button with its menu |
+| **\`TaskGantt\`** | | | |
+| \`chart\` | \`onRender\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` has to pass on its \`ref\` |
+| \`overlay\` | \`onRender\` | \`GanttUiOverlayComponents\` | The cover the Gantt's \`overlay\` service shows over the chart |
+| \`skeleton\` | \`onRender\`, \`onRenderSkeleton\` | \`GanttUiSkeletonComponents\` | The placeholder until the chart is drawn |
+| **\`TaskGantt.Split\`** | | | |
+| Top level | \`onRender\`, \`onRenderGridPane\`, \`onRenderGanttPane\`, \`onRenderHandle\` | \`GridGanttUiSplitComponents\` | The two panes and the handle between them |
+| **\`TaskGantt.ZoomSlider\`** | | | |
+| Top level | \`onRender\`, \`onRenderSlider\`, \`onRenderZoomButton\` | \`GanttUiZoomSliderComponents\` | The slider and its two zoom buttons |
 
 The modules that draw something take \`components\` in their factory's parameters, read at mount:
 

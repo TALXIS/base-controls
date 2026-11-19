@@ -16,7 +16,9 @@ So far each salesperson's views have lived in their own browser. This step keeps
 
 ## How it works
 
-Each factory makes the user queries module of [**Views of their own**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview) over a different store:
+This step cuts the list of [**Views of their own**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview) down to its view switcher and grid, and keeps the user's views in a store of its own. In **Code**, the new lines carry \`//new:\`.
+
+Each factory makes the same user queries module over a different store:
 
 | Factory | Keeps the views |
 |---|---|
@@ -57,7 +59,7 @@ A store that throws opens the error dialog of [**RuntimeHost**](?path=/docs/cont
 - A store of your own has five members, and its manage provider gets the renames and deletes.
 - A store that throws shows the error dialog.
 
-Views and state live where you keep them. Advanced hands the list to your code.
+Your list keeps its views and state where your app keeps them. *Advanced* hands it to your code.
 
 {{block: navigation}}
 `

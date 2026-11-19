@@ -16,7 +16,7 @@ This step starts from the app of [**The opening plan**](?path=/docs/concepts-gui
 
 ## How it works
 
-Only *GridExample.tsx* changes, and in **Code** its new lines carry \`//new:\`. A **theme** is the colours, fonts and effects the controls draw in, and \`useThemeBuilder\` generates a whole one from three colours: an accent, a background and a text colour. \`AppThemeProvider\` hands it to every control below it, and the panels, menus and callouts they open draw in it too.
+The app is the one from [**The opening plan**](?path=/docs/concepts-guide-more-controls-the-opening-plan--overview), and only *GridExample.tsx* changes. In **Code**, the new lines carry \`//new:\`. A **theme** is the colours, fonts and effects the controls draw in, and \`useThemeBuilder\` generates a whole one from three colours: an accent, a background and a text colour. \`AppThemeProvider\` hands it to every control below it, and the panels, menus and callouts they open draw in it too.
 
 Here the provider wraps \`StoreOpenings\`; in your application, it is the \`AppThemeProvider\` among the root providers of [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview). A dark variant, an area in a theme of its own, and colours for your own components are on [**Theming**](?path=/docs/concepts-theming--overview).
 

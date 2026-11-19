@@ -16,6 +16,8 @@ The deal list should look and work as the rest of your app does. This step chang
 
 ## How it works
 
+This step adds a slot and a part of your own to the list of [**Views of their own**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview). In **Code**, the new lines carry \`//new:\`.
+
 There are three ways to change what the control draws, and the examples on this page use each:
 
 | To change | Use | Here |

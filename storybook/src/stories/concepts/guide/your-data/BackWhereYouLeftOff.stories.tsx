@@ -16,7 +16,7 @@ This step starts from the app of [**The opening plan**](?path=/docs/concepts-gui
 
 ## How it works
 
-Only *GridExample.tsx* changes, and in **Code** its new lines carry \`//new:\`. A **state key**, a control's \`stateKey\`, names the entry it keeps its state under, so it comes back as the user left it. *Show the stores* stands in for leaving the page: turned off, it unmounts the list.
+The app is the one from [**The opening plan**](?path=/docs/concepts-guide-more-controls-the-opening-plan--overview), and only *GridExample.tsx* changes. In **Code**, the new lines carry \`//new:\`. A **state key**, a control's \`stateKey\`, names the entry it keeps its state under, so it comes back as the user left it. *Show the stores* stands in for leaving the page: turned off, it unmounts the list.
 
 | In the code | Keeps | See |
 |---|---|---|
@@ -36,7 +36,7 @@ Both are kept in the nearest state store. On this page that is the page's own, i
 - A \`stateKey\` brings a control back as the user left it.
 - The state lasts as long as its store: save the store to keep it past the page.
 
-Your app saves where you keep your data, runs in Power Apps and brings users back where they left off. Make it yours draws it your way.
+Your app saves where you keep your data, runs in Power Apps and brings users back where they left off. *Make it yours* draws it your way.
 
 {{block: navigation}}
 `

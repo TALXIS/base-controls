@@ -16,7 +16,7 @@ The team works on the stores that have not opened yet, looks a store up by name,
 
 ## How it works
 
-The list is the one from [**Edit and save**](?path=/docs/concepts-guide-basics-edit-and-save--overview); in **Code**, the new lines carry \`//new:\`, and *StoresRibbon.tsx* is new. A **view** is a named way to look at the stores. Its \`resolve\` sets the provider up as the view opens, as *Not open yet* filters out the open stores and sorts the rest by opening date, and returns the columns the view shows. The view switcher, the ribbon, **Edit columns** and the search field are **parts**: components you put inside the control, which work on its provider. Each has a step of its own in the DatasetControl guide:
+The list is the one from [**Edit and save**](?path=/docs/concepts-guide-basics-edit-and-save--overview). In **Code**, the new lines carry \`//new:\`, and *StoresRibbon.tsx* is new. A **view** is a named way to look at the stores. Its \`resolve\` sets the provider up as the view opens, as *Not open yet* filters out the open stores and sorts the rest by opening date, and returns the columns the view shows. The view switcher, the ribbon, **Edit columns** and the search field are **parts**: components you put inside the control, which work on its provider. Each has a step of its own in the DatasetControl guide:
 
 | In the code | Does | See |
 |---|---|---|

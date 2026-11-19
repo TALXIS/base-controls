@@ -16,7 +16,7 @@ The team looks at the same deals in different ways: all of them, only the won on
 
 ## How it works
 
-The deal list is the one from the last step, with views and a view switcher; in **Code**, the lines this step adds carry a \`//new:\` comment.
+The deal list is the one from [**Your first deal list**](?path=/docs/controls-datasetcontrol-guide-basics-your-first-deal-list--overview), with views and a view switcher. In **Code**, the new lines carry \`//new:\`.
 
 **Views.** \`onLoad\` returns the views beside the provider, and \`DatasetControl.ViewSwitcher\`, in the start of the header, lists them by name; the first view opens first. A view has an \`id\`, unique among the control's views, a \`name\` for the switcher, and a \`resolve(provider)\`, which runs as the view opens: it sets the provider up, such as its filter or sorting, and returns what the view shows, at once or as a promise. An optional \`group\`, \`{ id, name }\`, lists the view under a header such as *Reports*; views without one are listed under *System views*. Every key is under *A view* on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 

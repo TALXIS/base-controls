@@ -3,7 +3,7 @@ import { createGuide } from '../../grid/showcase/Guide'
 type TaskGridStage = 'Basics' | 'Features' | 'Your data' | 'Advanced'
 
 export const { GuideProgress, GuideNavigation, GuideMap } = createGuide<TaskGridStage>({
-    name: 'Task grid guide',
+    name: 'TaskGrid guide',
     idPrefix: 'controls-taskgrid-guide',
     stages: [
         { name: 'Basics', iconName: 'Education', promise: 'Put a task grid on a page, let users plan in it, organise it with views, and add the timeline.' },
@@ -28,5 +28,5 @@ export const { GuideProgress, GuideNavigation, GuideMap } = createGuide<TaskGrid
         { stage: 'Advanced', title: 'From your code', text: 'The task runtime, the events of every change, and ribbon commands of your own.' },
         { stage: 'Advanced', title: 'Write a module', text: 'Features of your own for the tasks, the grid and the Gantt.' },
     ],
-    reference: { title: 'Reference', text: 'Every prop, field mapping key, module parameter and runtime member.', iconName: 'Table', href: '?path=/docs/controls-taskgrid-reference--overview' },
+    reference: { title: 'Reference', text: 'Every prop, module parameter, runtime member, field mapping key and slot of the task grid.', iconName: 'Table', href: '?path=/docs/controls-taskgrid-reference--overview' },
 })

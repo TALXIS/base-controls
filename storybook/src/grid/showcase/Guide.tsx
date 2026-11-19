@@ -20,7 +20,7 @@ export interface IGuideStep<TStage extends string> {
 }
 
 export interface IGuideParameters<TStage extends string> {
-    /** The guide's accessible name, such as "Task grid guide". */
+    /** The guide's accessible name, such as "TaskGrid guide". */
     name: string
     /** The docs id the step pages start with, such as `controls-taskgrid-guide`. */
     idPrefix: string

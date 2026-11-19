@@ -16,7 +16,7 @@ The trip becomes a planner: views of the wishlist and the visited capitals, a se
 
 ## How it works
 
-The map moves into a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview), so this step starts its own files. \`data.ts\` adds each capital's trip status, \`views.ts\` loads the capitals for the control, and *CapitalCard.tsx* holds the pins and the popup. In *GridExample.tsx*, each new component and slot carries \`//new:\`.
+The map moves into a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview), so this step starts its own files. *data.ts* adds each capital's trip status, *views.ts* loads the capitals for the control, and *CapitalCard.tsx* holds the pins and the popup. In *GridExample.tsx*, each new component and slot carries \`//new:\`.
 
 **The map in the body.** \`LeafletMap\` goes in \`DatasetControl.Body\` with no provider of its own, and draws the control's, as [**Your first map**](?path=/docs/controls-map-guide-basics-your-first-map--overview) says; the parts go in the header, as for any body ([**Lay it out**](?path=/docs/controls-datasetcontrol-guide-features-lay-it-out--overview)). With a \`height\` on the control, the map takes what the header and the footer leave.
 
@@ -26,7 +26,7 @@ The map moves into a [**DatasetControl**](?path=/docs/controls-datasetcontrol-ov
 
 **Views.** Each view's \`resolve\` filters by the trip status and returns its columns. List the latitude, longitude and status columns in every view with \`isHidden: true\`, as \`READ_BY_THE_MAP\` does, so they load for the pins and the popup without being shown. How views work is on [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview).
 
-**Search.** \`DatasetControl.QuickFind\` searches the provider's \`QuickFindColumns\`, here the capital and its country in \`data.ts\`. See [**Search and page**](?path=/docs/controls-datasetcontrol-guide-features-search-and-page--overview).
+**Search.** \`DatasetControl.QuickFind\` searches the provider's \`QuickFindColumns\`, here the capital and its country in *data.ts*. See [**Search and page**](?path=/docs/controls-datasetcontrol-guide-features-search-and-page--overview).
 
 **Selection.** A map has no selection of its own, so **Select** in the popup sets the provider's, with \`setSelectedRecordIds\`. \`useDataProviderEvents\` in \`useCapital\` draws the pin and the popup again when the selection or a value changes. The ribbon loads its commands again on every selection, so \`TripRibbon\` offers **Mark N as visited** only while capitals are selected, and saves them at once. How the ribbon works is on [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview).
 
@@ -45,7 +45,7 @@ The map moves into a [**DatasetControl**](?path=/docs/controls-datasetcontrol-ov
 - List the position columns, hidden, in every view.
 - Pins and popups reach the control's provider for the selection and the columns.
 
-Your records decide the pins. Advanced hands the map to your code.
+Your records decide the pins. *Advanced* hands the map to your code.
 
 {{block: navigation}}
 `

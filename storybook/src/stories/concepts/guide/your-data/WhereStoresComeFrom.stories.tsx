@@ -16,7 +16,7 @@ This step starts from the app of [**The opening plan**](?path=/docs/concepts-gui
 
 ## How it works
 
-Only *stores.ts* changes, and in **Code** its new lines carry \`//new:\`; *api.ts* and *dataverse.ts* are new. Every control reads the stores from the provider \`createStoresProvider\` returns, and saves them through it, so the provider alone decides where they come from and go.
+The app is the one from [**The opening plan**](?path=/docs/concepts-guide-more-controls-the-opening-plan--overview), and only *stores.ts* changes. In **Code**, the new lines carry \`//new:\`, and *api.ts* and *dataverse.ts* are new. Every control reads the stores from the provider \`createStoresProvider\` returns, and saves them through it, so the provider alone decides where they come from and go.
 
 | In the code | Is | See |
 |---|---|---|

@@ -26,7 +26,7 @@ To show an error, \`useOpenErrorDialog()\` returns a function that opens the err
 
 ## In a PCF control
 
-Pass the context the host hands \`updateView\` to the provider, as \`index.tsx\` in the example at the top does. Everything in it is used as it is, except \`formatting\`: that is always the library's own, built from \`userSettings.languageId\` and \`formatInfoCultureName\`, so the controls format the same way in every host. The user settings' \`numberFormattingInfo\` and \`dateFormattingInfo\` are set to match it.
+Pass the context the host hands \`updateView\` to the provider, as *index.tsx* in the example at the top does. Everything in it is used as it is, except \`formatting\`: that is always the library's own, built from \`userSettings.languageId\` and \`formatInfoCultureName\`, so the controls format the same way in every host. The user settings' \`numberFormattingInfo\` and \`dateFormattingInfo\` are set to match it.
 
 ## Outside a PCF control
 

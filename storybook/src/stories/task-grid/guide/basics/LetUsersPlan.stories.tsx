@@ -16,7 +16,7 @@ A plan changes every day, so the team plans where they see it: they add tasks, r
 
 ## How it works
 
-The plan is the one from the last step; in **Code**, the lines this step adds carry a \`//new:\` comment.
+The plan is the one from [**Your first task grid**](?path=/docs/controls-taskgrid-guide-basics-your-first-task-grid--overview). In **Code**, the new lines carry \`//new:\`.
 
 Three props say what the user may change, and each is off until you turn it on. Some changes also need a module: a feature you add by listing it in a \`modules\` prop.
 

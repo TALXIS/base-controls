@@ -16,6 +16,8 @@ Each salesperson sorts and filters the deals their own way, and wants the list l
 
 ## How it works
 
+This step adds the user's own views, and sorting by a column's header, to the list of [**Lay it out**](?path=/docs/controls-datasetcontrol-guide-features-lay-it-out--overview), without its slider and export button. In **Code**, the new lines carry \`//new:\`.
+
 The control takes modules too, as the grid does in [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview): pass them in the control's \`modules\`, and every load loads them anew, before \`onLoad\`. \`createLocalStorageUserQueriesModule\` adds the user's own views, kept in this browser under \`storageKey\`. Most deal lists in this guide use the same key, so a view saved on one shows on the others. [**Where views are kept**](?path=/docs/controls-datasetcontrol-guide-your-data-where-views-are-kept--overview) keeps them elsewhere.
 
 The module lists the user's views under *My views* in the view switcher, and adds three commands below them:

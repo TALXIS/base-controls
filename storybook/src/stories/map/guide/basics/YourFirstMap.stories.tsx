@@ -45,7 +45,7 @@ It moves again each time the provider loads new data; in between, the user pans 
 
 ## Try it
 
-- In \`data.ts\`, add \`{ name: 'Zagreb', lat: 45.815, lng: 15.9819 },\` to \`CAPITALS\`: a pin appears in Croatia, between Ljubljana and Budapest.
+- In *data.ts*, add \`{ name: 'Zagreb', lat: 45.815, lng: 15.9819 },\` to \`CAPITALS\`: a pin appears in Croatia, between Ljubljana and Budapest.
 - Change Nicosia's \`lat\` to \`'unknown'\`: its pin goes, and the map's view moves to fit the rest.
 - Delete every capital but Prague: the map centres on Prague at zoom 15, close enough to see its streets.
 

@@ -16,7 +16,7 @@ Each opening is a plan of its own: tasks, the people on them, the work that wait
 
 ## How it works
 
-The app is the one from [**On the map**](?path=/docs/concepts-guide-more-controls-on-the-map--overview), and only *StoreForm.tsx* changes: in **Code**, its new section carries \`{/* new: … */}\`, and *OpeningPlan.tsx* and *plans.ts* are new.
+The app is the one from [**On the map**](?path=/docs/concepts-guide-more-controls-on-the-map--overview), and only *StoreForm.tsx* changes. In **Code**, the new section carries \`{/* new: … */}\`, and *OpeningPlan.tsx* and *plans.ts* are new.
 
 **A control inside a control.** The *Opening plan* section holds \`OpeningPlan\`, a \`TaskDatasetControl\` of the store's own: it loads the tasks of the store it is handed, and the \`TaskGrid\` and \`TaskGantt\` in its body draw them as a tree beside a timeline. What a task grid is and does: [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview).
 
@@ -46,7 +46,7 @@ Most of what the plan does comes from modules, as in [**Edit and save**](?path=/
 - Controls nest: the store's form holds a task grid of its own.
 - The TaskGrid guide teaches every line of the plan.
 
-Your app is complete. Each step after this one starts from it and changes one thing.
+Your app shows the stores in a list, on a map and in an opening plan. *Your data* starts from it, and saves the stores where you keep them.
 
 {{block: navigation}}
 `

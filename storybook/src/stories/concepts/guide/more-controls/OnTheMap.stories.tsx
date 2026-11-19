@@ -16,7 +16,7 @@ The team plans the openings across Europe and wants to see where each store is. 
 
 ## How it works
 
-The app is the one from [**Open a store in a form**](?path=/docs/concepts-guide-basics-open-a-store-in-a-form--overview); in **Code**, the new lines carry \`//new:\`, and *StoreMap.tsx* is new.
+The app is the one from [**Open a store in a form**](?path=/docs/concepts-guide-basics-open-a-store-in-a-form--overview). In **Code**, the new lines carry \`//new:\`, and *StoreMap.tsx* is new.
 
 **The map.** \`LeafletMap\` takes no provider of its own: in the body of a \`DatasetControl\`, it draws the control's, as the grid does, so the search narrows the pins. \`fieldMapping\` names the columns that hold each store's latitude and longitude, \`lat\` and \`lng\`: see [**Your first map**](?path=/docs/controls-map-guide-basics-your-first-map--overview). \`VIEW_COLUMNS\` in *stores.ts* lists them as hidden columns, so every view loads them without showing them: see [**A trip planner**](?path=/docs/controls-map-guide-your-data-a-trip-planner--overview). Your application imports Leaflet's stylesheet once, as [**Your first map**](?path=/docs/controls-map-guide-basics-your-first-map--overview) shows.
 

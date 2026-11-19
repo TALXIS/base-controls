@@ -16,7 +16,7 @@ This step starts from the app of [**The opening plan**](?path=/docs/concepts-gui
 
 ## How it works
 
-*StoreForm.tsx* changes, and in **Code** its new section carries \`{/* new: … */}\`; *FootfallForecast.tsx* is new. A **runtime** is the object behind one mount of a control: it loads what the control needs before the control draws. \`RuntimeHost\` makes one for each mount, shows a placeholder while it loads, and shows a failed load with **Try again**, which mounts a new one.
+The app is the one from [**The opening plan**](?path=/docs/concepts-guide-more-controls-the-opening-plan--overview), and only *StoreForm.tsx* changes. In **Code**, the new section carries \`{/* new: … */}\`, and *FootfallForecast.tsx* is new. A **runtime** is the object behind one mount of a control: it loads what the control needs before the control draws. \`RuntimeHost\` makes one for each mount, shows a placeholder while it loads, and shows a failed load with **Try again**, which mounts a new one.
 
 | In *FootfallForecast.tsx* | Is |
 |---|---|

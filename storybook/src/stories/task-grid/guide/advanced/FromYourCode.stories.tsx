@@ -16,6 +16,8 @@ Your own buttons and commands can change the plan as the user does, with the sam
 
 ## How it works
 
+Each example starts from the plan of [**Let users plan**](?path=/docs/controls-taskgrid-guide-basics-let-users-plan--overview), cut to what its change needs. In **Code**, the new lines carry \`//new:\`.
+
 The **task runtime** runs the task grid in one mount of \`TaskDatasetControl\`: it holds the tasks and makes the changes. Every mount has one of its own, as on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview), so reach the current one where your code runs:
 
 | Your code runs | Reach it with |

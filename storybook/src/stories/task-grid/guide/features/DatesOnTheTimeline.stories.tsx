@@ -42,7 +42,7 @@ This step adds three Gantt modules to the plan of [**The timeline**](?path=/docs
 - A bar the user drags or draws never starts or ends on a non-working day, and durations count working days only.
 - The tooltip shows an option set column as a pill when \`statusColumnName\` names it.
 
-Your plan has everything a team needs. Next, connect it to where your tasks really live.
+Your plan has what a team needs beside its tasks. *Your data* keeps the tasks in Dataverse, in TALXIS or behind your own API.
 
 {{block: navigation}}
 `

@@ -16,7 +16,7 @@ A store's floor area changes with its plans, and the team corrects it where they
 
 ## How it works
 
-The list is the one from [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview); in **Code**, the lines this step adds carry a \`//new:\` comment. From here on, the page's own providers stand in for the root providers, so \`GridExample\` draws \`StoreOpenings\` alone.
+The list is the one from [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview). In **Code**, the new lines carry \`//new:\`. From here on, the page's own providers stand in for the root providers, so \`GridExample\` draws \`StoreOpenings\` alone.
 
 **Modules.** A **module** is a feature you add by listing it in a control's \`modules\`; a feature you leave out is not there at all. The grid's five modules here tick rows, edit a cell on a double-click, sort and filter from a column's menu, and total a column. Each of these controls lists its modules on a page of its own:
 

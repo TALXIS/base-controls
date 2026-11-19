@@ -16,7 +16,7 @@ Each person on the move looks at the plan their own way: the whole tree, the lar
 
 ## How it works
 
-The plan is the one from the last step, with a view switcher, a search box and a settings menu in the header; the new lines carry \`//new:\` in **Code**.
+The plan is the one from [**Let users plan**](?path=/docs/controls-taskgrid-guide-basics-let-users-plan--overview), with a view switcher, a search box and a settings menu in the header. In **Code**, the new lines carry \`//new:\`.
 
 **Views.** \`onLoad\` returns the views with the store, and \`DatasetControl.ViewSwitcher\` lists them; the first one opens first. A view has an \`id\`, a \`name\` and a \`resolve(provider)\` that runs as the view opens:
 

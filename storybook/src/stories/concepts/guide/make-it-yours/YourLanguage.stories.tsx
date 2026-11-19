@@ -16,7 +16,7 @@ This step starts from the app of [**The opening plan**](?path=/docs/concepts-gui
 
 ## How it works
 
-Only *GridExample.tsx* changes, and in **Code** its new lines carry \`//new:\`. Every string a control draws is a **label**, with an English default. \`LabelsProvider\` replaces the labels of everything below it, and \`CZECH_LABELS\` holds Czech for every part of the library.
+The app is the one from [**The opening plan**](?path=/docs/concepts-guide-more-controls-the-opening-plan--overview), and only *GridExample.tsx* changes. In **Code**, the new lines carry \`//new:\`. Every string a control draws is a **label**, with an English default. \`LabelsProvider\` replaces the labels of everything below it, and \`CZECH_LABELS\` holds Czech for every part of the library.
 
 | Drawn | Comes from | See |
 |---|---|---|

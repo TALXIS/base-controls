@@ -16,6 +16,8 @@ A feature the team wants in every plan belongs in a module: one object that any 
 
 ## How it works
 
+Each example starts from the plan of [**Let users plan**](?path=/docs/controls-taskgrid-guide-basics-let-users-plan--overview), cut to what its module needs; the Gantt module's example adds the chart of [**The timeline**](?path=/docs/controls-taskgrid-guide-basics-the-timeline--overview). In **Code**, the new lines carry \`//new:\`.
+
 A module is an object with a \`name\`, unique where it is loaded, and an \`onLoad\` that runs on every mount and gets what the module is loaded into:
 
 | Module | Goes in | \`onLoad\` gets | Named in |
@@ -54,7 +56,7 @@ A Gantt module's \`onLoad(gantt)\` runs on every mount, before the chart is draw
 - A task module reaches the task runtime and the control's parts, a grid module the grid's services, and a Gantt module the chart.
 - *types.ts* names each module for TypeScript, and never runs.
 
-You have seen the whole task grid. Every prop, parameter and member is on Reference.
+You have seen the whole task grid. Every prop, module parameter, runtime member, field mapping key and slot is on [**Reference**](?path=/docs/controls-taskgrid-reference--overview).
 
 {{block: navigation}}
 `

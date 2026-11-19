@@ -50,7 +50,7 @@ The operators of each data type are under *Filter operators* on [**Reference**](
 - Sorting and filtering are the provider's; every change loads the deals again.
 - A column's \`disableSorting\` and metadata decide what its menu offers.
 
-Your grid reads, edits, checks and saves the deals. Features adds the tools a sales team works with.
+Your grid reads, edits, checks and saves the deals. *Features* adds the tools a sales team works with.
 
 {{block: navigation}}
 `

@@ -28,5 +28,5 @@ export const { GuideProgress, GuideNavigation, GuideMap } = createGuide<DatasetC
         { stage: 'Advanced', title: 'Your own UI', text: 'Replace pieces, add parts and draw a view your way.' },
         { stage: 'Advanced', title: 'Fluent UI v9', text: 'Every part drawn in another design system.' },
     ],
-    reference: { title: 'Reference', text: 'Every prop, member, part key and slot of the DatasetControl.', iconName: 'Table', href: '?path=/docs/controls-datasetcontrol-reference--overview' },
+    reference: { title: 'Reference', text: 'Every prop, member, part key, module parameter and slot of the DatasetControl.', iconName: 'Table', href: '?path=/docs/controls-datasetcontrol-reference--overview' },
 })

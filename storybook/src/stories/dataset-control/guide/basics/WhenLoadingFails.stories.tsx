@@ -16,7 +16,7 @@ The deals service is down now and then, and the list has to recover. When a load
 
 ## How it works
 
-From this step on, **Code** keeps the deals, their provider, the views and \`loadDeals\` of the last step in *deals.ts*, and the entry imports what it uses. The new lines carry \`//new:\`.
+From this step on, *deals.ts* keeps the deals, their provider, the views and \`loadDeals\` of [**Load the deals**](?path=/docs/controls-datasetcontrol-guide-basics-load-the-deals--overview), and the entry imports what it uses. In **Code**, the new lines carry \`//new:\`.
 
 **A failed load.** \`loadDealsOrFail\` throws on every other load, as a service that does not answer would. When a load throws, from \`onLoad\`, a view's \`resolve\`, the provider's first page or a [**module**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview), the control draws the error in place of its parts and keeps no provider.
 
@@ -40,7 +40,7 @@ A part that throws while it draws shows the same error, and there **Try again** 
 - The error's \`message\` is its title, and **Details** shows its \`cause\`.
 - **Try again** loads the view that failed again.
 
-Your list loads, switches views and recovers. Features adds the tools around it.
+Your list loads, switches views and recovers. *Features* adds the tools around it.
 
 {{block: navigation}}
 `

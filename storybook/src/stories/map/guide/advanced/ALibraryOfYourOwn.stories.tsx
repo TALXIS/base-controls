@@ -16,7 +16,7 @@ The airline's route map from Prague, drawn as an SVG of your own instead of Leaf
 
 ## How it works
 
-This step keeps only \`data.ts\` of the trip and draws the capitals with a map library of its own. In **Code**, the new lines carry \`//new:\`.
+This step keeps only *data.ts* of the trip and draws the capitals with a map library of its own. In **Code**, the new lines carry \`//new:\`.
 
 **\`Map\` and its library.** \`LeafletMap\` and \`GoogleMap\` are \`Map\` with a library module built in. To draw with another library, use \`Map\` itself: its \`modules\` must hold one named \`library\`, or the map shows *Map needs a library module…* in its place. \`Map\` takes the props of the other two except their library's own, such as \`tileUrl\`, and its \`components\` holds only \`container\`, \`loading\` and \`errorMessage\`.
 
@@ -39,7 +39,7 @@ This step keeps only \`data.ts\` of the trip and draws the capitals with a map l
 
 - Hover Vienna's dot: *Vienna*.
 - Set \`HOME\` to \`'Lisbon'\`: every route starts in Lisbon.
-- In \`data.ts\`, delete Nicosia: the map's view narrows to the rest.
+- In *data.ts*, delete Nicosia: the map's view narrows to the rest.
 - Change \`modules={[routeMapLibrary]}\` to \`modules={[]}\`: the map shows *Map needs a library module: use GoogleMap or LeafletMap, or give a library module of your own and draw its map as a child.*
 
 ## Remember

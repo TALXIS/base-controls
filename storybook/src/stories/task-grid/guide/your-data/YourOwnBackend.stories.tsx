@@ -16,7 +16,7 @@ When the tasks live behind an API of your own, you write the store: one method f
 
 ## How it works
 
-*api.ts* stands in for your backend: the office plan in a shape of its own, behind async calls, and one rule: a parent is due with its last subtask. *GridExample.tsx* puts a store over it and returns it from \`onLoad\` like any other.
+The plan is the one from [**Let users plan**](?path=/docs/controls-taskgrid-guide-basics-let-users-plan--overview), with its tasks behind *api.ts*, which stands in for your backend: the office plan in a shape of its own, behind async calls, and one rule: a parent is due with its last subtask. *GridExample.tsx* puts a store over it and returns it from \`onLoad\` like any other. In **Code**, the new lines carry \`//new:\`.
 
 | Method | Returns |
 |---|---|
@@ -72,7 +72,7 @@ A task module's store may also have \`destroy()\`, which runs when the mount goe
 - \`synchronize()\` brings back what your backend changed on its own, after every change.
 - A module keeps its data in a store of its own, wherever the tasks are kept.
 
-Your plan runs on your data. Advanced makes it look and behave your way.
+Your plan runs on your data. *Advanced* makes it look and behave your way.
 
 {{block: navigation}}
 `

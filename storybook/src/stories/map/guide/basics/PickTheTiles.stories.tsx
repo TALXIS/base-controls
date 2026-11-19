@@ -44,7 +44,7 @@ This step draws the map of [**Your first map**](?path=/docs/controls-map-guide-b
 - A new library prop mounts the map again.
 - Google Maps needs a key, and a page uses the first one it gets.
 
-Your map shows the capitals, fits the page and draws over the tiles you pick. Make it yours draws the pins and the popups your way.
+Your map shows the capitals, fits the page and draws over the tiles you pick. *Make it yours* draws the pins and the popups your way.
 
 {{block: navigation}}
 `
