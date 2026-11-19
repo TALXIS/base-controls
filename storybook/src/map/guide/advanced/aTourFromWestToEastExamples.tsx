@@ -37,7 +37,7 @@ const Tour = () => {
 
 const GridExample = () => <DataProviderScope provider={cities}>
     <LeafletMap fieldMapping={FIELD_MAPPING} height='480px' components={{ marker: { pin: REGION_PINS, popup: { onRender: () => <Postcard /> } } }}>
-        {/* new: drawn under the map, where the hooks reach it */}
+        {/* new: drawn under the map, where useMap() reaches it */}
         <Tour />
     </LeafletMap>
 </DataProviderScope>

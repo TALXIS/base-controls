@@ -35,7 +35,7 @@ This step draws the map of [**Your first map**](?path=/docs/controls-map-guide-b
 
 - Under **Leaflet tiles**, pick **Esri Dark Gray**: dark tiles under the same pins.
 - Open a pin, then click the map: the popup closes.
-- Add \`{ key: 'imagery', text: 'Esri World Imagery', tileUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: ESRI },\` to \`TILES\`, then pick it: the capitals over satellite images.
+- Copy the *Esri Dark Gray* line in \`TILES\`, and in the copy set \`key\` to \`'imagery'\`, \`text\` to \`'Esri World Imagery'\`, and replace \`Canvas/World_Dark_Gray_Base\` with \`World_Imagery\`. Pick it: the capitals over satellite images.
 - On **Google Maps**, paste a key of yours and press Enter: the same pins and popups on Google's map. The page keeps that key until it is reloaded.
 
 ## Remember

@@ -20,7 +20,7 @@ This step starts from the trip map: the map of [**A postcard for each capital**]
 
 **The provider decides the pins.** The map draws a pin for each record of its provider that has a position. To change the pins, change the provider: filter it and refresh it, as \`onYearChange\` does, and once it has loaded, the pins and the map's view follow. How filtering works is on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
-**Children.** Components of yours go in the map as its \`children\`. Once the map has loaded its modules, they are drawn in the map's box, under the library's map and one under another, and the map takes the height they leave. Inside them the hooks reach the map, as they do in a pin or a popup.
+**Children.** Components of yours go in the map as its \`children\`. Once the map has loaded its modules, they are drawn in the map's box, under the library's map and one under another, and the map takes the height they leave. Inside them, \`useMap()\` and \`useMapRecords()\` work as they do in a pin or a popup.
 
 **\`useMapRecords()\`** returns the records that have a pin, and draws the component again each time the provider loads new data, so \`MemberCount\` follows the slider.
 
@@ -34,7 +34,7 @@ This step starts from the trip map: the map of [**A postcard for each capital**]
 ## Remember
 
 - The provider decides the pins.
-- Children are drawn under the map, where the hooks reach it.
+- Children are drawn under the map, where \`useMap()\` reaches it.
 - \`useMapRecords()\` draws again on every load.
 
 {{block: navigation}}

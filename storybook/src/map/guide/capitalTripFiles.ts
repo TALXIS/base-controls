@@ -194,7 +194,7 @@ export const POSTCARD_FILE: IGridExampleFile = {
     name: 'Postcard.tsx',
     code: `import { Map, Field, useMapRecord, useMapRecords } from '@talxis/base-controls'
 
-//drawn in each pin's popup, where the hooks and Map.Popup's parts read the pin's record
+//the popup, from Map.Popup's parts and the pin's record
 export const Postcard = () => {
     const capital = useMapRecord()
     const largest = useMapRecords().reduce((a, b) => Number(a.getValue('population')) >= Number(b.getValue('population')) ? a : b)

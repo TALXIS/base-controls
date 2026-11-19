@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 
 const DESCRIPTION = `
-Every prop, member, hook and slot of the map, in one place to look up.
+Every prop, member, React hook and slot of the map, in one place to look up.
 
 ## Map props
 
@@ -61,10 +61,10 @@ Every prop of \`Map\`, with these changes and additions.
 
 ### Services
 
-| Key | Type | Description |
-|---|---|---|
-| \`provider\` | \`IDataProvider\` | The provider whose records the map draws, the one around it as it mounts. |
-| \`viewport\` | \`MapViewport\` | Works out the map's view. See *The viewport* below. |
+| Key | Holds |
+|---|---|
+| \`provider\` | The \`IDataProvider\` whose records the map draws, the one around it as it mounts. |
+| \`viewport\` | The \`MapViewport\`, which works out the map's view. See *The viewport* below. |
 
 ### The viewport
 
@@ -104,17 +104,17 @@ Pass modules in the map's \`modules\`. A module's \`onLoad\` gets the map.
 
 The map needs one module named \`library\`, whose \`onLoad\` returns an \`IMapLibrary\`: see [**A library of your own**](?path=/docs/controls-map-guide-advanced-a-library-of-your-own--overview). Declare what a module of yours returns on \`IMapModuleMap\` in \`declare module '@talxis/base-controls'\`, so \`map.modules.get(name)\` is typed.
 
-## Hooks
+## Inside what the map draws
 
-Each works inside anything the map draws: its children, its pins and their popups.
+These React hooks work inside anything the map draws: its children, its pins and their popups.
 
-| Hook | Returns |
+| React hook | Returns |
 |---|---|
 | \`useMap()\` | The map; throws outside one. |
 | \`useMapModule(name)\` | One of the map's modules, such as \`'library'\`; throws when it is not loaded. |
 | \`useMapRecords()\` | The records that have a pin, drawing the component again each time the provider loads new data. |
 | \`useMapRecord()\` | The record of the pin being drawn, inside a pin or its popup; throws outside one. |
-| \`MapRecordContext\` | Not a hook: the React context \`useMapRecord()\` reads. Its \`Provider\` hands each pin of your own its record, as on [**A library of your own**](?path=/docs/controls-map-guide-advanced-a-library-of-your-own--overview). |
+| \`MapRecordContext\` | Not a React hook: the React context \`useMapRecord()\` reads. Its \`Provider\` hands each pin of your own its record, as on [**A library of your own**](?path=/docs/controls-map-guide-advanced-a-library-of-your-own--overview). |
 
 ## Slots
 
@@ -129,8 +129,8 @@ Each works inside anything the map draws: its children, its pins and their popup
 | \`GoogleMap\` | \`map\` | \`onRender\` | \`GoogleMapsUiComponents\` | The vis.gl map |
 | Both | \`marker.pin\` | \`onRender\`, \`onRenderPin\`, \`onRenderDot\` | \`MapUiMarkerComponents\` | Each pin: its 32 by 40 box, the teardrop, and the dot in it; a \`color\` in \`onRenderPin\`'s props fills the teardrop. See [**Pins coloured by region**](?path=/docs/controls-map-guide-make-it-yours-pins-coloured-by-region--overview) |
 | | \`marker.popup\` | \`onRender\`, with no props | \`Map.Popup.Renderer\` | The whole content of the popup a pin opens. See [**A postcard for each capital**](?path=/docs/controls-map-guide-make-it-yours-a-postcard-for-each-capital--overview) |
-| | \`marker.popup.header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRender\`; \`status\`: \`onRender\`, \`onRenderLabel\` | \`CardHeaderComponents\`, \`CardHeaderStartComponents\`, \`CardHeaderEndComponents\`, \`CardTitleComponents\`, \`FieldOptionSetComponents\` | The default popup's header, with the record's name; unused beside \`marker.popup.onRender\` |
-| | \`marker.popup.body\`, \`marker.popup.fieldList\`, \`marker.popup.field\` | \`onRender\` and the field's \`onRenderIcon\`, \`onRenderLabel\` | \`CardBodyComponents\`, \`FieldListComponents\`, \`FieldValueComponents\` | The default popup's body and the fields of the record's visible columns; unused beside \`marker.popup.onRender\` |
+| | \`marker.popup.header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\`: \`onRender\`; \`status\`: \`onRender\`, \`onRenderLabel\` | \`CardHeaderComponents\`, \`CardHeaderStartComponents\`, \`CardHeaderEndComponents\`, \`CardTitleComponents\`, \`FieldOptionSetComponents\` | The default popup's header, with the record's name; unused beside the popup's \`onRender\` |
+| | \`marker.popup.body\`, \`marker.popup.fieldList\`, \`marker.popup.field\` | \`onRender\` and the field's \`onRenderIcon\`, \`onRenderLabel\` | \`CardBodyComponents\`, \`FieldListComponents\`, \`FieldValueComponents\` | The default popup's body and the fields of the record's visible columns; unused beside the popup's \`onRender\` |
 | \`LeafletMap\` | \`marker.popup.container\` | \`onRender\`, with react-leaflet's \`Popup\` props | \`LeafletUiPopupComponents\` | Leaflet's popup around the content, drawn as a Fluent callout |
 | \`GoogleMap\` | \`marker.popup.container\` | \`onRender\`, with vis.gl's \`InfoWindow\` props | \`GoogleMapsUiPopupComponents\` | Google's info window around the content, drawn as a Fluent callout |
 
@@ -138,18 +138,20 @@ The cover \`map.loading.show()\` draws and the dialog of a failed \`map.execute\
 
 ## Popup parts
 
-\`Map.Popup\` holds the parts a popup of your own is composed of. Each reads the record of the pin it is in, and throws outside a pin. See [**A postcard for each capital**](?path=/docs/controls-map-guide-make-it-yours-a-postcard-for-each-capital--overview).
+\`Map.Popup\` holds the parts a popup of your own is composed of, such as \`Map.Popup.Header\`. \`Header\`, \`FieldList\` and \`Field\` read the record of the pin they are in, and throw outside a pin; \`Body\` and \`Footer\` are \`Card.Body\` and \`Card.Footer\`, and \`Footer.Start\` and \`Footer.End\` hold the footer's two sides. See [**A postcard for each capital**](?path=/docs/controls-map-guide-make-it-yours-a-postcard-for-each-capital--overview).
 
 | Part | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|---|
-| \`Map.Popup.Renderer\` | \`components\` | \`IMapPopupRendererComponents\` | Defaults | Live | The default popup: the header, and a body with the record's visible columns that hold a value; \`header\`, \`body\`, \`fieldList\` and \`field\` take the slots of \`marker.popup\`. |
-| \`Map.Popup.Header\` | \`statusColumnName\` | \`string\` | None | Live | An option set column, shown beside the name as a tag in its option's colour. |
+| \`Renderer\` | \`components\` | \`IMapPopupRendererComponents\` | Defaults | Live | The default popup: the header, and a body with the record's visible columns that hold a value; \`header\`, \`body\`, \`fieldList\` and \`field\` take the slots of \`marker.popup\`. |
+| \`Header\` | \`statusColumnName\` | \`string\` | None | Live | An option set column, shown beside the name as a tag in its option's colour. |
 | | \`components\` | \`IMapPopupHeaderComponents\` | Defaults | Live | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\` and \`status\`, as in \`marker.popup.header\`. |
-| \`Map.Popup.Body\` | \`children\` | \`ReactNode\` | None | Live | What sits below the header. |
-| \`Map.Popup.Footer\` | \`children\` | \`ReactNode\` | None | Live | A band at the bottom, below a divider. |
-| \`Map.Popup.FieldList\` | \`children\` | \`ReactNode\` | None | Live | The fields, one under another. |
+| \`Body\` | \`children\` | \`ReactNode\` | None | Live | What sits below the header. |
+| | \`components\` | \`Partial<ICardBodyComponents>\` | Defaults | Live | \`onRender\`: the body's box. |
+| \`Footer\` | \`children\` | \`ReactNode\` | None | Live | A band at the bottom, below a divider. |
+| | \`components\` | \`Partial<ICardFooterComponents>\` | Defaults | Live | \`onRender\`: the band. |
+| \`FieldList\` | \`children\` | \`ReactNode\` | None | Live | The fields, one under another. |
 | | \`components\` | \`Partial<IFieldListComponents>\` | Defaults | Live | \`onRender\`: the box that holds the fields. |
-| \`Map.Popup.Field\` | \`columnName\` | \`string\` | Required | Live | The column, formatted, with its display name as the label; an option set as tags; nothing while its value is empty. |
+| \`Field\` | \`columnName\` | \`string\` | Required | Live | The column, formatted, with its display name as the label; an option set as tags; nothing while its value is empty. |
 | | \`iconName\` | \`string\` | None | Live | A Fluent icon before the label. |
 | | \`components\` | \`Partial<IFieldValueComponents>\` | Defaults | Live | \`onRender\`, \`onRenderIcon\` and \`onRenderLabel\`. |
 
@@ -162,7 +164,7 @@ Each part of the map is also exported as plain UI, which takes only props, for a
 | \`Map.Ui\`, also exported as \`MapUi\` | \`Container\`: the map's box, with \`height\`, \`className\` and \`components\`. \`Marker\`: the Fluent pin, its tip at the bottom centre of its 32 by 40 box. \`MarkerPin\`: its teardrop, in an optional \`color\` or the theme's primary colour. \`Skeleton\`: a placeholder shaped like a header over a map, with \`height\` and \`showHeader\`, for a \`DatasetControl\`'s \`components.skeleton.onRender\`; see [**A trip planner**](?path=/docs/controls-map-guide-your-data-a-trip-planner--overview). |
 | \`LeafletUi\` | The Leaflet map over \`tileUrl\` and \`attribution\`, starting at \`defaultCenter\` and \`defaultZoom\`, with react-leaflet markers in its children. \`LeafletUi.Popup\`: Leaflet's popup as a Fluent callout, for inside a react-leaflet \`Marker\`. |
 | \`GoogleMapsUi\` | The Google map under \`mapId\`, starting at \`defaultCenter\` and \`defaultZoom\`, with Advanced Markers in its children; it goes inside vis.gl's \`APIProvider\`, and draws dark on a dark theme. \`GoogleMapsUi.Popup\`: Google's info window as a Fluent callout, opened over its \`anchor\`, with \`onClose\`. |
-| From the package root | \`Card\` with \`Card.Header\`, \`Card.Body\` and \`Card.Footer\`, and \`Field\` with \`Field.List\`, \`Field.Value\`, \`Field.OptionSet\`, \`Field.DateRange\` and \`Field.Progress\`: the pieces the map's popups and the Gantt's tooltips are drawn from. |
+| From the package root | \`Card\` with \`Card.Header\`, \`Card.Title\`, \`Card.Body\` and \`Card.Footer\`, and \`Field\` with \`Field.List\`, \`Field.Value\`, \`Field.OptionSet\`, \`Field.DateRange\` and \`Field.Progress\`: the pieces the map's popups and the Gantt's tooltips are drawn from. |
 `
 
 const meta = {

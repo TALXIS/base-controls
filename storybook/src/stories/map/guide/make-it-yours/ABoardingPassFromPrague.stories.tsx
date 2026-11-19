@@ -36,7 +36,7 @@ The pins are those of *RegionPin.tsx*, and the boarding pass takes the place of 
 ## Remember
 
 - A popup can be anything.
-- The hooks hand a popup its pin's record and the map.
+- \`useMapRecord()\` and \`useMap()\` hand a popup its pin's record and the map.
 - \`useTheme()\` keeps a popup in your app's colours.
 
 Your pins and popups tell the trip. Your data lets your records decide what the map shows.

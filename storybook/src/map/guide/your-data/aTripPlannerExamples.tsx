@@ -125,7 +125,7 @@ const CapitalPin = (props: IMapUiMarkerPinProps) => {
     return <Map.Ui.MarkerPin {...props} color={color} />
 }
 
-//a row for each column the view shows now, so Edit columns changes the popup
+//a field for each column the view shows now, so Edit columns changes the popup
 const CapitalCard = () => {
     const { provider, isSelected, toggle } = useCapital()
     //the name is in the header; the hidden columns are the ones the map reads

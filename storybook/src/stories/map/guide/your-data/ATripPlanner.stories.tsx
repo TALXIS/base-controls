@@ -30,14 +30,14 @@ The map moves into a [**DatasetControl**](?path=/docs/controls-datasetcontrol-ov
 
 **Selection.** A map has no selection of its own, so **Select** in the popup sets the provider's, with \`setSelectedRecordIds\`. \`useDataProviderEvents\` in \`useCapital\` draws the pin and the popup again when the selection or a value changes. The ribbon loads its commands again on every selection, so \`TripRibbon\` offers **Mark N as visited** only while capitals are selected, and saves them at once. How the ribbon works is on [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview).
 
-**Edit columns.** \`CapitalCard\` draws a row for each column the view shows that is neither hidden nor the name, so saving in **Edit columns**, which mounts the control again, changes the popup. What Edit columns offers comes from the provider, here the saved query \`loadTrip\` sets: see [**Choose the columns**](?path=/docs/controls-datasetcontrol-guide-features-choose-the-columns--overview).
+**Edit columns.** \`CapitalCard\` draws a field for each column the view shows that is neither hidden nor the name, so saving in **Edit columns**, which mounts the control again, changes the popup. What Edit columns offers comes from the provider, here the saved query \`loadTrip\` sets: see [**Choose the columns**](?path=/docs/controls-datasetcontrol-guide-features-choose-the-columns--overview).
 
 ## Try it
 
 - Open Lisbon's and Dublin's pins and press **Select** in each: both pins turn dark, and the ribbon offers **Mark 2 as visited**.
 - Press it, then switch to *Visited*: ten capitals, Lisbon and Dublin among them, in green.
 - Switch back to *All capitals* and search *Bu*: *Loading map data…* covers the control for a second, then three pins are left: Bucharest, Budapest and Sofia, in Bulgaria.
-- Open **Edit columns**, add *Population* and save: each popup has a *Population* row.
+- Open **Edit columns**, add *Population* and save: each popup has a *Population* field.
 
 ## Remember
 

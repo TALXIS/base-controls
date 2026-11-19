@@ -48,7 +48,7 @@ This step keeps only \`data.ts\` of the trip and draws the capitals with a map l
 - Your component draws each pin inside \`MapRecordContext\`.
 - Move your map on \`onViewRequested\`, and call \`fit()\` once it is drawn.
 
-You have seen the whole map. Every prop, member, hook and slot is on [**Reference**](?path=/docs/controls-map-reference--overview).
+You have seen the whole map. Every prop, member, React hook and slot is on [**Reference**](?path=/docs/controls-map-reference--overview).
 
 {{block: navigation}}
 `

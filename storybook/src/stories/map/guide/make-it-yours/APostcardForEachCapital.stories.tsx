@@ -18,9 +18,9 @@ A pin opens a postcard: the capital's region, its country, the year it joined an
 
 The pins of [**Pins coloured by region**](?path=/docs/controls-map-guide-make-it-yours-pins-coloured-by-region--overview) move to *RegionPin.tsx* as they were, and \`data.ts\` adds each capital's \`country\` and \`euSince\`. In **Code**, the new lines carry \`//new:\`.
 
-**The popup.** By default, a pin opens the record's name and its visible columns, \`Map.Popup.Renderer\`. \`marker.popup.onRender\` replaces the popup's whole content, as \`Postcard\` does; to restyle the default instead, use \`marker.popup.header\`, \`body\`, \`fieldList\` and \`field\`, which go unused beside \`onRender\`.
+**The popup.** By default, a pin opens \`Map.Popup.Renderer\`: the record's name, and its visible columns that hold a value. \`marker.popup.onRender\` replaces the popup's whole content, as \`Postcard\` does; to restyle the default instead, use \`marker.popup.header\`, \`body\`, \`fieldList\` and \`field\`, which go unused beside \`onRender\`.
 
-**The popup parts.** A popup of your own is composed from \`Map.Popup\`'s parts. Each reads the record of the pin it is in, and throws outside a pin.
+**The popup parts.** A popup of your own is composed from \`Map.Popup\`'s parts. \`Header\`, \`FieldList\` and \`Field\` read the record of the pin they are in, and throw outside a pin.
 
 | Part | Draws |
 |---|---|
@@ -54,7 +54,7 @@ The bubble around the content is Leaflet's popup, drawn as a Fluent callout. Its
 ## Remember
 
 - \`marker.popup.onRender\` draws the whole popup.
-- \`Map.Popup\`'s parts read the pin's record.
+- \`Map.Popup.Header\` and \`Map.Popup.Field\` read the pin's record.
 - The \`Field\` parts take any value.
 
 {{block: navigation}}

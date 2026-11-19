@@ -6,7 +6,7 @@ const A_POSTCARD_FOR_EACH_CAPITAL_CODE = `import { DataProviderScope, LeafletMap
 import { cities, FIELD_MAPPING } from './data'
 import { REGION_PINS } from './RegionPin'
 
-//new: drawn in each pin's popup, where the hooks and Map.Popup's parts read the pin's record
+//new: the popup, from Map.Popup's parts and the pin's record
 const Postcard = () => {
     const capital = useMapRecord()
     const largest = useMapRecords().reduce((a, b) => Number(a.getValue('population')) >= Number(b.getValue('population')) ? a : b)

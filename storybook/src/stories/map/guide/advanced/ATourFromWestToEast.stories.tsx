@@ -42,7 +42,7 @@ This step starts again from the trip map of [**The EU through the years**](?path
 
 ## Remember
 
-- Inside the map, use the hooks, as \`Tour\` does; the props hand the same map to code outside it.
+- Inside the map, \`useMap()\` hands you the map, as in \`Tour\`; the props hand it to code outside.
 - The viewport moves the map's view to the pins.
 - \`getInstance()\` hands you the library's own map.
 
