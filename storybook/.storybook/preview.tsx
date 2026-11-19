@@ -207,7 +207,7 @@ const preview: Preview = {
               'Reference',
             ],
             'Checklist',
-            ['Get started', 'Customisation', 'Saving changes'],
+            ['Get started', 'Saving changes', 'Customisation'],
             'Form',
             [
               'Get started',

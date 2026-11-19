@@ -83,7 +83,7 @@ The store loads every task of the view at once. Sorting, filtering, search and o
 | Deletes tasks | \`deleteTasks()\`, one level at a time, the deepest first |
 | Any of the three above | \`synchronize()\` afterwards, when the store has it |
 
-\`DataverseTaskStore\` answers \`synchronize()\` with the tasks modified since it last read them, so dates that a plugin or a flow changes after a save show at once, while the user's unsaved edits stay.
+What \`synchronize()\` brings back, and what \`DataverseTaskStore\` answers, is under *Dates the backend changes* on [**Your own backend**](?path=/docs/controls-taskgrid-guide-your-data-your-own-backend--overview).
 
 ## Try it
 

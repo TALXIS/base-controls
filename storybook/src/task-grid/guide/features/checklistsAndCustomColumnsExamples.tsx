@@ -34,7 +34,7 @@ const fieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'sta
 
 //new: the checklist and the custom columns, by their names
 const views: ITaskGridView[] = [
-    { id: 'plan', name: 'Whole plan', resolve: () => ({ columns: [{ name: 'subject' }, { name: TASK_CHECKLIST_COLUMN_NAME }, { name: BUDGET, visualSizeFactor: 100 }, { name: SUPPLIER, visualSizeFactor: 120 }] }) },
+    { id: 'plan', name: 'Whole plan', resolve: () => ({ columns: [{ name: 'subject' }, { name: TASK_CHECKLIST_COLUMN_NAME, visualSizeFactor: 120 }, { name: BUDGET, visualSizeFactor: 100 }, { name: SUPPLIER, visualSizeFactor: 120 }] }) },
 ]
 
 const loadTasks = (taskRuntime: ITaskRuntime) => ({

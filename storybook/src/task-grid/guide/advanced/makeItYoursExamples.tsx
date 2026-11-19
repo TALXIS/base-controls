@@ -109,7 +109,7 @@ import { createLoadOffice } from './office'
 const loadTasks = createLoadOffice()
 
 //new: a part of your own reads the task under the pointer
-const HoursLeftRow = () => {
+const HoursLeftField = () => {
     const { record } = useTaskTooltip()
     const hoursLeft = Math.round(Number(record.getValue('effort')) * (100 - Number(record.getValue('done'))) / 100)
     return <Field.Value label='Hours left' iconName='Clock'>{hoursLeft} h</Field.Value>
@@ -124,7 +124,7 @@ const tooltipModule = createTaskTooltipModule({
             <TaskTooltip.Body>
                 <TaskTooltip.FieldList>
                     <TaskTooltip.Field columnName='priority' iconName='Flag' />
-                    <HoursLeftRow />
+                    <HoursLeftField />
                 </TaskTooltip.FieldList>
             </TaskTooltip.Body>
             <TaskTooltip.Footer>

@@ -17,6 +17,7 @@ const views: ITaskGridView[] = [{ id: 'timeline', name: 'Timeline', resolve: () 
 const loadTasks = (taskRuntime: ITaskRuntime) => ({
     store: new MemoryTaskStore({ taskRuntime, tasks, metadata: OFFICE_METADATA, columns: OFFICE_COLUMNS }),
     fieldMapping,
+    //new: the view comes with the store
     views,
 })
 

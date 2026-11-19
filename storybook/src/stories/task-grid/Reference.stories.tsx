@@ -10,26 +10,28 @@ Every other prop works as on a [**DatasetControl**](?path=/docs/controls-dataset
 
 | Prop | Type | Default | Timing | Description |
 |---|---|---|---|---|
-| \`onLoad\` | \`(taskRuntime: ITaskRuntime) => ITaskGridLoadResult \\| Promise<ITaskGridLoadResult>\` | Required | At mount | Returns the store, the field mapping and the views, on every mount. See *What onLoad returns* below. |
+| \`onLoad\` | \`(taskRuntime) => ITaskGridLoadResult\` | Required | At mount | Gets the \`ITaskRuntime\` and returns the store, the field mapping and the views, or a promise of them, on every mount. See *What onLoad returns* below. |
 | \`modules\` | \`IDatasetControlModule[]\` | None | At mount | Task modules, and DatasetControl modules such as user views. |
 | \`enableCreation\` | \`boolean\` | \`false\` | At mount | *New* in the ribbon, and the **+** on each active task's row. |
 | \`enableEditing\` | \`boolean\` | \`false\` | At mount | *Edit* for the selected tasks, editing in the cells and on the timeline, and dragging. Without it, forms open read-only. |
 | \`enableDeletion\` | \`boolean\` | \`false\` | At mount | *Delete* for the selected tasks. |
 | \`defaultCreatePosition\` | \`'first' \\| 'last'\` | \`'first'\` | At mount | Where among its siblings a new task goes when the call names no place of its own. |
-| \`onSetup\` | \`(control: IDatasetControl<ITaskViewData>) => void\` | None | At mount | Gets the DatasetControl of each mount, before it loads its modules and tasks. |
-| \`onReady\` | \`(control: IDatasetControl<ITaskViewData>) => void\` | None | Once loaded | Called once per mount when the control has loaded and is drawn. |
+| \`onSetup\` | \`(control: IDatasetControl) => void\` | None | At mount | Gets the DatasetControl of each mount, before it loads its modules and tasks. |
+| \`onReady\` | \`(control: IDatasetControl) => void\` | None | At mount | Called once per mount, when the control has loaded and is drawn. |
 
 ## TaskDatasetControl parts
 
-| Part | Prop | Type | Default | Timing | Description |
-|---|---|---|---|---|---|
-| \`TaskDatasetControl.Settings\` | \`enableShowHierarchy\` | \`boolean\` | \`true\` | Live | The *Show hierarchy* toggle, which turns the flat list off and on. |
-| | \`enableHideInactiveTasks\` | \`boolean\` | \`true\` | Live | The *Hide inactive tasks* toggle. |
-| | \`components\` | \`Partial<ITaskGridUiSettingsMenuComponents>\` | Defaults | Live | See *Slots* below. |
-| \`TaskDatasetControl.Ribbon\` | Every prop of \`DatasetControl.Ribbon\` | | | | Its items pass through \`hooks.ribbonCommandUi\` of the task runtime. What DatasetControl adds to the ribbon is on [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview). |
-| \`TaskDatasetControl.PageSizeSwitcher\` | Every prop of \`DatasetControl.PageSizeSwitcher\` but \`pageSizes\` | | | | Shows how many tasks the tree holds, and is always disabled: a task grid loads every task at once. |
+\`TaskDatasetControl.Ribbon\` takes every prop of \`DatasetControl.Ribbon\`, and its items pass through \`hooks.ribbonCommandUi\` of the task runtime; what DatasetControl adds to the ribbon is on [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview). \`TaskDatasetControl.PageSizeSwitcher\` takes every prop of \`DatasetControl.PageSizeSwitcher\` but \`pageSizes\`: it shows how many tasks the tree holds, and is always disabled, as a task grid loads every task at once.
 
-\`TaskDatasetControl.Settings\` provides the \`taskSettings\` part, so \`control.parts.get('taskSettings')\` reaches it while it is drawn.
+\`TaskDatasetControl.Settings\` takes these:
+
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| \`enableShowHierarchy\` | \`boolean\` | \`true\` | Live | The *Show hierarchy* toggle, which turns the flat list off and on. |
+| \`enableHideInactiveTasks\` | \`boolean\` | \`true\` | Live | The *Hide inactive tasks* toggle. |
+| \`components\` | \`Partial<ITaskGridUiSettingsMenuComponents>\` | Defaults | Live | See *Slots* below. |
+
+It provides the \`taskSettings\` part, so \`control.parts.get('taskSettings')\` reaches it while it is drawn.
 
 | Member | Description |
 |---|---|
@@ -52,19 +54,22 @@ Every other prop works as on a Grid: see *Props* on Grid's [**Reference**](?path
 
 \`TaskGantt\` and its parts come from \`@talxis/base-controls/gantt\`.
 
-| Component | Prop | Type | Default | Timing | Description |
-|---|---|---|---|---|---|
-| \`TaskGantt\` | \`modules\` | \`IGanttModule[]\` | Required | At mount | The Gantt's modules, a library module among them. |
-| | \`stateKey\` | \`string\` | None | At mount | Where the zoom is kept in each view. |
-| | \`timelineLimits\` | \`{ start?: Dayjs, end?: Dayjs }\` | Today ± 25 years | Live | How far the timeline scrolls, widened to fit the tasks. |
-| | \`components\` | \`ITaskGanttComponents\` | Defaults | Live | See *Slots* below. |
-| | \`onSetup\` | \`(gantt: IGantt) => void\` | None | At mount | Gets the Gantt of each mount, before its modules load; add hooks here. |
-| | \`onReady\` | \`(gantt: IGantt) => void\` | None | Once loaded | Called once per mount when the chart is drawn. |
-| \`TaskGantt.Split\` | \`children\` | Two elements | Required | Live | The \`TaskGrid\`, then the \`TaskGantt\`. |
-| | \`defaultGanttSize\` | \`number\` | \`60\` | At mount | The Gantt's share of the width, in percent, until the user drags the handle. |
-| | \`stateKey\` | \`string\` | None | At mount | Where the user's width is kept in each view. |
-| | \`components\` | \`Partial<IGridGanttUiSplitComponents>\` | Defaults | Live | See *Slots* below. |
-| \`TaskGantt.ZoomSlider\` | \`components\` | \`Partial<IGanttUiZoomSliderComponents>\` | Defaults | Live | See *Slots* below. |
+| Prop | Type | Default | Timing | Description |
+|---|---|---|---|---|
+| **\`TaskGantt\`** | | | | |
+| \`modules\` | \`IGanttModule[]\` | Required | At mount | The Gantt's modules, a library module among them. |
+| \`stateKey\` | \`string\` | None | At mount | Where the zoom is kept in each view. |
+| \`timelineLimits\` | \`{ start?: Dayjs, end?: Dayjs }\` | Today ± 25 years | Live | How far the timeline scrolls, widened to fit the tasks. |
+| \`components\` | \`ITaskGanttComponents\` | Defaults | Live | See *Slots* below. |
+| \`onSetup\` | \`(gantt: IGantt) => void\` | None | At mount | Gets the Gantt of each mount, before its modules load; add hooks here. |
+| \`onReady\` | \`(gantt: IGantt) => void\` | None | At mount | Called once per mount, when the chart is drawn. |
+| **\`TaskGantt.Split\`** | | | | |
+| \`children\` | Two elements | Required | Live | The \`TaskGrid\`, then the \`TaskGantt\`. |
+| \`defaultGanttSize\` | \`number\` | \`60\` | At mount | The Gantt's share of the width, in percent, until the user drags the handle. |
+| \`stateKey\` | \`string\` | None | At mount | Where the user's width is kept in each view. |
+| \`components\` | \`Partial<IGridGanttUiSplitComponents>\` | Defaults | Live | See *Slots* below. |
+| **\`TaskGantt.ZoomSlider\`** | | | | |
+| \`components\` | \`Partial<IGanttUiZoomSliderComponents>\` | Defaults | Live | See *Slots* below. |
 
 ## What onLoad returns
 
@@ -143,30 +148,41 @@ Create a new store in every \`onLoad\`, with the task runtime it gets.
 
 Task modules go in \`TaskDatasetControl\`'s \`modules\`; \`modules.get(name)\` and \`useDatasetControlModule(name)\` find one by its name.
 
-| Module | Name | Memory | Dataverse | TALXIS | Your own store |
-|---|---|---|---|---|---|
-| Row dragging | \`dragging\` | \`createTaskDraggingModule()\` | The same | The same | The same |
-| User views | \`userQueries\` | \`createLocalStorageUserQueriesModule\`, in the browser | \`createDataverseUserQueriesModule\` | \`createTalxisUserQueriesModule\` | \`createUserQueriesModule\` |
-| Project | \`project\` | \`createMemoryProjectModule\` | \`createDataverseProjectModule\` | The Dataverse one | \`createProjectModule\` |
-| Custom columns | \`customColumns\` | \`createMemoryCustomColumnsModule\` | None | \`createTalxisCustomColumnsModule\` | \`createCustomColumnsModule\` |
-| Lookup many | \`lookupMany\` | \`createMemoryLookupManyModule\` | \`createDataverseLookupManyModule\` | The Dataverse one | \`createLookupManyModule\` |
-| Templates | \`templates\` | \`createMemoryTemplatesModule\` | None | None | \`createTemplatesModule\` |
-| Checklist | \`taskChecklist\` | \`createMemoryTaskChecklistModule\` | None | \`createTalxisTaskChecklistModule\` | \`createTaskChecklistModule\` |
-| Dependencies | \`dependencies\` | \`createMemoryDependenciesModule\` | \`createDataverseDependenciesModule\` | \`createTalxisDependenciesModule\` | \`createDependenciesModule\` |
+| Module | Name | Memory | Your own store |
+|---|---|---|---|
+| Row dragging | \`dragging\` | \`createTaskDraggingModule()\`, for every store | |
+| Project | \`project\` | \`createMemoryProjectModule\` | \`createProjectModule\` |
+| Custom columns | \`customColumns\` | \`createMemoryCustomColumnsModule\` | \`createCustomColumnsModule\` |
+| Lookup many | \`lookupMany\` | \`createMemoryLookupManyModule\` | \`createLookupManyModule\` |
+| Templates | \`templates\` | \`createMemoryTemplatesModule\` | \`createTemplatesModule\` |
+| Checklist | \`taskChecklist\` | \`createMemoryTaskChecklistModule\` | \`createTaskChecklistModule\` |
+| Dependencies | \`dependencies\` | \`createMemoryDependenciesModule\` | \`createDependenciesModule\` |
 
-The parameters of the user views factories are under *User views* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview). \`createTaskEditingModule()\` goes in \`TaskGrid\`'s \`modules\` and takes no parameters.
+| Module | Dataverse | TALXIS |
+|---|---|---|
+| Project | \`createDataverseProjectModule\` | The Dataverse one |
+| Custom columns | None | \`createTalxisCustomColumnsModule\` |
+| Lookup many | \`createDataverseLookupManyModule\` | The Dataverse one |
+| Templates | None | None |
+| Checklist | None | \`createTalxisTaskChecklistModule\` |
+| Dependencies | \`createDataverseDependenciesModule\` | \`createTalxisDependenciesModule\` |
+
+User views, \`userQueries\`, come from DatasetControl's factories, under *User views* on its [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview): \`createLocalStorageUserQueriesModule\`, \`createDataverseUserQueriesModule\`, \`createTalxisUserQueriesModule\` and \`createUserQueriesModule\`. \`createTaskEditingModule()\` goes in \`TaskGrid\`'s \`modules\` and takes no parameters.
 
 ### Project
 
-| Factory | Parameter | Type | Default | Description |
-|---|---|---|---|---|
-| \`createMemoryProjectModule\` | \`projects\` | \`MemoryTable<IMemoryProject>\` | Required | The projects, keyed by \`id\`, their dates as ISO strings. |
-| | \`projectId\` | \`string\` | Required | The project the grid shows. |
-| \`createDataverseProjectModule\` | \`entityName\` | \`string\` | Required | The project's table. |
-| | \`id\` | \`string\` | Required | The project record's id. |
-| | \`startDateColumn\`, \`endDateColumn\` | \`string\` | None | The columns holding its start and end. |
-| | \`columns\` | \`string[]\` | None | More columns to read into \`data\`. |
-| \`createProjectModule\` | \`createStore\` | \`(taskRuntime) => IProjectStore\` | Required | Called on every mount; the store's \`loadProject()\` returns the project, before the tasks load, and its optional \`destroy()\` runs when the mount goes. |
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| **\`createMemoryProjectModule\`** | | | |
+| \`projects\` | \`MemoryTable<IMemoryProject>\` | Required | The projects, keyed by \`id\`, their dates as ISO strings. |
+| \`projectId\` | \`string\` | Required | The project the grid shows. |
+| **\`createDataverseProjectModule\`** | | | |
+| \`entityName\` | \`string\` | Required | The project's table. |
+| \`id\` | \`string\` | Required | The project record's id. |
+| \`startDateColumn\`, \`endDateColumn\` | \`string\` | None | The columns holding its start and end. |
+| \`columns\` | \`string[]\` | None | More columns to read into \`data\`. |
+| **\`createProjectModule\`** | | | |
+| \`createStore\` | \`(taskRuntime) => IProjectStore\` | Required | Called on every mount; the store's \`loadProject()\` returns the project, before the tasks load, and its optional \`destroy()\` runs when the mount goes. |
 
 | Project field | Type | Description |
 |---|---|---|
@@ -178,17 +194,21 @@ The parameters of the user views factories are under *User views* on DatasetCont
 
 ### Custom columns
 
-| Factory | Parameter | Type | Default | Description |
-|---|---|---|---|---|
-| Every one | \`enableCreation\` | \`boolean\` | \`false\` | *Add custom column* in *Edit columns*. |
-| | \`enableEditing\` | \`boolean\` | \`false\` | The edit command beside each custom column. Not on the memory factory. |
-| | \`enableDeletion\` | \`boolean\` | \`false\` | The delete command beside each custom column. |
-| \`createMemoryCustomColumnsModule\` | \`columns\` | \`MemoryTable<ICustomColumnRow>\` | Required | The columns, keyed by \`name\`. |
-| | \`values\` | \`MemoryTable<ICustomColumnValuesRow>\` | Required | Each task's values, as \`{ taskId, values }\` keyed by \`taskId\`. |
-| \`createTalxisCustomColumnsModule\` | \`entityName\` | \`string\` | Required | The table the columns are defined for. |
-| | \`recordId\` | \`string\` | None | Also loads the columns defined for this record, such as the project, and defines new columns for it. |
-| | \`navigationPropertyName\` | \`string\` | None | The relationship from the task table to \`talxis_attributevalue\`, when there are several. |
-| \`createCustomColumnsModule\` | \`createStore\` | \`(taskRuntime) => ICustomColumnsStore\` | Required | Called on every mount. |
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| **Every factory** | | | |
+| \`enableCreation\` | \`boolean\` | \`false\` | *Add custom column* in *Edit columns*. |
+| \`enableEditing\` | \`boolean\` | \`false\` | The edit command beside each custom column. Not on the memory factory. |
+| \`enableDeletion\` | \`boolean\` | \`false\` | The delete command beside each custom column. |
+| **\`createMemoryCustomColumnsModule\`** | | | |
+| \`columns\` | \`MemoryTable<ICustomColumnRow>\` | Required | The columns, keyed by \`name\`. |
+| \`values\` | \`MemoryTable<ICustomColumnValuesRow>\` | Required | Each task's values, as \`{ taskId, values }\` keyed by \`taskId\`. |
+| **\`createTalxisCustomColumnsModule\`** | | | |
+| \`entityName\` | \`string\` | Required | The table the columns are defined for. |
+| \`recordId\` | \`string\` | None | Also loads the columns defined for this record, such as the project, and defines new columns for it. |
+| \`navigationPropertyName\` | \`string\` | None | The relationship from the task table to \`talxis_attributevalue\`, when there are several. |
+| **\`createCustomColumnsModule\`** | | | |
+| \`createStore\` | \`(taskRuntime) => ICustomColumnsStore\` | Required | Called on every mount. |
 
 | Column row field | Description |
 |---|---|
@@ -210,14 +230,18 @@ The parameters of the user views factories are under *User views* on DatasetCont
 
 ### Lookup many
 
-| Factory | Parameter | Type | Default | Description |
-|---|---|---|---|---|
-| Every one | \`columns\` | \`{ [columnName]: ILookupManyColumn }\` | Required | The lookup-many columns by name. |
-| | \`components\` | \`ILookupManyComponents\` | Defaults | See *Slots* below. |
-| \`createMemoryLookupManyModule\` | \`sources\` | \`{ [entityName]: { records, metadata, columns } }\` | Required | The records to pick from, by table name; \`records\` is a \`MemoryTable\`. |
-| | \`values\` | \`MemoryTable<IMemoryLookupManyValues>\` | Required | Each task's picks, as \`{ taskId, values }\` keyed by \`taskId\`, \`values\` by column name. |
-| \`createDataverseLookupManyModule\` | \`hostRecord\` | \`{ entityName, id?, data? }\` | None | The record the grid sits on, as \`hostRecord\` in each column's FetchXML. |
-| \`createLookupManyModule\` | \`createStore\` | \`(taskRuntime) => ILookupManyStore\` | Required | Called on every mount. |
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| **Every factory** | | | |
+| \`columns\` | \`{ [columnName]: ILookupManyColumn }\` | Required | The lookup-many columns by name. |
+| \`components\` | \`ILookupManyComponents\` | Defaults | See *Slots* below. |
+| **\`createMemoryLookupManyModule\`** | | | |
+| \`sources\` | \`{ [entityName]: { records, metadata, columns } }\` | Required | The records to pick from, by table name; \`records\` is a \`MemoryTable\`. |
+| \`values\` | \`MemoryTable<IMemoryLookupManyValues>\` | Required | Each task's picks, as \`{ taskId, values }\` keyed by \`taskId\`, \`values\` by column name. |
+| **\`createDataverseLookupManyModule\`** | | | |
+| \`hostRecord\` | \`{ entityName, id?, data? }\` | None | The record the grid sits on, as \`hostRecord\` in each column's FetchXML. |
+| **\`createLookupManyModule\`** | | | |
+| \`createStore\` | \`(taskRuntime) => ILookupManyStore\` | Required | Called on every mount. |
 
 | Column key | Description |
 |---|---|
@@ -238,12 +262,15 @@ The parameters of the user views factories are under *User views* on DatasetCont
 
 ### Templates
 
-| Factory | Parameter | Type | Default | Description |
-|---|---|---|---|---|
-| Every one | \`components\` | \`ITemplatesComponents\` | Defaults | See *Slots* below. |
-| \`createMemoryTemplatesModule\` | \`templates\` | \`MemoryTable<IMemoryTemplate>\` | Required | The templates, keyed by \`id\`: \`{ id, name, data?, children? }\`, each child \`{ data?, children? }\`. |
-| | \`tasks\` | \`MemoryTable<IRawRecord>\` | Required | The table the template's tasks are created in, the one \`MemoryTaskStore\` reads. |
-| \`createTemplatesModule\` | \`createStore\` | \`(taskRuntime) => ITemplatesStore\` | Required | Called on every mount. |
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| **Every factory** | | | |
+| \`components\` | \`ITemplatesComponents\` | Defaults | See *Slots* below. |
+| **\`createMemoryTemplatesModule\`** | | | |
+| \`templates\` | \`MemoryTable<IMemoryTemplate>\` | Required | The templates, keyed by \`id\`: \`{ id, name, data?, children? }\`, each child \`{ data?, children? }\`. |
+| \`tasks\` | \`MemoryTable<IRawRecord>\` | Required | The table the template's tasks are created in, the one \`MemoryTaskStore\` reads. |
+| **\`createTemplatesModule\`** | | | |
+| \`createStore\` | \`(taskRuntime) => ITemplatesStore\` | Required | Called on every mount. |
 
 | ITemplatesStore method | Description |
 |---|---|
@@ -254,27 +281,36 @@ The parameters of the user views factories are under *User views* on DatasetCont
 
 ### Checklist
 
-| Factory | Parameter | Type | Default | Description |
-|---|---|---|---|---|
-| Every one | \`reloadOnEditorClosed\` | \`boolean\` | \`false\`; \`true\` for TALXIS | Reads a task's items again once its form closes. |
-| | \`components\` | \`ITaskChecklistComponents\` | Defaults | See *Slots* below. |
-| \`createMemoryTaskChecklistModule\` | \`items\` | \`MemoryTable<IMemoryTaskChecklistItem>\` | Required | The items, \`{ id, taskId, name, isCompleted }\`, keyed by \`id\`. |
-| \`createTalxisTaskChecklistModule\` | | | | Reads each task's \`talxis_checklistjson\`, a JSON array of \`{ id, name, isCompleted }\`. |
-| \`createTaskChecklistModule\` | \`createStore\` | \`(taskRuntime) => ITaskChecklistStore\` | Required | Called on every mount; the store's \`loadItems(taskIds)\` returns the items by task id, and its optional \`destroy()\` runs when the mount goes. |
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| **Every factory** | | | |
+| \`reloadOnEditorClosed\` | \`boolean\` | \`false\`; \`true\` for TALXIS | Reads a task's items again once its form closes. |
+| \`components\` | \`ITaskChecklistComponents\` | Defaults | See *Slots* below. |
+| **\`createMemoryTaskChecklistModule\`** | | | |
+| \`items\` | \`MemoryTable<IMemoryTaskChecklistItem>\` | Required | The items, keyed by \`id\`, each with a \`taskId\`, a \`name\` and \`isCompleted\`. |
+| **\`createTalxisTaskChecklistModule\`** | | | |
+| No parameters | | | Reads each task's \`talxis_checklistjson\`, a JSON array of \`{ id, name, isCompleted }\`. |
+| **\`createTaskChecklistModule\`** | | | |
+| \`createStore\` | \`(taskRuntime) => ITaskChecklistStore\` | Required | Called on every mount; the store's \`loadItems(taskIds)\` returns the items by task id, and its optional \`destroy()\` runs when the mount goes. |
 
 ### Dependencies
 
-| Factory | Parameter | Type | Default | Description |
-|---|---|---|---|---|
-| Every one | \`reloadOnEditorClosed\` | \`boolean\` | \`false\`; \`true\` for Dataverse and TALXIS | Reads a task's dependencies again once its form closes. |
-| | \`components\` | \`IDependenciesComponents\` | Defaults | See *Slots* below. |
-| \`createMemoryDependenciesModule\` | \`dependencies\` | \`MemoryTable<ITaskDependency>\` | Required | The dependencies, keyed by \`id\`. |
-| \`createDataverseDependenciesModule\` | \`entityName\` | \`string\` | Required | The dependency table. |
-| | \`predecessorAttribute\`, \`successorAttribute\` | \`string\` | Required | Its two lookups to the task table. |
-| | \`typeAttribute\` | \`string\` | Required | Its option set of the type. |
-| | \`dependencyTypeCodes\` | \`{ [value: number]: TaskDependencyType }\` | Required | Every value of that option set, and the type it stands for; a value left out fails the load. |
-| \`createTalxisDependenciesModule\` | | | | The Dataverse factory with \`talxis_taskdependency\` mapped. |
-| \`createDependenciesModule\` | \`createStore\` | \`(taskRuntime) => IDependenciesStore\` | Required | Called on every mount. |
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| **Every factory** | | | |
+| \`reloadOnEditorClosed\` | \`boolean\` | \`false\`; \`true\` for Dataverse and TALXIS | Reads a task's dependencies again once its form closes. |
+| \`components\` | \`IDependenciesComponents\` | Defaults | See *Slots* below. |
+| **\`createMemoryDependenciesModule\`** | | | |
+| \`dependencies\` | \`MemoryTable<ITaskDependency>\` | Required | The dependencies, keyed by \`id\`. |
+| **\`createDataverseDependenciesModule\`** | | | |
+| \`entityName\` | \`string\` | Required | The dependency table. |
+| \`predecessorAttribute\`, \`successorAttribute\` | \`string\` | Required | Its two lookups to the task table. |
+| \`typeAttribute\` | \`string\` | Required | Its option set of the type. |
+| \`dependencyTypeCodes\` | \`{ [value: number]: TaskDependencyType }\` | Required | Every value of that option set, and the type it stands for; a value left out fails the load. |
+| **\`createTalxisDependenciesModule\`** | | | |
+| No parameters | | | The Dataverse factory with \`talxis_taskdependency\` mapped. |
+| **\`createDependenciesModule\`** | | | |
+| \`createStore\` | \`(taskRuntime) => IDependenciesStore\` | Required | Called on every mount. |
 
 | Dependency field | Description |
 |---|---|
@@ -308,27 +344,39 @@ Gantt modules come from \`@talxis/base-controls/gantt\` and go in \`TaskGantt\`'
 
 ### Parameters
 
-| Factory | Parameter | Type | Default | Description |
-|---|---|---|---|---|
-| \`createProLibraryModule\` | \`Gantt\` | \`GanttEnterprise\` | Required | The PRO build's \`Gantt\` export. |
-| \`createBarDraggingModule\` | \`enableMove\` | \`boolean\` | \`true\` | Dragging a bar to other dates. |
-| | \`enableResize\` | \`boolean\` | \`true\` | Dragging a bar's ends. |
-| \`createTaskDrawingModule\` | \`components\` | \`ITaskDrawingComponents\` | Defaults | See *Slots* below. |
-| \`createTaskSelectionModule\` | \`enableSelectionBox\` | \`boolean\` | \`true\` | Shift+drag selects the bars under a band. |
-| \`createTaskTooltipModule\` | \`statusColumnName\` | \`string\` | None | An option set column the header shows as a pill in its option's colour. The column has to load, such as by being in the view, or the tooltip fails. |
-| | \`components\` | \`ITaskTooltipComponents\` | Defaults | See *Slots* below. |
-| \`createLinksModule\` | \`components\` | \`ILinksComponents\` | Defaults | See *Slots* below. |
-| \`createMarkersModule\`, \`createMemoryMarkersModule\` | \`today\` | \`{ enableMarker?, color?, lineStyle? }\` | \`{ enableMarker: true }\` | Today's marker. |
-| | \`project\` | \`{ enableMarkers?, color?, lineStyle? }\` | \`{ enableMarkers: true }\` | The project's start and end. |
-| | \`components\` | \`IMarkersComponents\` | Defaults | See *Slots* below. |
-| \`createMarkersModule\` | \`createStore\` | \`(taskRuntime) => IMarkersStore\` | None | A store whose \`loadMarkers()\` returns markers of your own. |
-| \`createMemoryMarkersModule\` | \`markers\` | \`MemoryTable<IMemoryMarker>\` | Required | The markers, their dates as ISO strings. |
-| \`createNonWorkingDaysModule\`, \`createMemoryNonWorkingDaysModule\` | \`enableWeekends\` | \`boolean\` | \`true\` | Saturdays and Sundays are non-working days. |
-| | \`isVisibleByDefault\` | \`boolean\` | \`true\` | Shows the days until the user hides them. |
-| | \`enableDropOnNonWorkingDays\` | \`boolean\` | \`false\` | Lets a dragged or drawn bar start or end on a non-working day. |
-| | \`components\` | \`INonWorkingDaysComponents\` | Defaults | See *Slots* below. |
-| \`createNonWorkingDaysModule\` | \`createStore\` | \`(taskRuntime) => INonWorkingDaysStore\` | None | A store whose \`loadNonWorkingDays()\` returns days of your own. |
-| \`createMemoryNonWorkingDaysModule\` | \`nonWorkingDays\` | \`MemoryTable<IMemoryNonWorkingDay>\` | Required | The days, their dates as ISO strings. |
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| **\`createProLibraryModule\`** | | | |
+| \`Gantt\` | \`GanttEnterprise\` | Required | The PRO build's \`Gantt\` export. |
+| **\`createBarDraggingModule\`** | | | |
+| \`enableMove\` | \`boolean\` | \`true\` | Dragging a bar to other dates. |
+| \`enableResize\` | \`boolean\` | \`true\` | Dragging a bar's ends. |
+| **\`createTaskDrawingModule\`** | | | |
+| \`components\` | \`ITaskDrawingComponents\` | Defaults | See *Slots* below. |
+| **\`createTaskSelectionModule\`** | | | |
+| \`enableSelectionBox\` | \`boolean\` | \`true\` | Shift+drag selects the bars under a band. |
+| **\`createTaskTooltipModule\`** | | | |
+| \`statusColumnName\` | \`string\` | None | An option set column the header shows as a pill in its option's colour. The column has to load, such as by being in the view, or the tooltip fails. |
+| \`components\` | \`ITaskTooltipComponents\` | Defaults | See *Slots* below. |
+| **\`createLinksModule\`** | | | |
+| \`components\` | \`ILinksComponents\` | Defaults | See *Slots* below. |
+| **\`createMarkersModule\`, \`createMemoryMarkersModule\`** | | | |
+| \`today\` | \`ITodayMarkerParameters\` | Shown | Today's marker: \`enableMarker\`, \`color\` and \`lineStyle\`. |
+| \`project\` | \`IProjectMarkersParameters\` | Shown | The project's start and end: \`enableMarkers\`, \`color\` and \`lineStyle\`. |
+| \`components\` | \`IMarkersComponents\` | Defaults | See *Slots* below. |
+| **\`createMarkersModule\`** | | | |
+| \`createStore\` | \`(taskRuntime) => IMarkersStore\` | None | A store whose \`loadMarkers()\` returns markers of your own. |
+| **\`createMemoryMarkersModule\`** | | | |
+| \`markers\` | \`MemoryTable<IMemoryMarker>\` | Required | The markers, their dates as ISO strings. |
+| **\`createNonWorkingDaysModule\`, \`createMemoryNonWorkingDaysModule\`** | | | |
+| \`enableWeekends\` | \`boolean\` | \`true\` | Saturdays and Sundays are non-working days. |
+| \`isVisibleByDefault\` | \`boolean\` | \`true\` | Shows the days until the user hides them. |
+| \`enableDropOnNonWorkingDays\` | \`boolean\` | \`false\` | Lets a dragged or drawn bar start or end on a non-working day. |
+| \`components\` | \`INonWorkingDaysComponents\` | Defaults | See *Slots* below. |
+| **\`createNonWorkingDaysModule\`** | | | |
+| \`createStore\` | \`(taskRuntime) => INonWorkingDaysStore\` | None | A store whose \`loadNonWorkingDays()\` returns days of your own. |
+| **\`createMemoryNonWorkingDaysModule\`** | | | |
+| \`nonWorkingDays\` | \`MemoryTable<IMemoryNonWorkingDay>\` | Required | The days, their dates as ISO strings. |
 
 ### A marker
 
@@ -449,48 +497,62 @@ Inside anything \`TaskGrid\` draws, such as a cell, \`useTaskGridService(key)\` 
 
 ## Slots
 
-\`TaskGrid\`, the Gantt's parts and the modules that draw something each take \`components\`; a module's go in its factory's parameters and are read at mount. How slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview).
+\`TaskGrid\` and the Gantt's parts take \`components\` as a prop. How slots work is on [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview). \`TaskDatasetControl.Ribbon\` and \`TaskDatasetControl.PageSizeSwitcher\` take the slots of their DatasetControl parts, under *Slots* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 
 | Component | Key | Slots | Default | Draws |
 |---|---|---|---|---|
 | \`TaskGrid\` | \`overlays\`, \`rows\` | The Grid's, under *The grid's own pieces* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview) | | |
-| \`TaskDatasetControl.Ribbon\`, \`TaskDatasetControl.PageSizeSwitcher\` | Their DatasetControl parts' | Under *Slots* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview) | | |
 | \`TaskDatasetControl.Settings\` | Top level | \`onRender\`, \`onRenderButton\` | \`TaskGridUiSettingsMenuComponents\` | The tooltip around the settings button, and the button with its menu |
 | \`TaskGantt\` | \`chart\` | \`onRender\`, \`onRenderChart\` | \`GanttUiChartComponents\` | The chart's box; \`onRenderChart\` has to pass on its \`ref\` |
 | | \`overlay\` | \`onRender\` | \`GanttUiOverlayComponents\` | The cover the Gantt's \`overlay\` service shows over the chart |
 | | \`skeleton\` | \`onRender\`, \`onRenderSkeleton\` | \`GanttUiSkeletonComponents\` | The placeholder until the chart is drawn |
 | \`TaskGantt.Split\` | Top level | \`onRender\`, \`onRenderGridPane\`, \`onRenderGanttPane\`, \`onRenderHandle\` | \`GridGanttUiSplitComponents\` | The two panes and the handle between them |
 | \`TaskGantt.ZoomSlider\` | Top level | \`onRender\`, \`onRenderSlider\`, \`onRenderZoomButton\` | \`GanttUiZoomSliderComponents\` | The slider and its two zoom buttons |
-| Checklist module | \`progress\` | \`onRender\`, \`onRenderIcon\`, \`onRenderText\` | \`TaskChecklistUiProgressComponents\` | The *done/total* in a cell |
-| Dependencies module | \`count\` | \`onRender\`, \`onRenderIcon\`, \`onRenderArrow\`, \`onRenderCount\` | \`DependenciesUiCountComponents\` | The count in a *Predecessors* or *Successors* cell |
-| Lookup-many module | \`cell\` | \`onRenderPill\` | \`LookupManyUiPillsComponents\` | A record in a cell |
-| | \`editor\` | \`onRender\`, \`onRenderPill\`, \`onRenderOption\` | \`LookupManyUiSelectComponents\` | The picker, a picked record and a record offered |
-| | \`editorPopup\` | \`onRender\` | \`LookupManyUiEditorPopupComponents\` | The box the editor pops out in |
-| | \`filter\` | \`onRenderContainer\`, \`onRenderValue\`, \`onRenderButtons\`, \`onRenderApplyButton\`, \`onRenderClearButton\`; \`callout\` and \`select\` | \`LookupManyUiFilterComponents\`, \`FilteringUiCalloutComponents\`, \`LookupManyUiSelectComponents\` | The column's filter, its callout and its picker |
-| Templates module | \`selector\` | \`onRender\` | \`TemplatesUiRecordSelectorFrameComponents\` | The box the template picker is drawn in |
-| | \`list\` | \`onRenderRecord\` | \`TemplatesUiRecordListComponents\` | A template in the picker |
-| Task drawing module | \`preview\` | \`onRenderRow\`, \`onRenderSpan\`, \`onRenderCallout\`, \`onRenderText\` | \`TaskDrawingUiPreviewComponents\` | The row drawn on, the span and the callout with its dates |
-| Markers module | \`chip\` | \`onRender\`, \`onRenderChip\` | \`MarkerUiChipComponents\` | The chip on the scale; \`useMarker()\` returns its \`marker\` and \`left\` |
-| | \`line\`, \`scale\`, \`track\`, \`column\`, \`layer\` | \`onRender\` | \`MarkerUiLineComponents\`, \`MarkerUiScaleComponents\`, \`MarkerUiTrackComponents\`, \`MarkerUiColumnComponents\`, \`MarkerUiLayerComponents\` | The line down the chart, and the boxes the chips and lines sit in |
-| Non-working days module | \`tooltip\` | \`onRender\`, \`onRenderContainer\`, \`onRenderDescription\` | \`NonWorkingDaysUiTooltipComponents\` | The tooltip of a shaded day on the scale |
-| Tooltip module | \`onRender\` | The whole tooltip, of \`TaskTooltip\`'s parts; \`useTaskTooltip()\` reads the task | \`TaskTooltip.Renderer\` | What a bar says under the pointer |
-| | \`callout\` | \`onRender\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the pointer |
-| | \`header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\` (\`onRender\`); \`status\` (\`onRender\`, \`onRenderLabel\`) | \`CardHeaderComponents\`, \`CardHeaderStartComponents\`, \`CardHeaderEndComponents\`, \`CardTitleComponents\`, \`FieldOptionSetComponents\` | The name and the status pill |
-| | \`progress\` | \`onRender\`, \`onRenderTrack\`, \`onRenderFill\`, \`onRenderText\` | \`FieldProgressComponents\` | The progress bar |
-| | \`dateRange\` | \`onRender\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`FieldDateRangeComponents\` | The dates and the duration |
-| Links module | \`tooltip.onRender\` | A link's whole tooltip, of \`LinkTooltip\`'s parts; \`useLinkTooltip()\` reads the link | \`LinkTooltip.Renderer\` | What a link says under the pointer |
-| | \`tooltip.callout\`, \`tooltip.header\`, \`tooltip.dateRange\` | As the tooltip module's keys of the same name | | The callout, the type of the link, and the dates it joins |
-| | \`tooltip.fieldList\` | \`onRender\` | \`FieldListComponents\` | The list holding the two tasks |
-| | \`tooltip.predecessor\`, \`tooltip.successor\` | \`onRender\`, \`onRenderIcon\`, \`onRenderLabel\`, \`onRenderValue\` | \`FieldValueComponents\` | The task on each end of the link |
+
+The modules that draw something take \`components\` in their factory's parameters, read at mount:
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| **Checklist module** | | | |
+| \`progress\` | \`onRender\`, \`onRenderIcon\`, \`onRenderText\` | \`TaskChecklistUiProgressComponents\` | The *done/total* in a cell |
+| **Dependencies module** | | | |
+| \`count\` | \`onRender\`, \`onRenderIcon\`, \`onRenderArrow\`, \`onRenderCount\` | \`DependenciesUiCountComponents\` | The count in a *Predecessors* or *Successors* cell |
+| **Lookup-many module** | | | |
+| \`cell\` | \`onRenderPill\` | \`LookupManyUiPillsComponents\` | A record in a cell |
+| \`editor\` | \`onRender\`, \`onRenderPill\`, \`onRenderOption\` | \`LookupManyUiSelectComponents\` | The picker, a picked record and a record offered |
+| \`editorPopup\` | \`onRender\` | \`LookupManyUiEditorPopupComponents\` | The box the editor pops out in |
+| \`filter\` | \`onRenderContainer\`, \`onRenderValue\`, \`onRenderButtons\`, \`onRenderApplyButton\`, \`onRenderClearButton\`; \`callout\` and \`select\` | \`LookupManyUiFilterComponents\`, \`FilteringUiCalloutComponents\`, \`LookupManyUiSelectComponents\` | The column's filter, its callout and its picker |
+| **Templates module** | | | |
+| \`selector\` | \`onRender\` | \`TemplatesUiRecordSelectorFrameComponents\` | The box the template picker is drawn in |
+| \`list\` | \`onRenderRecord\` | \`TemplatesUiRecordListComponents\` | A template in the picker |
+| **Task drawing module** | | | |
+| \`preview\` | \`onRenderRow\`, \`onRenderSpan\`, \`onRenderCallout\`, \`onRenderText\` | \`TaskDrawingUiPreviewComponents\` | The row drawn on, the span and the callout with its dates |
+| **Markers module** | | | |
+| \`chip\` | \`onRender\`, \`onRenderChip\` | \`MarkerUiChipComponents\` | The chip on the scale; \`useMarker()\` returns its \`marker\` and \`left\` |
+| \`line\`, \`scale\`, \`track\`, \`column\`, \`layer\` | \`onRender\` | \`MarkerUiLineComponents\`, \`MarkerUiScaleComponents\`, \`MarkerUiTrackComponents\`, \`MarkerUiColumnComponents\`, \`MarkerUiLayerComponents\` | The line down the chart, and the boxes the chips and lines sit in |
+| **Non-working days module** | | | |
+| \`tooltip\` | \`onRender\`, \`onRenderContainer\`, \`onRenderDescription\` | \`NonWorkingDaysUiTooltipComponents\` | The tooltip of a shaded day on the scale |
+| **Tooltip module** | | | |
+| \`onRender\` | The whole tooltip, of \`TaskTooltip\`'s parts; \`useTaskTooltip()\` reads the task | \`TaskTooltip.Renderer\` | What a bar says under the pointer |
+| \`callout\` | \`onRender\`, \`onRenderContainer\` | \`TooltipUiCalloutComponents\` | The callout beside the pointer |
+| \`header\` | \`header\`, \`headerStart\`, \`headerEnd\`, \`title\` (\`onRender\`); \`status\` (\`onRender\`, \`onRenderLabel\`) | \`CardHeaderComponents\`, \`CardHeaderStartComponents\`, \`CardHeaderEndComponents\`, \`CardTitleComponents\`, \`FieldOptionSetComponents\` | The name and the status pill |
+| \`body\`, \`footer\` | \`onRender\` | \`CardBodyComponents\`, \`CardFooterComponents\` | The box under the header, and the band at the bottom |
+| \`fieldList\` | \`onRender\` | \`FieldListComponents\` | The box that holds the fields, in the body and in the footer |
+| \`progress\` | \`onRender\`, \`onRenderTrack\`, \`onRenderFill\`, \`onRenderText\` | \`FieldProgressComponents\` | The progress bar |
+| \`dateRange\` | \`onRender\`, \`onRenderIcon\`, \`onRenderRange\`, \`onRenderDuration\` | \`FieldDateRangeComponents\` | The dates and the duration |
+| **Links module** | | | |
+| \`tooltip.onRender\` | A link's whole tooltip, of \`LinkTooltip\`'s parts; \`useLinkTooltip()\` reads the link | \`LinkTooltip.Renderer\` | What a link says under the pointer |
+| \`tooltip.callout\`, \`tooltip.header\`, \`tooltip.body\`, \`tooltip.footer\`, \`tooltip.fieldList\`, \`tooltip.dateRange\` | As the tooltip module's keys of the same name; \`header\` has no \`status\` | | The callout, the type of the link, the body and footer, the lists, and the dates it joins |
+| \`tooltip.predecessor\`, \`tooltip.successor\` | \`onRender\`, \`onRenderIcon\`, \`onRenderLabel\` | \`FieldValueComponents\` | The task on each end of the link |
 
 The task grid's own cells take their slots like every grid cell: through \`cellRendererParams\`, or \`headerComponentParams\` for a header, set from a column definitions hook at \`TASK_GRID_PRIORITY.tree + 1\`, after the task tree gives the columns their cells. How to add such a hook is on [**Cells and headers of your own**](?path=/docs/controls-grid-guide-make-it-yours-cells-and-headers-of-your-own--overview).
 
-| Column | Draws with | Slots | Default | Draws |
-|---|---|---|---|---|
-| The subject | \`TaskGrid.TreeCell\` | A cell's keys, plus \`indent\` (\`onRender\`) and \`toggle\` (\`onRender\`, \`onRenderButton\`) | \`TaskGridUiTreeCellIndentComponents\`, \`GroupingUiToggleComponents\` | The subject cell, its indent and its chevron |
-| The percent complete | \`TaskGrid.PercentCompleteCell\` | A cell's keys, plus \`progress\` (\`onRender\`) | \`TaskGridUiPercentCompleteComponents\` | The progress bar |
-| \`TASK_COMMANDS_COLUMN_KEY\` | \`TaskGrid.TaskCommandsCell\` | \`resizeGrip\`, \`container\` and \`loading\`, as in any cell, and \`commands\` (\`onRender\`, \`onRenderCommandBar\`) | \`TaskGridUiCommandsContainerComponents\`, \`TaskGridUiCommandBarComponents\` | The **+** and a row's other commands |
-| | \`TaskGrid.ExpansionHeader\`, its header | \`expandCollapse\` (\`onRender\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\`) | \`GroupingUiExpandCollapseComponents\` | The buttons that open and close a level |
+| Cell | Slots | Default | Draws |
+|---|---|---|---|
+| \`TaskGrid.TreeCell\`, in the subject column | A cell's keys, plus \`indent\` (\`onRender\`) and \`toggle\` (\`onRender\`, \`onRenderButton\`) | \`TaskGridUiTreeCellIndentComponents\`, \`GroupingUiToggleComponents\` | The subject cell, its indent and its chevron |
+| \`TaskGrid.PercentCompleteCell\`, in the \`percentComplete\` column | A cell's keys, plus \`progress\` (\`onRender\`) | \`TaskGridUiPercentCompleteComponents\` | The progress bar |
+| \`TaskGrid.TaskCommandsCell\`, in the \`TASK_COMMANDS_COLUMN_KEY\` column | \`resizeGrip\`, \`container\` and \`loading\`, as in any cell, and \`commands\` (\`onRender\`, \`onRenderCommandBar\`) | \`TaskGridUiCommandsContainerComponents\`, \`TaskGridUiCommandBarComponents\` | The **+** and a row's other commands |
+| \`TaskGrid.ExpansionHeader\`, the header of that column | \`expandCollapse\` (\`onRender\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\`) | \`GroupingUiExpandCollapseComponents\` | The buttons that open and close a level |
 
 To change the task grid's and the Gantt's strings, see [**Localization**](?path=/docs/concepts-localization--overview).
 `

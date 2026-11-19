@@ -5164,11 +5164,15 @@ declare const LinkTooltip: {
     Callout: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The dependency's type, slots by part: header, headerStart, title. */
     Header: (props: { components?: { [part: string]: TaskTooltipSlots } }) => JSX.Element | null;
+    /** Holds the fields below the header. */
+    Body: typeof Card.Body;
+    /** The band at the bottom, below a divider. */
+    Footer: typeof Card.Footer;
     /** Holds the rows: onRender. */
     FieldList: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
-    /** The predecessor's name: onRender, onRenderIcon, onRenderLabel, onRenderValue. */
+    /** The predecessor's name: onRender, onRenderIcon, onRenderLabel. */
     Predecessor: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
-    /** The successor's name: onRender, onRenderIcon, onRenderLabel, onRenderValue. */
+    /** The successor's name: onRender, onRenderIcon, onRenderLabel. */
     Successor: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The dates the link joins: onRender, onRenderIcon, onRenderRange, onRenderDuration. */
     DateRange: (props: { components?: TaskTooltipSlots }) => JSX.Element | null;
@@ -5267,7 +5271,7 @@ type TaskTooltipSlots = Partial<{ [slot: string]: (props: any) => JSX.Element | 
 /** The parts a task tooltip is composed of; the module draws them for the hovered bar. */
 declare const TaskTooltip: {
     /** The default tooltip: the name and status, the progress, and when it runs. */
-    Renderer: (props: { components?: { callout?: TaskTooltipSlots; header?: { [part: string]: TaskTooltipSlots }; progress?: TaskTooltipSlots; dateRange?: TaskTooltipSlots } }) => JSX.Element;
+    Renderer: (props: { components?: { callout?: TaskTooltipSlots; header?: { [part: string]: TaskTooltipSlots }; body?: TaskTooltipSlots; footer?: TaskTooltipSlots; fieldList?: TaskTooltipSlots; progress?: TaskTooltipSlots; dateRange?: TaskTooltipSlots } }) => JSX.Element;
     /** The callout next to the pointer: onRender, onRenderContainer. */
     Callout: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The task's name and status pill, slots by part: header, headerStart, headerEnd, title, status. */
@@ -5278,7 +5282,7 @@ declare const TaskTooltip: {
     Footer: typeof Card.Footer;
     /** Holds the field rows: onRender. */
     FieldList: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
-    /** Any column: onRender, onRenderIcon, onRenderLabel, onRenderValue. */
+    /** Any column: onRender, onRenderIcon, onRenderLabel. */
     Field: (props: { columnName: string; iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The start from the timeline, not the record. */
     StartDate: (props: { iconName?: string; components?: TaskTooltipSlots }) => JSX.Element | null;

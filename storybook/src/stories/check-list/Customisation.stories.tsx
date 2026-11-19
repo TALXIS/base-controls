@@ -8,11 +8,11 @@ import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 const DESCRIPTION = `
 Apart from its three columns, a checklist is a grid, so you customise it the way you customise a grid: with modules, column definitions, cells and events. Try it below: hover the owner cell of an unassigned item and pick *Assign to me*.
 
-{{canvas: Run a release board}}
+{{canvas: Run the launch plan}}
 
 ## Add grid features
 
-The checklist's columns take everything a grid column does, through a column definitions hook in \`onSetup\`, as [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview) describes, and the grid's hooks under *Hooks* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview) reach its cells. The release board above colours overdue dates, locks finished items and adds *Assign to me* with theme, lock and commands hooks, and totals the estimates.
+The checklist's columns take everything a grid column does, through a column definitions hook in \`onSetup\`, as [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview) describes, and the grid's hooks under *Hooks* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview) reach its cells. The launch plan above colours overdue dates, locks finished items and adds *Assign to me* with theme, lock and commands hooks, and totals the estimates.
 
 \`modules\` replaces the default editing module. Add \`createLicenseModule\`, \`createEditingModule\`, \`createRowSelectionModule\`, \`createClipboardModule\`, \`createAggregationModule\`, \`createLegacyClientApiCompatibilityModule\` or a module of your own. Leave out sorting, filtering and grouping, which change the order, and cell selection, which turns dragging off.
 
@@ -30,7 +30,7 @@ Make the name column primary to draw names as links, and add a \`grid.hooks.open
 
 ## From your code
 
-The checklist adds a module to the grid: \`useGridModule('checklist')\` returns it in a part the grid draws, \`grid.modules.get('checklist')\` on the grid \`onReady\` passes you, and \`find\` on the one \`onSetup\` passes you, as the release board does. It offers \`isItem(record)\`, which tells an item from the row that adds one, \`isCompleted(record)\` and \`getFieldMapping()\`. Everything else is the grid's: see [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview) in the Grid guide.
+The checklist adds a module to the grid: \`useGridModule('checklist')\` returns it in a part the grid draws, \`grid.modules.get('checklist')\` on the grid \`onReady\` passes you, and \`find\` on the one \`onSetup\` passes you, as the launch plan above does. It offers \`isItem(record)\`, which tells an item from the row that adds one, \`isCompleted(record)\` and \`getFieldMapping()\`. Everything else is the grid's: see [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview) in the Grid guide.
 
 ## Changing how it looks
 
@@ -84,8 +84,8 @@ export const KeepAFinishedPlanForReference: Story = {
     },
 }
 
-export const RunAReleaseBoard: Story = {
-    name: 'Run a release board',
+export const RunTheLaunchPlan: Story = {
+    name: 'Run the launch plan',
     render: () => renderStory(<ReleaseBoardExample />),
 }
 

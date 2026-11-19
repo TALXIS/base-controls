@@ -42,17 +42,18 @@ The lookup-many module of [**People and tags**](?path=/docs/controls-taskgrid-gu
 
 {{canvas: A tooltip of your own}}
 
-\`components.onRender\` on \`createTaskTooltipModule\` returns the whole tooltip. Compose it of \`TaskTooltip\`'s parts and parts of your own, in any order:
+\`components.onRender\` on \`createTaskTooltipModule\` returns the whole tooltip, in place of the default, \`TaskTooltip.Renderer\`. Compose it of \`TaskTooltip\`'s parts and parts of your own, in any order:
 
 | Part | Draws |
 |---|---|
 | \`TaskTooltip.Callout\` | The box beside the pointer, around the other parts |
 | \`TaskTooltip.Header\` | The task's name, with the option of \`statusColumnName\` as a pill in its colour |
-| \`TaskTooltip.FieldList\`, \`TaskTooltip.Field\` | Fields of a label and a value; \`Field\` shows a column of the task, an option set as tags, nothing while it is empty |
+| \`TaskTooltip.Body\`, \`TaskTooltip.Footer\` | The content under the header, and the band at the bottom, below a divider |
+| \`TaskTooltip.FieldList\`, \`TaskTooltip.Field\` | Fields one under another; \`Field\` shows a column of the task under its name, an option set as tags, and nothing while it is empty |
 | \`TaskTooltip.Progress\` | The \`percentComplete\` as a bar |
 | \`TaskTooltip.DateRange\`, \`StartDate\`, \`EndDate\`, \`Duration\` | When the task runs, read from its bar, so they follow a bar being dragged |
 
-A part of yours reads the task under the pointer with \`useTaskTooltip()\`: its \`record\`, the chart's \`task\`, the bar's \`span\` or the \`milestone\`, the \`duration\` in minutes, the bar's \`color\` and the \`gantt\`. \`Field.Value\` draws a field like the library's. The tooltip lets clicks through to the chart, so it cannot hold a button.
+A part of yours reads the task under the pointer with \`useTaskTooltip()\`: its \`record\`, the chart's \`task\`, the bar's \`span\` or the \`milestone\`, the \`duration\` in minutes, the bar's \`color\` and the \`gantt\`. \`Field.Value\`, from the package root, draws a label and a value as the library's fields do. The tooltip lets clicks through to the chart, so it cannot hold a button.
 
 ## Content on the bars
 

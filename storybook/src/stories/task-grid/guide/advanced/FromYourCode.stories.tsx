@@ -37,7 +37,7 @@ The **task runtime** runs the task grid in one mount of \`TaskDatasetControl\`: 
 
 \`TaskDatasetControl.Ribbon\` draws *New*, *Edit* and *Delete*, then the commands you add with the ribbon's \`hooks.commands\`. The hook runs on every load of the ribbon, such as when the selection changes, so add it from \`onSetup\` on \`TaskDatasetControl\` with \`control.parts.observe('ribbon', …)\`; what a command holds is on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview). A command can await a task action as it is, since the action shows its own error and an error shows once. A move clears the selection, as a drag does.
 
-\`taskRuntime.hooks.ribbonCommandUi\` changes each item \`TaskDatasetControl.Ribbon\` draws, those in its menus too. An item is a Fluent \`IContextualMenuItem\` whose \`key\` is the command's \`id\`: \`'new'\`, \`'edit'\` and \`'delete'\` for the task grid's own. Here it turns *Delete* off while a top-level task is selected, so neither project of the plan can be deleted from the ribbon.
+\`taskRuntime.hooks.ribbonCommandUi\` changes each item \`TaskDatasetControl.Ribbon\` draws, those in its menus too. An item is a Fluent \`IContextualMenuItem\` whose \`key\` is the command's \`id\`: \`'new'\`, \`'edit'\` and \`'delete'\` for the task grid's own. Here it turns *Delete* off while a top-level task, such as *Move to the new office*, is selected.
 
 ## Try it
 

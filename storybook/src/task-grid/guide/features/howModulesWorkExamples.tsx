@@ -15,7 +15,7 @@ const checklists = new MemoryTable({ idKey: 'id', rows: CHECKLISTS })
 const fieldMapping = { parentId: 'parentid', subject: 'subject', stackRank: 'stackrank', startDate: 'start', endDate: 'due', percentComplete: 'done' }
 
 //new: a view shows a module's column when it names it
-const views: ITaskGridView[] = [{ id: 'plan', name: 'Whole plan', resolve: () => ({ columns: [{ name: 'subject' }, { name: TASK_CHECKLIST_COLUMN_NAME }] }) }]
+const views: ITaskGridView[] = [{ id: 'plan', name: 'Whole plan', resolve: () => ({ columns: [{ name: 'subject' }, { name: TASK_CHECKLIST_COLUMN_NAME, visualSizeFactor: 120 }] }) }]
 
 const loadTasks = (taskRuntime: ITaskRuntime) => ({
     store: new MemoryTaskStore({ taskRuntime, tasks, metadata: OFFICE_METADATA, columns: OFFICE_COLUMNS }),

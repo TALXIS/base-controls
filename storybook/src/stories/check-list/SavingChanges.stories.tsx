@@ -6,7 +6,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
 
 const DESCRIPTION = `
-A checklist stores nothing itself: every tick, rename, drag, new item and delete changes a record of its provider, and the provider saves it. Where the list ends up is the provider's choice, in memory, in Dataverse or behind your own API. Try it below: tick an item off and watch the log under the list.
+A checklist stores nothing itself: every tick, rename, drag, new item and delete changes a record of its provider, and the provider saves it. Where the list ends up is the provider's choice, in memory, in Dataverse or behind your own API. Try it below: tick an item of the launch plan off and watch the log under it.
 
 {{canvas: Watch what the checklist saves}}
 

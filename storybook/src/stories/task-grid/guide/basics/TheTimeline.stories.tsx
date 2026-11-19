@@ -16,9 +16,9 @@ A move has dates to keep: the fit-out has to be done before the movers come. A G
 
 ## How it works
 
-This step adds the chart to the plan of *Let users plan*. In **Code**, the new lines carry \`//new:\`.
+This step adds the chart to the plan of [**Let users plan**](?path=/docs/controls-taskgrid-guide-basics-let-users-plan--overview), with one view of its own in place of those of [**Views and the tree**](?path=/docs/controls-taskgrid-guide-basics-views-and-the-tree--overview). In **Code**, the new lines carry \`//new:\`.
 
-\`TaskGantt\` draws the tasks of the control on a timeline, row for row with the grid. \`TaskGantt.Split\` puts the two side by side, the \`TaskGrid\` first, with a handle between them to resize; \`defaultGanttSize\` sets the chart's share of the width, \`60\` percent unless you set it. One view keeps the grid to the columns that fit beside the chart. The chart reads the dates through \`startDate\` and \`endDate\` in the field mapping, and shows an error without them. \`TaskGantt\` and its modules come from their own entry, \`@talxis/base-controls/gantt\`.
+\`TaskGantt\` draws the tasks of the control on a timeline, row for row with the grid. \`TaskGantt.Split\` puts the two side by side, the \`TaskGrid\` first, with a handle between them to resize; \`defaultGanttSize\` sets the chart's share of the width, \`60\` percent unless you set it. The view keeps the grid to the columns that fit beside the chart. The chart reads the dates through \`startDate\` and \`endDate\` in the field mapping, and shows an error without them. \`TaskGantt\` and its modules come from their own entry, \`@talxis/base-controls/gantt\`.
 
 Each feature of the chart is a module in \`TaskGantt\`'s \`modules\`, and the chart cannot do without a library module: \`createLibraryModule()\` draws with the free build of <a href="https://dhtmlx.com/docs/products/dhtmlxGantt/" target="_blank" rel="noreferrer">DHTMLX Gantt</a>. With a PRO licence, pass your build to \`createProLibraryModule({ Gantt })\` instead, and import its stylesheet yourself.
 
