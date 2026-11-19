@@ -12,3 +12,4 @@ export * from './panel';
 export * from './dialog';
 export * from './hooks';
 export * from './themed-contextual-items';
+export * from './card';
