@@ -121,7 +121,7 @@ const createAlertTheme = (theme: ITheme) => {
     return builder.getTheme()
 }
 
-const Card = (props: { title: string }) => {
+const RenewalCard = (props: { title: string }) => {
     const { semanticColors } = useTheme()
     return <Stack tokens={{ childrenGap: 8 }} style={{ padding: 12, border: \`1px solid \${semanticColors.bodyDivider}\`, borderRadius: 4 }}>
         <Text variant='mediumPlus'>{props.title}</Text>
@@ -142,7 +142,7 @@ const GridExample = () => {
     const cards = [{ title: 'colors', theme: ocean }, { title: 'tint', theme: tinted }, { title: 'edit', theme: compact }, { title: 'createThemeBuilder', theme: alert }]
     return <Stack horizontal wrap tokens={{ childrenGap: 12 }}>
         {cards.map(card => <ThemeProvider key={card.title} theme={card.theme} style={{ padding: 12 }}>
-            <Card title={card.title} />
+            <RenewalCard title={card.title} />
         </ThemeProvider>)}
     </Stack>
 }

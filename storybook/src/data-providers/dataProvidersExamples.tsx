@@ -385,7 +385,7 @@ class ProductsProvider extends DataProvider {
     }
 }
 
-const GridExample = () => <DatasetControl onLoad={async () => ({ provider: new ProductsProvider({}) })} height='320px'>
+const GridExample = () => <DatasetControl onLoad={async () => ({ provider: new ProductsProvider({}) })} height='380px'>
     <DatasetControl.Header>
         <DatasetControl.Header.End>
             <DatasetControl.QuickFind />

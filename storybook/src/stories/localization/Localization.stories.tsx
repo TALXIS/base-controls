@@ -8,7 +8,7 @@ import { OwnLabelsExample, SwitchLanguageExample } from '../../localization/loca
 const DESCRIPTION = `
 Every string the controls draw is a *label*: a key such as \`'quickFind.searchPlaceholder'\` with an English default. A \`LabelsProvider\` replaces labels for everything below it, so one provider at the root translates the whole application, and another around a single control rewords just that control. Try it below: switch the grid to Czech, then open a column's menu.
 
-{{canvas: Overview}}
+{{canvas: Switch the language}}
 
 ## How labels behave
 
@@ -57,8 +57,8 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Overview: Story = {
-    name: 'Overview',
+export const SwitchTheLanguage: Story = {
+    name: 'Switch the language',
     render: () => renderStory(<SwitchLanguageExample />),
 }
 

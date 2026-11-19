@@ -18,8 +18,8 @@ Most defaults are exported, named after the UI they belong to, such as \`RibbonU
 
 | To | Write |
 |---|---|
-| Change one prop of the default | \`props => RibbonUiCommandBarComponents.onRender({ ...props, align: 'end' })\` |
-| Wrap the default | \`props => <TooltipHost content='Views'>{DatasetControlUiViewSwitcherComponents.onRender(props)}</TooltipHost>\` |
+| Change one prop | \`props => RibbonUiCommandBarComponents.onRender({ ...props, align: 'end' })\` |
+| Wrap it | \`props => <div title='Commands'>{RibbonUiCommandBarComponents.onRender(props)}</div>\` |
 | Replace it | \`props => <SearchBox {...props} />\` |
 | Remove it | \`() => null\` |
 
@@ -29,7 +29,7 @@ Spread the props you get: they carry the class names, handlers and refs that mak
 
 A *piece* is a key in the \`components\` map that names something inside the part and holds that thing's slots, as \`commandBar\` and \`shimmer\` do in the example. A piece merges over its default slot by slot, so a slot you leave out keeps its default.
 
-Each control lists its pieces and slots under *Changing how it looks*, DatasetControl under *Slots* on its [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview), and TaskGrid under *Slots* on its [**Reference**](?path=/docs/controls-taskgrid-reference--overview).
+A control with a guide lists its pieces and slots under *Slots* on its Reference: DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview), Grid's [**Reference**](?path=/docs/controls-grid-reference--overview), TaskGrid's [**Reference**](?path=/docs/controls-taskgrid-reference--overview) and Map's [**Reference**](?path=/docs/controls-map-reference--overview). Every other control lists them under *Changing how it looks* on its own page.
 
 ## What slots do not change
 

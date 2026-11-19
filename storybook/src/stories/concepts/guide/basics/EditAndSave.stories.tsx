@@ -25,6 +25,7 @@ The list is the one from [**Your first list**](?path=/docs/concepts-guide-basics
 | Grid | Editing, selection, sorting, filtering, grouping, totals and more | *Modules* on Grid's [**Reference**](?path=/docs/controls-grid-reference--overview) |
 | DatasetControl | The user's own views | [**Views of their own**](?path=/docs/controls-datasetcontrol-guide-your-data-views-of-their-own--overview) |
 | TaskGrid | People, dependencies, checklists, templates, and the Gantt's own | [**How modules work**](?path=/docs/controls-taskgrid-guide-features-how-modules-work--overview) |
+| Map | The library that draws the map, and modules of your own | *A module* on Map's [**Reference**](?path=/docs/controls-map-reference--overview) |
 
 The total under *Floor area (m²)* comes from \`aggregation: { aggregationFunction: 'sum' }\` on its column in *stores.ts*, and the aggregation module draws it in a row pinned under the grid: see [**Group and total**](?path=/docs/controls-grid-guide-features-group-and-total--overview).
 

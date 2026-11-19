@@ -13,7 +13,9 @@ Base Controls is a React library of controls for business applications: grids, t
 
 ## Why build from parts
 
-Business applications need the same things again and again: lists that sort, filter, edit and save, views of those lists, forms, task plans and maps. Writing them anew for every application leaves many slightly different copies to maintain, each with its own behaviour and its own bugs. An AI agent that generates them from scratch each time does the same, and the code base grows large and inconsistent. Base Controls gives you these as finished, tested parts, and you build the application by putting them together, as the example above does, so the code you own is the code specific to your business. When a part does not fit, you do not start over: you change an option, replace one piece of what it draws with a slot (see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview)), add behaviour with a hook or a module (see Grid's [**Write a module**](?path=/docs/controls-grid-guide-advanced-write-a-module--overview)), or write a part of your own on the same runtime (see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview)). If you work with an AI agent, point it at these parts and their extension points instead of letting it write new ones.
+Business applications need the same things again and again: lists that sort, filter, edit and save, views of those lists, forms, task plans and maps. Writing them anew for every application leaves many slightly different copies to maintain, each with its own behaviour and its own bugs. An AI agent that generates them from scratch each time does the same, and the code base grows large and inconsistent. Base Controls gives you these as finished, tested parts, and you build the application by putting them together, as the example above does, so the code you own is the code specific to your business.
+
+When a part does not fit, you do not start over: you change an option, replace one piece of what it draws with a slot (see [**Pieces and slots**](?path=/docs/concepts-pieces-and-slots--overview)), add behaviour with a hook or a module (see Grid's [**Write a module**](?path=/docs/controls-grid-guide-advanced-write-a-module--overview)), or write a part of your own on the same runtime (see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview)). If you work with an AI agent, point it at these parts and their extension points instead of letting it write new ones.
 
 ## What you see
 
@@ -25,7 +27,7 @@ Business applications need the same things again and again: lists that sort, fil
 | A store's form in a panel, after a click on its name | \`Form\` in a \`Panel\`, opened by a \`hooks.openRecord\` hook | [**Open a store in a form**](?path=/docs/concepts-guide-basics-open-a-store-in-a-form--overview) |
 | The stores as pins, in the view *On the map* | \`LeafletMap\`, picked by the view's \`data\` | [**On the map**](?path=/docs/concepts-guide-more-controls-on-the-map--overview) |
 | *Opening plan* in a store's form: its tasks as a tree beside a timeline | \`TaskDatasetControl\`, with \`TaskGrid\` and \`TaskGantt\` | [**The opening plan**](?path=/docs/concepts-guide-more-controls-the-opening-plan--overview) |
-| Pins in the colour of each store's status, and a popup with **Open the store** | Slots of the map's \`marker.pin\` and \`marker.popup\` | [**Change what a part draws**](?path=/docs/concepts-guide-make-it-yours-change-what-a-part-draws--overview) |
+| Pins in the colour of each store's status, and a popup with its status, manager, opening date and **Open the store** | Slots of the map's \`marker.pin\` and \`marker.popup\`, the popup built from \`Map.Popup\`'s parts | [**Change what a part draws**](?path=/docs/concepts-guide-make-it-yours-change-what-a-part-draws--overview) |
 
 ## How it fits together
 
@@ -85,6 +87,8 @@ Basics and More controls build the app; each step after them changes one thing i
 {{block: concepts}}
 
 ## Pick a control
+
+DatasetControl, Grid, TaskGrid and Map each open on a guide of their own, which goes further than the guide above; every other control has a page of its own.
 
 {{block: controls}}
 

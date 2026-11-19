@@ -26,7 +26,7 @@ The app is the one from [**Open a store in a form**](?path=/docs/concepts-guide-
 
 - Switch to *On the map*: six pins across Europe, and **Edit columns** is gone.
 - Search for *Lyon*: one pin is left, and the map centres on it.
-- Click the pin: a popup shows the store's name.
+- Click the pin: a popup shows the store's name, and under it each column of the view with its value.
 
 ## Remember
 

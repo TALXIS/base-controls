@@ -22,9 +22,9 @@ Do not \`set\` or \`delete\` an id you use as a scope: the scope keeps writing t
 
 ## Hand a store down
 
-\`StateProvider\` hands a store to the components below it: the one you pass, or a new in-memory one. Without a provider, the whole page shares one in-memory store. A component reads it with one of two hooks:
+\`StateProvider\` hands a store to the components below it: the one you pass, or a new in-memory one. Without a provider, the whole page shares one in-memory store. A component reads it with one of two calls:
 
-| Hook | Returns |
+| Call | Returns |
 |---|---|
 | \`useStateStore()\` | The nearest store, which inside a DatasetControl is the store of the view it shows; scope it yourself with \`scope(id)\`. |
 | \`useControlStateStore(stateKey)\` | \`useStateStore().scope(stateKey)\`, so it too keeps per view inside a DatasetControl. Without a \`stateKey\`, a throwaway store, so nothing survives a remount. |

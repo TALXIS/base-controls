@@ -38,7 +38,7 @@ The forecast is a component like any other, so it sits in a section of the form.
 - A runtime loads what your control needs; \`RuntimeHost\` draws the rest around it.
 - Your control gets the placeholder, the failure and **Try again** as the library's do.
 
-You have built the whole app. Every concept page and control is on [**Introduction**](?path=/docs/concepts-introduction--overview).
+You have built the whole app. To go further with one control, follow its own guide: [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview), [**Grid**](?path=/docs/controls-grid-overview--overview), [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview) or [**Map**](?path=/docs/controls-map-overview--overview). Every concept page and control is on [**Introduction**](?path=/docs/concepts-introduction--overview).
 
 {{block: navigation}}
 `

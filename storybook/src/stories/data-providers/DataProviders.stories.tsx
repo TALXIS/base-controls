@@ -101,7 +101,7 @@ For totals over every record, define the \`aggregation\` without grouping and re
 
 Every change raises an event, so whatever shows the records can draw again. \`addEventListener\` returns a function that removes the listener; \`removeEventListener\` does the same. Every event is listed under *Reference*.
 
-{{story: React to changes}}
+{{story: Log the events}}
 
 ## Lifetime
 
@@ -237,8 +237,8 @@ export const ReadFromCode: Story = {
     },
 }
 
-export const ReactToChanges: Story = {
-    name: 'React to changes',
+export const LogTheEvents: Story = {
+    name: 'Log the events',
     render: () => renderStory(<EventsExample />),
     parameters: {
         docs: {
