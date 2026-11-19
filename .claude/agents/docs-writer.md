@@ -99,6 +99,8 @@ model; DatasetControl, Grid and Map have guides of the same shape. The library-w
   Gantt modules come from `@talxis/base-controls/gantt`. Import lines go at the top of the example's code.
 - Code that cannot run on the page (PCF lifecycle classes, Dataverse config, `declare module` augmentation)
   becomes an extra editor file the entry never imports.
+- A module or part of your own declares its name in such a `types.ts`, on the control's map
+  (`IGridModuleMap`, `IDatasetControlPartMap`…), as an app must; the editor rejects an undeclared name.
 - async/await, never `.then`.
 - No decorative chrome, such as a made-up page title above a control.
 - Never repeat setup a Concepts page owns, such as wrapping in `PcfContextProvider`; link to it. Only a
