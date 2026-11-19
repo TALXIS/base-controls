@@ -38,7 +38,7 @@ const GridExample = () => {
 }
 `
 
-const PLAIN_UI_CODE = `import { DatasetControl, FormUi } from '@talxis/base-controls'
+const PLAIN_UI_CODE = `import { DatasetControl, Form } from '@talxis/base-controls'
 import { Dropdown, Text } from '@fluentui/react'
 
 const STAGES = [
@@ -67,14 +67,14 @@ const DEALS: IDeal[] = [
 ]
 
 //the form's section and cells as plain UI
-const DealCard = (props: { deal: IDeal, onChange: (deal: IDeal) => void }) => <FormUi.Section label={props.deal.name} cellLabelPosition='Top'>
-    <FormUi.Cell label='Stage'>
+const DealCard = (props: { deal: IDeal, onChange: (deal: IDeal) => void }) => <Form.Ui.Section label={props.deal.name} cellLabelPosition='Top'>
+    <Form.Ui.Cell label='Stage'>
         <Dropdown options={STAGES} selectedKey={props.deal.stage} onChange={(_, option) => props.onChange({ ...props.deal, stage: Number(option!.key) })} />
-    </FormUi.Cell>
-    <FormUi.Cell label='Value'>
+    </Form.Ui.Cell>
+    <Form.Ui.Cell label='Value'>
         <Text>{props.deal.value}</Text>
-    </FormUi.Cell>
-</FormUi.Section>
+    </Form.Ui.Cell>
+</Form.Ui.Section>
 
 const GridExample = () => {
     const [deals, setDeals] = React.useState(DEALS)
@@ -91,11 +91,11 @@ const GridExample = () => {
             </DatasetControl.Ui.HeaderStart>
         </DatasetControl.Ui.Header>
         <DatasetControl.Ui.Body>
-            <FormUi.Tab id='board'>
-                {deals.filter(view.matches).map(deal => <FormUi.Column key={deal.id}>
+            <Form.Ui.Tab id='board'>
+                {deals.filter(view.matches).map(deal => <Form.Ui.Column key={deal.id}>
                     <DealCard deal={deal} onChange={changed => setDeals(deals.map(other => other.id === changed.id ? changed : other))} />
-                </FormUi.Column>)}
-            </FormUi.Tab>
+                </Form.Ui.Column>)}
+            </Form.Ui.Tab>
         </DatasetControl.Ui.Body>
     </DatasetControl.Ui.Container>
 }

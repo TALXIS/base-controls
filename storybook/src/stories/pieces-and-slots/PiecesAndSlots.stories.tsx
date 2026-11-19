@@ -23,7 +23,7 @@ Most defaults are exported, named after the UI they belong to, such as \`RibbonU
 | Replace it | \`props => <SearchBox {...props} />\` |
 | Remove it | \`() => null\` |
 
-Spread the props you get: they carry the class names, handlers and refs that make the part work. A slot is called during render, so to use hooks there, return a component of your own: \`props => <MyViewButton {...props} />\`.
+Spread the props you get: they carry the class names, handlers and refs that make the part work. A slot is called during render, so to call \`useState\` or another \`use…\` function there, return a component of your own: \`props => <MyViewButton {...props} />\`.
 
 ## Pieces
 
@@ -37,7 +37,7 @@ A slot changes how something looks, not what it holds. Commands and menu items a
 
 ## Parts without a control
 
-Every part is split in two. The *UI* takes plain props and owns the look: its styles and its \`components\`. The *adapter* reads the control's runtime and draws the UI with props, texts included. As the UI never reads a runtime, it also draws from your own state, with no control behind it.
+Every part is split in two. The *UI* takes plain props and owns the look: its styles and its \`components\`. The *adapter* reads the control and draws the UI with props, texts included. As the UI never reads the control, it also draws from your own state, with no control behind it. A control holds its parts' UI under \`Ui\`, as \`DatasetControl.Ui\` and \`Form.Ui\` do in the example.
 
 {{story: Plain UI}}
 

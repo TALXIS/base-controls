@@ -30,7 +30,7 @@ In a model-driven app, *GridExample.tsx* imports \`createStoresProvider\` from *
 
 - Double-click Lyon's *Floor area (m²)*, type 30, press Enter and **Save**: a spinner shows in the row's checkbox, then a red mark that stays. Click the mark: *The floor area must be at least 50 m².*
 - Set it to 200 and **Save**: the API takes it, and a green check shows in the row's checkbox for a moment.
-- In **Code**, change 50 to 250 in *api.ts* and save Lyon at 200: the API refuses it.
+- In **Code**, set \`MIN_FLOOR_AREA\` to 250 in *api.ts* and save Lyon at 200: the API refuses it, and its message says 250 m².
 
 ## Remember
 

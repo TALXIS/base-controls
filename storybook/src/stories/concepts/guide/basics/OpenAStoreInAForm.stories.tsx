@@ -35,6 +35,8 @@ The list is the one from [**Views and commands**](?path=/docs/concepts-guide-bas
 - A hook changes one thing a control does, such as what opening a record does.
 - The form and the grid share one record.
 
+Your list edits and saves the stores, switches views and opens each store in a form. More controls shows the same stores on a map and plans each opening.
+
 {{block: navigation}}
 `
 

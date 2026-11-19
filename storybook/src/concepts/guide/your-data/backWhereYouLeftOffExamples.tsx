@@ -81,6 +81,7 @@ const StoreOpenings = () => {
     const [isShown, setIsShown] = React.useState(true)
 
     return <>
+        {/* new: unmounts the list while off */}
         <Toggle label='Show the stores' inlineLabel checked={isShown} onChange={(_, checked) => setIsShown(!!checked)} />
         {/* new: the key the control keeps its state under in the page's store */}
         {isShown && <DatasetControl onLoad={loadStores} stateKey='start.stores' height='520px'>

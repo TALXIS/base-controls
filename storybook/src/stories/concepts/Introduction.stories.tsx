@@ -70,6 +70,7 @@ Basics and More controls build the app; each step after them changes one thing i
 | Module | A feature you add by listing it in a control's \`modules\`; a feature you leave out is not there. | [**Edit and save**](?path=/docs/concepts-guide-basics-edit-and-save--overview) |
 | Unsaved change | An edited value that stays on its record until it is saved. | [**Edit and save**](?path=/docs/concepts-guide-basics-edit-and-save--overview) |
 | View | A named way to look at the records: its \`resolve\` sets the provider up as it opens, and names its columns. | [**Views and commands**](?path=/docs/concepts-guide-basics-views-and-commands--overview) |
+| Part | A component you put inside a control, such as the view switcher or the ribbon, which works on the control's provider. | [**Views and commands**](?path=/docs/concepts-guide-basics-views-and-commands--overview) |
 | Hook | A function you add where a control asks for one, which changes one thing the control does, such as what opening a record does. | [**Open a store in a form**](?path=/docs/concepts-guide-basics-open-a-store-in-a-form--overview) |
 | PCF context | What only the host knows: the user, their culture, the host's dialogs and its data. | [**In Power Apps**](?path=/docs/concepts-guide-your-data-in-power-apps--overview) |
 | State key | A control's \`stateKey\`: the entry it keeps its state under, so it comes back as the user left it. | [**Back where you left off**](?path=/docs/concepts-guide-your-data-back-where-you-left-off--overview) |

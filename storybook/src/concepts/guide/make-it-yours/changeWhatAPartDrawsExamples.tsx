@@ -98,6 +98,7 @@ import type { IRecord } from '@talxis/client-libraries'
 import { Link } from '@fluentui/react'
 import { STATUSES } from './stores'
 
+//new: how the map hands a store to open to the app
 interface IStoreMapProps {
     onOpenStore: (store: IRecord) => void
 }
@@ -108,7 +109,7 @@ const StorePin = (props: IMapUiMarkerPinProps) => {
     return <Map.Ui.MarkerPin {...props} color={STATUSES.find(option => option.Value === status)?.Color} />
 }
 
-//new: a pin's popup with a link that opens the store, as its name in the grid does
+//new: a pin's popup with a link that opens the store
 const StorePopup = (props: IStoreMapProps) => {
     const store = useMapRecord()
     return <Map.Popup.Card>

@@ -18,7 +18,7 @@ export const STATUSES = [
     { Value: OPEN, Label: 'Open', Color: '#107c10' },
 ]
 
-//every column of a store, each as wide as the grid draws it
+//every column of a store, with its width in the grid
 const COLUMNS: IColumn[] = [
     //the primary column, drawn as a link in the grid
     { name: 'name', displayName: 'Store', dataType: DataTypes.SingleLineText, isPrimary: true, visualSizeFactor: 160 },
@@ -167,7 +167,7 @@ const StorePin = (props: IMapUiMarkerPinProps) => {
     return <Map.Ui.MarkerPin {...props} color={STATUSES.find(option => option.Value === status)?.Color} />
 }
 
-//a pin's popup with a link that opens the store, as its name in the grid does
+//a pin's popup with a link that opens the store
 const StorePopup = (props: IStoreMapProps) => {
     const store = useMapRecord()
     return <Map.Popup.Card>
@@ -197,7 +197,7 @@ import { createBarDraggingModule, createLibraryModule, createLinksModule, create
 import type { IRecord } from '@talxis/client-libraries'
 import { CHECKLIST_ITEMS, DEPENDENCIES, HOLIDAYS, LOOKUP_MANY_COLUMNS, LOOKUP_MANY_SOURCES, LOOKUP_MANY_VALUES, PLAN_FIELD_MAPPING, PLAN_METADATA, PLAN_VIEWS, PLANS, STANDARD_OPENING, TASK_COLUMNS } from './plans'
 
-//one for every store, so a template or a column the user adds is offered on all of them
+//the templates and custom columns every store's plan shares
 const templates = new MemoryTable<IMemoryTemplate>({ idKey: 'id', rows: [STANDARD_OPENING] })
 const PLAN_COLUMNS = new MemoryTable<ICustomColumnRow>({ idKey: 'name', rows: [{ name: 'budget', displayName: 'Budget', dataType: 'Currency', precision: 0 }, { name: 'supplier', displayName: 'Supplier', dataType: 'SingleLine.Text' }] })
 const PLAN_COLUMN_VALUES = new MemoryTable<ICustomColumnValuesRow>({ idKey: 'taskId' })

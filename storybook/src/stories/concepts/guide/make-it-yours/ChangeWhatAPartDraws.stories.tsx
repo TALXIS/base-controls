@@ -37,7 +37,7 @@ A slot replaces only what it draws: the pins still follow the search and open th
 ## Remember
 
 - A slot replaces one thing a part draws, and the part keeps its behaviour.
-- A component in a slot reads what it draws through the part's hooks, such as \`useMapRecord()\`.
+- A component in a slot reads the record it draws with \`useMapRecord()\`.
 
 {{block: navigation}}
 `
