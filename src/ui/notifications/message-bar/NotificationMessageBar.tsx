@@ -18,7 +18,8 @@ const getMessageBarType = (messages: INotificationMessageBarProps['messages'] = 
 	if (hasError) return MessageBarType.error;
 	const hasWarning = messages.some(message => message.level === 'WARNING');
 	if (hasWarning) return MessageBarType.warning;
-	return MessageBarType.info;
+	const isSuccess = messages.every(message => message.level === 'SUCCESS');
+	return isSuccess ? MessageBarType.success : MessageBarType.info;
 }
 
 export const NotificationMessageBar = (props: INotificationMessageBarProps) => {

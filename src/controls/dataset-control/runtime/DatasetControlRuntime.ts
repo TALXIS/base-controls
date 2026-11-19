@@ -241,7 +241,7 @@ export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap> imple
     private _attachProviderError(provider: IDataProvider, notifications: IRuntimeNotifications): () => void {
         const showError = () => {
             if (provider.isError()) {
-                notifications.add({ text: this._escape(provider.getErrorMessage()), level: 'ERROR' }, PROVIDER_ERROR_NOTIFICATION_ID);
+                notifications.add({ text: this._escape(provider.getErrorMessage()), level: 'ERROR', id: PROVIDER_ERROR_NOTIFICATION_ID });
             }
             else {
                 notifications.remove(PROVIDER_ERROR_NOTIFICATION_ID);
