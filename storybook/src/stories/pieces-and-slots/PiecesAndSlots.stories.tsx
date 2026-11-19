@@ -37,7 +37,7 @@ A slot changes how something looks, not what it holds. Commands and menu items a
 
 ## Parts without a control
 
-Every part is split in two. The *UI* takes plain props and owns the look: its styles and its \`components\`. The *adapter* reads the control and draws the UI with props, texts included. As the UI never reads the control, it also draws from your own state, with no control behind it. A control holds its parts' UI under \`Ui\`, as \`DatasetControl.Ui\` and \`Form.Ui\` do in the example.
+Every part is split in two. The *UI* takes plain props and owns the look: its styles and its \`components\`. The *adapter* reads the control and draws the UI with props, texts included. As the UI never reads the control, it also draws from your own state, with no control behind it.
 
 {{story: Plain UI}}
 
