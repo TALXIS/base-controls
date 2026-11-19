@@ -194,7 +194,9 @@ const GridExample = () => {
                         </TaskTooltip.FieldRows>
                     </TaskTooltip.Body>
                     <TaskTooltip.Footer>
-                        <TaskTooltip.DateRangeRow />
+                        <TaskTooltip.FieldRows>
+                            <TaskTooltip.DateRangeRow />
+                        </TaskTooltip.FieldRows>
                     </TaskTooltip.Footer>
                 </TaskTooltip.Callout>,
             },

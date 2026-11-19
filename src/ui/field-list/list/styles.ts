@@ -5,5 +5,7 @@ export const getFieldListStyles = () => mergeStyleSets({
         display: 'flex',
         flexDirection: 'column',
         gap: 4,
+        flex: '1 1 auto',
+        minWidth: 0,
     },
 });

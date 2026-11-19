@@ -1,6 +1,6 @@
 import type { ITaskTooltipHeaderComponents } from "../header";
 import type { ITooltipUiCalloutComponents } from "../../../../ui/tooltip";
-import type { ICardBodyComponents, ICardFooterComponents, IFieldListDateRangeComponents, IFieldListProgressComponents } from "@ui";
+import type { ICardBodyComponents, ICardFooterComponents, IFieldListComponents, IFieldListDateRangeComponents, IFieldListProgressComponents } from "@ui";
 
 /** The replaceable pieces of the default tooltip, by the part they belong to. */
 export interface ITaskTooltipRendererComponents {
@@ -8,6 +8,7 @@ export interface ITaskTooltipRendererComponents {
     header?: ITaskTooltipHeaderComponents;
     body?: Partial<ICardBodyComponents>;
     footer?: Partial<ICardFooterComponents>;
+    fieldRows?: Partial<IFieldListComponents>;
     progress?: Partial<IFieldListProgressComponents>;
     dateRange?: Partial<IFieldListDateRangeComponents>;
 }

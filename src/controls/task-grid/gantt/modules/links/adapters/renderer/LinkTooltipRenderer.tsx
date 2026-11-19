@@ -23,7 +23,9 @@ export const LinkTooltipRenderer = (props: ILinkTooltipRendererProps) => {
             </LinkTooltipFieldRows>
         </Card.Body>
         <Card.Footer components={components.footer}>
-            <LinkTooltipDateRangeRow components={components.dateRange} />
+            <LinkTooltipFieldRows components={components.fieldRows}>
+                <LinkTooltipDateRangeRow components={components.dateRange} />
+            </LinkTooltipFieldRows>
         </Card.Footer>
     </LinkTooltipCallout>;
 };

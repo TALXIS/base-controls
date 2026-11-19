@@ -6,7 +6,6 @@ export const getFieldListDateRangeStyles = (theme: ITheme) => mergeStyleSets({
         display: 'flex',
         alignItems: 'center',
         gap: 8,
-        flex: '1 1 auto',
         color: theme.semanticColors.bodyText,
     },
     icon: {
