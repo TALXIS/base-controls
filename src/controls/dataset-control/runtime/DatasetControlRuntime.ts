@@ -1,9 +1,9 @@
 import type { ITheme } from "@fluentui/react";
 import { IAvailableRelatedColumn, IColumn, IDataProvider, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { HookRegistry, IStateStore, ModuleLoader, Runtime, ServiceRegistry, IHookPoint, IRuntimeNotifications } from "@core";
+import { HookRegistry, IStateStore, Runtime, ServiceRegistry, IHookPoint, IRuntimeNotifications } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlProps } from "../adapters/root/Root";
-import { IDatasetControl, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartMap, IDatasetControlServiceRegistry, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
+import { IDatasetControl, IDatasetControlModule, IDatasetControlModuleMap, IDatasetControlPartMap, IDatasetControlServiceRegistry, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
 import { toScopedColumn } from "./parts/edit-columns/toScopedColumn";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
@@ -53,9 +53,8 @@ export interface IDatasetControlRuntimeParameters {
     theme: ITheme;
 }
 
-export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap> implements IDatasetControlInternal {
+export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap, IDatasetControlModuleMap, IDatasetControlInternal> implements IDatasetControlInternal {
     private _services = new ServiceRegistry<IDatasetControlServiceMap>();
-    private _moduleLoader = new ModuleLoader<IDatasetControlModuleMap, IDatasetControlInternal>();
     private _surfaces = new DatasetControlSurfaces();
     private _getProps: () => IDatasetControlProps;
     private _theme: ITheme;
@@ -83,10 +82,6 @@ export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap> imple
 
     public get services(): IDatasetControlServiceRegistry {
         return this._services;
-    }
-
-    public get modules(): IDatasetControlModuleLocator {
-        return this._moduleLoader.modules;
     }
 
     public get surfaces(): IDatasetControlSurfaces {
@@ -163,8 +158,6 @@ export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap> imple
 
     protected onDestroy(): void {
         this._stopProviderNotifications?.();
-        //before the provider is released, which the modules may still read
-        this._moduleLoader.destroy();
         if (this._provider) {
             this._state.save(this._provider, this._viewId);
             this._releaseProvider(this._provider);
@@ -186,8 +179,11 @@ export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap> imple
         await provider.executeWithUnsavedChangesBlocker(remount);
     }
 
+    protected getModules(): IDatasetControlModule[] {
+        return this._getProps().modules ?? [];
+    }
+
     protected async onInit(): Promise<void> {
-        await this._moduleLoader.load(this._getProps().modules ?? [], this);
         const { provider, views = [], destroyProviderOnUnmount } = await this._getProps().onLoad(this);
         this._isProviderOwned = destroyProviderOnUnmount !== false;
         try {

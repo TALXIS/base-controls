@@ -2,7 +2,7 @@ import type { GanttStatic } from "dhtmlx-gantt";
 import dayjs from "dayjs";
 import type { GridApi } from "ag-grid-community";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
-import { HookRegistry, IServiceLocator, IStateStore, ModuleLoader, Runtime, ServiceRegistry } from "@core";
+import { HookRegistry, IRuntimePartMap, IStateStore, Runtime, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { GridCellCommandsHook, IGrid } from "@controls/grid";
@@ -12,7 +12,7 @@ import type { IDatasetControl } from "@controls/dataset-control/runtime";
 import type { ITaskViewData } from "../../runtime/provider";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { GANTT_LABELS } from "../labels";
-import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
+import type { GanttChartConfigHook, IGantt, IGanttEvents, IGanttModule, IGanttModuleMap, IGanttServiceMap } from "../interfaces";
 import { GanttSurfaces } from "../surfaces";
 import { GanttTheme } from "../theme";
 import { GanttSchedule, IGanttSpan } from "../schedule";
@@ -34,7 +34,7 @@ export interface IGanttRuntimeParameters {
     getProps: () => ITaskGanttProps;
 }
 
-export class GanttRuntime extends Runtime implements IGantt {
+export class GanttRuntime extends Runtime<IRuntimePartMap, IGanttModuleMap, IGantt> implements IGantt {
     public readonly events = new EventEmitter<IGanttEvents>();
     public readonly services = new ServiceRegistry<IGanttServiceMap>();
     public readonly surfaces = new GanttSurfaces();
@@ -42,7 +42,6 @@ export class GanttRuntime extends Runtime implements IGantt {
     private _taskRuntime: ITaskRuntime;
     private _datasetControl: IDatasetControl<ITaskViewData>;
     private _getProps: () => ITaskGanttProps;
-    private _moduleLoader = new ModuleLoader<IGanttModuleMap, IGantt>();
     public readonly hooks = {
         chartConfig: new HookRegistry<GanttChartConfigHook>(),
     };
@@ -52,10 +51,6 @@ export class GanttRuntime extends Runtime implements IGantt {
     private _taskRange?: IGanttSpan;
     private _isTaskRangeStale = true;
     private _resolveDrawn?: () => void;
-
-    public get modules(): IServiceLocator<IGanttModuleMap> {
-        return this._moduleLoader.modules;
-    }
 
     constructor(parameters: IGanttRuntimeParameters) {
         super();
@@ -108,12 +103,14 @@ export class GanttRuntime extends Runtime implements IGantt {
         }));
     }
 
+    protected getModules(): IGanttModule[] {
+        return this._getProps().modules;
+    }
+
     protected async onInit(): Promise<void> {
-        const modules = this._getProps().modules;
-        if (!modules.some(module => module.name === 'library')) {
+        if (!this.modules.find('library')) {
             throw new Error('TaskGantt needs a library module: createLibraryModule() or createProLibraryModule({ Gantt }).');
         }
-        await this._moduleLoader.load(modules, this);
         this.lifecycle.waitUntil(new Promise<void>(resolve => this._resolveDrawn = resolve));
     }
 
@@ -125,7 +122,6 @@ export class GanttRuntime extends Runtime implements IGantt {
         if (this._removeCellCommandsHook && this._gridApi && !this._gridApi.isDestroyed()) {
             this._gridApi.refreshCells({ columns: [this._taskRuntime.getFieldMapping().subject], force: true });
         }
-        this._moduleLoader.destroy();
         this.services.destroy();
     }
 

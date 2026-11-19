@@ -1,6 +1,6 @@
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IRuntime, IServiceRegistry, ModuleLoader, Runtime, ServiceRegistry } from "@core";
-import type { IMapModuleLocator, IMapModuleMap, IMapPoint, IMapProps } from "../interfaces";
+import { IRuntime, IRuntimePartMap, IServiceRegistry, Runtime, ServiceRegistry } from "@core";
+import type { IMapModule, IMapModuleLocator, IMapModuleMap, IMapPoint, IMapProps } from "../interfaces";
 import { MapViewport } from "./viewport/MapViewport";
 
 export interface IMapServiceMap {
@@ -24,9 +24,8 @@ export interface IMapRuntimeParameters {
     getProps: () => IMapProps;
 }
 
-export class MapRuntime extends Runtime implements IMap {
+export class MapRuntime extends Runtime<IRuntimePartMap, IMapModuleMap, IMap> implements IMap {
     public readonly services = new ServiceRegistry<IMapServiceMap>();
-    private _moduleLoader = new ModuleLoader<IMapModuleMap, IMap>();
     private _getProps: () => IMapProps;
 
     constructor(parameters: IMapRuntimeParameters) {
@@ -35,10 +34,6 @@ export class MapRuntime extends Runtime implements IMap {
         this.services.provide('provider', parameters.provider);
         const viewport = new MapViewport({ map: this });
         this.services.provide('viewport', viewport, { onDestroy: () => viewport.destroy() });
-    }
-
-    public get modules(): IMapModuleLocator {
-        return this._moduleLoader.modules;
     }
 
     public getPoint(record: IRecord): IMapPoint | undefined {
@@ -54,17 +49,18 @@ export class MapRuntime extends Runtime implements IMap {
         }
     }
 
+    protected getModules(): IMapModule[] {
+        return this._getProps().modules;
+    }
+
     protected async onInit(): Promise<void> {
-        const modules = this._getProps().modules;
-        if (!modules.some(module => module.name === 'library')) {
+        if (!this.modules.find('library')) {
             throw new Error('Map needs a library module: use GoogleMap or LeafletMap, or give a library module of your own and draw its map as a child.');
         }
-        await this._moduleLoader.load(modules, this);
         await this._getProps().onLoad?.(this);
     }
 
     protected onDestroy(): void {
-        this._moduleLoader.destroy();
         this.services.destroy();
     }
 

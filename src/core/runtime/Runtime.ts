@@ -1,4 +1,5 @@
-import { IServiceRegistry, ServiceRegistry } from "../services";
+import { IServiceLocator, IServiceRegistry, ServiceRegistry } from "../services";
+import { IRuntimeModule, ModuleLoader } from "../modules";
 import { IRuntimeLifecycle, RuntimeLifecycle } from "./RuntimeLifecycle";
 import { IRuntimeExecutor, RuntimeExecutor } from "./RuntimeExecutor";
 import { IRuntimeLoading, RuntimeLoading } from "./RuntimeLoading";
@@ -27,11 +28,12 @@ export interface IRuntime {
     readonly notifications: IRuntimeNotifications;
 }
 
-/** What a runtime is built on: its lifecycle, loading, executor and parts. */
-export abstract class Runtime<TPartMap extends IRuntimePartMap = IRuntimePartMap> implements IRuntime {
+/** What a runtime is built on: its lifecycle, loading, executor, parts and modules. */
+export abstract class Runtime<TPartMap extends IRuntimePartMap = IRuntimePartMap, TModuleMap extends object = {}, THost = IRuntime> implements IRuntime {
     private _parts = new ServiceRegistry<TPartMap>();
+    private _moduleLoader = new ModuleLoader<TModuleMap, THost>();
     public readonly parts: IRuntimeParts<TPartMap> = this._parts;
-    public readonly lifecycle = new RuntimeLifecycle({ onInit: () => this.onInit(), onDestroy: () => this._destroy() });
+    public readonly lifecycle = new RuntimeLifecycle({ onInit: () => this._init(), onDestroy: () => this._destroy() });
     public readonly loading = new RuntimeLoading({ lifecycle: this.lifecycle });
     public readonly executor = new RuntimeExecutor({ loading: this.loading });
     public readonly execute = this.executor.execute.bind(this.executor);
@@ -40,12 +42,31 @@ export abstract class Runtime<TPartMap extends IRuntimePartMap = IRuntimePartMap
         return this.parts.get('notifications');
     }
 
-    /** Prepares what the control needs before it is drawn; the host runs it once per mount. */
+    /** The modules this mount loaded, by name. */
+    public get modules(): IServiceLocator<TModuleMap> {
+        return this._moduleLoader.modules;
+    }
+
+    /** The modules to load on every mount, before `onInit`. */
+    protected getModules(): IRuntimeModule<TModuleMap, keyof TModuleMap, THost>[] {
+        return [];
+    }
+
+    /** Prepares the control before it is drawn, once its modules have loaded. */
     protected abstract onInit(): Promise<void>;
-    /** Releases what the runtime holds, after `onDestroyed`. */
+    /** Releases what the runtime holds, after `onDestroyed` and its modules have gone. */
     protected abstract onDestroy(): void;
 
+    private async _init(): Promise<void> {
+        //a runtime is its own modules' host
+        await this._moduleLoader.load(this.getModules(), this as unknown as THost);
+        if (!this.lifecycle.isDestroyed()) {
+            await this.onInit();
+        }
+    }
+
     private _destroy(): void {
+        this._moduleLoader.destroy();
         this.onDestroy();
         this._parts.destroy();
     }

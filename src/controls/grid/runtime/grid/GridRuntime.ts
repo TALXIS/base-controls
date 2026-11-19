@@ -3,13 +3,13 @@ import { ColDef, ColumnApiModule, ColumnAutoSizeModule, EventApiModule, GetRowId
 import { AgGridReactProps } from "ag-grid-react";
 import { EventEmitter, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { ITheme } from "@theme";
-import { HookRegistry, IStateStore, ModuleLoader, Runtime, ServiceRegistry } from "@core";
+import { HookRegistry, IStateStore, IRuntimePartMap, Runtime, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import { RowLoading } from "../../adapters/rows/loading";
 import { LoadingOverlay } from "../../adapters/overlays/loading";
 import { EmptyStateOverlay } from "../../adapters/overlays/empty-state";
 import type { IDatasetControlInternal } from "@controls/dataset-control/runtime/DatasetControlRuntime";
-import { IGridProps, IGridModuleLocator, IGridModuleMap, IGridOpenRecordParameters } from "../../interfaces";
+import { IGridProps, IGridModule, IGridModuleMap, IGridOpenRecordParameters } from "../../interfaces";
 import { IGridServiceRegistryInternal, IGridServiceMapInternal } from "../interfaces";
 import { IGrid, IGridEvents } from "./interfaces";
 import { GridSettings } from "../settings";
@@ -70,9 +70,8 @@ export interface IGridRuntimeParameters {
     getLabelsService: () => LabelsService;
 }
 
-export class GridRuntime extends Runtime implements IGrid {
+export class GridRuntime extends Runtime<IRuntimePartMap, IGridModuleMap, IGrid> implements IGrid {
     private _services = new ServiceRegistry<IGridServiceMapInternal>();
-    private _moduleLoader = new ModuleLoader<IGridModuleMap, IGrid>();
     private _getProps: () => IGridProps;
     public readonly hooks = {
         agGridInitialOptions: new HookRegistry<GridAgGridInitialOptionsHook>(),
@@ -131,10 +130,6 @@ export class GridRuntime extends Runtime implements IGrid {
         return this._services;
     }
 
-    public get modules(): IGridModuleLocator {
-        return this._moduleLoader.modules;
-    }
-
     public getLabels<T extends Labels>(set: ILabelSet<T>): ILabels<T> {
         return this._services.get('labels').getLabels(set);
     }
@@ -173,17 +168,16 @@ export class GridRuntime extends Runtime implements IGrid {
         this._provider.openDatasetItem(parameters.reference, { columnName: parameters.columnName });
     }
 
+    protected getModules(): IGridModule[] {
+        return this._getProps().modules;
+    }
+
     protected async onInit(): Promise<void> {
-        const modules = this._getProps().modules;
-        await this._moduleLoader.load(modules, this);
-        if (this.lifecycle.isDestroyed()) {
-            return;
-        }
         if (!this.modules.find('rowModel')) {
             throw new Error('The grid needs a row model module: render ClientSideGrid or ServerSideGrid, or add createClientSideRowModelModule() to modules.');
         }
         //before AG Grid is constructed, which the host renders once the grid is ready
-        ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...modules.flatMap(module => module.agGridModules ?? [])]);
+        ModuleRegistry.registerModules([...RUNTIME_AG_GRID_MODULES, ...this.getModules().flatMap(module => module.agGridModules ?? [])]);
         await this._getProps().onLoad?.(this);
         //after the modules so their api and provider listeners run first
         this._services.observe('gridApi', () => this._onGridApiAvailable());
@@ -193,7 +187,6 @@ export class GridRuntime extends Runtime implements IGrid {
     protected onDestroy(): void {
         //AG Grid may unmount after this, so its api listeners clean up while it still answers
         this._removeGridApi?.();
-        this._moduleLoader.destroy();
         this._services.destroy();
     }
 
