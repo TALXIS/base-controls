@@ -14,11 +14,11 @@ The grid runs on <a href="https://www.ag-grid.com/" target="_blank" rel="norefer
 
 | Call | Its hooks run | For |
 |---|---|---|
-| \`grid.hooks.agGridInitialOptions.add(hook, priority?)\` | Once, when AG Grid is created | The options AG Grid reads only then, such as \`ensureDomOrder\`, \`suppressColumnVirtualisation\`, \`enableRtl\` or \`tooltipShowMode\` |
-| \`grid.hooks.agGridOptions.add(hook, priority?)\` | When AG Grid is ready, after every load of the provider, and on every \`refreshAgGridOptions()\` | The options AG Grid takes at any time, such as \`headerHeight\`, \`suppressMovableColumns\` or \`tooltipShowDelay\` |
+| \`grid.hooks.agGridInitialOptions.add(hook)\` | Once, when AG Grid is created | The options AG Grid reads only then, such as \`ensureDomOrder\`, \`suppressColumnVirtualisation\`, \`enableRtl\` or \`tooltipShowMode\` |
+| \`grid.hooks.agGridOptions.add(hook)\` | When AG Grid is ready, after every load of the provider, and on every \`refreshAgGridOptions()\` | The options AG Grid takes at any time, such as \`headerHeight\`, \`suppressMovableColumns\` or \`tooltipShowDelay\` |
 | \`grid.refreshAgGridOptions()\` | When you call it | Runs the option hooks again and passes AG Grid the options whose value changed |
 
-Each hook receives \`{ options }\` and sets what it needs on it. Both \`add\` calls return a function that takes the hook off again, and their priorities work as every hook's do: see [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview).
+Each hook receives \`{ options }\` and sets what it needs on it. Both \`add\` calls take an optional \`priority\` and return a function that takes the hook off again; priorities work as every hook's do: see [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview).
 
 \`refreshAgGridOptions()\` compares each option with what AG Grid was last passed, by reference. A hook that builds a new object or function each time passes it again on every refresh, so create them once, outside the hook. It does not build the column definitions again: those follow the provider's loads, so call \`provider.refresh()\` for them.
 
@@ -94,7 +94,7 @@ Import them from the same \`ag-grid-community\` and \`ag-grid-enterprise\` the g
 const EXPLORE: IExploreCard[] = [
     { title: 'Hooks', iconName: 'Plug', href: '?path=/docs/controls-grid-guide-advanced-hooks--overview', text: 'Change what the grid draws and decides without reaching AG Grid.' },
     { title: 'Write a module', iconName: 'Puzzle', href: '?path=/docs/controls-grid-guide-advanced-write-a-module--overview', text: 'Package AG Grid options and modules in a module of your own.' },
-    { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-grid-reference--overview', text: 'Every prop, event, module, hook, service and slot of the Grid.' },
+    { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-grid-reference--overview', text: 'Every prop, event, module, hook, service key and slot of the Grid.' },
 ]
 
 const meta = {

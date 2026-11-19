@@ -16,7 +16,7 @@ The CRM's rules come into the grid: discounts, forecasts, empty dates, big deals
 
 ## How it works
 
-Like [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview), this step starts from the deal grid. In **Code**, the new lines carry \`//new:\`. What a hook is, and how \`add\` and \`priority\` work, is on [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview).
+Like [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview), this step starts from *the deal grid*. In **Code**, the new lines carry \`//new:\`. What a hook is, and how \`add\` and \`priority\` work, is on [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview).
 
 **When hooks run.** The grid runs a hook each time it draws what the hook decides: a cell hook as the cell draws, a row hook as AG Grid lays the row out, a header hook as the header draws. Keep a hook fast and free of side effects. Hooks run for group rows and the totals row too, where \`getValue()\` reads \`null\`, as on [**Group and total**](?path=/docs/controls-grid-guide-features-group-and-total--overview).
 
@@ -56,7 +56,7 @@ A record's new value draws that record's cells again by itself, as a forecast pr
 
 ## Rules on rows
 
-This example adds a row hook and a selection hook to the deal grid.
+This example adds a row hook and a selection hook to *the deal grid*.
 
 {{canvas: Rules on rows}}
 

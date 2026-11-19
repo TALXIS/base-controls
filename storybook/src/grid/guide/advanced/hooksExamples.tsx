@@ -58,6 +58,7 @@ const GridExample = () => {
         addCellRules(grid)
     }
 
+    //new: asks the CRM for each open deal's probability, one at a time
     const forecast = async () => {
         const grid = gridRef.current!
         const openDeals = grid.services.get('provider').getRecords().filter(deal => !isClosed(deal))

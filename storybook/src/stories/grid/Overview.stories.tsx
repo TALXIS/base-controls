@@ -7,7 +7,7 @@ import { GuideMap } from '../../grid/guide/gridGuide'
 import { ShowcaseExample } from '../../grid/guide/overviewExamples'
 
 const DESCRIPTION = `
-Grid shows a provider's records as rows and columns on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>, each value drawn with the control for its data type. Everything beyond showing them, from editing to grouping, is a module you add, and hooks let your code change what the grid decides. Try it below: pick the *Closing deals* preset, tick two open deals, then hover one and press **Mark as won** at the right end of its row.
+A grid shows a provider's records as rows and columns on AG Grid, each value drawn with the control for its data type. Everything beyond showing them, from editing to grouping, is a module you add, and hooks let your code change what the grid decides. Try it below: pick the *Closing deals* preset, tick two open deals, then hover one and press **Mark as won** at the right end of its row.
 
 {{canvas: Explore a sales pipeline}}
 
@@ -21,9 +21,9 @@ Grid shows a provider's records as rows and columns on <a href="https://www.ag-g
 | The sort items and **Filter By** in a column's menu, and the arrow and funnel after a header's name | The sorting and filtering modules | [**Sort and filter**](?path=/docs/controls-grid-guide-basics-sort-and-filter--overview) |
 | Checkboxes, highlighted blocks of cells, and Ctrl+C | The row selection, cell selection and clipboard modules | [**Select and copy**](?path=/docs/controls-grid-guide-features-select-and-copy--overview) |
 | Group rows, and the totals row under the deals | The grouping and aggregation modules | [**Group and total**](?path=/docs/controls-grid-guide-features-group-and-total--overview) |
-| Won and lost deals in green and red, with a lock at the start of their rows (*Closing deals*) | A row lock hook and a cell theme hook | [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview) |
+| Won and lost deals locked, with a lock at the start of their rows (*Closing deals*) | A row lock hook | [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview) |
 | *Deal* pinned and linked to a form, and *Recurring* edited right in its cell | Column definitions and \`openRecord\` hooks | [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview) |
-| Tags in colour, zebra rows, compact rows, and tinted close dates and values | Props and cell theme hooks | [**Colours and density**](?path=/docs/controls-grid-guide-make-it-yours-colours-and-density--overview) |
+| Tags in colour, zebra rows, compact rows, tinted close dates and values, and won and lost deals in green and red | Props and cell theme hooks | [**Colours and density**](?path=/docs/controls-grid-guide-make-it-yours-colours-and-density--overview) |
 | **Push a week** in an overdue close date, an icon after *Close date*, *Quick views* in a menu, and **Mark as won** in a column of its own | Cell commands, header adornments and menu sections | [**Cells and headers of your own**](?path=/docs/controls-grid-guide-make-it-yours-cells-and-headers-of-your-own--overview) |
 | An icon before an overdue or due close date | A control parameters hook | [**Hooks**](?path=/docs/controls-grid-guide-advanced-hooks--overview) |
 
@@ -50,14 +50,15 @@ Coming from the DatasetControl guide? Its deal list is the frame [**Your first d
 
 | Word | Means | Explained in |
 |---|---|---|
-| Module | A feature you add to the grid through \`modules\`, such as editing or grouping. | Grid's [**Edit and save**](?path=/docs/controls-grid-guide-basics-edit-and-save--overview) |
-| Save status | The narrow column at the start of each row: a spinner while the row saves, a check once it has, and a red icon when it was refused. | Grid's [**Edit and save**](?path=/docs/controls-grid-guide-basics-edit-and-save--overview) |
+| Module | A feature you add to the grid through \`modules\`, such as editing or grouping. | [**Edit and save**](?path=/docs/controls-grid-guide-basics-edit-and-save--overview) |
+| Save status | The narrow column at the start of each row: a spinner while the row saves, a check once it has, and a red icon when it was refused. | [**Edit and save**](?path=/docs/controls-grid-guide-basics-edit-and-save--overview) |
 | Lock | What keeps a column, a row or a cell from being edited. | [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview) |
 | Summary row | A group row or the totals row: a record that stands for many deals. | [**Group and total**](?path=/docs/controls-grid-guide-features-group-and-total--overview) |
 | Hook | A function the grid asks as it draws, which changes one decision, such as a lock or a colour. | [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview) |
 | Row model | How the grid gets its rows: all at once with \`ClientSideGrid\`, or a group at a time with \`ServerSideGrid\`. | [**Open groups on demand**](?path=/docs/controls-grid-guide-features-open-groups-on-demand--overview) |
 | Service | One part of the grid, found by its key on \`grid.services\`, such as \`columns\`. | [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview) |
 | Column definition | AG Grid's \`ColDef\` for one column, with the grid's own \`context\`, which a hook can change. | [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview) |
+| The deal grid | The ribbon of *Select and copy* over a \`ClientSideGrid\` with row selection, editing, sorting and filtering: what every step of *Make it yours* and *Advanced* starts from. | [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview) |
 
 ## Where next
 
@@ -66,8 +67,8 @@ Coming from the DatasetControl guide? Its deal list is the frame [**Your first d
 
 const EXPLORE: IExploreCard[] = [
     { title: 'Your first deal grid', iconName: 'Education', href: '?path=/docs/controls-grid-guide-basics-your-first-deal-grid--overview', text: 'Start the guide: the team\'s deals in a read-only grid.' },
-    { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-grid-reference--overview', text: 'Every prop, event, module, hook, service and slot of the Grid.' },
-    { title: 'DatasetControl', iconName: 'GridViewSmall', href: '?path=/docs/controls-datasetcontrol-overview--overview', text: 'The frame around the grid: views, a ribbon, search and paging.' },
+    { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-grid-reference--overview', text: 'Every prop, event, module, hook, service key and slot of the Grid.' },
+    { title: 'DatasetControl', iconName: 'ViewDashboard', href: '?path=/docs/controls-datasetcontrol-overview--overview', text: 'The frame around the grid: views, a ribbon, search and paging.' },
 ]
 
 const meta = {

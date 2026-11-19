@@ -16,7 +16,7 @@ The closed-deal lock and an unsaved changes bar become modules that any deal gri
 
 ## How it works
 
-Like [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview), this step starts from the deal grid. In **Code**, the new lines carry \`//new:\`.
+Like [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview), this step starts from *the deal grid*. In **Code**, the new lines carry \`//new:\`.
 
 **A module of your own** is an object in the grid's \`modules\`, beside the built-in ones; what a module is, for every control, is on the Concepts guide's [**Edit and save**](?path=/docs/concepts-guide-basics-edit-and-save--overview).
 
@@ -28,7 +28,7 @@ Like [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-cod
 | \`priority\` | Optional, \`0\` by default, as on every built-in module. Lower loads first, and modules of one priority load at the same time. |
 | \`agGridModules\` | Optional. The AG Grid modules the feature needs: see [**AG Grid**](?path=/docs/controls-grid-ag-grid--overview). |
 
-In \`onLoad\`, \`grid.modules\` finds only the modules of a lower priority, so \`closedDealsModule\` waits for the editing module with \`observe\`; \`priority: 1\` would load it after the built-in ones instead. When each step of a mount runs is on [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview). Take what a module works on from \`grid.services\`, such as the \`provider\`, and it works in any grid. \`modules\` is read at mount, so a module that takes options is a function that builds one, such as \`createLastOpenedDealModule(onOpened)\` below, and reads what changes through a getter or a ref.
+In \`onLoad\`, \`grid.modules\` finds only the modules of a lower priority, so \`closedDealsModule\` waits for the editing module with \`observe\`; \`priority: 1\` would load it after the built-in ones instead. When each step of a mount runs is on [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview). Take what a module works on from \`grid.services\`, such as the \`provider\`, and it works in any grid. \`modules\` is read at mount, so a module that takes parameters is a function that builds one, such as \`createLastOpenedDealModule(onOpened)\` below, and reads what changes through a getter or a ref.
 
 **Clean up.** What a module adds to the grid goes with the grid; what outlives it keeps the module alive until you unsubscribe:
 
@@ -61,7 +61,7 @@ The \`state\` service is the store under the grid's \`stateKey\`, where the grid
 - Clean up what outlives the grid, such as the provider's listeners.
 - Share what \`onLoad\` returns, draw inside the grid with \`surfaces\`, and keep state under a key of your own.
 
-You have seen the whole Grid. Every prop, event, hook and slot is on Reference.
+You have seen the whole Grid. Every prop, event, module, hook, service key and slot is on [**Reference**](?path=/docs/controls-grid-reference--overview).
 
 {{block: navigation}}
 `

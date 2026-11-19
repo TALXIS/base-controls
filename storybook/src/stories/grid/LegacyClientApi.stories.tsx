@@ -49,29 +49,27 @@ Once a validation hook exists, the grid's validation replaces a script's \`setVa
 | Rows are grouped | A script's background is repainted with the grid's; its text colour stays |
 | A group row or the totals row has expressions | They apply too, since both are summary rows: see [**Group and total**](?path=/docs/controls-grid-guide-features-group-and-total--overview) |
 
-## Options
-
-The module takes no options and needs no AG Grid Enterprise licence.
-
 ## Reference
 
 ### Expressions
 
+Each \`set…Expression\` is called on \`record.expressions\` with the column's logical name and a function, such as \`deal.expressions.setDisabledExpression('value', () => isClosed(deal))\`.
+
 | Expression | With the module | Without it |
 |---|---|---|
-| \`setDisabledExpression(column, () => boolean)\` | \`true\` locks the cell and shows its lock icon, in a grid with the editing module. \`false\` cannot open what the grid, the column or the record locks. | Ignored |
-| \`ui.setNotificationsExpression(column, () => IAddControlNotificationOptions[])\` | Buttons in the cell: see *Notifications*. | Ignored |
-| \`ui.setCustomFormattingExpression(column, cellTheme => ({ backgroundColor?, textColor?, primaryColor? }))\` | Colours the cell. A new background without a text or primary colour gets a readable one. \`cellTheme\` is a Fluent theme of the cell's current colours; \`undefined\` leaves the cell as it is. \`className\` and \`themeOverride\` are ignored. | Ignored |
-| \`ui.setLoadingExpression(column, () => boolean)\` | \`true\` draws a shimmer in place of the cell's value, lock icon, notifications and error. | Ignored |
-| \`ui.setControlParametersExpression(column, parameters => parameters)\` | Adds to or overrides the parameters the cell's control gets, such as \`Placeholder\`, both while it shows the value and while it is edited. It cannot remove one. | Ignored |
-| \`ui.setCustomControlsExpression(column, controls => controls)\` | Picks the control that draws or edits the cell: the first one returned whose \`appliesTo\` matches (\`'renderer'\`, \`'editor'\` or \`'both'\`). The list starts with the grid's own control, so put yours first. | Ignored |
+| \`setDisabledExpression\` | Returns a boolean: \`true\` locks the cell and shows its lock icon, in a grid with the editing module. \`false\` cannot open what the grid, the column or the record locks. | Ignored |
+| \`ui.setNotificationsExpression\` | Returns \`IAddControlNotificationOptions[]\`, drawn as buttons in the cell: see *Notifications*. | Ignored |
+| \`ui.setCustomFormattingExpression\` | Gets \`cellTheme\`, a Fluent theme of the cell's current colours, and returns any of \`backgroundColor\`, \`textColor\` and \`primaryColor\` to colour the cell; \`undefined\` leaves the cell as it is. A new background without a text or primary colour gets a readable one. \`className\` and \`themeOverride\` are ignored. | Ignored |
+| \`ui.setLoadingExpression\` | Returns a boolean: \`true\` draws a shimmer in place of the cell's value, lock icon, notifications and error. | Ignored |
+| \`ui.setControlParametersExpression\` | Gets the parameters the cell's control gets, such as \`Placeholder\`, and returns them with yours added or overridden, both while the cell shows the value and while it is edited. It cannot remove one. | Ignored |
+| \`ui.setCustomControlsExpression\` | Gets the controls and returns them: the first whose \`appliesTo\` matches (\`'renderer'\`, \`'editor'\` or \`'both'\`) draws or edits the cell. The list starts with the grid's own control, so put yours first. | Ignored |
 | \`IColumn.controls\` | Custom controls for the whole column, used where no expression returns any. | Ignored |
 | \`provider.requestRender()\` | Redraws every cell and column header. | Redraws nothing in the grid |
-| \`setValidationExpression(column, () => IFieldValidationResult)\` | Marks the cell invalid with the message and refuses the save. | The same |
-| \`setRequiredLevelExpression(column, () => level)\` | \`'required'\` makes an empty value invalid. The header's asterisk still follows the column's metadata. | The same |
-| \`setValueExpression(column, () => any)\` | The value the cell shows until the user changes it; \`undefined\` keeps the stored value. | The same |
-| \`setFormattedValueExpression(column, formattedValue => text)\` | The text the cell shows. Lookup links, files and coloured option sets are drawn from the value instead. | The same |
-| \`setCurrencySymbolExpression(column, () => string)\` | The symbol a money cell shows. | The same |
+| \`setValidationExpression\` | Returns an \`IFieldValidationResult\`: an invalid one marks the cell invalid with its message and refuses the save. | The same |
+| \`setRequiredLevelExpression\` | Returns a level: \`'required'\` makes an empty value invalid. The header's asterisk still follows the column's metadata. | The same |
+| \`setValueExpression\` | Returns the value the cell shows until the user changes it; \`undefined\` keeps the stored value. | The same |
+| \`setFormattedValueExpression\` | Gets the formatted value and returns the text the cell shows. Lookup links, files and coloured option sets are drawn from the value instead. | The same |
+| \`setCurrencySymbolExpression\` | Returns the symbol a money cell shows. | The same |
 | \`ui.setCustomControlComponentExpression\` | Not read by the grid. | Not read |
 
 ### Notification options
@@ -89,7 +87,7 @@ The module takes no options and needs no AG Grid Enterprise licence.
 
 ### Members
 
-The module is \`grid.modules.find('legacyClientApiCompatibility')\`, or \`useGridModule('legacyClientApiCompatibility')\` inside what the grid draws. Its members are about the notification callout:
+The module takes no parameters and needs no AG Grid Enterprise licence. It is \`grid.modules.find('legacyClientApiCompatibility')\`, or \`useGridModule('legacyClientApiCompatibility')\` inside what the grid draws. Its members are about the notification callout:
 
 | Member | Description |
 |---|---|
@@ -106,7 +104,7 @@ The module is \`grid.modules.find('legacyClientApiCompatibility')\`, or \`useGri
 const EXPLORE: IExploreCard[] = [
     { title: 'Hooks', iconName: 'Plug', href: '?path=/docs/controls-grid-guide-advanced-hooks--overview', text: 'Colour, lock and validate cells the grid\'s own way.' },
     { title: 'Write a module', iconName: 'Puzzle', href: '?path=/docs/controls-grid-guide-advanced-write-a-module--overview', text: 'Run a script from a module, and clean up after it.' },
-    { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-grid-reference--overview', text: 'Every prop, event, module, hook, service and slot of the Grid.' },
+    { title: 'Reference', iconName: 'Table', href: '?path=/docs/controls-grid-reference--overview', text: 'Every prop, event, module, hook, service key and slot of the Grid.' },
 ]
 
 const meta = {

@@ -18,7 +18,7 @@ The sales manager reviews the pipeline by account manager, with what each one ho
 
 This step adds two modules to the grid of [**Select and copy**](?path=/docs/controls-grid-guide-features-select-and-copy--overview), and \`loadPipeline\`, which groups and totals the deals as they load. In **Code**, the new lines carry \`//new:\`. Grouping needs AG Grid Enterprise and totals do not; the licence is on [**Select and copy**](?path=/docs/controls-grid-guide-features-select-and-copy--overview).
 
-**Grouping.** \`createGroupingModule()\` gathers the rows under a **group row** for each value of a column. A column's menu offers *Group* while its metadata sets \`CanBeGrouped\` and it is not a multi-select option set, and *Ungroup* once it is grouped. A grouped column moves to the front, is pinned to the left and cannot be edited; its value shows on the group rows only. A group row shows a chevron, the value, how many deals it holds and its totals, and every cell of it is locked. While the rows are grouped, the zebra stripes go.
+**Grouping.** \`createGroupingModule()\` gathers the rows under a **group row** for each value of a column. A column's menu offers *Group* while its metadata sets \`CanBeGrouped\` and it is not a multi-select option set, and *Ungroup* once it is grouped. A grouped column moves to the front, is pinned to the left and cannot be edited; its value shows on the group rows only. A group row shows a chevron, the value, how many deals it holds and its totals, and every cell of it is locked. While the rows are grouped, the grid draws no zebra rows.
 
 Each grouped column adds a level: a group row opens onto the groups of the next column. With \`createGroupingModule({ type: 'flat' })\`, there is one level, a group for each combination of values; the provider regroups that way only on its next load.
 
@@ -40,7 +40,7 @@ A summary row holds its values under aliases, so \`record.getValue('stage')\` re
 
 **Grouped and totalled from the start.** Grouping and totals belong to the provider's columns: \`loadPipeline\` sets them on the provider before its first load, so the grid opens grouped and totalled. \`provider.grouping.addGroupBy\` and \`provider.aggregation.addAggregation\` write onto the provider's current columns, so call them once the provider has its columns, as \`loadPipeline\` does; replacing the columns drops them. Name the aliases as the column menu does, \`<column>_group\` and \`<column>_<function>\`. To ungroup from code, remove each level with \`provider.grouping.removeGroupBy(alias)\`. How a provider holds groups and totals is under *Groups and totals* on [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
-[**Back where they left off**](?path=/docs/controls-grid-guide-features-back-where-they-left-off--overview) keeps which groups are open, and [**Open groups on demand**](?path=/docs/controls-grid-guide-features-open-groups-on-demand--overview) fetches a group's deals only as it opens. Both modules' options and members are under *Modules* on [**Reference**](?path=/docs/controls-grid-reference--overview).
+[**Back where they left off**](?path=/docs/controls-grid-guide-features-back-where-they-left-off--overview) keeps which groups are open, and [**Open groups on demand**](?path=/docs/controls-grid-guide-features-open-groups-on-demand--overview) fetches a group's deals only as it opens. Both modules' parameters and members are under *Modules* on [**Reference**](?path=/docs/controls-grid-reference--overview).
 
 ## Try it
 

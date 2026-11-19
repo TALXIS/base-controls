@@ -29,5 +29,5 @@ export const { GuideProgress, GuideNavigation, GuideMap } = createGuide<GridStag
         { stage: 'Advanced', title: 'Hooks', text: 'Every hook not met yet, when hooks run, and how to make the grid draw again.' },
         { stage: 'Advanced', title: 'Write a module', text: 'Package hooks, state and a part of your own as a module.' },
     ],
-    reference: { title: 'Reference', text: 'Every prop, event, module, hook, service and slot of the Grid.', iconName: 'Table', href: '?path=/docs/controls-grid-reference--overview' },
+    reference: { title: 'Reference', text: 'Every prop, event, module, hook, service key and slot of the Grid.', iconName: 'Table', href: '?path=/docs/controls-grid-reference--overview' },
 })

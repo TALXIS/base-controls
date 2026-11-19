@@ -61,6 +61,7 @@ import { mergeStyleSets, Stack, Toggle } from '@fluentui/react'
 import { loadDeals } from './deals'
 import { DealsRibbon } from './DealsRibbon'
 
+//new: the log's column beside the grid
 const styles = mergeStyleSets({
     log: { flex: '0 0 280px', height: 480, margin: 0, overflow: 'auto', fontSize: 12 },
 })
@@ -95,6 +96,7 @@ const GridExample = () => {
         })
     }
 
+    //new: the grid and the log side by side
     return <Stack horizontal tokens={{ childrenGap: 16 }}>
         <Stack.Item grow styles={{ root: { minWidth: 0 } }}>
             <DatasetControl onLoad={loadDeals} height='480px'>

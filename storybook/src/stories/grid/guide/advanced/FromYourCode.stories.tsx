@@ -17,7 +17,7 @@ Your page knows which deal the user is on, and buttons of your own sort and disc
 
 ## How it works
 
-Each Advanced step starts from the same deal grid: the ribbon of [**Select and copy**](?path=/docs/controls-grid-guide-features-select-and-copy--overview) over a grid with row selection, editing, sorting and filtering. In **Code**, the new lines carry \`//new:\`.
+Like the steps of *Make it yours*, each Advanced step starts from *the deal grid*, as [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview) describes it. In **Code**, the new lines carry \`//new:\`.
 
 **The grid** is an \`IGrid\`, and every mount makes a new one, with new services and new modules: the grid coming back after the toggle in *Watch it load* below is a new grid. Reach the grid of the current mount where your code runs:
 
@@ -29,15 +29,7 @@ Each Advanced step starts from the same deal grid: the ribbon of [**Select and c
 | In a module | The argument of its \`onLoad\`, as on [**Write a module**](?path=/docs/controls-grid-guide-advanced-write-a-module--overview) |
 | In something the grid draws, such as a cell | The React hooks under *Inside what the grid draws* |
 
-| Member | Description |
-|---|---|
-| \`services\` | The services the grid is made of, by key |
-| \`modules\` | The modules the grid was given, by name |
-| \`events\` | \`onDataLoaded\`: see *Events* |
-| \`hooks.openRecord\`, \`openRecord(parameters)\` | What opening a record does, as on [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview); \`openRecord\` opens one through the hooks, then the provider |
-| \`hooks.agGridOptions\`, \`hooks.agGridInitialOptions\`, \`refreshAgGridOptions()\` | AG Grid's own options: see [**AG Grid**](?path=/docs/controls-grid-ag-grid--overview) |
-| \`getLabels(set)\` | A label set as the grid resolves it: see [**Localization**](?path=/docs/concepts-localization--overview) |
-| \`lifecycle\`, \`loading\`, \`execute\` | The mount's status and events, a spinner over the grid, and actions whose failure the grid shows: see [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) |
+Every member of the grid is under *The grid* on [**Reference**](?path=/docs/controls-grid-reference--overview). This step covers its services, modules and events; \`hooks.openRecord\` is on [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview), AG Grid's options on [**AG Grid**](?path=/docs/controls-grid-ag-grid--overview), and \`lifecycle\`, \`loading\` and \`execute\` on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
 **Services.** The grid is made of services, as [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview) showed, and \`grid.services\` finds them by key. \`get(key)\` returns the service and throws when there is none, so use it for the services every grid has. \`find(key)\` returns \`undefined\` instead, such as for \`gridApi\` before AG Grid is ready. \`observe(key, effect)\` calls \`effect\` with the service now if it is there and each time it is provided; it returns the function that stops observing. Every member and every key is under *Services* on [**Reference**](?path=/docs/controls-grid-reference--overview).
 
@@ -55,7 +47,7 @@ The footer's buttons use two services. \`cells\` raises \`onFocusedCellChanged\`
 |---|---|---|
 | \`grid.events\` | \`onDataLoaded\` | After every load of the provider, once the grid has its new columns and rows |
 | \`grid.lifecycle.events\` | \`onStatusChanged\`, \`onDestroyed\` | As the mount turns ready, fails or ends: see RuntimeHost |
-| The \`provider\` service | \`onRecordColumnValueChanged\`, \`onRecordsSelected\`, the save events below, and more | As on [**Data providers**](?path=/docs/concepts-data-providers--overview) |
+| The \`provider\` service | \`onRecordColumnValueChanged\`, \`onRecordsSelected\`, the save events, and more | As on [**Data providers**](?path=/docs/concepts-data-providers--overview) |
 | The \`columns\` service | \`onCellDoubleClicked\`, \`onColumnsChanged\` | On a double-click on a cell; after the user resizes or moves a column |
 | The \`rows\` service | \`onRowClicked\`, \`onHighlightedRowsChanged\` | On a click on a row; when the hovered, focused or selected rows change |
 | The \`cells\` service | \`onFocusedCellChanged\` | Each time a cell takes the focus, and when the focus leaves the rows |
@@ -63,19 +55,13 @@ The footer's buttons use two services. \`cells\` raises \`onFocusedCellChanged\`
 
 No event fires when sorting, filters, grouping or totals change: they load the provider again, so follow \`onDataLoaded\` and read the provider.
 
-**Follow saves.** The provider raises the save events:
+**Follow saves.** The provider raises \`onBeforeRecordSaved\` as a record starts to save, before its values are checked, and \`onAfterRecordSaved\` once for every record that saves, refused ones included with \`success: false\` and the \`errors\`. \`onAfterSaved\` fires only after \`provider.save()\`, such as **Save**, once every record in it has finished; auto-save never fires it.
 
-| Event | Fires |
-|---|---|
-| \`onBeforeRecordSaved(record)\` | When a record starts to save, before its values are checked |
-| \`onAfterRecordSaved(result)\` | Once for every record that saves, refused ones included with \`success: false\` and the \`errors\` |
-| \`onAfterSaved(results)\` | Only after \`provider.save()\`, such as **Save**, once every record in it has finished; auto-save never fires it |
-
-**A prop read at mount.** Each prop is read either *Live*, each time the grid needs it, or *At mount*, once. \`modules\` and every module's options, \`enableNavigation\`, \`enableOptionSetColors\`, \`enableZebra\`, \`rowHeight\` and \`stateKey\` are read at mount; Reference gives the timing of every prop. To change one, render the grid with a new \`key\`, such as \`key={String(isAutoSaveOn)}\`: the grid mounts again as a new \`IGrid\`. It loses the rows' save status, and its scroll, focus and open groups unless it has a \`stateKey\`, as on [**Back where they left off**](?path=/docs/controls-grid-guide-features-back-where-they-left-off--overview).
+**A prop read at mount.** Each prop is read either *Live*, each time the grid needs it, or *At mount*, once. \`modules\` and every module's parameters, \`enableNavigation\`, \`enableOptionSetColors\`, \`enableZebra\`, \`rowHeight\` and \`stateKey\` are read at mount; Reference gives the timing of every prop. To change one, render the grid with a new \`key\`, such as \`key={String(isAutoSaveOn)}\`: the grid mounts again as a new \`IGrid\`. It loses the rows' save status, and its scroll, focus and open groups unless it has a \`stateKey\`, as on [**Back where they left off**](?path=/docs/controls-grid-guide-features-back-where-they-left-off--overview).
 
 ## Watch it load
 
-This example writes down what each mount raises, beside the deal grid.
+This example writes down what each mount raises, beside *the deal grid*.
 
 {{canvas: Watch it load}}
 
@@ -90,7 +76,7 @@ Subscribe in \`onSetup\`, since every mount brings a new grid. Listeners on the 
 - Click a cell: the footer names the deal and its next step. Move with the arrow keys: the footer follows.
 - Tick two deals and press **5% off**: every selected deal, the one you clicked included, has a discount of 5, and **Save** appears. Press **Save**.
 - Press **Closing soonest**: the deals sort by *Close date*, the earliest first, and an arrow shows in its header.
-- In *Watch it load*, turn *Show the deals* off and on: the log shows \`onDestroyed\` and the cleanup, then \`onSetup\`, \`gridApi\`, \`onDataLoaded\` and \`onReady\`, in that order.
+- In *Watch it load*, turn *Show the deals* off and on: the log shows \`onDestroyed\` and the \`gridApi\` cleanup, then \`onSetup\`, \`onLoad\`, \`gridApi\`, \`onDataLoaded\` and \`onReady\`, in that order, with each status change among them.
 - Change a value and press **Save**: the log shows \`onBeforeRecordSaved\`, \`onAfterRecordSaved\` and \`onAfterSaved\`.
 
 ## Remember

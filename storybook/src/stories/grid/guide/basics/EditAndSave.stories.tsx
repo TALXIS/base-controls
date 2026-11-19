@@ -47,7 +47,7 @@ The status lives on screen only: a row that scrolls out of view, or a grid that 
 ## Try it
 
 - Double-click the first deal's *Value*, replace it with 5000 and press Enter: the focus moves down a row, and **Save** and **Discard changes** appear.
-- Double-click a *Stage* and pick *Negotiate*: the picker closes and the value is in. Press **Discard changes**: both deals are as they were, and both commands go.
+- Double-click the second deal's *Stage* and pick *Negotiate*: the picker closes and the value is in. Press **Discard changes**: both deals are as they were, and both commands go.
 - Change a value and press **Save**: a spinner covers the grid while the CRM saves, then a green check shows at the start of the row for two seconds.
 - In **Code**, pass \`{ enableAutoSave: true }\` to \`createEditingModule\`, then change a value: a spinner shows at the start of its row, then the check.
 

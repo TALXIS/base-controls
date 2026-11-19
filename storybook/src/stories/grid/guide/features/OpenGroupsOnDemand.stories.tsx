@@ -34,7 +34,7 @@ Use \`ClientSideGrid\` unless users group by a column with many values, or into 
 - Open Anna Novak's group: a loading row shows for a second, then a row says *Error: Failed to retrieve data. Please contact your system administrator.* Press **Refresh**: her 8 deals load.
 - Open Ben Carter's group: a loading row shows for a second, then his 8 deals.
 - Close Ben Carter's group and open it again: his deals show at once.
-- In **Code**, put \`ClientSideGrid\` back, then open Anna Novak's and Ben Carter's groups: both open at once, but Anna Novak's is empty, as the edit runs *remoteDeals.ts* again and her group's fetch fails. Press **Refresh**: her deals arrive.
+- In **Code**, put \`ClientSideGrid\` back in place of \`ServerSideGrid\`, in the import too, then open Anna Novak's and Ben Carter's groups: both open at once, but Anna Novak's is empty, as the edit runs *remoteDeals.ts* again and her group's fetch fails. Press **Refresh**: her deals arrive.
 
 ## Remember
 

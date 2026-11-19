@@ -16,7 +16,7 @@ The deal name stays in view and opens the deal, *Recurring* flips in its cell, a
 
 ## How it works
 
-Each step of *Make it yours* starts from *the deal grid*: the ribbon of [**Select and copy**](?path=/docs/controls-grid-guide-features-select-and-copy--overview), and the row selection, editing, sorting and filtering modules; the groups, totals and Enterprise modules of *Features* are left out. This step adds an \`onSetup\` that shapes the columns, and a panel for the deal a user opens. In **Code**, the new lines carry \`//new:\`.
+Each step of *Make it yours* and *Advanced* starts again from *the deal grid*: the ribbon of [**Select and copy**](?path=/docs/controls-grid-guide-features-select-and-copy--overview) over a \`ClientSideGrid\` with the row selection, editing, sorting and filtering modules. What else *Features* added, cell ranges, the clipboard, groups, totals, locks and the \`stateKey\`, is left out. This step adds an \`onSetup\` that shapes the columns, and a panel for the deal a user opens. In **Code**, the new lines carry \`//new:\`.
 
 **Services.** The grid is made of services, each found by its key: \`grid.services.get('columns')\` returns the one that builds the columns. How to find the others is on [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-code--overview). \`onSetup\` hands you each new grid before it loads, as in [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview).
 

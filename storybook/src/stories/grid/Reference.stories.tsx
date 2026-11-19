@@ -4,7 +4,7 @@ import { gridDocsPage } from '../../grid/gridDocsPage'
 const DESCRIPTION = `
 Every prop, event, module, hook, service key and slot of the Grid, in one place to look up.
 
-## Props
+## Grid props
 
 \`ClientSideGrid\`, \`ServerSideGrid\` and \`Grid\` take the same props; \`ClientSideGrid\` and \`ServerSideGrid\` add their row model to \`modules\` (see [**Open groups on demand**](?path=/docs/controls-grid-guide-features-open-groups-on-demand--overview)). The grid draws the provider of the DatasetControl around it and takes none as a prop.
 
@@ -46,7 +46,7 @@ Every prop, event, module, hook, service key and slot of the Grid, in one place 
 | \`rows.events\` | \`onRowClicked\` | \`record\` | A click on a row, group rows and the totals row included. With row selection, a click on the checkbox, on a cell's commands or a plain click on a group row does not fire it. |
 | | \`onHighlightedRowsChanged\` | None | The row the user hovers or focuses changes, or the selection does. |
 | \`cells.events\` | \`onFocusedCellChanged\` | \`record?\`, \`columnName?\` | A cell takes the focus; both are \`undefined\` when the focus leaves the rows. |
-| \`editing.events\` | \`onEditedCellChanged\` | \`previous?\`, \`next?\`, each \`{ recordId, columnName }\` | An editor opens or closes, or the user steps into or out of an in-place cell. |
+| \`editing.events\` | \`onEditedCellChanged\` | \`previous?\`, \`next?\`, each with a \`recordId\` and a \`columnName\` | An editor opens or closes, or the user steps into or out of an in-place cell. |
 | \`filtering.events\` | \`onFilterOpened\` | \`columnName\` | A column's filter callout opens. |
 | | \`onFilterClosed\` | None | The callout closes, **Apply** included. No event says what was applied. |
 | \`grouping.events\` | \`onGroupSelectionLimitDialogChanged\` | None | The alert for a refused selection opens or closes. |
@@ -68,6 +68,7 @@ No event fires when the sorting, a filter, the grouping or a total changes: each
 | \`getLabels(set)\` | A label set as the grid resolves it. See [**Localization**](?path=/docs/concepts-localization--overview). |
 | \`lifecycle\` | The mount's status, error and events, and \`remount()\`. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 | \`loading\`, \`execute(operation, parameters?)\`, \`executor\` | Cover the grid with a spinner while your code works, and run an action whose failure is shown to the user. See *Run actions* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
+| \`parts\`, \`notifications\` | Nothing on a grid: it draws no parts, so \`notifications\` throws. Show a message in the DatasetControl around the grid, as on [**Messages and nothing to show**](?path=/docs/controls-datasetcontrol-guide-features-messages-and-nothing-to-show--overview). |
 
 ### Services
 
@@ -236,23 +237,23 @@ Pass the modules you want in \`modules\`. Each is reached by its name with \`gri
 |---|---|---|---|
 | \`createClientSideRowModelModule()\` | \`rowModel\` | No | Every row at once; \`ClientSideGrid\` loads it. Its member \`type\` is \`'clientSide'\`. |
 | \`createServerSideRowModelModule()\` | \`rowModel\` | Yes | A group's rows fetched as it opens; \`ServerSideGrid\` loads it. Its member \`type\` is \`'serverSide'\`. See [**Open groups on demand**](?path=/docs/controls-grid-guide-features-open-groups-on-demand--overview). |
-| \`createEditingModule(options?)\` | \`editing\` | No | Editing, the save status and locks. See *Editing* below. |
+| \`createEditingModule(parameters?)\` | \`editing\` | No | Editing, the save status and locks. See *Editing* below. |
 | \`createRowSelectionModule({ mode })\` | \`rowSelection\` | No | Checkboxes, and selecting rows. See *Row selection, cell selection and clipboard* below. |
 | \`createCellSelectionModule(options?)\` | \`cellSelection\` | Yes | Highlighting blocks of cells. No members. |
 | \`createClipboardModule(options?)\` | \`clipboard\` | Yes | Copying, and in an editable grid pasting. No members. |
-| \`createSortingModule(options?)\` | \`sorting\` | No | Sorting from a column's menu. See *Sorting and filtering* below. |
-| \`createFilteringModule(options?)\` | \`filtering\` | No | Filtering from a column's menu. See *Sorting and filtering* below. |
-| \`createGroupingModule(options?)\` | \`grouping\` | Yes | Group rows. See *Grouping and totals* below. |
-| \`createAggregationModule(options?)\` | \`aggregation\` | No | Totals in the group rows and in a row under the list. See *Grouping and totals* below. |
+| \`createSortingModule(parameters?)\` | \`sorting\` | No | Sorting from a column's menu. See *Sorting and filtering* below. |
+| \`createFilteringModule(parameters?)\` | \`filtering\` | No | Filtering from a column's menu. See *Sorting and filtering* below. |
+| \`createGroupingModule(parameters?)\` | \`grouping\` | Yes | Group rows. See *Grouping and totals* below. |
+| \`createAggregationModule(parameters?)\` | \`aggregation\` | No | Totals in the group rows and in a row under the list. See *Grouping and totals* below. |
 | \`createLegacyClientApiCompatibilityModule()\` | \`legacyClientApiCompatibility\` | No | What Power Apps client scripts set on records. See [**Legacy client API**](?path=/docs/controls-grid-legacy-client-api--overview). |
 | \`createLicenseModule({ key })\` | \`license\` | No | Your AG Grid Enterprise key. See *Licence* below. |
 | An \`IGridModule\` of your own | Its \`name\` | | What its \`onLoad\` returns. See Grid's [**Write a module**](?path=/docs/controls-grid-guide-advanced-write-a-module--overview). |
 
-Every module's options are read at mount. Which columns offer a feature comes from their keys and metadata: see *Columns*.
+Every module's parameters are read at mount. Which columns offer a feature comes from their keys and metadata: see *Columns*.
 
 ### Editing
 
-| \`createEditingModule\` option | Type | Default | Description |
+| \`createEditingModule\` parameter | Type | Default | Description |
 |---|---|---|---|
 | \`enableAutoSave\` | \`boolean\` | \`false\` | Saves a record each time one of its values is committed; a paste saves each record once. |
 
@@ -270,7 +271,7 @@ Every module's options are read at mount. Which columns offer a feature comes fr
 
 ### Row selection, cell selection and clipboard
 
-| \`createRowSelectionModule\` option | Type | Default | Description |
+| \`createRowSelectionModule\` parameter | Type | Default | Description |
 |---|---|---|---|
 | \`mode\` | \`'single' \\| 'multiple'\` | Required | How many rows may be selected at once. To offer no selection, leave the module out. |
 
@@ -306,7 +307,7 @@ Every module's options are read at mount. Which columns offer a feature comes fr
 
 ### Sorting and filtering
 
-| Option | Type | Default | Description |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
 | \`components\` | \`IGridSortingComponents\` for sorting, \`IGridFilteringComponents\` for filtering | \`{}\` | What the module draws. See *Slots*. |
 
@@ -337,7 +338,7 @@ Every module's options are read at mount. Which columns offer a feature comes fr
 
 ### Grouping and totals
 
-| \`createGroupingModule\` option | Type | Default | Description |
+| \`createGroupingModule\` parameter | Type | Default | Description |
 |---|---|---|---|
 | \`enableUserGrouping\` | \`boolean\` | \`true\` | Whether column menus offer **Group** and **Ungroup**. Preset grouping and \`toggleColumnGroup\` work either way. |
 | \`type\` | \`'nested' \\| 'flat'\` | \`'nested'\` | \`'nested'\` makes each grouped column a level of its own; \`'flat'\` makes one level, a group for each combination of values. The provider regroups by it on its next load. |
@@ -346,7 +347,7 @@ Every module's options are read at mount. Which columns offer a feature comes fr
 | \`maxGroupLoadsPerSelection\` | \`number\` | \`100\` | How many groups one selection may load the records of; a bigger selection is refused with an alert. |
 | \`components\` | \`IGridGroupingComponents\` | \`{}\` | See *Slots*. |
 
-| \`createAggregationModule\` option | Type | Default | Description |
+| \`createAggregationModule\` parameter | Type | Default | Description |
 |---|---|---|---|
 | \`enableUserAggregation\` | \`boolean\` | \`true\` | Whether column menus have a *Totals* section. Preset totals show either way. |
 | \`components\` | \`IGridAggregationComponents\` | \`{}\` | See *Slots*. |
@@ -364,7 +365,7 @@ Every module's options are read at mount. Which columns offer a feature comes fr
 | \`isColumnGrouped(column)\`, \`canGroupColumn(column)\` | Whether the rows are grouped by the column, and whether its menu offers grouping. |
 | \`getGroupedValueColumnName(record, columnName)\` | The alias a group row holds the column's value under. |
 | \`getGroupedCount(record, columnName)\` | How many records a group row holds, while the grouped column's total is \`count\` or \`countcolumn\`. |
-| \`getMaxGroupLoadsPerSelection()\` | The \`maxGroupLoadsPerSelection\` option. |
+| \`getMaxGroupLoadsPerSelection()\` | The \`maxGroupLoadsPerSelection\` parameter. |
 | \`isGroupSelectionLimitDialogOpen()\`, \`closeGroupSelectionLimitDialog()\` | Whether the alert for a refused selection is open, and closing it. |
 | \`components\` | The \`components\` the module was given. |
 | \`events\` | \`onGroupSelectionLimitDialogChanged\`. See *Events*. |
@@ -380,7 +381,7 @@ Every module's options are read at mount. Which columns offer a feature comes fr
 
 ### Licence
 
-| \`createLicenseModule\` option | Type | Default | Description |
+| \`createLicenseModule\` parameter | Type | Default | Description |
 |---|---|---|---|
 | \`key\` | \`string\` | Required | Your AG Grid Enterprise key, as your host supplies it. One key licenses every grid on the page. |
 
@@ -409,30 +410,30 @@ Write a condition you set on the provider the way the callout does, or the callo
 
 ## Hooks
 
-How \`add\` and \`priority\` work is on [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview); when hooks run, and how to make the grid draw again, on [**Hooks**](?path=/docs/controls-grid-guide-advanced-hooks--overview). Each \`add(hook, priority?)\` returns the function that removes the hook.
+How \`add\` and \`priority\` work is on [**Lock closed deals**](?path=/docs/controls-grid-guide-features-lock-closed-deals--overview); when hooks run, and how to make the grid draw again, on [**Hooks**](?path=/docs/controls-grid-guide-advanced-hooks--overview). Each hook sits on \`hooks\` of what the *On* column names, such as \`cells.hooks.theme\`, and each \`add(hook, priority?)\` returns the function that removes the hook.
 
 | Hook | On | Receives | Decides |
 |---|---|---|---|
-| \`hooks.theme\` | \`cells\` | \`builder\`, \`{ record, columnName }\` | A cell's colours. See [**Colours and density**](?path=/docs/controls-grid-guide-make-it-yours-colours-and-density--overview). |
-| \`hooks.loading\` | \`cells\` | \`result\`, \`{ record, columnName }\` | \`result.isLoading\`: a shimmer in place of the value |
-| \`hooks.commands\` | \`cells\` | \`result\`, \`{ record, columnName }\` | \`result.items\` and \`result.overflowItems\`, shown while the row is hovered, focused or selected |
-| \`hooks.control\` | \`cells\` | \`result\`, \`{ record, columnName, takesInput }\` | \`result.control\`: the control that draws the cell, and its \`bindings\` |
-| \`hooks.controlParameters\` | \`cells\` | \`parameters\`, \`{ record, columnName, takesInput }\` | The parameters the cell's control gets. See *Control parameters*. |
-| \`hooks.height\` | \`rows\` | \`result\`, \`{ record, node }\` | \`result.height\` in pixels; unset for the grid's \`rowHeight\` |
-| \`hooks.column\`, \`hooks.row\`, \`hooks.cell\` | \`editing.locks\` | \`result\`, \`{ columnName }\`, \`{ record }\` or \`{ record, columnName }\` | \`result.isLocked\` for a column, a row or a cell |
-| \`hooks.validation\` | \`validation\` | \`result\`, \`{ record, columnName }\` | \`result.error\` and \`result.errorMessage\` |
-| \`hooks.columnDefinitions\` | \`columns\` | \`columnDefs\` | The column definitions AG Grid gets. See [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview). |
-| \`hooks.menuSections\` | \`columns.headers\` | \`sections\`, \`header\` | A menu's sections, each \`{ key, title, items }\` |
-| \`hooks.menuItems\` | \`columns.headers\` | \`items\`, \`header\` | A menu's final items, each section's heading keyed \`'<section key>Header'\` |
-| \`hooks.adornments\` | \`columns.headers\` | \`adornments\`, \`header\` | What a header draws beside the name, each \`{ key, placement: 'prefix' \\| 'suffix', title?, onRender? }\` |
-| \`hooks.theme\` | \`columns.headers\` | \`builder\`, \`header\` | A header's colours |
-| \`hooks.surfaces\` | \`surfaces\` | \`surfaces\` | What modules draw inside the grid, each \`{ key, onRender }\` |
-| \`hooks.filterControlParameters\` | \`filtering\` | \`result\`, \`{ column, control, index }\` | The parameters of the filter callout's \`'operator'\` and \`'value'\` controls; \`index\` is \`1\` for the second value of *Between* |
-| \`hooks.selectRecords\` | \`rowSelection\` | \`selection\`, \`{ provider }\` | \`selection.recordIds\`, or \`selection.isCancelled\`; may be async |
-| \`hooks.selectionState\` | \`rowSelection\` | \`result\`, \`{ node, record }\` | \`result.state\` of a row's checkbox: \`'checked'\`, \`'unchecked'\` or \`'indeterminate'\` |
-| \`hooks.openRecord\` | The grid | \`request\` | \`request.isHandled\`: whether a hook opened the record in place of the provider |
-| \`hooks.agGridOptions\`, \`hooks.agGridInitialOptions\` | The grid | \`result\` | AG Grid's options. See [**AG Grid**](?path=/docs/controls-grid-ag-grid--overview). |
-| \`hooks.theme\`, \`hooks.styles\` | \`gridTheme\` | \`result\`, \`fluentTheme\` | The AG Grid theme and the root element's styles |
+| \`theme\` | \`cells\` | \`builder\`, \`{ record, columnName }\` | A cell's colours. See [**Colours and density**](?path=/docs/controls-grid-guide-make-it-yours-colours-and-density--overview). |
+| \`loading\` | \`cells\` | \`result\`, \`{ record, columnName }\` | \`result.isLoading\`: a shimmer in place of the value |
+| \`commands\` | \`cells\` | \`result\`, \`{ record, columnName }\` | \`result.items\` and \`result.overflowItems\`, shown while the row is hovered, focused or selected |
+| \`control\` | \`cells\` | \`result\`, \`{ record, columnName, takesInput }\` | \`result.control\`: the control that draws the cell, and its \`bindings\` |
+| \`controlParameters\` | \`cells\` | \`parameters\`, \`{ record, columnName, takesInput }\` | The parameters the cell's control gets. See *Control parameters*. |
+| \`height\` | \`rows\` | \`result\`, \`{ record, node }\` | \`result.height\` in pixels; unset for the grid's \`rowHeight\` |
+| \`column\`, \`row\`, \`cell\` | \`editing.locks\` | \`result\`, \`{ columnName }\`, \`{ record }\` or \`{ record, columnName }\` | \`result.isLocked\` for a column, a row or a cell |
+| \`validation\` | \`validation\` | \`result\`, \`{ record, columnName }\` | \`result.error\` and \`result.errorMessage\` |
+| \`columnDefinitions\` | \`columns\` | \`columnDefs\` | The column definitions AG Grid gets. See [**Shape the columns**](?path=/docs/controls-grid-guide-make-it-yours-shape-the-columns--overview). |
+| \`menuSections\` | \`columns.headers\` | \`sections\`, \`header\` | A menu's sections, each \`{ key, title, items }\` |
+| \`menuItems\` | \`columns.headers\` | \`items\`, \`header\` | A menu's final items, each section's heading keyed \`'<section key>Header'\` |
+| \`adornments\` | \`columns.headers\` | \`adornments\`, \`header\` | What a header draws beside the name, each with a \`key\`, a \`placement\` of \`'prefix'\` or \`'suffix'\`, and an optional \`title\` and \`onRender\` |
+| \`theme\` | \`columns.headers\` | \`builder\`, \`header\` | A header's colours |
+| \`surfaces\` | \`surfaces\` | \`surfaces\` | What modules draw inside the grid, each \`{ key, onRender }\` |
+| \`filterControlParameters\` | \`filtering\` | \`result\`, \`{ column, control, index }\` | The parameters of the filter callout's \`'operator'\` and \`'value'\` controls; \`index\` is \`1\` for the second value of *Between* |
+| \`selectRecords\` | \`rowSelection\` | \`selection\`, \`{ provider }\` | \`selection.recordIds\`, or \`selection.isCancelled\`; may be async |
+| \`selectionState\` | \`rowSelection\` | \`result\`, \`{ node, record }\` | \`result.state\` of a row's checkbox: \`'checked'\`, \`'unchecked'\` or \`'indeterminate'\` |
+| \`openRecord\` | The grid | \`request\` | \`request.isHandled\`: whether a hook opened the record in place of the provider |
+| \`agGridOptions\`, \`agGridInitialOptions\` | The grid | \`result\` | AG Grid's options. See [**AG Grid**](?path=/docs/controls-grid-ag-grid--overview). |
+| \`theme\`, \`styles\` | \`gridTheme\` | \`result\`, \`fluentTheme\` | The AG Grid theme and the root element's styles |
 
 \`rows.addRowClass(className, rule)\` is not a hook and takes no priority: it puts a class on every row whose record the rule holds for, and returns the function that removes it.
 
@@ -549,28 +550,55 @@ A \`headerComponent\` of your own gets AG Grid's header params, \`IColumnHeaderR
 
 ### The modules' pieces
 
-Sorting, filtering, grouping and aggregation take \`components\` in their options. The editing and row selection modules draw columns of their own: restyle them from a column definitions hook at \`GRID_MODULE_PRIORITY.clipboard + 1\`, through \`cellRendererParams\` and \`headerComponentParams\` on the columns under *Columns the modules add*.
+Sorting, filtering, grouping and aggregation take \`components\` in their parameters. The editing and row selection modules draw columns of their own: restyle them from a column definitions hook at \`GRID_MODULE_PRIORITY.clipboard + 1\`, through \`cellRendererParams\` and \`headerComponentParams\` on the columns under *Columns the modules add*.
 
-| Module | Key | Slots | Default | Draws |
-|---|---|---|---|---|
-| Editing | \`container\` | \`onRender\` | | The save status column's cell |
-| | \`indicator\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderButton\` (with \`state\`), \`onRenderErrorCallout\` | \`RecordSaveUiIndicatorComponents\` | The spinner, check or error icon |
-| | \`errorCallout\` | \`onRender\`, \`onRenderHeader\`, \`onRenderIcon\`, \`onRenderTitle\`, \`onRenderFields\`, \`onRenderField\`, \`onRenderFieldName\`, \`onRenderMessage\`, \`onRenderFooter\`, \`onRenderDismissButton\` | \`RecordSaveUiErrorCalloutComponents\` | Why a save was refused |
-| | \`container\`, \`lockIcon\` (lock column) | \`onRender\`; \`onRender\`, \`onRenderIcon\` | | The lock column's cell, and the lock of a locked row |
-| Row selection | \`container\` | \`onRender\` | | The checkbox column's cell; with editing, it takes the save status keys too |
-| | \`checkbox\` | \`onRender\`, \`onRenderCheckbox\` | \`RowSelectionUiCheckboxComponents\` | A row's checkbox. The container takes the click, so keep its \`onClick\` |
-| | \`headerCheckbox\` (header) | \`onRender\`, \`onRenderCheckbox\` | \`RowSelectionUiHeaderCheckboxComponents\` | The checkbox that selects every row |
-| Sorting | \`sortIcon\` | \`onRenderIcon\` (with \`descending\`) | \`GridSortingIconComponents\` | The arrow of a sorted column |
-| Filtering | \`filterIcon\` | \`onRenderIcon\` | \`GridFilteringIconComponents\` | The funnel of a filtered column |
-| | \`filterCallout\` | \`onRender\`, \`onRenderHeader\`, \`onRenderTitle\`, \`onRenderCloseButton\` | \`FilteringUiCalloutComponents\` | The frame of the filter callout; what it holds has no slots |
-| Grouping | \`groupingIcon\` | \`onRenderIcon\` | \`GridGroupingIconComponents\` | The icon of a grouped column |
-| | \`groupCell.toggle\` | \`onRender\`, \`onRenderButton\` (with \`isExpanded\`) | \`GroupingUiToggleComponents\` | The chevron of a group |
-| | \`groupCell.count\` | \`onRender\` | \`GroupingUiCountComponents\` | How many records the group holds |
-| | \`groupCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell | | The rest of a group's cell |
-| | \`expandCollapse\` (expansion column header) | \`onRender\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\` | \`GroupingUiExpandCollapseComponents\` | The + and − that open and close a level |
-| Aggregation | \`totalCell.totalValue\` | \`onRender\`, \`onRenderLabel\`, \`onRenderValue\` | \`AggregationUiTotalValueComponents\` | A total and its label in the totals row |
-| | \`totalCell.container\`, \`loading\`, \`commands\` | As in any cell | | The rest of a total's cell |
-| | \`aggregateCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell | | A total in a group row |
+**Editing**, in the save status and lock columns:
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`container\` | \`onRender\` | | The save status column's cell |
+| \`indicator\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderButton\` (with \`state\`), \`onRenderErrorCallout\` | \`RecordSaveUiIndicatorComponents\` | The spinner, check or error icon |
+| \`errorCallout\` | \`onRender\`, \`onRenderHeader\`, \`onRenderIcon\`, \`onRenderTitle\`, \`onRenderFields\`, \`onRenderField\`, \`onRenderFieldName\`, \`onRenderMessage\`, \`onRenderFooter\`, \`onRenderDismissButton\` | \`RecordSaveUiErrorCalloutComponents\` | Why a save was refused |
+| \`container\`, \`lockIcon\` (lock column) | \`onRender\`; \`onRender\`, \`onRenderIcon\` | | The lock column's cell, and the lock of a locked row |
+
+**Row selection**, in the checkbox column:
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`container\` | \`onRender\` | | The checkbox column's cell; with editing, it takes the save status keys too |
+| \`checkbox\` | \`onRender\`, \`onRenderCheckbox\` | \`RowSelectionUiCheckboxComponents\` | A row's checkbox. The container takes the click, so keep its \`onClick\` |
+| \`headerCheckbox\` (header) | \`onRender\`, \`onRenderCheckbox\` | \`RowSelectionUiHeaderCheckboxComponents\` | The checkbox that selects every row |
+
+**Sorting**, in its \`components\` parameter:
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`sortIcon\` | \`onRenderIcon\` (with \`descending\`) | \`GridSortingIconComponents\` | The arrow of a sorted column |
+
+**Filtering**, in its \`components\` parameter:
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`filterIcon\` | \`onRenderIcon\` | \`GridFilteringIconComponents\` | The funnel of a filtered column |
+| \`filterCallout\` | \`onRender\`, \`onRenderHeader\`, \`onRenderTitle\`, \`onRenderCloseButton\` | \`FilteringUiCalloutComponents\` | The frame of the filter callout; what it holds has no slots |
+
+**Grouping**, in its \`components\` parameter:
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`groupingIcon\` | \`onRenderIcon\` | \`GridGroupingIconComponents\` | The icon of a grouped column |
+| \`groupCell.toggle\` | \`onRender\`, \`onRenderButton\` (with \`isExpanded\`) | \`GroupingUiToggleComponents\` | The chevron of a group |
+| \`groupCell.count\` | \`onRender\` | \`GroupingUiCountComponents\` | How many records the group holds |
+| \`groupCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell | | The rest of a group's cell |
+| \`expandCollapse\` (expansion column header) | \`onRender\`, \`onRenderExpandButton\`, \`onRenderCollapseButton\` | \`GroupingUiExpandCollapseComponents\` | The + and − that open and close a level |
+
+**Aggregation**, in its \`components\` parameter:
+
+| Key | Slots | Default | Draws |
+|---|---|---|---|
+| \`totalCell.totalValue\` | \`onRender\`, \`onRenderLabel\`, \`onRenderValue\` | \`AggregationUiTotalValueComponents\` | A total and its label in the totals row |
+| \`totalCell.container\`, \`loading\`, \`commands\` | As in any cell | | The rest of a total's cell |
+| \`aggregateCell.container\`, \`loading\`, \`control\`, \`columnControl\`, \`commands\` | As in any cell | | A total in a group row |
 
 The expansion column's header takes \`expandCollapse\` through \`headerComponentParams\` on \`GROUP_EXPANSION_COLUMN_KEY\`. To change one column's arrow, funnel, lock or grouping icon, replace its adornment (see *What the modules add*) in an \`adornments\` hook after the module. The alert for a refused group selection is the host's own dialog and has no slots.
 

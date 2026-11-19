@@ -65,11 +65,11 @@ Headers have slots and hooks of their own: *Value* shows the total of the deals 
 
 The modules add their sections at \`GRID_MODULE_PRIORITY\`, so *Quick filters* comes after them at \`GRID_MODULE_PRIORITY.aggregation + 1\`; at the default priority it would come first. The menu is built each time it opens. A header draws again after every load, so the total follows the filter.
 
-**The modules' pieces.** Each module takes a \`components\` option for what it draws, such as the sorting module's \`sortIcon\`, and the columns a module adds take \`cellRendererParams\` as any other column does. Every module's pieces are under *Slots* on [**Reference**](?path=/docs/controls-grid-reference--overview).
+**The modules' pieces.** Each module takes a \`components\` parameter for what it draws, such as the sorting module's \`sortIcon\`, and the columns a module adds take \`cellRendererParams\` as any other column does. Every module's pieces are under *Slots* on [**Reference**](?path=/docs/controls-grid-reference--overview).
 
 ## Try it
 
-- *Probability (%)* draws a ring for each deal. Double-click one: a slider edits it. Move the slider and press Enter: the ring follows.
+- Scroll right: *Probability (%)* draws a ring for each deal. Double-click one: a slider edits it. Move the slider and press Enter: the ring follows.
 - *Weighted value* is *Value* × *Probability (%)*. Change either: it follows.
 - Scroll right and hover the close date of Ben Carter's *Fabrikam: Support renewal*, which is overdue: an arrow, **Push a week**, shows in the cell. Press it: the date moves to a week from today, the arrow goes, and **Save** appears.
 - In *Headers of your own*, *Value*'s header shows $532,500.00, the value of all 30 deals. Open *Close date*'s menu and pick **Overdue**: three deals, worth $62,000.00.
