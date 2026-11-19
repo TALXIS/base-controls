@@ -60,6 +60,9 @@
             "ribbon",
             "runtime-host"
         ],
+        "form-v2": [
+            "runtime-host"
+        ],
         "map": [
             "dataset-control",
             "ribbon",

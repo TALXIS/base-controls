@@ -2231,6 +2231,11 @@ declare const useField: typeof import('@talxis/base-controls').useField;
 declare const NestedControlRenderer: (props: Omit<React.ComponentProps<typeof import('@talxis/base-controls').NestedControlRenderer>, 'context'> & { context: IPcfContext }) => JSX.Element;
 /** Picks the Base Controls field for a column's data type. */
 declare const BaseControls: typeof import('@talxis/base-controls').BaseControls;
+/** The form on the runtime: FormV2, FormV2.Tabs, FormV2.Tab, FormV2.Section, FormV2.Control and the rest. */
+declare const FormV2: typeof import('@talxis/base-controls').FormV2;
+/** The FormV2 the component is inside of. */
+declare const useFormV2: typeof import('@talxis/base-controls').useFormV2;
+type IForm = import('@talxis/base-controls').IForm;
 /** A box with the look of a form section; compose it from Card.Header, Card.Body and Card.Footer. */
 declare const Card: typeof import('@talxis/base-controls').Card;
 /** A record held in memory, for a form that has no data provider of its own. */

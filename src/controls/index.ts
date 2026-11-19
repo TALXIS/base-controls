@@ -2,6 +2,7 @@ export * from '@controls/checklist';
 export * from '@controls/dataset-control';
 export * from '@controls/ribbon';
 export * from '@controls/form';
+export * from '@controls/form-v2';
 export * from '@controls/grid';
 export * from '@controls/map';
 export * from '@controls/task-grid';

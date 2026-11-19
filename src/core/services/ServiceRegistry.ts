@@ -57,6 +57,11 @@ export class ServiceRegistry<TMap extends object> implements IServiceRegistry<TM
         return this._entries.has(key);
     }
 
+    /** The services in the order they were provided. */
+    public getAll(): TMap[keyof TMap][] {
+        return [...this._entries.values()].map(entry => entry.service as TMap[keyof TMap]);
+    }
+
     public provide<TKey extends keyof TMap>(key: TKey, service: TMap[TKey], parameters: IProvideParameters<TMap[TKey]> = {}): () => void {
         //a service that arrives after the mount went is released straight away
         if (this._isDestroyed) {
