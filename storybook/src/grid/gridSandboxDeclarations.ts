@@ -834,6 +834,12 @@ declare class MemoryDataProvider extends DataProvider implements IMemoryProvider
     getDataSync(pageNumber: number, pageSize: number, previousPageNumber: number, event: GetDataEvent): IRetrievedData;
 }
 
+/** Records of a Dataverse table, read through FetchXML. */
+declare class FetchXmlDataProvider {
+    constructor(options: { fetchXml: string; formatting?: IFormatting });
+}
+interface FetchXmlDataProvider extends IDataProvider { }
+
 /** The example's provider, loaded with the dataset the example names. */
 declare const provider: IDataProvider;
 

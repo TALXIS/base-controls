@@ -14,7 +14,7 @@ Base Controls is built on Fluent UI v8, Microsoft's React component library: its
 
 | What | From Fluent |
 |---|---|
-| Components | Fluent UI v8, which your application installs: see [**Quick start**](?path=/docs/concepts-quick-start--overview) |
+| Components | Fluent UI v8, which your application installs: see [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview) |
 | Themes | Fluent's \`ITheme\`: see [**Theming**](?path=/docs/concepts-theming--overview) |
 | Styles | \`mergeStyleSets\`, and the \`styles\` props Fluent's components take |
 | Icons | Fluent's icon font: register it once per window with \`initializeIcons()\`, unless your host already has |

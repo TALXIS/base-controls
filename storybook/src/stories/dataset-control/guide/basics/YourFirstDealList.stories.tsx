@@ -29,7 +29,7 @@ A deal list needs your records, a provider that holds them, and an \`onLoad\` th
 
 **Parts and regions.** Whatever goes inside the control is a part, such as the grid, and every part works on the provider the control loaded. Parts sit in the control's regions: the body in the middle, with a header above it and a footer below, as [**Lay it out**](?path=/docs/controls-datasetcontrol-guide-features-lay-it-out--overview) shows.
 
-How a provider sorts, searches and pages is on [**Data providers**](?path=/docs/concepts-data-providers--overview). Like every control, the deal list needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview); the examples of this guide already have them.
+How a provider sorts, searches and pages is on [**Data providers**](?path=/docs/concepts-data-providers--overview). Like every control, the deal list needs the root providers from [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview); the examples of this guide already have them.
 
 ## Try it
 

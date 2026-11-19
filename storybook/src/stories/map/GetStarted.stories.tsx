@@ -12,7 +12,7 @@ A map shows records as pins, each at the latitude and longitude two of its colum
 
 ## Set it up
 
-Use \`LeafletMap\`, which needs only Leaflet's stylesheet, or \`GoogleMap\` with an \`apiKey\` of yours; each is the map with its library built in, as [**Map libraries**](?path=/docs/controls-map-map-libraries--overview) describes. Like every control, the map needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview). It takes no provider prop: it shows the provider around it, a \`DataProviderScope\` as in the example, or a \`DatasetControl\` it is the body of, as [**In a DatasetControl**](?path=/docs/controls-map-in-a-datasetcontrol--overview) shows. How providers load: [**Data providers**](?path=/docs/concepts-data-providers--overview).
+Use \`LeafletMap\`, which needs only Leaflet's stylesheet, or \`GoogleMap\` with an \`apiKey\` of yours; each is the map with its library built in, as [**Map libraries**](?path=/docs/controls-map-map-libraries--overview) describes. Like every control, the map needs the root providers from [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview). It takes no provider prop: it shows the provider around it, a \`DataProviderScope\` as in the example, or a \`DatasetControl\` it is the body of, as [**In a DatasetControl**](?path=/docs/controls-map-in-a-datasetcontrol--overview) shows. How providers load: [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
 | Prop | Holds |
 |---|---|

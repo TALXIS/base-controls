@@ -38,7 +38,7 @@ Take a form's FormXml as Dataverse stores it, in the \`formxml\` of its \`system
 | \`components\` | \`Partial<IXrmFormComponents>\` | None | Live | Draws the controls, the tabs, the ribbon or the notifications your own way: see [**Your own UI**](?path=/docs/controls-form-xrm-your-own-ui--overview). |
 | \`onFieldValueChanged\`, \`onDirtyStateChanged\`, \`onValidationSummaryChanged\`, \`onBeforeSave\`, \`onAfterSave\`, \`onError\` | | None | Live | The events of \`Form.Root\`: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview). |
 
-Like every control, \`XrmForm\` needs the root providers above it: see [**Quick start**](?path=/docs/concepts-quick-start--overview).
+Like every control, \`XrmForm\` needs the root providers above it: see [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview).
 
 ## Where next
 

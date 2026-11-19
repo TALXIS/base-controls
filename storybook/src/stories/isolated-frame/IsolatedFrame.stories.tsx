@@ -21,7 +21,7 @@ A frame cannot be handed children: they belong to the page's copy of your code, 
 | \`defineIsolatedContent(key, Content)\` | In the frame's script | The component the frame renders |
 | \`createIsolatedComponent(key, Content, parameters)\` | Once, when the page and the frame share one bundle | Both |
 
-The key is any string unique within your app. With the two sides in separate bundles, as in the example, pass \`scripts\`: the page then never loads the content. The frame starts empty, so the content brings the root providers it needs, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and sets up anything a library needs once per window, such as icons.
+The key is any string unique within your app. With the two sides in separate bundles, as in the example, pass \`scripts\`: the page then never loads the content. The frame starts empty, so the content brings the root providers it needs, as in [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview), and sets up anything a library needs once per window, such as icons.
 
 ## Lifecycle
 
@@ -68,7 +68,7 @@ Some things stay on their own side:
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Quick start', iconName: 'Rocket', href: '?path=/docs/concepts-quick-start--overview', text: 'The root providers the framed content brings with it.' },
+    { title: 'Your first list', iconName: 'Rocket', href: '?path=/docs/concepts-guide-basics-your-first-list--overview', text: 'The root providers the framed content brings with it.' },
     { title: 'Theming', iconName: 'Color', href: '?path=/docs/concepts-theming--overview', text: 'Build the theme the page hands the frame as a prop.' },
     { title: 'PCF context', iconName: 'PlugConnected', href: '?path=/docs/concepts-pcf-context--overview', text: 'The context the framed content builds, or takes from Xrm set by prepareWindow.' },
 ]

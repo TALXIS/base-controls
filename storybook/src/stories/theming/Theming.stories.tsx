@@ -14,7 +14,7 @@ A theme is the colours, fonts and effects everything is drawn in. You generate i
 
 | Provider | For |
 |---|---|
-| \`AppThemeProvider\` | The application's theme, at the root: see [**Quick start**](?path=/docs/concepts-quick-start--overview). |
+| \`AppThemeProvider\` | The application's theme, at the root: see [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview). |
 | \`ThemeProvider\` | An area that looks different, such as a dark banner. Themes only what is inside it. |
 | \`ThemeContext\` | The same, without an element of its own: use it for each item of a long list. |
 

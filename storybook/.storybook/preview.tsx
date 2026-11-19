@@ -143,7 +143,17 @@ const preview: Preview = {
       storySort: {
         order: [
           'Concepts',
-          ['Introduction', 'Building blocks', 'Quick start', 'Data providers', 'Localization', 'Theming', 'Fluent UI', 'Pieces and slots', 'Layout', 'State persistence', 'PCF context'],
+          [
+            'Introduction',
+            'Guide',
+            [
+              'Basics', ['Your first list', 'Edit and save', 'Views and commands', 'Open a store in a form'],
+              'More controls', ['On the map', 'The opening plan'],
+              'Your data', ['Where stores come from', 'In Power Apps', 'Back where you left off'],
+              'Make it yours', ['Your brand', 'Your language', 'Change what a part draws', 'A control of your own'],
+            ],
+            'Data providers', 'PCF context', 'State persistence', 'Theming', 'Localization', 'Pieces and slots', 'Fluent UI', 'Layout',
+          ],
           'Controls',
           [
             'DatasetControl',
