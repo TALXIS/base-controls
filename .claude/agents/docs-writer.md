@@ -36,7 +36,8 @@ every claim against `src/` before you write it.
 A control with a guide teaches it as one path through `…/Guide/<Stage>/<Step>` pages. Its stages and
 steps are listed in order in the guide's config, such as `storybook/src/task-grid/guide/taskGridGuide.ts`,
 which passes them to `createGuide` in `storybook/src/grid/showcase/Guide.tsx`. The TaskGrid guide is the
-model.
+model. The library-wide guide, `storybook/src/concepts/guide/startGuide.ts`, lives under
+`Concepts/Guide/…` with Concepts › Introduction as its overview.
 
 - **One storyline:** every step runs on the same sample scenario, such as the office move, and adds one
   thing to what the reader built in the step before. A shared files module, such as
@@ -110,7 +111,8 @@ Each fact lives on one page; every other page links to it.
 
 | Fact | Owner |
 |---|---|
-| Root providers | Concepts › Quick start |
+| Root providers | Concepts › Guide › Basics › Your first list |
+| What a module is, and which controls take them | Concepts › Guide › Basics › Edit and save |
 | The runtime: one per mount, `onSetup` and `onReady`, `runtime.lifecycle` (status, error, events, `remount()`), writing a runtime with `RuntimeLifecycle` | Controls › RuntimeHost |
 | How pieces and slots work | Concepts › Pieces and slots |
 | Provider behaviour | Concepts › Data providers |
@@ -127,7 +129,7 @@ Each fact lives on one page; every other page links to it.
 | Where each kind of module goes, and its backends | TaskGrid › Guide › Features › How modules work |
 | Labels and languages | Concepts › Localization |
 
-Building blocks only mentions the runtime; control pages keep what their runtime adds and link to RuntimeHost.
+Concepts › Introduction only mentions the runtime; control pages keep what their runtime adds and link to RuntimeHost.
 Form does not run on the shared runtime: it gives its API through `onFormReady` and `useForm()`. Never say
 it uses RuntimeHost, modules or `RuntimeLifecycle`, and never add roadmap notes about it.
 
