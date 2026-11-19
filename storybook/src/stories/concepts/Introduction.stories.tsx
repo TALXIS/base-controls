@@ -35,7 +35,7 @@ An application sets up its host and its look once, at the root, as [**Your first
 |---|---|
 | A list of records | A data provider, loaded by a [**DatasetControl**](?path=/docs/controls-datasetcontrol-overview--overview) and drawn by a [**Grid**](?path=/docs/controls-grid-get-started--overview), [**TaskGrid**](?path=/docs/controls-taskgrid-overview--overview) or [**Checklist**](?path=/docs/controls-checklist-get-started--overview) |
 | A single record | A [**Form**](?path=/docs/controls-form-get-started--overview) |
-| Records with a position | A [**Map**](?path=/docs/controls-map-get-started--overview) |
+| Records with a position | A [**Map**](?path=/docs/controls-map-overview--overview) |
 
 Sorting, filtering, paging, selection and saving work the same in every list, whether the records come from memory, Dataverse or your own API: see [**Data providers**](?path=/docs/concepts-data-providers--overview).
 
@@ -116,7 +116,7 @@ const CONTROLS: IExploreCard[] = [
     { title: 'TaskGrid', iconName: 'Timeline', href: '?path=/docs/controls-taskgrid-overview--overview', text: 'Tasks as a tree, with commands to build the plan and an optional Gantt chart.' },
     { title: 'Checklist', iconName: 'CheckList', href: '?path=/docs/controls-checklist-get-started--overview', text: 'A to-do list over a provider: tick items off, rename, reorder, add and delete them.' },
     { title: 'Form', iconName: 'Questionnaire', href: '?path=/docs/controls-form-get-started--overview', text: 'A record laid out in tabs and sections, with validation, change tracking and saving.' },
-    { title: 'Map', iconName: 'MapPin', href: '?path=/docs/controls-map-get-started--overview', text: 'Records with a latitude and a longitude as pins on a map.' },
+    { title: 'Map', iconName: 'MapPin', href: '?path=/docs/controls-map-overview--overview', text: 'Records with a latitude and a longitude as pins on a map.' },
     { title: 'Ribbon', iconName: 'Ribbon', href: '?path=/docs/controls-ribbon-get-started--overview', text: 'A bar of commands and menus, loaded again when what they act on changes.' },
     { title: 'RuntimeHost', iconName: 'Processing', href: '?path=/docs/controls-runtimehost-get-started--overview', text: 'Run a control of your own as the others run: loading, a failed load with a retry, and a remount.' },
     { title: 'IsolatedFrame', iconName: 'Package', href: '?path=/docs/controls-isolatedframe-get-started--overview', text: 'Run a control in its own frame, kept apart from the global styles and globals of the page around it.' },

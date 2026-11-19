@@ -36,7 +36,7 @@ every claim against `src/` before you write it.
 A control with a guide teaches it as one path through `…/Guide/<Stage>/<Step>` pages. Its stages and
 steps are listed in order in the guide's config, such as `storybook/src/task-grid/guide/taskGridGuide.ts`,
 which passes them to `createGuide` in `storybook/src/grid/showcase/Guide.tsx`. The TaskGrid guide is the
-model. The library-wide guide, `storybook/src/concepts/guide/startGuide.ts`, lives under
+model; DatasetControl and Map have guides of the same shape. The library-wide guide, `storybook/src/concepts/guide/startGuide.ts`, lives under
 `Concepts/Guide/…` with Concepts › Introduction as its overview.
 
 - **One storyline:** every step runs on the same sample scenario, such as the office move, and adds one
@@ -91,7 +91,7 @@ model. The library-wide guide, `storybook/src/concepts/guide/startGuide.ts`, liv
   features working together as the scenario can use.
 - No fluff: an example holds only what concerns its control and the point of its page. Cut pickers,
   switchers and toggles for anything the page is not about (the map library picker belongs only on Map ›
-  Map libraries; elsewhere draw a `LeafletMap`), logs and counters the caption does not use, data, columns
+  Guide › Basics › Pick the tiles; elsewhere draw a `LeafletMap`, or `Map` on *A library of your own*), logs and counters the caption does not use, data, columns
   and files the example does not show, single-use helpers, `useMemo` around props read at mount, and props
   that restate a default. A module page loads only its modules and what they need.
 - Imports only from `@talxis/base-controls`, `@talxis/client-libraries`, `@fluentui/react` (v9 examples:
@@ -127,6 +127,12 @@ Each fact lives on one page; every other page links to it.
 | What a DatasetControl keeps, and its `stateKey` | DatasetControl › Guide › Your data › Back where they left off |
 | Every DatasetControl slot | DatasetControl › Reference |
 | Grid props, defaults and save events | Grid › Props and events |
+| Where a map looks on its own, `fieldMapping`, and Leaflet's stylesheet | Map › Guide › Basics › Your first map |
+| A map's size | Map › Guide › Basics › Make it fit |
+| The map libraries, their props, and the Google Maps key | Map › Guide › Basics › Pick the tiles |
+| A map in a DatasetControl | Map › Guide › Your data › A trip planner |
+| The map's viewport and the library's own map | Map › Guide › Advanced › A tour from west to east |
+| Every Map slot and the plain map UI | Map › Reference |
 | Dates the backend changes (`synchronize`) | TaskGrid › Guide › Your data › Your own backend |
 | `enable*` props and inactive tasks | TaskGrid › Guide › Basics › Let users plan |
 | Where each kind of module goes, and its backends | TaskGrid › Guide › Features › How modules work |
