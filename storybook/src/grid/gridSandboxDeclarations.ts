@@ -5272,6 +5272,10 @@ declare const TaskTooltip: {
     Callout: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** The task's name and status pill, slots by part: header, headerStart, headerEnd, title, status. */
     Header: (props: { components?: { [part: string]: TaskTooltipSlots } }) => JSX.Element | null;
+    /** Holds the fields below the header. */
+    Body: typeof Card.Body;
+    /** The band at the bottom, below a divider. */
+    Footer: typeof Card.Footer;
     /** Holds the field rows: onRender. */
     FieldList: (props: { children?: React.ReactNode; components?: TaskTooltipSlots }) => JSX.Element | null;
     /** Any column: onRender, onRenderIcon, onRenderLabel, onRenderValue. */
