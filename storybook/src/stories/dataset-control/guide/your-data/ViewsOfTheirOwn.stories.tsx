@@ -16,7 +16,7 @@ Each salesperson sorts and filters the deals their own way, and wants the list l
 
 ## How it works
 
-A **module** adds a feature to the control. Pass it in the control's \`modules\`, and every load loads it anew before \`onLoad\`, as the grid's modules of [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview) load with the grid. \`createLocalStorageUserQueriesModule\` adds the user's own views, kept in this browser under \`storageKey\`. The guide's pages share one key, so a view saved on one shows on the others. [**Where views are kept**](?path=/docs/controls-datasetcontrol-guide-your-data-where-views-are-kept--overview) keeps them elsewhere.
+A **module** adds a feature to the control. Pass it in the control's \`modules\`, and every load loads it anew before \`onLoad\`, as the grid's modules of [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview) load with the grid. \`createLocalStorageUserQueriesModule\` adds the user's own views, kept in this browser under \`storageKey\`. Most deal lists in this guide use the same key, so a view saved on one shows on the others. [**Where views are kept**](?path=/docs/controls-datasetcontrol-guide-your-data-where-views-are-kept--overview) keeps them elsewhere.
 
 The module lists the user's views under *My views* in the view switcher, and adds three commands below them:
 
