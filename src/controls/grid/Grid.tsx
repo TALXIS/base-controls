@@ -4,8 +4,7 @@ import { AgGridReact } from "ag-grid-react";
 import { IRecord } from "@talxis/client-libraries";
 
 import { useOptionalDatasetControlInternal } from "@controls/dataset-control/adapters/root/context";
-import { useProvideDatasetControlPart } from "@controls/dataset-control/adapters/root/useProvideDatasetControlPart";
-import { RuntimeHost, useRuntime } from "@controls/runtime-host";
+import { RuntimeHost, useProvidePart, useRuntime } from "@controls/runtime-host";
 import { BaseControls, usePcfContext } from "@pcf";
 import { getClassNames, useControlStateStore, useLatest } from "@core";
 import { useLabelsService } from "@labels";
@@ -60,7 +59,7 @@ export const GridRoot = (props: IGridProps) => {
 const GridMount = (props: IGridProps) => {
     const runtime = useRuntime<GridRuntime>();
     //provided before AG Grid reads its initial options below, so the control's modules add to them
-    useProvideDatasetControlPart('grid', () => runtime);
+    useProvidePart(useOptionalDatasetControlInternal(), 'grid', () => runtime);
     const settings = runtime.services.get('settings');
     const rowHeight = settings.getDefaultRowHeight();
     const maxVisibleRows = settings.getMaxVisibleRows();

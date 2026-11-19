@@ -4,11 +4,11 @@ export type { ITalxisUserQueriesModuleParameters, IDataverseUserQueriesModulePar
 export type { IUserQueriesModule, IUserQueriesStore, IUserQueryListItem, IUserQueryColumn, IUserQueryView, IUserQuerySavedValueMap, IUserQueriesModuleParameters, DatasetControlUserQueries, IUserQueriesProps, IUserQueriesComponents, IManageViewsComponents, IUserQueriesUiManageViewsPanelProps, IUserQueriesUiManageViewsPanelComponents } from './modules/user-queries';
 export type { IDatasetControlSurface, IDatasetControlSurfaces, DatasetControlSurfacesHook } from './runtime/DatasetControlSurfaces';
 export type {
-    IDatasetControl, IDatasetControlPartLocator, IDatasetControlPartMap, IDatasetControlLoadResult,
+    IDatasetControl, IDatasetControlPartMap, IDatasetControlLoadResult,
     IDatasetControlView, IDatasetControlViewDefinition, IDatasetControlResolvedView, IDatasetControlViewGroup, IDatasetControlProviderState, IDatasetControlModule, IDatasetControlModuleMap, IDatasetControlModuleLocator,
     IDatasetControlInternal, DatasetControlViewsHook,
 } from './runtime';
-export { useDatasetControl, useProvideDatasetControlPart, useDatasetControlModule } from './adapters/root';
+export { useDatasetControl, useDatasetControlModule } from './adapters/root';
 export { useDatasetControlHeader } from './ui/header';
 export type { IDatasetControlHeader } from './ui/header';
 export type { IDatasetControlProps, IDatasetControlComponents } from './adapters/root';
@@ -29,7 +29,6 @@ export type { IViewSwitcherProps, IViewSwitcherComponents, IDatasetControlViewSw
 export type { IDatasetControlRibbonProps } from './adapters/ribbon';
 export { RIBBON_LABELS, RIBBON_LABELS_CS } from './adapters/ribbon';
 export type { IQuickFindProps, IDatasetControlQuickFind, IDatasetControlQuickFindEvents } from './adapters/quick-find';
-export type { INotificationsProps as IDatasetControlNotificationsProps, INotificationsComponents as IDatasetControlNotificationsComponents, IDatasetControlNotifications, IDatasetControlNotificationsEvents } from './adapters/notifications';
 export type { IPaginationProps, IDatasetControlPagination, IDatasetControlPaginationEvents } from './adapters/pagination';
 export type { IPageSizeSwitcherProps, IDatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcherEvents, IDatasetControlRecordRange } from './adapters/page-size-switcher';
 export type { IEditColumnsProps, IEditColumnsComponents, IDatasetControlEditColumns, IDatasetControlEditColumnsEvents, EditColumnsCommandsHook, EditColumnsColumnCommandsHook, DatasetControlEditColumnsSession } from './adapters/edit-columns';

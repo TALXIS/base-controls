@@ -4,8 +4,8 @@ import { Fragment, useEffect, useMemo, useRef } from "react";
 import type { Dayjs } from "dayjs";
 import { useControlStateStore, useEventEmitter, useLatest, useRerender } from "@core";
 import { useLabelsService } from "@labels";
-import { useProvideDatasetControlPart } from "@controls/dataset-control/adapters/root";
-import { RuntimeHost, useRuntime } from "@controls/runtime-host";
+import { useOptionalDatasetControlInternal } from "@controls/dataset-control/adapters/root";
+import { RuntimeHost, useProvidePart, useRuntime } from "@controls/runtime-host";
 import { useTaskRuntime } from "../adapters/root/context";
 import { GanttRuntime } from "./runtime";
 import { GanttContext } from "./context";
@@ -61,7 +61,7 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
 /** One mount of the Gantt: the chart, drawn once its modules have loaded. */
 const GanttMount = (props: ITaskGanttProps) => {
     const runtime = useRuntime<GanttRuntime>();
-    const gantt = useProvideDatasetControlPart('gantt', () => runtime);
+    const gantt = useProvidePart(useOptionalDatasetControlInternal(), 'gantt', () => runtime);
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
     const { rerender } = useRerender();

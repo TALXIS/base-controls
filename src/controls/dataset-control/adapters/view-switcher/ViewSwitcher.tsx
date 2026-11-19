@@ -5,7 +5,8 @@ import { useLabels } from "@labels";
 import { useDataProviderEvents } from "@data";
 import { IDatasetControlView, IDatasetControlViewGroup } from "../../runtime";
 import { DatasetControlUi } from "../../ui";
-import { useProvideDatasetControlPart, useDatasetControlInternal } from "../root";
+import { useDatasetControlInternal } from "../root";
+import { useProvidePart } from "@controls/runtime-host";
 import { VIEW_SWITCHER_LABELS } from "./labels";
 import { DatasetControlViewSwitcher } from "../../runtime/parts/view-switcher/DatasetControlViewSwitcher";
 import { IViewSwitcherComponents } from "./components";
@@ -22,7 +23,7 @@ export interface IViewSwitcherProps {
 export const ViewSwitcher = (props: IViewSwitcherProps) => {
     const runtime = useDatasetControlInternal();
     const provider = useDataProviderEvents(['onLoading']);
-    const viewSwitcher = useProvideDatasetControlPart('viewSwitcher', () => new DatasetControlViewSwitcher({ services: runtime.services }));
+    const viewSwitcher = useProvidePart(runtime, 'viewSwitcher', () => new DatasetControlViewSwitcher({ services: runtime.services }));
     const labels = useLabels(VIEW_SWITCHER_LABELS);
     const views = viewSwitcher.getViews();
     const currentView = viewSwitcher.getView();

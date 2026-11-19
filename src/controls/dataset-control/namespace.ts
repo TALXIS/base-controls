@@ -5,7 +5,7 @@ import { Footer } from './adapters/footer';
 import { ViewSwitcher } from './adapters/view-switcher';
 import { Ribbon } from './adapters/ribbon';
 import { QuickFind } from './adapters/quick-find';
-import { Notifications } from './adapters/notifications';
+import { RuntimeNotificationBar } from '@controls/runtime-host';
 import { Pagination } from './adapters/pagination';
 import { PageSizeSwitcher } from './adapters/page-size-switcher';
 import { EmptyState } from './adapters/empty-state';
@@ -27,8 +27,8 @@ export interface IDatasetControlParts {
     Ribbon: typeof Ribbon;
     /** Searches the records. */
     QuickFind: typeof QuickFind;
-    /** What the control has to tell the user about its records. */
-    Notifications: typeof Notifications;
+    /** Provides the control's `notifications` part and draws its messages, such as the provider's load error. */
+    Notifications: typeof RuntimeNotificationBar;
     /** Moves between the pages. */
     Pagination: typeof Pagination;
     /** Picks how many records a page holds, and shows which of them it shows. */
@@ -54,7 +54,7 @@ export const DatasetControl: IDatasetControlNamespace = Object.assign(Root, {
     ViewSwitcher,
     Ribbon,
     QuickFind,
-    Notifications,
+    Notifications: RuntimeNotificationBar,
     Pagination,
     PageSizeSwitcher,
     EmptyState,

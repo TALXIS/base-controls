@@ -1,14 +1,13 @@
 import type { ITheme } from "@fluentui/react";
 import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import type { IRuntime, IRuntimeModule, IServiceLocator, IServiceRegistry } from "@core";
+import type { IRuntime, IRuntimeModule, IRuntimePartMap, IRuntimeParts, IServiceLocator, IServiceRegistry } from "@core";
 import type { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlInternal } from "./DatasetControlRuntime";
-import type { DatasetControlViewSwitcher, IDatasetControlViewSwitcher } from "./parts/view-switcher/DatasetControlViewSwitcher";
-import type { DatasetControlQuickFind, IDatasetControlQuickFind } from "./parts/quick-find/DatasetControlQuickFind";
-import type { DatasetControlPagination, IDatasetControlPagination } from "./parts/pagination/DatasetControlPagination";
-import type { DatasetControlPageSizeSwitcher, IDatasetControlPageSizeSwitcher } from "./parts/page-size-switcher/DatasetControlPageSizeSwitcher";
-import type { DatasetControlNotifications, IDatasetControlNotifications } from "./parts/notifications/DatasetControlNotifications";
-import type { DatasetControlEditColumns, IDatasetControlEditColumns } from "./parts/edit-columns/DatasetControlEditColumns";
+import type { IDatasetControlViewSwitcher } from "./parts/view-switcher/DatasetControlViewSwitcher";
+import type { IDatasetControlQuickFind } from "./parts/quick-find/DatasetControlQuickFind";
+import type { IDatasetControlPagination } from "./parts/pagination/DatasetControlPagination";
+import type { IDatasetControlPageSizeSwitcher } from "./parts/page-size-switcher/DatasetControlPageSizeSwitcher";
+import type { IDatasetControlEditColumns } from "./parts/edit-columns/DatasetControlEditColumns";
 import type { IRibbon } from "@controls/ribbon";
 import type { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
 
@@ -47,7 +46,7 @@ export interface IDatasetControlView<TData = unknown, TProvider extends IDataPro
 export type IDatasetControlResolvedView<TData = unknown> = IDatasetControlView<TData> & IDatasetControlViewDefinition<TData>;
 
 /** The parts rendered inside the control, each there only while it is rendered. */
-export interface IDatasetControlPartMap {
+export interface IDatasetControlPartMap extends IRuntimePartMap {
     /** `DatasetControl.ViewSwitcher`. */
     viewSwitcher: IDatasetControlViewSwitcher;
     /** `DatasetControl.Ribbon`. */
@@ -58,14 +57,9 @@ export interface IDatasetControlPartMap {
     pagination: IDatasetControlPagination;
     /** `DatasetControl.PageSizeSwitcher`. */
     pageSizeSwitcher: IDatasetControlPageSizeSwitcher;
-    /** `DatasetControl.Notifications`. */
-    notifications: IDatasetControlNotifications;
     /** `DatasetControl.EditColumns`. */
     editColumns: IDatasetControlEditColumns;
 }
-
-/** Looks up the parts rendered right now. */
-export type IDatasetControlPartLocator = IServiceLocator<IDatasetControlPartMap>;
 
 /** The modules a DatasetControl loaded, by name; each module adds its own entry. */
 export interface IDatasetControlModuleMap { }
@@ -79,7 +73,7 @@ export type IDatasetControlModuleLocator = IServiceLocator<IDatasetControlModule
 /** The DatasetControl as its consumer drives it; a new one for every mount. */
 export interface IDatasetControl<TData = unknown> extends IRuntime {
     /** The parts rendered inside the control. */
-    readonly parts: IDatasetControlPartLocator;
+    readonly parts: IRuntimeParts<IDatasetControlPartMap>;
     /** The modules the control loaded, by name. */
     readonly modules: IDatasetControlModuleLocator;
     /** What modules draw in the control. */
@@ -102,16 +96,10 @@ export interface IDatasetControl<TData = unknown> extends IRuntime {
     getTheme(): ITheme;
 }
 
-export interface IDatasetControlServiceMap extends IDatasetControlPartMap {
+export interface IDatasetControlServiceMap {
     runtime: IDatasetControlInternal;
     labels: Pick<LabelsService, 'getLabels'>;
     surfaces: DatasetControlSurfaces;
-    viewSwitcher: DatasetControlViewSwitcher;
-    quickFind: DatasetControlQuickFind;
-    pagination: DatasetControlPagination;
-    pageSizeSwitcher: DatasetControlPageSizeSwitcher;
-    notifications: DatasetControlNotifications;
-    editColumns: DatasetControlEditColumns;
 }
 
 export type IDatasetControlServiceRegistry = IServiceRegistry<IDatasetControlServiceMap>;

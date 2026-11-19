@@ -1,7 +1,5 @@
 import { EventEmitter } from "@talxis/client-libraries";
 import type { IEventSubscriber } from "../events";
-import type { IRuntimeExecutor } from "./RuntimeExecutor";
-import type { IRuntimeLoading } from "./RuntimeLoading";
 
 /** `rendering`: the control is drawn while its parts finish; `ready` follows once they have. */
 export type RuntimeStatus = 'initializing' | 'rendering' | 'ready' | 'failed' | 'destroyed';
@@ -26,16 +24,6 @@ export interface IRuntimeLifecycle {
     remount(): void;
     /** Holds the status back from `ready` until the promise settles; a rejection fails the mount. */
     waitUntil(promise: Promise<unknown>): void;
-}
-
-/** What every runtime offers the code that uses it; a control's public interface extends this. */
-export interface IRuntime {
-    readonly lifecycle: IRuntimeLifecycle;
-    /** What the runtime waits on; its host covers it with an overlay while shown. */
-    readonly loading: IRuntimeLoading;
-    /** Runs operations that may throw; its host shows their failures. */
-    readonly executor: IRuntimeExecutor;
-    execute: IRuntimeExecutor['execute'];
 }
 
 export interface IRuntimeLifecycleParameters {

@@ -55,7 +55,12 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
     ], [])
 
     //parked on window so the control can be poked at from the browser console
-    const onSetup = (control: IDatasetControl) => Object.assign(window, { datasetControl: control })
+    const onSetup = (control: IDatasetControl) => {
+        Object.assign(window, { datasetControl: control })
+        if (props.overrideSlots) {
+            control.parts.observe('notifications', notifications => notifications.add({ text: 'Deals sync nightly.', level: 'INFO' }))
+        }
+    }
 
     const onLoad = async () => {
         if (failNextLoadRef.current) {
@@ -86,7 +91,7 @@ export const ScratchDatasetControl = (props: IScratchDatasetControlProps) => {
                     <DatasetControl.QuickFind />
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
-            <DatasetControl.Notifications messages={props.overrideSlots ? [{ text: 'Deals sync nightly.', level: 'INFO' }] : undefined} />
+            <DatasetControl.Notifications />
             {isThrowing && <ThrowingPart />}
             <DatasetControl.Body>
                 <ClientSideGrid stateKey='grid' modules={modules} />

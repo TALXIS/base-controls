@@ -37,7 +37,7 @@ export const Ribbon = (props: IDatasetControlRibbonProps) => {
     const onSetup = (ribbon: IRibbon) => {
         detachRef.current?.();
         detachRef.current = commands.attach(ribbon);
-        removeRef.current = runtime.services.provide('ribbon', ribbon);
+        removeRef.current = runtime.parts.provide('ribbon', ribbon);
     };
 
     return <SharedRibbon {...ribbonProps} disabled={props.disabled || provider.isLoading()} align={region === 'end' ? 'end' : 'start'} className={getClassNames([styles.datasetControlRibbon, props.className])} onSetup={onSetup} />;

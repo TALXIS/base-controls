@@ -1,20 +1,11 @@
 import { useTheme } from '@theme';
 import React, { useEffect, useMemo } from 'react';
+import { INotificationMessage } from '@core';
 import { IMessageBarProps, IMessageBarStyles, MessageBarType } from '@fluentui/react';
 import { INotificationMessageBarComponents, NotificationMessageBarComponents } from "./components";
 import { getNotificationMessageBarStyles } from './styles';
 import { useLabels } from '@labels';
 import { NOTIFICATION_MESSAGE_BAR_LABELS } from './labels';
-
-/** One message of a notification bar. */
-export interface INotificationMessage {
-	/** What the message says. */
-	text: string;
-	/** How the message is drawn; the most severe one sets the bar's type. */
-	level: 'ERROR' | 'WARNING' | 'INFO';
-	/** Shows a close button on the message that calls it. */
-	onDismiss?: () => void;
-}
 
 export interface INotificationMessageBarProps {
 	/** The messages to show; the bar is not drawn without any. */

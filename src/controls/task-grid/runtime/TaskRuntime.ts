@@ -4,7 +4,7 @@ import type { IRibbonCommand } from "@controls/ribbon";
 import type { IDatasetControlLoadResult, IDatasetControlInternal } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import type { IDatasetControl, IDatasetControlView } from "@controls/dataset-control/runtime/interfaces";
 import type { IPcfContext } from "@pcf/interfaces";
-import { HookRegistry, IRuntimeExecutor, IRuntimeLifecycle, IRuntimeLoading, ServiceRegistry } from "@core";
+import { HookRegistry, IRuntimeExecutor, IRuntimeLifecycle, IRuntimeLoading, IRuntimeNotifications, IRuntimePartMap, IRuntimeParts, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels } from "@labels";
 import type { IFieldMapping, ITaskDataProvider, ITaskView, ITaskViewData } from "./provider";
 import { PATH_COLUMN_NAME } from "./provider/record-tree";
@@ -72,6 +72,14 @@ export class TaskRuntime implements ITaskRuntime {
 
     public get execute(): IRuntimeExecutor['execute'] {
         return this.services.get('datasetControl').execute;
+    }
+
+    public get parts(): IRuntimeParts<IRuntimePartMap> {
+        return this.services.get('datasetControl').parts;
+    }
+
+    public get notifications(): IRuntimeNotifications {
+        return this.services.get('datasetControl').notifications;
     }
 
     public getView(): ITaskView | undefined {

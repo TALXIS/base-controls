@@ -1,13 +1,15 @@
 import type { ITheme } from "@fluentui/react";
 import { IAvailableRelatedColumn, IColumn, IDataProvider, IInternalDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import { HookRegistry, IStateStore, ModuleLoader, Runtime, ServiceRegistry, IHookPoint } from "@core";
+import { HookRegistry, IStateStore, ModuleLoader, Runtime, ServiceRegistry, IHookPoint, IRuntimeNotifications } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import type { IDatasetControlProps } from "../adapters/root/Root";
-import { IDatasetControl, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartLocator, IDatasetControlServiceRegistry, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
+import { IDatasetControl, IDatasetControlModuleLocator, IDatasetControlModuleMap, IDatasetControlPartMap, IDatasetControlServiceRegistry, IDatasetControlServiceMap, IDatasetControlView, IDatasetControlResolvedView, IDatasetControlViewColumn } from "./interfaces";
 import { toScopedColumn } from "./parts/edit-columns/toScopedColumn";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
 import { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
+
+const PROVIDER_ERROR_NOTIFICATION_ID = 'provider-error';
 
 /** What `onLoad` returns. */
 export interface IDatasetControlLoadResult<TData = unknown> {
@@ -45,7 +47,7 @@ export interface IDatasetControlRuntimeParameters {
     theme: ITheme;
 }
 
-export class DatasetControlRuntime extends Runtime implements IDatasetControlInternal {
+export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap> implements IDatasetControlInternal {
     private _services = new ServiceRegistry<IDatasetControlServiceMap>();
     private _moduleLoader = new ModuleLoader<IDatasetControlModuleMap, IDatasetControlInternal>();
     private _surfaces = new DatasetControlSurfaces();
@@ -59,6 +61,7 @@ export class DatasetControlRuntime extends Runtime implements IDatasetControlInt
         views: new HookRegistry<DatasetControlViewsHook>(),
     };
     private _viewId?: string;
+    private _stopProviderNotifications?: () => void;
     private _view?: IDatasetControlResolvedView;
 
     constructor(parameters: IDatasetControlRuntimeParameters) {
@@ -73,10 +76,6 @@ export class DatasetControlRuntime extends Runtime implements IDatasetControlInt
     }
 
     public get services(): IDatasetControlServiceRegistry {
-        return this._services;
-    }
-
-    public get parts(): IDatasetControlPartLocator {
         return this._services;
     }
 
@@ -133,6 +132,7 @@ export class DatasetControlRuntime extends Runtime implements IDatasetControlInt
     }
 
     protected onDestroy(): void {
+        this._stopProviderNotifications?.();
         //before the provider is released, which the modules may still read
         this._moduleLoader.destroy();
         if (this._provider) {
@@ -187,6 +187,7 @@ export class DatasetControlRuntime extends Runtime implements IDatasetControlInt
                 return;
             }
             this._provider = provider;
+            this._stopProviderNotifications = this.parts.observe('notifications', notifications => this._attachProviderError(provider, notifications));
             this._viewId = viewId;
             this._state.setViewId(viewId);
         }
@@ -235,6 +236,28 @@ export class DatasetControlRuntime extends Runtime implements IDatasetControlInt
     //a kept view may have been removed since
     private _resolveViewId(viewId: string | undefined): string | undefined {
         return this._views.some(view => view.id === viewId) ? viewId : this._views[0]?.id;
+    }
+
+    private _attachProviderError(provider: IDataProvider, notifications: IRuntimeNotifications): () => void {
+        const showError = () => {
+            if (provider.isError()) {
+                notifications.add({ text: this._escape(provider.getErrorMessage()), level: 'ERROR' }, PROVIDER_ERROR_NOTIFICATION_ID);
+            }
+            else {
+                notifications.remove(PROVIDER_ERROR_NOTIFICATION_ID);
+            }
+        };
+        const unsubscribes = [provider.addEventListener('onError', showError), provider.addEventListener('onNewDataLoaded', showError)];
+        showError();
+        return () => {
+            unsubscribes.forEach(unsubscribe => unsubscribe());
+            notifications.remove(PROVIDER_ERROR_NOTIFICATION_ID);
+        };
+    }
+
+    //a message is drawn as HTML, and the error comes from the server
+    private _escape(text: string): string {
+        return text.replace(/[&<>"']/g, character => `&#${character.charCodeAt(0)};`);
     }
 
     private _releaseProvider(provider: IDataProvider): void {
