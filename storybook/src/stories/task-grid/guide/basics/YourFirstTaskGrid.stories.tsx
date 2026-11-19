@@ -31,7 +31,7 @@ A task grid needs your rows, a store that keeps them, and a field mapping that s
 
 **Mounts.** \`onLoad\` runs whenever the control mounts: when it opens, and later each time the user switches views. So it returns a new store each time, while the table stays outside \`onLoad\` and keeps every change. How mounts work is on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview).
 
-The grid shows the columns of \`OFFICE_COLUMNS\` that are not hidden. Like every control, it needs the root providers from [**Quick start**](?path=/docs/concepts-quick-start--overview); the examples of this guide already have them.
+The grid shows the columns of \`OFFICE_COLUMNS\` that are not hidden. Like every control, it needs the root providers from [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview); the examples of this guide already have them.
 
 ## Try it
 

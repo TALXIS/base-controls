@@ -12,7 +12,7 @@ Controls need things only their host knows: who the user is, how to format their
 
 ## What it holds
 
-Put the provider at the root of the application, as in [**Quick start**](?path=/docs/concepts-quick-start--overview), and read the context anywhere below it with \`usePcfContext()\`. Every control below it shares:
+Put the provider at the root of the application, as in [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview), and read the context anywhere below it with \`usePcfContext()\`. Every control below it shares:
 
 | Member | Holds |
 |---|---|
@@ -51,7 +51,7 @@ The provider builds the context again on every render, so \`usePcfContext()\` se
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Quick start', iconName: 'Rocket', href: '?path=/docs/concepts-quick-start--overview', text: 'The providers at the root of an application, the PCF context among them.' },
+    { title: 'Your first list', iconName: 'Rocket', href: '?path=/docs/concepts-guide-basics-your-first-list--overview', text: 'The providers at the root of an application, the PCF context among them.' },
     { title: 'Localization', iconName: 'LocaleLanguage', href: '?path=/docs/concepts-localization--overview', text: 'Translate the strings the controls draw, beside the culture that formats values.' },
     { title: 'State persistence', iconName: 'History', href: '?path=/docs/concepts-state-persistence--overview', text: 'Keep what the user left for the session, through the host\'s mode.' },
 ]

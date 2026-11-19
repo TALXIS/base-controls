@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { gridDocsPage } from '../../grid/gridDocsPage'
 import { ExploreCards, IExploreCard } from '../../grid/showcase/ExploreCards'
-import { PiecesAndSlotsExample } from './piecesAndSlotsExamples'
+import { PiecesAndSlotsExample, PlainUiExample } from './piecesAndSlotsExamples'
 
 const DESCRIPTION = `
 Every part of a control draws its UI through small functions you can replace, so you can change one button or one text without rewriting the part, and the part keeps its behaviour. You hand the replacements to the part in its \`components\` map, and anything you leave out keeps its default. Try it below: press **Mount again** to watch the replaced loading state, then hover a command.
@@ -35,6 +35,12 @@ Each control lists its pieces and slots under *Changing how it looks*, DatasetCo
 
 A slot changes how something looks, not what it holds. Commands and menu items are added through the part, with \`hooks.commands\`, \`hooks.items\` or \`hooks.columnCommands\`: see *Each part from your code* on DatasetControl's [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview) and *Add your own commands* on [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview).
 
+## Parts without a control
+
+Every part is split in two. The *UI* takes plain props and owns the look: its styles and its \`components\`. The *adapter* reads the control's runtime and draws the UI with props, texts included. As the UI never reads a runtime, it also draws from your own state, with no control behind it.
+
+{{story: Plain UI}}
+
 ## Where next
 
 {{block: explore}}
@@ -65,4 +71,16 @@ type Story = StoryObj<typeof meta>
 export const ReplaceWhatTheRibbonDraws: Story = {
     name: 'Replace what the ribbon draws',
     render: () => renderStory(<PiecesAndSlotsExample />),
+}
+
+export const PlainUi: Story = {
+    name: 'Plain UI',
+    render: () => renderStory(<PlainUiExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `The DatasetControl's frame and view switcher, with the form's sections as cards, all drawn from React state. Try: set a deal's stage to **Won**, then switch to **Won deals**.`,
+            },
+        },
+    },
 }

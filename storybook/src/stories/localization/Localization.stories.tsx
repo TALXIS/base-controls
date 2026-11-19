@@ -36,7 +36,7 @@ Give a component of yours labels the way the library's own do, rather than hard-
 `
 
 const EXPLORE: IExploreCard[] = [
-    { title: 'Quick start', iconName: 'Rocket', href: '?path=/docs/concepts-quick-start--overview', text: 'Where the LabelsProvider sits among the providers at the root.' },
+    { title: 'Your first list', iconName: 'Rocket', href: '?path=/docs/concepts-guide-basics-your-first-list--overview', text: 'Where the LabelsProvider sits among the providers at the root.' },
     { title: 'PCF context', iconName: 'PlugConnected', href: '?path=/docs/concepts-pcf-context--overview', text: 'Set the user\'s culture, which formats dates, numbers and money.' },
     { title: 'Talking to the grid', iconName: 'Chat', href: '?path=/docs/controls-grid-talking-to-the-grid--overview', text: 'Redraw the grid\'s cells and headers from your code.' },
 ]

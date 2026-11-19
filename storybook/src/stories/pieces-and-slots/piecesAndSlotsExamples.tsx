@@ -38,4 +38,68 @@ const GridExample = () => {
 }
 `
 
+const PLAIN_UI_CODE = `import { DatasetControl, FormUi } from '@talxis/base-controls'
+import { Dropdown, Text } from '@fluentui/react'
+
+const STAGES = [
+    { key: 1, text: 'Qualify' },
+    { key: 2, text: 'Propose' },
+    { key: 3, text: 'Won' },
+]
+
+interface IDeal {
+    id: string
+    name: string
+    stage: number
+    value: string
+}
+
+const VIEWS = [
+    { key: 'all', text: 'All deals', matches: (deal: IDeal) => true },
+    { key: 'won', text: 'Won deals', matches: (deal: IDeal) => deal.stage === 3 },
+]
+
+//plain data in your own state: no provider, no runtime
+const DEALS: IDeal[] = [
+    { id: 'contoso', name: 'Contoso: CRM rollout', stage: 1, value: '$4,000' },
+    { id: 'fabrikam', name: 'Fabrikam: Support renewal', stage: 2, value: '$21,500' },
+    { id: 'adventure', name: 'Adventure Works: Licences', stage: 3, value: '$26,500' },
+]
+
+//the form's section and cells as plain UI
+const DealCard = (props: { deal: IDeal, onChange: (deal: IDeal) => void }) => <FormUi.Section label={props.deal.name} cellLabelPosition='Top'>
+    <FormUi.Cell label='Stage'>
+        <Dropdown options={STAGES} selectedKey={props.deal.stage} onChange={(_, option) => props.onChange({ ...props.deal, stage: Number(option!.key) })} />
+    </FormUi.Cell>
+    <FormUi.Cell label='Value'>
+        <Text>{props.deal.value}</Text>
+    </FormUi.Cell>
+</FormUi.Section>
+
+const GridExample = () => {
+    const [deals, setDeals] = React.useState(DEALS)
+    const [view, setView] = React.useState(VIEWS[0])
+
+    //the DatasetControl's frame and view switcher, drawn as plain UI from your own state
+    return <DatasetControl.Ui.Container>
+        <DatasetControl.Ui.Header>
+            <DatasetControl.Ui.HeaderStart>
+                <DatasetControl.Ui.ViewSwitcher
+                    text={view.text}
+                    selectedKey={view.key}
+                    items={VIEWS.map(option => ({ key: option.key, text: option.text, onClick: () => setView(option) }))} />
+            </DatasetControl.Ui.HeaderStart>
+        </DatasetControl.Ui.Header>
+        <DatasetControl.Ui.Body>
+            <FormUi.Tab id='board'>
+                {deals.filter(view.matches).map(deal => <FormUi.Column key={deal.id}>
+                    <DealCard deal={deal} onChange={changed => setDeals(deals.map(other => other.id === changed.id ? changed : other))} />
+                </FormUi.Column>)}
+            </FormUi.Tab>
+        </DatasetControl.Ui.Body>
+    </DatasetControl.Ui.Container>
+}
+`
+
 export const PiecesAndSlotsExample = () => <GridExampleRunner seedCode={PIECES_AND_SLOTS_CODE} tabs={['preview', 'code']} />
+export const PlainUiExample = () => <GridExampleRunner seedCode={PLAIN_UI_CODE} tabs={['preview', 'code']} />

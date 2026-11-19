@@ -27,7 +27,7 @@ A form is built from parts that nest in JSX, outermost first. \`Form.Root\` hold
 
 ## Set it up
 
-The form needs the root providers every control needs: see [**Quick start**](?path=/docs/concepts-quick-start--overview). Your code follows the form, and reads, sets and saves its values, through \`onFormReady\`, the events of \`Form.Root\` and \`useForm()\`: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
+The form needs the root providers every control needs: see [**Your first list**](?path=/docs/concepts-guide-basics-your-first-list--overview). Your code follows the form, and reads, sets and saves its values, through \`onFormReady\`, the events of \`Form.Root\` and \`useForm()\`: see [**Talking to the form**](?path=/docs/controls-form-talking-to-the-form--overview).
 
 ## Draw it from FormXml
 

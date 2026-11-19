@@ -101,7 +101,8 @@ model. The library-wide guide, `storybook/src/concepts/guide/startGuide.ts`, liv
   becomes an extra editor file the entry never imports.
 - async/await, never `.then`.
 - No decorative chrome, such as a made-up page title above a control.
-- Never repeat setup a Concepts page owns, such as wrapping in `PcfContextProvider`; link to it.
+- Never repeat setup a Concepts page owns, such as wrapping in `PcfContextProvider`; link to it. Only a
+  *Getting started* step about that setup shows it, such as *Your first list* or *Your brand*.
 - Every example must make sense: the code does what its caption and the page say, the "Try:" action works
   when you trace the code, an edit the reader makes takes effect, names are realistic, nothing is dead.
 
