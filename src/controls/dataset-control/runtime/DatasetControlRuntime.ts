@@ -8,6 +8,12 @@ import { toScopedColumn } from "./parts/edit-columns/toScopedColumn";
 import { DatasetControlUnsavedChangesGuard } from "./DatasetControlUnsavedChangesGuard";
 import { DatasetControlState } from "./DatasetControlState";
 import { DatasetControlSurfaces, IDatasetControlSurfaces } from "./DatasetControlSurfaces";
+import type { IRibbon } from "@controls/ribbon";
+import type { IDatasetControlViewSwitcher } from "./parts/view-switcher/DatasetControlViewSwitcher";
+import type { IDatasetControlQuickFind } from "./parts/quick-find/DatasetControlQuickFind";
+import type { IDatasetControlPagination } from "./parts/pagination/DatasetControlPagination";
+import type { IDatasetControlPageSizeSwitcher } from "./parts/page-size-switcher/DatasetControlPageSizeSwitcher";
+import type { IDatasetControlEditColumns } from "./parts/edit-columns/DatasetControlEditColumns";
 
 const PROVIDER_ERROR_NOTIFICATION_ID = 'provider-error';
 
@@ -85,6 +91,30 @@ export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap> imple
 
     public get surfaces(): IDatasetControlSurfaces {
         return this._surfaces;
+    }
+
+    public get viewSwitcher(): IDatasetControlViewSwitcher {
+        return this.parts.get('viewSwitcher');
+    }
+
+    public get ribbon(): IRibbon {
+        return this.parts.get('ribbon');
+    }
+
+    public get quickFind(): IDatasetControlQuickFind {
+        return this.parts.get('quickFind');
+    }
+
+    public get pagination(): IDatasetControlPagination {
+        return this.parts.get('pagination');
+    }
+
+    public get pageSizeSwitcher(): IDatasetControlPageSizeSwitcher {
+        return this.parts.get('pageSizeSwitcher');
+    }
+
+    public get editColumns(): IDatasetControlEditColumns {
+        return this.parts.get('editColumns');
     }
 
     public getProvider(): IDataProvider | undefined {

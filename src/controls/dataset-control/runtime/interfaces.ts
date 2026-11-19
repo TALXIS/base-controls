@@ -74,6 +74,18 @@ export type IDatasetControlModuleLocator = IServiceLocator<IDatasetControlModule
 export interface IDatasetControl<TData = unknown> extends IRuntime {
     /** The parts rendered inside the control. */
     readonly parts: IRuntimeParts<IDatasetControlPartMap>;
+    /** `DatasetControl.ViewSwitcher`; throws while it is not drawn, so read it from `onReady` on. */
+    readonly viewSwitcher: IDatasetControlViewSwitcher;
+    /** `DatasetControl.Ribbon`; throws while it is not drawn, so read it from `onReady` on. */
+    readonly ribbon: IRibbon;
+    /** `DatasetControl.QuickFind`; throws while it is not drawn, so read it from `onReady` on. */
+    readonly quickFind: IDatasetControlQuickFind;
+    /** `DatasetControl.Pagination`; throws while it is not drawn, so read it from `onReady` on. */
+    readonly pagination: IDatasetControlPagination;
+    /** `DatasetControl.PageSizeSwitcher`; throws while it is not drawn, so read it from `onReady` on. */
+    readonly pageSizeSwitcher: IDatasetControlPageSizeSwitcher;
+    /** `DatasetControl.EditColumns`; throws while it is not drawn, so read it from `onReady` on. */
+    readonly editColumns: IDatasetControlEditColumns;
     /** The modules the control loaded, by name. */
     readonly modules: IDatasetControlModuleLocator;
     /** What modules draw in the control. */
