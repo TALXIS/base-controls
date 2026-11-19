@@ -61,7 +61,8 @@ export const TaskGanttRoot = (props: ITaskGanttProps) => {
 /** One mount of the Gantt: the chart, drawn once its modules have loaded. */
 const GanttMount = (props: ITaskGanttProps) => {
     const runtime = useRuntime<GanttRuntime>();
-    const gantt = useProvidePart(useOptionalDatasetControlInternal(), 'gantt', () => runtime);
+    //the header's zoom slider observes it
+    const gantt = useProvidePart(useOptionalDatasetControlInternal(), 'gantt', () => runtime, { afterCommit: true });
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
     const { rerender } = useRerender();
