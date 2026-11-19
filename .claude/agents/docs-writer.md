@@ -114,7 +114,9 @@ Each fact lives on one page; every other page links to it.
 |---|---|
 | Root providers | Concepts › Guide › Basics › Your first list |
 | What a module is, and which controls take them | Concepts › Guide › Basics › Edit and save |
-| The runtime: one per mount, `onSetup` and `onReady`, `runtime.lifecycle` (status, error, events, `remount()`), writing a runtime with `RuntimeLifecycle` | Controls › RuntimeHost |
+| The runtime: one per mount, `onSetup` and `onReady`, `runtime.lifecycle` (status, error, events, `remount()`), writing a runtime with `RuntimeLifecycle`, `runtime.parts` and `useProvidePart`, `getModules()` and `runtime.modules` | Controls › RuntimeHost |
+| The `notifications` part: `RuntimeNotificationBar`, `add`, `remove`, a message's keys and levels | Controls › RuntimeHost |
+| Adding a message to a DatasetControl | DatasetControl › Guide › Features › Messages and nothing to show |
 | How pieces and slots work | Concepts › Pieces and slots |
 | Provider behaviour | Concepts › Data providers |
 | Colours | Concepts › Theming |

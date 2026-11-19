@@ -1,11 +1,12 @@
 import React from 'react'
 import { GridExampleRunner } from '../../../grid/GridExampleRunner'
-import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, withDealList } from '../dealListFiles'
+import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, withDealList } from '../dealListFiles'
 
 const LAY_IT_OUT_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, DatasetControl, useCompact } from '@talxis/base-controls'
 import { DefaultButton, IconButton, Slider } from '@fluentui/react'
 import { loadDeals } from './deals'
 import { DealsRibbon } from './DealsRibbon'
+import { showSyncMessage } from './syncMessage'
 
 //new: only its icon while the header is compact
 const ExportButton = () => {
@@ -25,7 +26,7 @@ const GridExample = () => {
         <Slider label='Width (%)' min={30} max={100} value={width} onChange={setWidth} />
         {/* new: height='100%' fills a box with a height of its own */}
         <div style={{ width: \`\${width}%\`, height: 480 }}>
-            <DatasetControl onLoad={loadDeals} height='100%'>
+            <DatasetControl onLoad={loadDeals} onSetup={showSyncMessage} height='100%'>
                 <DatasetControl.Header>
                     <DatasetControl.Header.Start>
                         <DatasetControl.ViewSwitcher />
@@ -38,7 +39,7 @@ const GridExample = () => {
                         <ExportButton />
                     </DatasetControl.Header.End>
                 </DatasetControl.Header>
-                <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
+                <DatasetControl.Notifications />
                 <DatasetControl.Body>
                     <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
                 </DatasetControl.Body>
@@ -56,4 +57,4 @@ const GridExample = () => {
 }
 `
 
-export const LayItOutExample = () => <GridExampleRunner seedCode={withDealList(LAY_IT_OUT_CODE, DEALS_RIBBON_FILE)} tabs={DEAL_LIST_TABS} />
+export const LayItOutExample = () => <GridExampleRunner seedCode={withDealList(LAY_IT_OUT_CODE, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE)} tabs={DEAL_LIST_TABS} />

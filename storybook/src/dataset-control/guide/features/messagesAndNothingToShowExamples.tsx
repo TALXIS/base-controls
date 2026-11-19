@@ -2,10 +2,20 @@ import React from 'react'
 import { GridExampleRunner } from '../../../grid/GridExampleRunner'
 import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, withDealList } from '../dealListFiles'
 
-const MESSAGES_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, DatasetControl, useDataProvider } from '@talxis/base-controls'
+const MESSAGES_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, DatasetControl, IDatasetControl, useDataProvider } from '@talxis/base-controls'
 import { DefaultButton } from '@fluentui/react'
 import { loadDeals } from './deals'
 import { DealsRibbon } from './DealsRibbon'
+
+//new: adds the sync message to each notification bar the control draws
+const showSyncMessage = (control: IDatasetControl) => control.parts.observe('notifications', notifications => notifications.add({
+    //the key remove() finds it by
+    id: 'sync',
+    text: 'Deals are synced from the CRM every night.',
+    level: 'INFO',
+    //a close button that removes it
+    onDismiss: () => notifications.remove('sync'),
+}))
 
 //new: stands in for the deals service failing a later load
 const BreakTheConnection = () => {
@@ -13,7 +23,8 @@ const BreakTheConnection = () => {
     return <DefaultButton text='Break the connection' onClick={() => provider.setError(true, 'The deals service is not reachable.')} />
 }
 
-const GridExample = () => <DatasetControl onLoad={loadDeals} height='480px'>
+//new: showSyncMessage runs with the control of every load
+const GridExample = () => <DatasetControl onLoad={loadDeals} onSetup={showSyncMessage} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher />
@@ -26,8 +37,8 @@ const GridExample = () => <DatasetControl onLoad={loadDeals} height='480px'>
             <DatasetControl.QuickFind />
         </DatasetControl.Header.End>
     </DatasetControl.Header>
-    {/* new: your messages, and the provider's error */}
-    <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
+    {/* new: the notifications part, with your messages and the provider's error */}
+    <DatasetControl.Notifications />
     <DatasetControl.Body>
         <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule()]} />
     </DatasetControl.Body>

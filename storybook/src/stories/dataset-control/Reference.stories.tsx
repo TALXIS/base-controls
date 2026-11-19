@@ -62,7 +62,7 @@ Every load mounts the control anew, with a new control, new modules and new part
 |---|---|
 | A load: a module's \`onLoad\`, the control's \`onLoad\`, a view's \`resolve\` or the provider's first page | The error in place of the parts, with **Details** and **Try again**. See [**When loading fails**](?path=/docs/controls-datasetcontrol-guide-basics-when-loading-fails--overview). |
 | A part, while it draws | The same error; **Try again** draws the parts again, without loading. |
-| A later load of the provider, such as a search or another page | The error in \`DatasetControl.Notifications\`, until the next load. See [**Messages and nothing to show**](?path=/docs/controls-datasetcontrol-guide-features-messages-and-nothing-to-show--overview). |
+| A later load of the provider, such as a search or another page | The error in \`DatasetControl.Notifications\`, until a load succeeds. See [**Messages and nothing to show**](?path=/docs/controls-datasetcontrol-guide-features-messages-and-nothing-to-show--overview). |
 | The ribbon's first \`onLoad\` | The error in place of the commands, with **Details** and **Try again**. |
 | A later \`onLoad\` of the ribbon, such as on a new selection | The error dialog; the commands before it stay. |
 | Loading the columns *Edit columns* offers | The error in place of the pickers, with **Details** and **Try again**. |
@@ -90,8 +90,7 @@ Each part is a member of \`DatasetControl\`, such as \`DatasetControl.QuickFind\
 | \`PageSizeSwitcher\` | \`pageSizes\` | \`number[]\` | \`DEFAULT_PAGE_SIZES\`: 25, 50, 75, 100 and 250 | At mount | The sizes the menu offers. |
 | | \`components\` | \`Partial<IDatasetControlUiPageSizeSwitcherComponents>\` | Defaults | Live | See *Slots* below. |
 | \`Pagination\` | \`components\` | \`Partial<IDatasetControlUiPaginationComponents>\` | Defaults | Live | See *Slots* below. |
-| \`Notifications\` | \`messages\` | \`INotificationMessage[]\` | None | Live | Messages of your own, \`{ text, level, onDismiss? }\`, with \`level\` \`'ERROR'\`, \`'WARNING'\` or \`'INFO'\`. \`text\` is drawn as HTML; \`onDismiss\` adds a close button that calls it. |
-| | \`components\` | \`Partial<IDatasetControlNotificationsComponents>\` | Defaults | Live | See *Slots* below. |
+| \`Notifications\` | \`components\` | \`Partial<INotificationMessageBarComponents>\` | Defaults | Live | See *Slots* below. The part draws the messages of the \`notifications\` part, which it provides: see *Notifications* below. |
 | \`EmptyState\` | \`children\` | \`ReactNode\` | None | Live | What shows the records while there are some, kept while the provider loads. |
 | | \`components\` | \`Partial<IDatasetControlUiEmptyStateComponents>\` | Defaults | Live | See *Slots* below. |
 
@@ -107,6 +106,8 @@ Each part is a member of \`DatasetControl\`, such as \`DatasetControl.QuickFind\
 | \`getViewId()\`, \`getView()\` | The view shown, and the same view as it was resolved, with its columns and \`data\`. |
 | \`getProvider()\` | The provider shown; \`undefined\` until the load succeeds. Inside the control, \`useDataProvider()\` returns it too. |
 | \`parts\` | The parts drawn now, by key. See *Part keys* below. |
+| \`viewSwitcher\`, \`ribbon\`, \`quickFind\`, \`pagination\`, \`pageSizeSwitcher\`, \`editColumns\` | The part of that key, as \`parts.get(key)\` returns it; throws while it is not drawn, so read it from \`onReady\` on. |
+| \`notifications\` | The \`notifications\` part, as \`parts.get('notifications')\` returns it; throws while \`DatasetControl.Notifications\` is not drawn. |
 | \`modules\` | The modules this load loaded, by name: \`get\`, \`find\`, \`has\` and \`observe\`, as for the parts. |
 | \`surfaces.hooks.surfaces.add(hook, priority?)\` | Draws a dialog or panel of your own in the control: \`hook(surfaces)\` pushes \`{ key, onRender }\`, and \`onRender\` returns \`null\` while there is nothing to show. |
 | \`lifecycle\` | The status, the error and the events of the load, and \`remount()\` for the view that failed. See [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
@@ -136,15 +137,10 @@ Every part provides itself on the control under its key while it is drawn.
 | \`editColumns\` | \`DatasetControl.EditColumns\` | *Edit columns* below |
 | \`pageSizeSwitcher\` | \`DatasetControl.PageSizeSwitcher\` | *Page size switcher* below |
 | \`pagination\` | \`DatasetControl.Pagination\` | *Pagination* below |
-| \`notifications\` | \`DatasetControl.Notifications\` | *Notifications* below |
+| \`notifications\` | \`DatasetControl.Notifications\` | *Messages* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview), and *Notifications* below |
 | \`grid\` | The grid in the body | [**Talking to the grid**](?path=/docs/controls-grid-talking-to-the-grid--overview) |
 
-| \`control.parts\` member | Description |
-|---|---|
-| \`get(key)\` | Returns the part; throws when it is not drawn. |
-| \`find(key)\` | Returns the part, or \`undefined\` when it is not drawn. |
-| \`has(key)\` | Whether the part is drawn. |
-| \`observe(key, callback)\` | Calls back with the part now if it is drawn, and each time it is drawn again; returns the function that stops observing. What the callback returns runs when that part goes. |
+\`control.parts\` finds a part by its key with \`get\`, \`find\`, \`has\` and \`observe\`, as under *Parts* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). Declare a part of your own on \`IDatasetControlPartMap\` in \`declare module '@talxis/base-controls'\`, so its key is typed.
 
 ### A module
 
@@ -171,7 +167,7 @@ Every \`add\` on this page returns its remover, and a higher \`priority\` runs l
 
 ## Each part from your code
 
-\`control.parts.get(key)\` returns a part once it is drawn.
+\`control.parts.get(key)\`, or the control's shortcut, such as \`control.quickFind\`, returns a part once it is drawn.
 
 ### View switcher
 
@@ -248,10 +244,7 @@ The pickers list what the provider's \`onGetAvailableColumns(options?)\` returns
 
 ### Notifications
 
-| Member | Description |
-|---|---|
-| \`getMessages()\` | The provider's load error, while there is one; your own \`messages\` are not in it. |
-| \`events\` | \`onNotificationsChanged\`, whenever the provider fails or loads. |
+The \`notifications\` part holds every message the bar shows, yours and the control's, with \`add\`, \`remove\`, \`getMessages\` and \`events\`, as under *Messages* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). The control adds the provider's load error to it, escaped, under the \`id\` \`'provider-error'\`, and removes it once a load succeeds. Each load draws a new bar, so add a message of your own with \`control.parts.observe('notifications', …)\` from \`onSetup\`, as on [**Messages and nothing to show**](?path=/docs/controls-datasetcontrol-guide-features-messages-and-nothing-to-show--overview).
 
 \`EmptyState\` has no part to reach: read \`provider.getRecords()\` instead.
 
@@ -306,7 +299,7 @@ A user views module adds **Save as new view**, **Save changes** and **Manage vie
 | \`useDatasetControlRegion()\` | \`'start'\` or \`'end'\`, the side of the header or footer the component is in; \`undefined\` outside both. |
 | \`useDatasetControlHeader()\` | Inside the header, \`showOnly()\` hides everything in it but the calling part, and \`showAll()\` brings the rest back; \`undefined\` outside the header. |
 | \`useCompact()\` | Whether the header is compact. See [**Layout**](?path=/docs/concepts-layout--overview). |
-| \`useProvideDatasetControlPart(key, create)\` | The part \`create\` makes, once; it is provided under \`key\` for \`control.parts\` while the component is mounted. Declare the key on \`IDatasetControlPartMap\`. |
+| \`useProvidePart(control, key, create, parameters?)\` | The part \`create\` makes, once; it is provided on \`control\`, from \`useDatasetControl()\`, under \`key\` while the component is mounted. Declare the key on \`IDatasetControlPartMap\`. See *Parts* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). |
 
 \`DatasetControl.Ui\`, also exported as \`DatasetControlUi\`, holds the regions and most parts as plain UI with no control behind them: \`Container\`, \`Skeleton\`, the regions, \`ViewSwitcher\`, \`QuickFind\` with \`QuickFindCallout\` and \`QuickFindCompactButton\`, \`Pagination\`, \`PageSizeSwitcher\`, \`EmptyState\`, and the \`EditColumns…\` pieces. For the ribbon and the notifications, use the exported \`Ribbon\` and \`NotificationMessageBar\`.
 
@@ -337,7 +330,7 @@ The control and every part take \`components\`: see [**Pieces and slots**](?path
 | | \`scopeSelector\`, \`columnSelector\` | \`onRenderSelector\`, \`onRenderOption\` | \`DatasetControlUiEditColumnsSelectorComponents\` | The *Column source* and column pickers |
 | | \`columnList\` | \`onRenderColumn\` | \`DatasetControlUiEditColumnsColumnListComponents\` | Each chosen column, with its commands |
 | | \`errorMessage\` | As the control's \`mountError\` | \`ErrorMessageBarComponents\` | A failed load of the columns |
-| \`Notifications\` | Top level | \`onRender\` | | The message bar; call \`NotificationMessageBar\` from it to keep the default |
+| \`Notifications\` | Top level | \`onRenderMessageBar\`, \`onRenderMessage\`, \`onRenderToggleButton\`, \`onRenderMenu\` | \`NotificationMessageBarComponents\` | Each bar, a message's text, the summary's chevron and the messages it unfolds; see *Changing how it looks* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview) |
 | \`EmptyState\` | Top level | \`onRender\`, \`onRenderIcon\`, \`onRenderText\` | \`DatasetControlUiEmptyStateComponents\` | The empty state |
 | \`Pagination\` | Top level | \`onRender\`, with the buttons as \`items\` | \`DatasetControlUiPaginationComponents\` | The page buttons |
 | \`PageSizeSwitcher\` | Top level | \`onRender\`, with the sizes as \`menuProps.items\` | \`DatasetControlUiPageSizeSwitcherComponents\` | The range and its menu |

@@ -22,7 +22,7 @@ Your own buttons and modules can do what the user does with the parts: open a vi
 | Your code runs | Reach the control with |
 |---|---|
 | In a component inside \`DatasetControl\`, such as \`Shortcuts\` | \`useDatasetControl()\` |
-| In \`onSetup\` on \`DatasetControl\` | Its argument, before the load's modules load, as \`saveDealViewData\` does |
+| In \`onSetup\` on \`DatasetControl\` | Its argument, before the load's modules load, as \`showSyncMessage\` and \`saveDealViewData\` do |
 | In \`onReady\` on \`DatasetControl\` | Its argument, once per load, when the control and its parts are ready |
 | In a module | The argument of its \`onLoad\` |
 
@@ -30,13 +30,16 @@ Your own buttons and modules can do what the user does with the parts: open a vi
 
 ### The parts
 
-Every part on the page provides itself on the control under its key, such as \`'quickFind'\` or \`'editColumns'\`, for as long as it is drawn, and \`control.parts\` finds it. The parts are drawn once the load has succeeded, so outside a part's own code use \`find\` or \`observe\`. Each part's key and members are on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
+Every part on the page provides itself on the control under its key, such as \`'quickFind'\` or \`'editColumns'\`, for as long as it is drawn. The parts are drawn once the load has succeeded, and there are two ways to reach one:
 
-| Member | Does |
-|---|---|
-| \`get(key)\` | Returns the part; throws while it is not drawn. |
-| \`find(key)\` | Returns the part, or \`undefined\` while it is not drawn. |
-| \`observe(key, callback)\` | Calls back with the part each time it is drawn, and returns the function that stops. What the callback returns runs when that part goes. |
+| Reach a part with | Such as | When the part is not drawn |
+|---|---|---|
+| The control's shortcut: \`viewSwitcher\`, \`ribbon\`, \`quickFind\`, \`pagination\`, \`pageSizeSwitcher\` or \`editColumns\` | \`control.quickFind\` in \`Shortcuts\` | Throws |
+| \`control.parts.get(key)\` | \`control.parts.get('grid')\`, which has no shortcut | Throws |
+| \`control.parts.find(key)\` | \`control.parts.find('ribbon')?.reload()\` | Returns \`undefined\` |
+| \`control.parts.observe(key, callback)\` | \`showSyncMessage\`, from \`onSetup\` | Calls back once it is drawn, and again for each new one |
+
+Use a shortcut, or \`get\`, from \`onReady\` on or in code a part runs, such as a button's \`onClick\`; code that runs before the parts are drawn, such as \`onSetup\` or a module, waits with \`observe\`. \`control.notifications\` is the shortcut of the \`notifications\` part, and every member of \`control.parts\` is under *Parts* on [**RuntimeHost**](?path=/docs/controls-runtimehost-get-started--overview). Each part's key and members are on [**Reference**](?path=/docs/controls-datasetcontrol-reference--overview).
 
 ### A module of your own
 
@@ -81,7 +84,7 @@ Each load runs these steps:
 ## Remember
 
 - Every load gives a new control: \`onSetup\` gets it first, \`onReady\` once it is ready.
-- Parts exist once they are drawn; \`find\` and \`observe\` wait for them.
+- Parts exist once they are drawn: a shortcut such as \`control.quickFind\` throws before, and \`parts.observe\` waits.
 - A module loads before \`onLoad\`, and its \`hooks.views\` add views.
 
 {{block: navigation}}

@@ -3389,10 +3389,19 @@ declare const NotificationCard: (props: INotificationCardProps) => JSX.Element;
 /** The defaults for the card's pieces. */
 declare const NotificationCardComponents: INotificationCardComponents;
 
-/** A bar the notification bar draws. */
-interface INotificationMessageBarRenderProps extends IMessageBarProps {
+/** A bar the notification bar draws, with the props of Fluent's MessageBar. */
+interface INotificationMessageBarRenderProps {
     /** single for a lone message, group for the bar folding several, child for each one listed under it. */
     variant: 'single' | 'group' | 'child';
+    /** Fluent's MessageBarType: the most severe level among the bar's messages. */
+    messageBarType?: number;
+    /** The message, or the summary of a group. */
+    children?: React.ReactNode;
+    /** The toggle button, on a group. */
+    actions?: JSX.Element;
+    /** Set when the message has onDismiss. */
+    onDismiss?: (event?: any) => any;
+    [prop: string]: any;
 }
 
 /** The replaceable pieces of a notification bar. */
@@ -3409,7 +3418,7 @@ interface INotificationMessageBarComponents {
 
 interface INotificationMessageBarProps {
     /** Several messages fold into one bar; onDismiss gives a message a close button. */
-    messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO'; onDismiss?: () => void }[];
+    messages?: INotificationMessage[];
     components?: Partial<INotificationMessageBarComponents>;
 }
 
@@ -3758,6 +3767,51 @@ interface IRuntimeExecutor {
     execute<T>(operation: () => T | Promise<T>, parameters?: IRuntimeExecuteParameters): Promise<T>;
 }
 
+/** One message of a notification bar. */
+interface INotificationMessage {
+    /** What the message says, drawn as HTML. */
+    text: string;
+    /** How the message is drawn; the most severe one sets the bar's type. */
+    level: 'ERROR' | 'WARNING' | 'INFO' | 'SUCCESS';
+    /** Shows a close button on the message that calls it. */
+    onDismiss?: () => void;
+    /** Adding a message with an id already there replaces that message in place. */
+    id?: string;
+}
+
+interface IRuntimeNotificationsEvents {
+    /** Fires when a message is added, replaced or removed. */
+    onNotificationsChanged: () => void;
+}
+
+/** What the runtime has to tell the user, there while its notification bar is drawn. */
+interface IRuntimeNotifications {
+    readonly events: IEventSubscriber<IRuntimeNotificationsEvents>;
+    /** Returns what removes this message. */
+    add(message: INotificationMessage): () => void;
+    /** Removes the message with this id. */
+    remove(id: string): void;
+    /** In the order they were added. */
+    getMessages(): INotificationMessage[];
+}
+
+/** The notifications part as RuntimeNotificationBar makes it. */
+declare class RuntimeNotifications implements IRuntimeNotifications {
+    readonly events: IEventSubscriber<IRuntimeNotificationsEvents>;
+    add(message: INotificationMessage): () => void;
+    remove(id: string): void;
+    getMessages(): INotificationMessage[];
+}
+
+/** The parts every runtime may have; a control's own map extends it. */
+interface IRuntimePartMap {
+    /** The notification bar, while one is drawn. */
+    notifications: IRuntimeNotifications;
+}
+
+/** The parts drawn inside a runtime, each there only while it is drawn. */
+type IRuntimeParts<TMap extends object> = Omit<IServiceRegistry<TMap>, 'destroy'>;
+
 /** What every runtime offers the code that uses it. */
 interface IRuntime {
     readonly lifecycle: IRuntimeLifecycle;
@@ -3766,6 +3820,21 @@ interface IRuntime {
     /** Runs operations that may throw; its host shows their failures. */
     readonly executor: IRuntimeExecutor;
     execute: IRuntimeExecutor['execute'];
+    /** The parts drawn inside the runtime, such as its notification bar. */
+    readonly parts: IRuntimeParts<IRuntimePartMap>;
+    /** The notifications part; throws while no notification bar is drawn, so read it from onReady on. */
+    readonly notifications: IRuntimeNotifications;
+}
+
+/** A feature a runtime loads on every mount. */
+interface IRuntimeModule<TMap extends object, TName extends keyof TMap, THost> {
+    /** Unique within the runtime; what onLoad returns is provided under it. */
+    name: TName;
+    /** Lower loads first; modules of the same priority load at the same time. Defaults to 0. */
+    priority?: number;
+    onLoad(host: THost, parameters: IModuleLoadParameters): TMap[TName] | Promise<TMap[TName]>;
+    /** Called as the mount goes, with what onLoad returned. */
+    onDestroy?(instance: TMap[TName]): void;
 }
 
 /** What every ribbon command has. */
@@ -3846,17 +3915,36 @@ declare const Ribbon: (props: IRibbonProps) => JSX.Element;
 declare const RuntimeHost: typeof import('@talxis/base-controls').RuntimeHost;
 /** One mount's status, error and events; a runtime owns one, and the host drives it. */
 declare const RuntimeLifecycle: typeof import('@talxis/base-controls').RuntimeLifecycle;
-/** What a runtime is built on: its lifecycle, loading and executor. */
-declare abstract class Runtime implements IRuntime {
+/** What a runtime is built on: its lifecycle, loading, executor, parts and modules. */
+declare abstract class Runtime<TPartMap extends IRuntimePartMap = IRuntimePartMap, TModuleMap extends object = {}, THost = IRuntime> implements IRuntime {
     readonly lifecycle: IRuntimeLifecycle;
     readonly loading: IRuntimeLoading;
     readonly executor: IRuntimeExecutor;
     readonly execute: IRuntimeExecutor['execute'];
-    /** Prepares what the control needs before it is drawn; the host runs it once per mount. */
+    readonly parts: IRuntimeParts<TPartMap>;
+    get notifications(): IRuntimeNotifications;
+    /** The modules this mount loaded, by name. */
+    get modules(): IServiceLocator<TModuleMap>;
+    /** The modules to load on every mount, before onInit. */
+    protected getModules(): IRuntimeModule<TModuleMap, keyof TModuleMap, THost>[];
+    /** Prepares the control before it is drawn, once its modules have loaded. */
     protected abstract onInit(): Promise<void>;
-    /** Releases what the runtime holds, after onDestroyed. */
+    /** Releases what the runtime holds, after onDestroyed and its modules have gone. */
     protected abstract onDestroy(): void;
 }
+/** Provides the runtime's notifications part and draws its messages. */
+declare const RuntimeNotificationBar: (props: IRuntimeNotificationBarProps) => JSX.Element;
+interface IRuntimeNotificationBarProps {
+    components?: Partial<INotificationMessageBarComponents>;
+}
+interface IProvidePartParameters {
+    /** Provides the part after the commit, so React components observing it may set state. */
+    afterCommit?: boolean;
+}
+/** Creates a part once and provides it on the nearest runtime, if any, while the calling component is mounted. */
+declare function useProvidePart<TName extends keyof IRuntimePartMap, TPart extends IRuntimePartMap[TName]>(name: TName, create: () => TPart, parameters?: IProvidePartParameters): TPart;
+/** Creates a part once and provides it on runtime while the calling component is mounted. */
+declare function useProvidePart<TMap extends object, TName extends keyof TMap, TPart extends TMap[TName]>(runtime: { readonly parts: IRuntimeParts<TMap> } | undefined, name: TName, create: () => TPart, parameters?: IProvidePartParameters): TPart;
 /** The runtime of the nearest RuntimeHost; for the control's own mount component only. */
 declare const useRuntime: typeof import('@talxis/base-controls').useRuntime;
 /** The ribbon's commands as plain UI, with no runtime behind them. */
@@ -3951,21 +4039,13 @@ interface IDatasetControlPageSizeSwitcher {
     getRecordRange(): { first: number; last: string; total?: string };
 }
 
-/** What the control has to tell the user about its records. */
-interface IDatasetControlNotifications {
-    readonly events: IEventSubscriber<{ onNotificationsChanged: () => void }>;
-    /** The provider's load error, while there is one. */
-    getMessages(): { text: string; level: string }[];
-}
-
 /** The parts rendered inside the control, each there only while it is rendered. */
-interface IDatasetControlPartMap {
+interface IDatasetControlPartMap extends IRuntimePartMap {
     viewSwitcher: IDatasetControlViewSwitcher;
     ribbon: IRibbon;
     quickFind: IDatasetControlQuickFind;
     pagination: IDatasetControlPagination;
     pageSizeSwitcher: IDatasetControlPageSizeSwitcher;
-    notifications: IDatasetControlNotifications;
     editColumns: IDatasetControlEditColumns;
     /** The grid in the body, while it is rendered. */
     grid: IGrid;
@@ -3987,17 +4067,6 @@ interface IDatasetControlProviderState {
 declare function useDatasetControlRegion(): 'start' | 'end' | undefined;
 /** A module the control loaded, by name; throws when it was not given. */
 declare function useDatasetControlModule(name: string): any;
-/** Makes a part once and provides it on the control under name, for control.parts. */
-declare function useProvideDatasetControlPart<TName extends keyof IDatasetControlPartMap>(name: TName, create: () => IDatasetControlPartMap[TName]): IDatasetControlPartMap[TName];
-
-/** Looks up the parts rendered right now. */
-interface IDatasetControlPartLocator {
-    /** Throws when the part is not rendered. */
-    get<K extends keyof IDatasetControlPartMap>(key: K): IDatasetControlPartMap[K];
-    find<K extends keyof IDatasetControlPartMap>(key: K): IDatasetControlPartMap[K] | undefined;
-    /** Calls back each time the part is rendered; what it returns runs before the next call. */
-    observe<K extends keyof IDatasetControlPartMap>(key: K, callback: (part: IDatasetControlPartMap[K]) => void | (() => void)): () => void;
-}
 
 /** Something a module draws in the DatasetControl. */
 interface IDatasetControlSurface {
@@ -4015,7 +4084,20 @@ interface IDatasetControlSurfaces {
 
 /** The DatasetControl as its consumer drives it; a new one for every mount. */
 interface IDatasetControl<TData = unknown> extends IRuntime {
-    readonly parts: IDatasetControlPartLocator;
+    /** The parts rendered inside the control. */
+    readonly parts: IRuntimeParts<IDatasetControlPartMap>;
+    /** DatasetControl.ViewSwitcher; throws while it is not drawn, so read it from onReady on. */
+    readonly viewSwitcher: IDatasetControlViewSwitcher;
+    /** DatasetControl.Ribbon; throws while it is not drawn, so read it from onReady on. */
+    readonly ribbon: IRibbon;
+    /** DatasetControl.QuickFind; throws while it is not drawn, so read it from onReady on. */
+    readonly quickFind: IDatasetControlQuickFind;
+    /** DatasetControl.Pagination; throws while it is not drawn, so read it from onReady on. */
+    readonly pagination: IDatasetControlPagination;
+    /** DatasetControl.PageSizeSwitcher; throws while it is not drawn, so read it from onReady on. */
+    readonly pageSizeSwitcher: IDatasetControlPageSizeSwitcher;
+    /** DatasetControl.EditColumns; throws while it is not drawn, so read it from onReady on. */
+    readonly editColumns: IDatasetControlEditColumns;
     /** The modules the control loaded, by name. */
     readonly modules: { get(name: string): any; find(name: string): any; observe(name: string, callback: (module: any) => void | (() => void)): () => void };
     /** What modules draw in the control. */
@@ -4143,7 +4225,8 @@ interface IDatasetControlNamespace {
     QuickFind: (props: {
         components?: Partial<IDatasetControlUiQuickFindComponents>;
     }) => JSX.Element;
-    Notifications: (props: { messages?: { text: string; level: 'ERROR' | 'WARNING' | 'INFO'; onDismiss?: () => void }[]; components?: Partial<{ onRender: (props: INotificationMessageBarProps) => JSX.Element | null }> }) => JSX.Element;
+    /** Provides the control's notifications part and draws its messages, such as the provider's load error. */
+    Notifications: (props: IRuntimeNotificationBarProps) => JSX.Element;
     Pagination: (props: { components?: Partial<{ onRender: (props: IDatasetControlCommandBarProps) => JSX.Element | null }> }) => JSX.Element;
     PageSizeSwitcher: (props: { pageSizes?: number[]; components?: Partial<{ onRender: (props: IButtonProps) => JSX.Element | null }> }) => JSX.Element;
     /** The empty state in place of its children while the provider has no records. */

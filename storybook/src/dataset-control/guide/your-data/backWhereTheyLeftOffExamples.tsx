@@ -1,12 +1,13 @@
 import React from 'react'
 import { GridExampleRunner } from '../../../grid/GridExampleRunner'
-import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, USER_VIEW_TYPES_FILE, USER_VIEWS_FILE, withDealList } from '../dealListFiles'
+import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEW_TYPES_FILE, USER_VIEWS_FILE, withDealList } from '../dealListFiles'
 
 const BACK_WHERE_THEY_LEFT_OFF_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, createSortingModule, DatasetControl } from '@talxis/base-controls'
 import { Stack, Toggle } from '@fluentui/react'
 import { loadDeals } from './deals'
 import { DealsRibbon } from './DealsRibbon'
 import { dealViews, saveDealViewData } from './userViews'
+import { showSyncMessage } from './syncMessage'
 
 const GridExample = () => {
     //new: stands in for leaving the page and coming back
@@ -15,7 +16,7 @@ const GridExample = () => {
     return <Stack tokens={{ childrenGap: 8 }}>
         <Toggle label='Show the deals' inlineLabel checked={isShown} onChange={(_, checked) => setIsShown(!!checked)} />
         {/* new: the key the control keeps its state under in the page's store */}
-        {isShown && <DatasetControl modules={[dealViews]} onLoad={loadDeals} onSetup={saveDealViewData} stateKey='guide.back' height='440px'>
+        {isShown && <DatasetControl modules={[dealViews]} onLoad={loadDeals} onSetup={control => { showSyncMessage(control); saveDealViewData(control) }} stateKey='guide.back' height='440px'>
             <DatasetControl.Header>
                 <DatasetControl.Header.Start>
                     <DatasetControl.ViewSwitcher>
@@ -28,7 +29,7 @@ const GridExample = () => {
                     <DatasetControl.QuickFind />
                 </DatasetControl.Header.End>
             </DatasetControl.Header>
-            <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
+            <DatasetControl.Notifications />
             <DatasetControl.Body>
                 {/* new: the grid keeps its scroll per view under a key of its own */}
                 <ClientSideGrid stateKey='grid' modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule(), createSortingModule()]} />
@@ -94,5 +95,5 @@ const GridExample = () => {
 }
 `
 
-export const BackWhereTheyLeftOffExample = () => <GridExampleRunner seedCode={withDealList(BACK_WHERE_THEY_LEFT_OFF_CODE, DEALS_RIBBON_FILE, USER_VIEWS_FILE, USER_VIEW_TYPES_FILE)} tabs={DEAL_LIST_TABS} />
+export const BackWhereTheyLeftOffExample = () => <GridExampleRunner seedCode={withDealList(BACK_WHERE_THEY_LEFT_OFF_CODE, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEWS_FILE, USER_VIEW_TYPES_FILE)} tabs={DEAL_LIST_TABS} />
 export const InsideTheStoreExample = () => <GridExampleRunner seedCode={withDealList(INSIDE_THE_STORE_CODE)} tabs={DEAL_LIST_TABS} />

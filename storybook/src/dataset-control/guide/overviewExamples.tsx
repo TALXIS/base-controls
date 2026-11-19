@@ -1,12 +1,13 @@
 import React from 'react'
 import { GridExampleRunner } from '../../grid/GridExampleRunner'
-import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, USER_VIEW_TYPES_FILE, USER_VIEWS_FILE, withDealList } from './dealListFiles'
+import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEW_TYPES_FILE, USER_VIEWS_FILE, withDealList } from './dealListFiles'
 
 const DEAL_LIST_CODE = `import { ClientSideGrid, createEditingModule, createGroupingModule, createRowSelectionModule, createSortingModule, DatasetControl, useDataProviderEvents } from '@talxis/base-controls'
 import { Text } from '@fluentui/react'
 import { loadDeals } from './deals'
 import { DealsRibbon } from './DealsRibbon'
 import { dealViews, saveDealViewData } from './userViews'
+import { showSyncMessage } from './syncMessage'
 
 //a part of your own: the total value of the ticked deals
 const SelectedValue = () => {
@@ -16,7 +17,7 @@ const SelectedValue = () => {
 }
 
 //every part inside works on the provider loadDeals returns
-const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeals} onSetup={saveDealViewData} stateKey='overview.deals' height='560px'>
+const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeals} onSetup={control => { showSyncMessage(control); saveDealViewData(control) }} stateKey='overview.deals' height='560px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher>
@@ -29,7 +30,7 @@ const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeal
             <DatasetControl.QuickFind />
         </DatasetControl.Header.End>
     </DatasetControl.Header>
-    <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
+    <DatasetControl.Notifications />
     <DatasetControl.Body>
         <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule(), createSortingModule(), createGroupingModule()]} />
     </DatasetControl.Body>
@@ -45,4 +46,4 @@ const GridExample = () => <DatasetControl modules={[dealViews]} onLoad={loadDeal
 </DatasetControl>
 `
 
-export const DealListExample = () => <GridExampleRunner seedCode={withDealList(DEAL_LIST_CODE, DEALS_RIBBON_FILE, USER_VIEWS_FILE, USER_VIEW_TYPES_FILE)} tabs={DEAL_LIST_TABS} />
+export const DealListExample = () => <GridExampleRunner seedCode={withDealList(DEAL_LIST_CODE, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEWS_FILE, USER_VIEW_TYPES_FILE)} tabs={DEAL_LIST_TABS} />

@@ -347,7 +347,88 @@ const GridExample = () => {
 }
 `
 
+const MESSAGE_AND_MODULE_CODE = `import { IRuntime, IRuntimeModule, IRuntimePartMap, Runtime, RuntimeHost, RuntimeNotificationBar, useRuntime } from '@talxis/base-controls'
+import { getTheme, PrimaryButton, Stack, Text } from '@fluentui/react'
+
+const theme = getTheme()
+
+const CARD_STYLE: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+    maxWidth: 480,
+    padding: 20,
+    border: \`1px solid \${theme.palette.neutralLight}\`,
+    borderRadius: 8,
+}
+
+//what each module's onLoad returns, by name
+interface IDealSummaryModuleMap {
+    currency: { format: (value: number) => string }
+}
+
+type IDealSummaryModule = IRuntimeModule<IDealSummaryModuleMap, keyof IDealSummaryModuleMap, IRuntime>
+
+const euroModule: IDealSummaryModule = {
+    name: 'currency',
+    onLoad: () => ({ format: value => \`\${value.toLocaleString()} EUR\` }),
+}
+
+class DealSummaryRuntime extends Runtime<IRuntimePartMap, IDealSummaryModuleMap> {
+    private _modules: IDealSummaryModule[]
+    private _total = 34500
+
+    constructor(modules: IDealSummaryModule[]) {
+        super()
+        this._modules = modules
+    }
+
+    public getTotal(): string {
+        return this.modules.get('currency').format(this._total)
+    }
+
+    public async sendToFinance(): Promise<void> {
+        await this.execute(() => new Promise(resolve => setTimeout(resolve, 1000)), { loading: { message: 'Sending to finance...' } })
+        //a second send replaces the message with the same id
+        this.notifications.add({
+            id: 'sent',
+            text: \`\${this.getTotal()} was sent to finance.\`,
+            level: 'SUCCESS',
+            onDismiss: () => this.notifications.remove('sent'),
+        })
+    }
+
+    //loaded on every mount before onInit
+    protected getModules(): IDealSummaryModule[] {
+        return this._modules
+    }
+
+    protected async onInit(): Promise<void> { }
+
+    protected onDestroy(): void { }
+}
+
+const DealSummary = () => {
+    const runtime = useRuntime<DealSummaryRuntime>()
+    return <>
+        {/* provides the notifications part and draws its messages */}
+        <RuntimeNotificationBar />
+        <Stack>
+            <Text variant='small' styles={{ root: { color: theme.palette.neutralSecondary } }}>Open deals</Text>
+            <Text variant='xxLarge' styles={{ root: { fontWeight: 600 } }}>{runtime.getTotal()}</Text>
+        </Stack>
+        <PrimaryButton text='Send to finance' iconProps={{ iconName: 'Send' }} onClick={() => runtime.sendToFinance()} styles={{ root: { alignSelf: 'flex-start' } }} />
+    </>
+}
+
+const GridExample = () => <RuntimeHost createRuntime={() => new DealSummaryRuntime([euroModule])} components={{ container: { onRender: props => <div {...props} style={CARD_STYLE} /> } }}>
+    <DealSummary />
+</RuntimeHost>
+`
+
 export const DealSummaryExample = () => <GridExampleRunner seedCode={DEAL_SUMMARY_CODE} tabs={['preview', 'code']} />
+
+export const MessageAndModuleExample = () => <GridExampleRunner seedCode={MESSAGE_AND_MODULE_CODE} tabs={['preview', 'code']} />
 
 export const KeepStateExample = () => <GridExampleRunner seedCode={KEEP_STATE_CODE} tabs={['preview', 'code']} />
 

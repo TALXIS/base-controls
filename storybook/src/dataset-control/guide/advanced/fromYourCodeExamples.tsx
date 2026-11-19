@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridExampleRunner } from '../../../grid/GridExampleRunner'
 import type { IGridExampleFile } from '../../../grid/GridLivePreview'
-import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, USER_VIEW_TYPES_FILE, USER_VIEWS_FILE, withDealList } from '../dealListFiles'
+import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEW_TYPES_FILE, USER_VIEWS_FILE, withDealList } from '../dealListFiles'
 
 const FROM_YOUR_CODE_CODE = `import { ClientSideGrid, createEditingModule, createRowSelectionModule, createSortingModule, DatasetControl, IDatasetControlModule, IDatasetControlView, useDatasetControl } from '@talxis/base-controls'
 import { Operators, Type } from '@talxis/client-libraries'
@@ -9,6 +9,7 @@ import { DefaultButton, Stack } from '@fluentui/react'
 import { columns, loadDeals } from './deals'
 import { DealsRibbon } from './DealsRibbon'
 import { dealViews, saveDealViewData } from './userViews'
+import { showSyncMessage } from './syncMessage'
 
 //new: the deals closing in the next 30 days by close date
 const CLOSING_SOON: IDatasetControlView = {
@@ -38,20 +39,20 @@ const closingSoonModule: IDatasetControlModule<'closingSoon'> = {
 const Shortcuts = () => {
     const control = useDatasetControl()
 
+    //a part's shortcut, such as control.quickFind, throws while the part is not drawn
     const searchContoso = () => {
-        const quickFind = control.parts.get('quickFind')
-        quickFind.setQuery('Contoso')
-        quickFind.search()
+        control.quickFind.setQuery('Contoso')
+        control.quickFind.search()
     }
 
     return <Stack horizontal tokens={{ childrenGap: 8 }}>
         <DefaultButton text='Won deals' onClick={() => control.loadView('won')} />
         <DefaultButton text='Search Contoso' onClick={searchContoso} />
-        <DefaultButton text='Columns' onClick={() => control.parts.get('editColumns').open()} />
+        <DefaultButton text='Columns' onClick={() => control.editColumns.open()} />
     </Stack>
 }
 
-const GridExample = () => <DatasetControl modules={[dealViews, closingSoonModule]} onLoad={loadDeals} onSetup={saveDealViewData} height='480px'>
+const GridExample = () => <DatasetControl modules={[dealViews, closingSoonModule]} onLoad={loadDeals} onSetup={control => { showSyncMessage(control); saveDealViewData(control) }} height='480px'>
     <DatasetControl.Header>
         <DatasetControl.Header.Start>
             <DatasetControl.ViewSwitcher>
@@ -64,7 +65,7 @@ const GridExample = () => <DatasetControl modules={[dealViews, closingSoonModule
             <DatasetControl.QuickFind />
         </DatasetControl.Header.End>
     </DatasetControl.Header>
-    <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
+    <DatasetControl.Notifications />
     <DatasetControl.Body>
         <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule(), createSortingModule()]} />
     </DatasetControl.Body>
@@ -97,6 +98,7 @@ import { DefaultButton, mergeStyleSets, Stack } from '@fluentui/react'
 import { loadDeals } from './deals'
 import { DealsRibbon } from './DealsRibbon'
 import { dealViews, saveDealViewData } from './userViews'
+import { showSyncMessage } from './syncMessage'
 
 const styles = mergeStyleSets({
     log: { flex: '0 0 260px', height: 440, margin: 0, overflow: 'auto', fontSize: 12 },
@@ -117,6 +119,7 @@ const GridExample = () => {
     //new: called with the control of every load before its modules load
     const onSetup = (control: IDatasetControl) => {
         controlRef.current = control
+        showSyncMessage(control)
         saveDealViewData(control)
         write('onSetup')
         control.lifecycle.events.addEventListener('onStatusChanged', status => write(\`onStatusChanged: \${status}\`))
@@ -149,7 +152,7 @@ const GridExample = () => {
                             <DatasetControl.QuickFind />
                         </DatasetControl.Header.End>
                     </DatasetControl.Header>
-                    <DatasetControl.Notifications messages={[{ text: 'Deals are synced from the CRM every night.', level: 'INFO' }]} />
+                    <DatasetControl.Notifications />
                     <DatasetControl.Body>
                         <ClientSideGrid modules={[createRowSelectionModule({ mode: 'multiple' }), createEditingModule(), createSortingModule()]} />
                     </DatasetControl.Body>
@@ -170,5 +173,5 @@ const GridExample = () => {
 }
 `
 
-export const FromYourCodeExample = () => <GridExampleRunner seedCode={withDealList(FROM_YOUR_CODE_CODE, DEALS_RIBBON_FILE, USER_VIEWS_FILE, CLOSING_SOON_TYPES_FILE)} tabs={DEAL_LIST_TABS} />
-export const WatchItLoadExample = () => <GridExampleRunner seedCode={withDealList(WATCH_IT_LOAD_CODE, DEALS_RIBBON_FILE, USER_VIEWS_FILE, USER_VIEW_TYPES_FILE)} tabs={DEAL_LIST_TABS} />
+export const FromYourCodeExample = () => <GridExampleRunner seedCode={withDealList(FROM_YOUR_CODE_CODE, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEWS_FILE, CLOSING_SOON_TYPES_FILE)} tabs={DEAL_LIST_TABS} />
+export const WatchItLoadExample = () => <GridExampleRunner seedCode={withDealList(WATCH_IT_LOAD_CODE, DEALS_RIBBON_FILE, SYNC_MESSAGE_FILE, USER_VIEWS_FILE, USER_VIEW_TYPES_FILE)} tabs={DEAL_LIST_TABS} />

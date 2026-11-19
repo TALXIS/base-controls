@@ -31,7 +31,7 @@ v9 components need a \`FluentProvider\` around them, so the control's \`containe
 ## Try it
 
 - Press **Fail the next load**, under **…** when the toolbar is short of room: the load error shows in a v9 message bar. Press **Try again**.
-- Press **Break the connection**: both messages fold under a summary. Press **Show**.
+- Press **Break the connection**: both messages fold under a v9 summary. Click it: the sync message and the error, each in a v9 message bar.
 - Search for *zzz*: the empty state shows a v9 icon and heading.
 
 ## Remember
