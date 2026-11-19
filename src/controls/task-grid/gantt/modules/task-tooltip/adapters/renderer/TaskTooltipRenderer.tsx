@@ -1,3 +1,4 @@
+import { Card } from "@ui";
 import { TaskTooltipCallout } from "../callout";
 import { TaskTooltipHeader } from "../header";
 import { TaskTooltipProgressRow } from "../progress-row";
@@ -13,7 +14,11 @@ export const TaskTooltipRenderer = (props: ITaskTooltipRendererProps) => {
     const components = props.components ?? {};
     return <TaskTooltipCallout components={components.callout}>
         <TaskTooltipHeader components={components.header} />
-        <TaskTooltipProgressRow components={components.progress} />
-        <TaskTooltipDateRangeRow components={components.dateRange} />
+        <Card.Body components={components.body}>
+            <TaskTooltipProgressRow components={components.progress} />
+        </Card.Body>
+        <Card.Footer components={components.footer}>
+            <TaskTooltipDateRangeRow components={components.dateRange} />
+        </Card.Footer>
     </TaskTooltipCallout>;
 };

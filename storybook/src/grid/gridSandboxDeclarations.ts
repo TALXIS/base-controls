@@ -2231,6 +2231,8 @@ declare const useField: typeof import('@talxis/base-controls').useField;
 declare const NestedControlRenderer: (props: Omit<React.ComponentProps<typeof import('@talxis/base-controls').NestedControlRenderer>, 'context'> & { context: IPcfContext }) => JSX.Element;
 /** Picks the Base Controls field for a column's data type. */
 declare const BaseControls: typeof import('@talxis/base-controls').BaseControls;
+/** A box with the look of a form section; compose it from Card.Header, Card.Body and Card.Footer. */
+declare const Card: typeof import('@talxis/base-controls').Card;
 /** A record held in memory, for a form that has no data provider of its own. */
 declare const createMemoryRecord: typeof import('@talxis/base-controls').createMemoryRecord;
 
@@ -5293,9 +5295,7 @@ type ILeafletMarkerComponents = import('@talxis/base-controls').ILeafletMarkerCo
 type ILeafletMarkerPopupComponents = import('@talxis/base-controls').ILeafletMarkerPopupComponents;
 type IMapPopupRendererComponents = import('@talxis/base-controls').IMapPopupRendererComponents;
 type IRecordCardComponents = import('@talxis/base-controls').IRecordCardComponents;
-type IRecordCardHeaderComponents = import('@talxis/base-controls').IRecordCardHeaderComponents;
 type IRecordCardHeaderPartsComponents = import('@talxis/base-controls').IRecordCardHeaderPartsComponents;
-type IRecordCardTitleComponents = import('@talxis/base-controls').IRecordCardTitleComponents;
 type IRecordCardFieldRowComponents = import('@talxis/base-controls').IRecordCardFieldRowComponents;
 type ILeafletUiPopupComponents = import('@talxis/base-controls').ILeafletUiPopupComponents;
 type IGoogleMapsUiComponents = import('@talxis/base-controls').IGoogleMapsUiComponents;
@@ -5313,17 +5313,11 @@ declare const LeafletUi: typeof import('@talxis/base-controls').LeafletUi;
 declare const LeafletUiComponents: typeof import('@talxis/base-controls').LeafletUiComponents;
 declare const MapPopup: typeof import('@talxis/base-controls').MapPopup;
 declare const RecordCard: typeof import('@talxis/base-controls').RecordCard;
-declare const RecordCardHeader: typeof import('@talxis/base-controls').RecordCardHeader;
-declare const RecordCardHeaderStart: typeof import('@talxis/base-controls').RecordCardHeaderStart;
-declare const RecordCardHeaderEnd: typeof import('@talxis/base-controls').RecordCardHeaderEnd;
-declare const RecordCardTitle: typeof import('@talxis/base-controls').RecordCardTitle;
-declare const RecordCardTitleComponents: typeof import('@talxis/base-controls').RecordCardTitleComponents;
 declare const OptionTag: typeof import('@talxis/base-controls').OptionTag;
 declare const RecordCardFieldRows: typeof import('@talxis/base-controls').RecordCardFieldRows;
 declare const RecordCardFieldRow: typeof import('@talxis/base-controls').RecordCardFieldRow;
 declare const RecordCardDateRange: typeof import('@talxis/base-controls').RecordCardDateRange;
 declare const RecordCardProgress: typeof import('@talxis/base-controls').RecordCardProgress;
-declare const RecordCardHeaderComponents: typeof import('@talxis/base-controls').RecordCardHeaderComponents;
 declare const RecordCardComponents: typeof import('@talxis/base-controls').RecordCardComponents;
 declare const LeafletUiPopupComponents: typeof import('@talxis/base-controls').LeafletUiPopupComponents;
 declare const GoogleMapsUi: typeof import('@talxis/base-controls').GoogleMapsUi;

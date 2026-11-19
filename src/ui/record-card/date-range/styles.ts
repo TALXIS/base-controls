@@ -6,8 +6,7 @@ export const getRecordCardDateRangeStyles = (theme: ITheme) => mergeStyleSets({
         display: 'flex',
         alignItems: 'center',
         gap: 8,
-        paddingTop: 10,
-        borderTop: `1px solid ${theme.semanticColors.bodyDivider}`,
+        flex: '1 1 auto',
         color: theme.semanticColors.bodyText,
     },
     icon: {

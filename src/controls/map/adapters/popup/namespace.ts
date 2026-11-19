@@ -1,3 +1,4 @@
+import { Card } from "@ui";
 import { MapPopupRenderer } from "./MapPopupRenderer";
 import { MapPopupCard } from "./MapPopupCard";
 import { MapPopupHeader } from "./MapPopupHeader";
@@ -12,6 +13,10 @@ export interface IMapPopupParts {
     Card: typeof MapPopupCard;
     /** The record's name, with its status beside it. */
     Header: typeof MapPopupHeader;
+    /** Holds the rows below the header. */
+    Body: typeof Card.Body;
+    /** The row at the bottom, below a divider. */
+    Footer: typeof Card.Footer;
     /** Holds the field rows. */
     FieldRows: typeof MapPopupFieldRows;
     /** Any column of the record. */
@@ -22,6 +27,8 @@ export const MapPopup: IMapPopupParts = {
     Renderer: MapPopupRenderer,
     Card: MapPopupCard,
     Header: MapPopupHeader,
+    Body: Card.Body,
+    Footer: Card.Footer,
     FieldRows: MapPopupFieldRows,
     FieldRow: MapPopupFieldRow,
 };

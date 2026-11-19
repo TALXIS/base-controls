@@ -1,3 +1,4 @@
+import { Card } from "@ui";
 import { LinkTooltipCallout } from "../callout";
 import { LinkTooltipHeader } from "../header";
 import { LinkTooltipFieldRows } from "../field-rows";
@@ -15,10 +16,14 @@ export const LinkTooltipRenderer = (props: ILinkTooltipRendererProps) => {
     const components = props.components ?? {};
     return <LinkTooltipCallout components={components.callout}>
         <LinkTooltipHeader components={components.header} />
-        <LinkTooltipFieldRows components={components.fieldRows}>
-            <LinkTooltipPredecessorRow components={components.predecessor} />
-            <LinkTooltipSuccessorRow components={components.successor} />
-        </LinkTooltipFieldRows>
-        <LinkTooltipDateRangeRow components={components.dateRange} />
+        <Card.Body components={components.body}>
+            <LinkTooltipFieldRows components={components.fieldRows}>
+                <LinkTooltipPredecessorRow components={components.predecessor} />
+                <LinkTooltipSuccessorRow components={components.successor} />
+            </LinkTooltipFieldRows>
+        </Card.Body>
+        <Card.Footer components={components.footer}>
+            <LinkTooltipDateRangeRow components={components.dateRange} />
+        </Card.Footer>
     </LinkTooltipCallout>;
 };

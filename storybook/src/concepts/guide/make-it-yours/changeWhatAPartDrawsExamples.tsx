@@ -113,11 +113,13 @@ const StorePopup = (props: IStoreMapProps) => {
     const store = useMapRecord()
     return <Map.Popup.Card>
         <Map.Popup.Header statusColumnName='status' />
-        <Map.Popup.FieldRows>
-            <Map.Popup.FieldRow columnName='manager' iconName='Contact' />
-            <Map.Popup.FieldRow columnName='openingdate' iconName='Calendar' />
-        </Map.Popup.FieldRows>
-        <Link onClick={() => props.onOpenStore(store)}>Open the store</Link>
+        <Map.Popup.Body>
+            <Map.Popup.FieldRows>
+                <Map.Popup.FieldRow columnName='manager' iconName='Contact' />
+                <Map.Popup.FieldRow columnName='openingdate' iconName='Calendar' />
+            </Map.Popup.FieldRows>
+            <Link onClick={() => props.onOpenStore(store)}>Open the store</Link>
+        </Map.Popup.Body>
     </Map.Popup.Card>
 }
 

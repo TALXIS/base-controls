@@ -6,6 +6,5 @@ export const getRecordCardStyles = (theme: ITheme) => mergeStyleSets({
         color: theme.semanticColors.bodyText,
         width: 280,
         boxSizing: 'border-box',
-        padding: '14px 16px 12px',
     },
 });

@@ -121,11 +121,15 @@ const tooltipModule = createTaskTooltipModule({
         //new: the whole tooltip, of the library's parts and yours, in your order
         onRender: () => <TaskTooltip.Callout>
             <TaskTooltip.Header />
-            <TaskTooltip.FieldRows>
-                <TaskTooltip.FieldRow columnName='priority' iconName='Flag' />
-                <HoursLeftRow />
-            </TaskTooltip.FieldRows>
-            <TaskTooltip.DateRangeRow />
+            <TaskTooltip.Body>
+                <TaskTooltip.FieldRows>
+                    <TaskTooltip.FieldRow columnName='priority' iconName='Flag' />
+                    <HoursLeftRow />
+                </TaskTooltip.FieldRows>
+            </TaskTooltip.Body>
+            <TaskTooltip.Footer>
+                <TaskTooltip.DateRangeRow />
+            </TaskTooltip.Footer>
         </TaskTooltip.Callout>,
     },
 })

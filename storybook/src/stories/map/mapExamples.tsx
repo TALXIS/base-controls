@@ -288,12 +288,14 @@ const Postcard = () => {
     return <Map.Popup.Card>
         {/* the region beside the name, as a tag in its option's colour */}
         <Map.Popup.Header statusColumnName='region' />
-        <Map.Popup.FieldRows>
-            <Map.Popup.FieldRow columnName='country' iconName='Flag' />
-            {/* the shared RecordCard parts take any value */}
-            <RecordCardFieldRow label='In the EU since' iconName='Calendar'>{capital.getValue('euSince')}</RecordCardFieldRow>
-        </Map.Popup.FieldRows>
-        <RecordCardProgress percent={share} text={\`\${Math.round(share)}% of \${largest.getFormattedValue('name')}\`} />
+        <Map.Popup.Body>
+            <Map.Popup.FieldRows>
+                <Map.Popup.FieldRow columnName='country' iconName='Flag' />
+                {/* the shared RecordCard parts take any value */}
+                <RecordCardFieldRow label='In the EU since' iconName='Calendar'>{capital.getValue('euSince')}</RecordCardFieldRow>
+            </Map.Popup.FieldRows>
+            <RecordCardProgress percent={share} text={\`\${Math.round(share)}% of \${largest.getFormattedValue('name')}\`} />
+        </Map.Popup.Body>
     </Map.Popup.Card>
 }
 
@@ -528,10 +530,12 @@ const CityCard = () => {
 
     return <Map.Popup.Card>
         <Map.Popup.Header statusColumnName='status' />
-        <Map.Popup.FieldRows>
-            {columns.map(column => <Map.Popup.FieldRow key={column.name} columnName={column.name} />)}
-        </Map.Popup.FieldRows>
-        <Link onClick={toggle}>{isSelected ? 'Deselect' : 'Select'}</Link>
+        <Map.Popup.Body>
+            <Map.Popup.FieldRows>
+                {columns.map(column => <Map.Popup.FieldRow key={column.name} columnName={column.name} />)}
+            </Map.Popup.FieldRows>
+            <Link onClick={toggle}>{isSelected ? 'Deselect' : 'Select'}</Link>
+        </Map.Popup.Body>
     </Map.Popup.Card>
 }
 

@@ -5,6 +5,8 @@ export const getRecordCardFieldRowsStyles = () => mergeStyleSets({
         display: 'flex',
         flexDirection: 'column',
         gap: 4,
-        marginBottom: 12,
+        ':not(:last-child)': {
+            marginBottom: 12,
+        },
     },
 });

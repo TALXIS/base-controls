@@ -1,3 +1,4 @@
+import { Card } from "@ui";
 import { TaskTooltipRenderer } from "./adapters/renderer";
 import { TaskTooltipCallout } from "./adapters/callout";
 import { TaskTooltipHeader } from "./adapters/header";
@@ -17,6 +18,10 @@ export interface ITaskTooltipParts {
     Callout: typeof TaskTooltipCallout;
     /** The task's name, after the colour of its status. */
     Header: typeof TaskTooltipHeader;
+    /** Holds the rows below the header. */
+    Body: typeof Card.Body;
+    /** The row at the bottom, below a divider. */
+    Footer: typeof Card.Footer;
     /** Holds the field rows. */
     FieldRows: typeof TaskTooltipFieldRows;
     /** Any column of the task. */
@@ -37,6 +42,8 @@ export const TaskTooltip: ITaskTooltipParts = {
     Renderer: TaskTooltipRenderer,
     Callout: TaskTooltipCallout,
     Header: TaskTooltipHeader,
+    Body: Card.Body,
+    Footer: Card.Footer,
     FieldRows: TaskTooltipFieldRows,
     FieldRow: TaskTooltipFieldRow,
     StartDateRow: TaskTooltipStartDateRow,

@@ -1,12 +1,13 @@
-import { mergeStyleSets } from "@fluentui/react";
+import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getCardFooterStyles = () => mergeStyleSets({
+export const getCardFooterStyles = (theme: ITheme) => mergeStyleSets({
     cardFooter: {
         display: 'flex',
         alignItems: 'center',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         gap: 12,
-        padding: '4px 16px 12px 16px',
+        padding: '12px 16px',
+        borderTop: `1px solid ${theme.semanticColors.bodyDivider}`,
     },
 });

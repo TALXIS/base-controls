@@ -1,5 +1,5 @@
 import { useGanttModule } from "../../../../context";
-import { IRecordCardHeaderPartsComponents, OptionTag, RecordCardHeader, RecordCardHeaderEnd, RecordCardHeaderStart, RecordCardTitle } from "@ui";
+import { Card, IRecordCardHeaderPartsComponents, OptionTag } from "@ui";
 import { useTaskTooltip } from "../task-tooltip-surface/context";
 
 export interface ITaskTooltipHeaderProps {
@@ -21,12 +21,12 @@ export const TaskTooltipHeader = (props: ITaskTooltipHeaderProps) => {
     };
     const status = getStatus();
     const components = props.components ?? {};
-    return <RecordCardHeader components={components.header}>
-        <RecordCardHeaderStart components={components.headerStart}>
-            <RecordCardTitle components={components.title}>{task.text}</RecordCardTitle>
-        </RecordCardHeaderStart>
-        {status && <RecordCardHeaderEnd components={components.headerEnd}>
+    return <Card.Header components={components.header}>
+        <Card.Header.Start components={components.headerStart}>
+            <Card.Title components={components.title}>{task.text}</Card.Title>
+        </Card.Header.Start>
+        {status && <Card.Header.End components={components.headerEnd}>
             <OptionTag label={status.text} color={status.color} components={components.status} />
-        </RecordCardHeaderEnd>}
-    </RecordCardHeader>;
+        </Card.Header.End>}
+    </Card.Header>;
 };

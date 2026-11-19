@@ -273,5 +273,21 @@
     ". createIndexedDbCustomColumnsModule": "createMemoryCustomColumnsModule",
     ". IIndexedDbCustomColumnsModuleParameters": "IMemoryCustomColumnsModuleParameters",
     ". IIndexedDbCustomColumnsStoreParameters": null,
-    ". IndexedDbCustomColumnsStore": null
+    ". IndexedDbCustomColumnsStore": null,
+    ". RecordCardHeader": null,
+    ". RecordCardHeaderStart": null,
+    ". RecordCardHeaderEnd": null,
+    ". RecordCardTitle": null,
+    ". RecordCardHeaderComponents": "CardHeaderComponents",
+    ". RecordCardHeaderStartComponents": "CardHeaderStartComponents",
+    ". RecordCardHeaderEndComponents": "CardHeaderEndComponents",
+    ". RecordCardTitleComponents": "CardTitleComponents",
+    ". IRecordCardHeaderComponents": "ICardHeaderComponents",
+    ". IRecordCardHeaderStartComponents": "ICardHeaderStartComponents",
+    ". IRecordCardHeaderEndComponents": "ICardHeaderEndComponents",
+    ". IRecordCardTitleComponents": "ICardTitleComponents",
+    ". IRecordCardHeaderProps": "ICardHeaderProps",
+    ". IRecordCardHeaderStartProps": "ICardHeaderStartProps",
+    ". IRecordCardHeaderEndProps": "ICardHeaderEndProps",
+    ". IRecordCardTitleProps": "ICardTitleProps"
 }

@@ -5,7 +5,9 @@ export const getRecordCardProgressStyles = (theme: ITheme) => mergeStyleSets({
         display: 'flex',
         alignItems: 'center',
         gap: 10,
-        marginBottom: 12,
+        ':not(:last-child)': {
+            marginBottom: 12,
+        },
     },
     track: {
         flexGrow: 1,

@@ -1,4 +1,4 @@
-import { IRecordCardHeaderPartsComponents, OptionTag, RecordCardHeader, RecordCardHeaderEnd, RecordCardHeaderStart, RecordCardTitle } from "@ui";
+import { Card, IRecordCardHeaderPartsComponents, OptionTag } from "@ui";
 import { useMap, useMapRecord } from "../../context";
 
 export interface IMapPopupHeaderProps {
@@ -22,12 +22,12 @@ export const MapPopupHeader = (props: IMapPopupHeaderProps) => {
     };
     const status = getStatus();
     const components = props.components ?? {};
-    return <RecordCardHeader components={components.header}>
-        <RecordCardHeaderStart components={components.headerStart}>
-            <RecordCardTitle components={components.title}>{record.getNamedReference().name ?? record.getRecordId()}</RecordCardTitle>
-        </RecordCardHeaderStart>
-        {status && <RecordCardHeaderEnd components={components.headerEnd}>
+    return <Card.Header components={components.header}>
+        <Card.Header.Start components={components.headerStart}>
+            <Card.Title components={components.title}>{record.getNamedReference().name ?? record.getRecordId()}</Card.Title>
+        </Card.Header.Start>
+        {status && <Card.Header.End components={components.headerEnd}>
             <OptionTag label={status.text} color={status.color} components={components.status} />
-        </RecordCardHeaderEnd>}
-    </RecordCardHeader>;
+        </Card.Header.End>}
+    </Card.Header>;
 };
