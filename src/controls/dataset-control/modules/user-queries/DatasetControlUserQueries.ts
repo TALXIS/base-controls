@@ -118,9 +118,9 @@ export class DatasetControlUserQueries {
     };
 
     private _resolveView = async (viewId: string, provider: IDataProvider): Promise<IDatasetControlViewDefinition> => {
-        const { columns, linking = [], data } = await this._store.getView(viewId);
+        const { columns, linking = [], data, control } = await this._store.getView(viewId);
         this._applySavedValues(data as SavedValues | undefined, provider);
-        return { columns, linking, data };
+        return { columns, linking, data, control };
     };
 
     //the switcher reads its items as its menu opens
@@ -165,7 +165,7 @@ export class DatasetControlUserQueries {
     private _getView(): IUserQueryView {
         const provider = this._datasetControl.getProvider();
         const columns = (provider?.getColumns() ?? []).map(({ name, isHidden, order, visualSizeFactor, grouping, aggregation }): IUserQueryColumn => ({ name, isHidden, order, visualSizeFactor, grouping, aggregation }));
-        return { columns, linking: this._getUsedLinking(provider?.getLinking() ?? [], columns), data: this._getSavedValues() };
+        return { columns, linking: this._getUsedLinking(provider?.getLinking() ?? [], columns), data: this._getSavedValues(), control: this._datasetControl.getView()?.control };
     }
 
     private _getSavedValues(): SavedValues | undefined {

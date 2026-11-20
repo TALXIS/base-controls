@@ -291,25 +291,38 @@ A column already says how it is grouped and totalled: \`grouping\` and \`aggrega
 - **The grid:** \`TotalRow\`, behind the aggregation module's column menu, sets the columns instead of calling \`provider.aggregation.addAggregation\`; the grouping module and the client-side row model read \`getGroupBys()\` as they do now. What the user groups or totals is kept with the columns in a view's state.
 - **User views** save grouping and totals with the column layout they already save.
 
-## 11. Read a column the view does not have without throwing
+## 11. Handle a column the provider does not have
 
-A part often names a column by itself, such as a map popup's or a Gantt tooltip's field row, and the view the user opens may not have it. Reading a record should answer for any column name, with nothing for one the provider does not have.
+A part often names a column by itself, such as a map popup's or a Gantt tooltip's field row, a script's expression or a module's own column, and the view the user opens may not have it. Naming a column the provider does not have should never break the record or the provider: a read answers with nothing, and a write or an expression says plainly that the column is missing.
 
 ### Today
 
-- **Two answers to one question.** \`record.getValue(columnName)\` returns \`null\` for a column the provider does not have, but \`record.getField(columnName)\` and \`record.getFormattedValue(columnName)\` throw \`ColumnDoesNotExists\` (client-libraries \`Record._getField\`).
-- **The throw changes the provider.** It is a \`DataProviderError\`, whose constructor puts the provider into an error state, so even a caught read can leave the provider failed.
-- **What it breaks:** \`Map.Popup.Field\` and \`TaskTooltip.Field\` call \`getFormattedValue\` with the column they are given, so naming one the open view lacks throws instead of drawing nothing.
+Every record call that names a column goes through \`Record._getField\` (client-libraries), which throws \`ColumnDoesNotExists\` for a column not in \`getColumnsMap()\`.
+
+| Call | For a column the provider does not have |
+|---|---|
+| \`getValue\`, \`getFormattedValue\` | \`null\`: they check the columns map before asking for the field |
+| \`getField\`, \`getColumnInfo\`, \`getCurrencySymbol\`, \`isDirty(columnName)\` | Throws |
+| \`setValue\` | Throws |
+| \`field.getColumn()\` on a field kept from before the column went | Throws |
+| \`record.expressions.set…Expression\` and \`expressions.ui.set…Expression\` | Logs a warning and drops the expression, so it does not apply when the column is added later |
+
+- **The throw changes the provider.** It is a \`DataProviderError\`, whose constructor calls \`setLoading(false)\` and \`setError(true, …)\`, so even a read the caller catches leaves the provider failed and its error shown.
+- **What it breaks:** \`Map.Popup.Field\` and \`TaskTooltip.Field\` read the column they are given, so naming one the open view lacks fails the provider instead of drawing nothing.
+- **What works around it:** callers check \`getColumnsMap()\` before reading a column they did not add themselves.
 
 ### What every provider should do
 
-- **Answer for any column name:** \`getFormattedValue\` returns \`null\`, as \`getValue\` does, and \`getField\` returns \`undefined\` for a column the provider does not have.
-- **Never fail the provider from a read:** reading a record raises no provider error, whatever column it names.
+- **Answer every read for any column name:** \`getValue\` and \`getFormattedValue\` return \`null\`, \`getField\` returns \`undefined\`, \`isDirty(columnName)\` returns \`false\`, and \`getColumnInfo\` and \`getCurrencySymbol\` return \`undefined\`.
+- **Refuse a write with a plain error:** \`setValue\` on a column the provider does not have throws an error that names the column, and changes nothing else.
+- **Keep an expression for a column that is not there yet:** it applies as soon as the column is set, and \`setColumns\` without it leaves it waiting rather than dropping it.
+- **Never fail the provider from a record call:** only loading and saving put the provider into an error state. A \`DataProviderError\` raised for a column does not touch the provider, or a column error gets a type of its own.
 
 ### What would use it
 
 - **The map popup's and the Gantt tooltip's field rows** draw nothing for a column the view lacks, with no guard of their own.
-- **Anything that reads an optional column**, such as a module's own column, asks the record directly instead of checking the columns map first.
+- **Scripts and modules** set expressions on their own columns before a view adds them, and on columns a view switch takes away and brings back.
+- **Anything that reads an optional column** asks the record directly instead of checking the columns map first.
 
 ## 12. Keep a lookup's IDs as they were given
 

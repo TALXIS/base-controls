@@ -1,5 +1,5 @@
 import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talxis/client-libraries";
-import type { IDatasetControlModule } from "../../runtime/interfaces";
+import type { IDatasetControlModule, IDatasetControlViewControl } from "../../runtime/interfaces";
 
 /** What a user view keeps of a column; the provider fills in the rest. */
 export type IUserQueryColumn = Pick<IColumn, 'name' | 'isHidden' | 'order' | 'visualSizeFactor' | 'grouping' | 'aggregation'>;
@@ -10,6 +10,7 @@ export interface IUserQueryView<TData = unknown> {
     /** The related entities its columns come from. */
     linking?: ILinkEntityExposedExpression[];
     data?: TData;
+    control?: IDatasetControlViewControl;
 }
 
 /** What a user view saves beside its columns, by key; each part adds the keys it saves. */

@@ -21,6 +21,12 @@ export interface IDatasetControlViewGroup {
 /** A view's column; what it leaves out comes from the provider's available columns. */
 export type IDatasetControlViewColumn = Pick<IColumn, 'name'> & Partial<IColumn>;
 
+/** Which control draws a view's records, and how. */
+export interface IDatasetControlViewControl {
+    name: string;
+    parameters?: { [name: string]: unknown };
+}
+
 export interface IDatasetControlViewDefinition<TData = unknown> {
     /** The columns the view shows, completed from the provider's available columns and set on it. */
     columns: IDatasetControlViewColumn[];
@@ -28,6 +34,8 @@ export interface IDatasetControlViewDefinition<TData = unknown> {
     linking?: ILinkEntityExposedExpression[];
     /** What else the view carries, read through `getView().data`. */
     data?: TData;
+    /** Read through `getView().control`; a user view saves it with its columns. */
+    control?: IDatasetControlViewControl;
 }
 
 /** A view the user can switch to. */

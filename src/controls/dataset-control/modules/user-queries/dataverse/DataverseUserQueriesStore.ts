@@ -52,6 +52,6 @@ export class DataverseUserQueriesStore<TData = unknown> implements IUserQueriesS
 
 //an older layout keeps its data beside the columns, or holds only the data
 const readLayout = <TData,>(json: string | null): IUserQueryView<TData> => {
-    const { columns, linking, data, ...rest } = json ? JSON.parse(json) : {};
-    return { columns: Array.isArray(columns) ? columns : [], linking, data: data ?? rest };
+    const { columns, linking, data, control, ...rest } = json ? JSON.parse(json) : {};
+    return { columns: Array.isArray(columns) ? columns : [], linking, data: data ?? rest, control };
 };
