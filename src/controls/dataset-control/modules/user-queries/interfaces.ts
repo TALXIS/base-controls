@@ -2,7 +2,7 @@ import type { IColumn, IDataProvider, ILinkEntityExposedExpression } from "@talx
 import type { IDatasetControlModule, IDatasetControlViewControl } from "../../runtime/interfaces";
 
 /** What a user view keeps of a column; the provider fills in the rest. */
-export type IUserQueryColumn = Pick<IColumn, 'name' | 'isHidden' | 'order' | 'visualSizeFactor' | 'grouping' | 'aggregation'>;
+export type IUserQueryColumn = Pick<IColumn, 'name' | 'isHidden' | 'isPersistent' | 'order' | 'visualSizeFactor' | 'grouping' | 'aggregation'>;
 
 /** What a user view keeps. */
 export interface IUserQueryView<TData = unknown> {
