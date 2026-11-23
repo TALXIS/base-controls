@@ -79,9 +79,9 @@ Each part is a member of \`DatasetControl\`, such as \`DatasetControl.QuickFind\
 | \`ViewSwitcher\` | \`children\` | \`ReactNode\` | None | Live | What adds to the switcher, such as \`UserQueries\`, which draws the *Manage views* panel and throws without a user views module. |
 | \`Ribbon\` | Every prop of [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview) | | | | Such as \`onLoad\` and \`disabled\`, but two: \`align\` follows the region, and \`control.parts\` takes the place of \`onSetup\`. |
 | | \`onReady\` | \`(ribbon) => void\` | None | At mount | Called with the \`IRibbon\` each time the ribbon mounts, with every load of the control, once its commands are drawn. |
-| | \`enableSave\` | \`boolean\` | \`false\` | Live | **Save**, while there are unsaved changes: saves every changed record. |
-| | \`enableDiscard\` | \`boolean\` | \`false\` | Live | **Discard changes**, while there are unsaved changes: undoes them all. |
-| | \`enableRefresh\` | \`boolean\` | \`false\` | Live | **Refresh**: loads the records again, asking about unsaved changes first. |
+| | \`enableSave\` | \`boolean\` | \`true\` | Live | **Save**, while there are unsaved changes: saves every changed record. |
+| | \`enableDiscard\` | \`boolean\` | \`true\` | Live | **Discard changes**, while there are unsaved changes: undoes them all. |
+| | \`enableRefresh\` | \`boolean\` | \`true\` | Live | **Refresh**: loads the records again, asking about unsaved changes first. |
 | \`PageSizeSwitcher\` | \`pageSizes\` | \`number[]\` | 25, 50, 75, 100 and 250 | At mount | The sizes the menu offers; the default is exported as \`DEFAULT_PAGE_SIZES\`. |
 | \`EmptyState\` | \`children\` | \`ReactNode\` | None | Live | What shows the records while there are some, kept while the provider loads. |
 

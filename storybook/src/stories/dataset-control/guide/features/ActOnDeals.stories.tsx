@@ -22,7 +22,7 @@ This step adds a ribbon to the header and two modules to the grid of [**Search a
 
 **The ribbon.** \`DatasetControl.Ribbon\` is a bar of commands above the records. Its \`onLoad\` returns the commands, and runs again whenever the selection changes, so it returns the ones that fit the ticked deals. \`DealsRibbon\` reads the control's provider with \`useDataProvider()\`, which any component inside the control can call, and offers **Mark N as won** while open deals are ticked. A command that changes what applies without changing the selection calls \`ribbon.reload()\`, as **Mark N as won** does once the deals are won.
 
-\`DatasetControl.Ribbon\` takes the props of [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview), such as \`disabled\` and \`components\`, except two: \`align\` follows the region, so in \`End\` the commands sit against the right, and in place of \`onSetup\`, your code reaches the ribbon through the control's parts, as in [**From your code**](?path=/docs/controls-datasetcontrol-guide-advanced-from-your-code--overview). It adds three commands of its own, each off until its prop is set, before the ones \`onLoad\` returns:
+\`DatasetControl.Ribbon\` takes the props of [**Ribbon**](?path=/docs/controls-ribbon-get-started--overview), such as \`disabled\` and \`components\`, except two: \`align\` follows the region, so in \`End\` the commands sit against the right, and in place of \`onSetup\`, your code reaches the ribbon through the control's parts, as in [**From your code**](?path=/docs/controls-datasetcontrol-guide-advanced-from-your-code--overview). It adds three commands of its own, each on until its prop is \`false\`, before the ones \`onLoad\` returns:
 
 | Prop | Command | Does |
 |---|---|---|
@@ -52,7 +52,7 @@ To change the question, see [**Localization**](?path=/docs/concepts-localization
 
 - Grid modules, in the grid's \`modules\`, add ticking rows and editing cells.
 - The ribbon's \`onLoad\` runs on every selection: return the commands that fit it.
-- \`enableSave\`, \`enableDiscard\` and \`enableRefresh\` add the built-in commands.
+- The built-in commands are on unless \`enableSave\`, \`enableDiscard\` or \`enableRefresh\` is \`false\`.
 - Nothing loads over unsaved changes without asking.
 
 {{block: navigation}}

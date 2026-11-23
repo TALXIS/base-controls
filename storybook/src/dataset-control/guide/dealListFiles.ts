@@ -108,8 +108,8 @@ export const DealsRibbon = () => {
         return openDeals.length > 0 ? [{ id: 'markWon', label: \`Mark \${openDeals.length} as won\`, iconName: 'Trophy2', onExecute: markWon }] : []
     }
 
-    //the built-in commands, each off unless asked for
-    return <DatasetControl.Ribbon enableSave enableDiscard enableRefresh onLoad={loadCommands} />
+    //Save, Discard changes and Refresh come built in
+    return <DatasetControl.Ribbon onLoad={loadCommands} />
 }
 `,
 }

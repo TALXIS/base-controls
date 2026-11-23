@@ -9,11 +9,11 @@ import { getDatasetControlRibbonStyles } from "./styles";
 
 /** Props for `DatasetControl.Ribbon`; reach the ribbon through `control.parts.get('ribbon')`. */
 export interface IDatasetControlRibbonProps extends Omit<IRibbonProps, 'onSetup' | 'align'> {
-    /** Adds Refresh, which loads the records again; asks first when there are unsaved changes. */
+    /** Adds Refresh, which asks first when there are unsaved changes; defaults to `true`. */
     enableRefresh?: boolean;
-    /** Adds Save while there are unsaved changes, which saves every changed record. */
+    /** Adds Save while there are unsaved changes; defaults to `true`. */
     enableSave?: boolean;
-    /** Adds Discard changes while there are unsaved changes, which undoes them all. */
+    /** Adds Discard changes while there are unsaved changes; defaults to `true`. */
     enableDiscard?: boolean;
 }
 

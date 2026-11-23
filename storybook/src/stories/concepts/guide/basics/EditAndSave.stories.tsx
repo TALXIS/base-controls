@@ -29,7 +29,7 @@ The list is the one from [**Your first list**](?path=/docs/concepts-guide-basics
 
 The total under *Floor area (m²)* comes from \`aggregation: { aggregationFunction: 'sum' }\` on its column in *stores.ts*, and the aggregation module draws it in a row pinned under the grid: see [**Group and total**](?path=/docs/controls-grid-guide-features-group-and-total--overview).
 
-**Saving.** An edited value stays on its record as an **unsaved change** until it is saved. \`DatasetControl.Ribbon\` is a bar of commands in the header: \`enableSave\` adds **Save**, which saves every changed store, and \`enableDiscard\` adds **Discard changes**, which undoes them; each shows only while there are unsaved changes. While there are, the browser asks before the stores load again, such as on a sort. The ribbon's commands and that question are on [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview).
+**Saving.** An edited value stays on its record as an **unsaved change** until it is saved. \`DatasetControl.Ribbon\` is a bar of commands in the header with **Save**, which saves every changed store, and **Discard changes**, which undoes them; each shows only while there are unsaved changes. While there are, the browser asks before the stores load again, such as on a sort. The ribbon's commands and that question are on [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview).
 
 ## Try it
 
