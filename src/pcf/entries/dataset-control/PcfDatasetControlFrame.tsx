@@ -111,17 +111,30 @@ const toView = <TData,>(view: IPcfDatasetControlView<TData>): IDatasetControlVie
 });
 
 const createProvider = <TData,>(kind: PcfDatasetControlProviderKind, views: IPcfDatasetControlView<TData>[], metadata: IPcfDatasetControlConfig['metadata'], formatting: IFormatting): IDataProvider => {
+    const viewColumns = views.flatMap(view => view.columns ?? []) as IColumn[];
     if (kind === 'FetchXml') {
         const provider = new FetchXmlDataProvider({ fetchXml: '', formatting });
         if (metadata) {
             provider.setMetadata(metadata);
         }
+        //Dataverse knows the rest
+        addAvailableColumns(provider, viewColumns.filter(column => column.isVirtual));
         return provider;
     }
-    //the stock provider offers the saved queries' columns
-    const memoryMetadata = {
-        ...metadata,
-        SavedQueries: [...(metadata as IMemoryProviderEntityMetadata | undefined)?.SavedQueries ?? [], ...views.map(view => ({ columns: (view.columns ?? []) as IColumn[] }))],
-    } as IMemoryProviderEntityMetadata;
-    return new MemoryDataProvider({ dataSource: [], metadata: memoryMetadata, formatting });
+    const provider = new MemoryDataProvider({ dataSource: [], metadata: { ...metadata } as IMemoryProviderEntityMetadata, formatting });
+    addAvailableColumns(provider, viewColumns);
+    return provider;
+};
+
+const addAvailableColumns = (provider: IDataProvider, added: IColumn[]): void => {
+    provider.hooks.availableColumns.add((columns, options) => {
+        if (options?.entityName) {
+            return;
+        }
+        for (const column of added) {
+            if (!columns.some(existing => existing.name === column.name)) {
+                columns.push(column);
+            }
+        }
+    });
 };
