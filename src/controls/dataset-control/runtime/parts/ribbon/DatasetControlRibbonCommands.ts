@@ -35,6 +35,7 @@ export class DatasetControlRibbonCommands {
             this._provider.addEventListener('onRecordsSelected', this._onRecordsSelected),
             this._provider.addEventListener('onRecordColumnValueChanged', this._onDirtyStateChanged),
             this._provider.addEventListener('onAfterSaved', this._onDirtyStateChanged),
+            this._provider.addEventListener('onAfterRecordSaved', this._onDirtyStateChanged),
             this._provider.addEventListener('onNewDataLoaded', this._onDirtyStateChanged),
         ];
         return () => {
