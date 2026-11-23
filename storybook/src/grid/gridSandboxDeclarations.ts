@@ -767,7 +767,6 @@ interface IMemoryProviderEntityMetadata {
     EntityColor?: string;
     /** The columns setSearchQuery looks in. */
     QuickFindColumns?: string[];
-    SavedQueries?: { columns: IColumn[] }[];
 }
 
 interface IMemoryDataProviderOptions {
@@ -838,7 +837,7 @@ declare class MemoryDataProvider extends DataProvider implements IMemoryProvider
     onRecordsDelete(recordIds: string[]): Promise<{ success: boolean; results: IRecordDeleteOperationResult[] }>;
     onIsRecordActive(recordId: string): boolean;
     onOpenDatasetItem(entityReference: ComponentFramework.EntityReference): void;
-    /** The columns of its metadata's SavedQueries. */
+    /** None: available columns come from hooks.availableColumns. */
     onGetAvailableColumns(): Promise<IColumn[]>;
     getDataAsync(pageNumber: number, pageSize: number, previousPageNumber: number, event: GetDataEvent): Promise<IRetrievedData>;
     getDataSync(pageNumber: number, pageSize: number, previousPageNumber: number, event: GetDataEvent): IRetrievedData;

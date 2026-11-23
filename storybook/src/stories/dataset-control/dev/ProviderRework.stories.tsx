@@ -35,7 +35,7 @@ A provider is often handed columns that carry little more than a name: a view's 
 | Provider | Resolves a column from |
 |---|---|
 | \`FetchXmlDataProvider\` | Dataverse attribute metadata, related columns through the linking. |
-| \`MemoryDataProvider\` | The columns it was created with, and whatever \`getAvailableColumns\` offers: its \`SavedQueries\` columns and those \`hooks.availableColumns\` adds. |
+| \`MemoryDataProvider\` | The columns it was created with, and whatever \`getAvailableColumns\` offers: those \`hooks.availableColumns\` adds. |
 | \`TaskDataProvider\` | Its column catalogue, as \`_withDefinition\` does today. |
 
 ### What works around it today
@@ -132,7 +132,7 @@ Saving a record can change more than the user edited. Dataverse moves a record t
 | Provider | What \`getAvailableColumns\` reads |
 |---|---|
 | \`FetchXmlDataProvider\` | Every attribute of the entity: \`Xrm.Utility.getEntityMetadata\` for the attribute names, then again with all of them, so each call carries the metadata of the whole table, option sets included. |
-| \`MemoryDataProvider\` | The columns of its \`metadata.SavedQueries\`, plus those its hooks add. |
+| \`MemoryDataProvider\` | None of its own: only the columns its hooks add. |
 | \`TaskDataProvider\` | Its store's available columns, plus the columns its modules add through \`hooks.availableColumns\`. |
 
 The callers that need only some:
@@ -348,16 +348,16 @@ A lookup value is a list of references, and parts match them by ID: a picker hid
 
 ## 13. Take the available columns from a column store
 
-Where a provider's available columns come from is fixed by what the provider is. A \`FetchXmlDataProvider\` reads Dataverse; a \`MemoryDataProvider\` reads its \`metadata.SavedQueries\`. A provider holding Dataverse records in memory cannot offer Dataverse's columns, and a column no backend knows, such as a virtual one, has to be added on top.
+Where a provider's available columns come from is fixed by what the provider is. A \`FetchXmlDataProvider\` reads Dataverse; a \`MemoryDataProvider\` offers none of its own. A provider holding Dataverse records in memory cannot offer Dataverse's columns, and a column no backend knows, such as a virtual one, has to be added on top.
 
 ### Today
 
 | Need | What works around it |
 |---|---|
-| A memory provider offering a given list of columns | A subclass overriding \`onGetAvailableColumns\`, or \`SavedQueries\` filled with them; the PCF frame builds \`SavedQueries\` from every view's columns. |
+| A memory provider offering a given list of columns | \`hooks.availableColumns\`, or a subclass overriding \`onGetAvailableColumns\`. |
 | A memory provider offering Dataverse's columns | Not possible: the task grid's \`DataverseTaskStore\` keeps a \`FetchXmlDataProvider\` only to ask it for columns. |
 | A virtual column next to the backend's | \`hooks.availableColumns\`, which adds to or replaces what the provider found. |
-| A related entity's columns in a memory provider | \`MemoryDataProvider\` ignores \`options.entityName\` and returns its own columns. |
+| A related entity's columns in a memory provider | \`MemoryDataProvider\` offers none; each hook checks \`options.entityName\` itself. |
 
 ### What every provider should do
 
@@ -365,7 +365,7 @@ Where a provider's available columns come from is fixed by what the provider is.
 - **Ship the stores it uses today:**
   - \`DataverseColumnStore(entityName)\` reads the entity's metadata, what \`FetchXmlDataProvider.onGetAvailableColumns\` does now.
   - \`MemoryColumnStore(columns)\` returns the columns passed to it, by entity for a related scope.
-- **Default to its own:** a \`FetchXmlDataProvider\` makes a \`DataverseColumnStore\`, a \`MemoryDataProvider\` a \`MemoryColumnStore\` of the columns it was given; \`SavedQueries\` stops being read for this.
+- **Default to its own:** a \`FetchXmlDataProvider\` makes a \`DataverseColumnStore\`, a \`MemoryDataProvider\` a \`MemoryColumnStore\` of the columns it was given.
 - **Keep the hook on top:** \`hooks.availableColumns\` still runs after the store, for columns no store knows.
 
 \`\`\`ts
@@ -376,7 +376,7 @@ new MemoryDataProvider({ dataSource, metadata, columnStore: new DataverseColumnS
 ### What would use it
 
 - **The task grid:** \`DataverseTaskStore\` hands its provider a \`DataverseColumnStore\` and drops the \`FetchXmlDataProvider\` it keeps for columns; \`ITaskStore.getAvailableColumns\` goes.
-- **The PCF frame:** a memory view hands over its columns, not \`SavedQueries\`; a memory view over a Dataverse entity can offer that entity's columns.
+- **The PCF frame:** a memory view over a Dataverse entity can offer that entity's columns.
 - **The docs:** examples stop adding their columns through \`hooks.availableColumns\` and pass them to the provider.
 `
 
