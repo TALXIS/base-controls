@@ -7,6 +7,13 @@ import { useDatasetControlRegion } from "../region";
 import { DatasetControlRibbonCommands } from "../../runtime/parts/ribbon/DatasetControlRibbonCommands";
 import { getDatasetControlRibbonStyles } from "./styles";
 
+/** The ids of the commands `DatasetControl.Ribbon` adds of its own. */
+export const DATASET_CONTROL_RIBBON_COMMAND_IDS = {
+    save: 'save',
+    discard: 'discard',
+    refresh: 'refresh',
+} as const;
+
 /** Props for `DatasetControl.Ribbon`; reach the ribbon through `control.parts.get('ribbon')`. */
 export interface IDatasetControlRibbonProps extends Omit<IRibbonProps, 'onSetup' | 'align'> {
     /** Adds Refresh, which asks first when there are unsaved changes; defaults to `true`. */

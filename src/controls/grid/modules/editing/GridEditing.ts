@@ -21,6 +21,8 @@ import { CellFieldEditor } from "./adapters/field-cell-editor/CellFieldEditor";
 import { getColumnContext } from "../../runtime/columns/colDef";
 import { getRowNode } from "../../runtime/rows/getRowNode";
 import { GRID_LABELS } from "../../labels";
+import { DATASET_CONTROL_RIBBON_COMMAND_IDS } from "@controls/dataset-control/adapters/ribbon/Ribbon";
+import type { IRibbonCommand } from "@controls/ribbon";
 
 declare module "../../interfaces" {
     interface IGridModuleMap {
@@ -99,6 +101,16 @@ export class GridEditing implements IGridEditing {
         return this._isAutoSaveEnabled;
     }
 
+    //an autosave leaves nothing for them to act on
+    private _removeSaveCommands = (commands: IRibbonCommand[]): void => {
+        const removedIds = new Set<string>([DATASET_CONTROL_RIBBON_COMMAND_IDS.save, DATASET_CONTROL_RIBBON_COMMAND_IDS.discard]);
+        for (let index = commands.length - 1; index >= 0; index--) {
+            if (removedIds.has(commands[index].id)) {
+                commands.splice(index, 1);
+            }
+        }
+    };
+
     public isBeingEdited(cell: IGridCell): boolean {
         //an editor was opened because the user asked to type here
         if (cell.takesInput() && !this._isOneClickEdit(cell.getColDef())) {
@@ -147,6 +159,10 @@ export class GridEditing implements IGridEditing {
         }, GRID_MODULE_PRIORITY.editing);
         this._services.get('gridTheme').hooks.styles.add(this._onStyles, GRID_MODULE_PRIORITY.editing);
         this._services.get('rows').addRowClass(LOCKED_RECORD_ROW_CLASS, ({ record }) => this._isRowLocked(record));
+        if (this._isAutoSaveEnabled) {
+            //after the DatasetControl's own commands
+            this._services.observe('datasetControl', datasetControl => datasetControl.parts.observe('ribbon', ribbon => ribbon.hooks.commands.add(this._removeSaveCommands, 1)));
+        }
     }
 
     private _onStyles = (result: IGridStyles, theme: ITheme): void => {

@@ -27,6 +27,7 @@ export type { IBodyProps as IDatasetControlBodyProps } from './adapters/body';
 export type { IFooterProps as IDatasetControlFooterProps, IFooterStartProps as IDatasetControlFooterStartProps, IFooterEndProps as IDatasetControlFooterEndProps } from './adapters/footer';
 export type { IViewSwitcherProps, IViewSwitcherComponents, IDatasetControlViewSwitcher, ViewSwitcherItemsHook } from './adapters/view-switcher';
 export type { IDatasetControlRibbonProps } from './adapters/ribbon';
+export { DATASET_CONTROL_RIBBON_COMMAND_IDS } from './adapters/ribbon';
 export { RIBBON_LABELS, RIBBON_LABELS_CS } from './adapters/ribbon';
 export type { IQuickFindProps, IDatasetControlQuickFind, IDatasetControlQuickFindEvents } from './adapters/quick-find';
 export type { IPaginationProps, IDatasetControlPagination, IDatasetControlPaginationEvents } from './adapters/pagination';

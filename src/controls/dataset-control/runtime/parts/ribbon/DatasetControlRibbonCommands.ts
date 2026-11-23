@@ -1,6 +1,6 @@
 import { IDataProvider, IInternalDataProvider } from "@talxis/client-libraries";
 import type { IRibbonCommand, IRibbon } from "@controls/ribbon";
-import type { IDatasetControlRibbonProps } from "../../../adapters/ribbon/Ribbon";
+import { DATASET_CONTROL_RIBBON_COMMAND_IDS, IDatasetControlRibbonProps } from "../../../adapters/ribbon/Ribbon";
 import type { IDatasetControlInternal } from "../../DatasetControlRuntime";
 import { RIBBON_LABELS } from "../../../adapters/ribbon/labels";
 
@@ -52,13 +52,13 @@ export class DatasetControlRibbonCommands {
         const ownCommands: IRibbonCommand[] = [];
         this._wasDirty = this._provider.isDirty();
         if (props.enableSave !== false && this._wasDirty) {
-            ownCommands.push({ id: 'save', label: labels.get('ribbon.save'), iconName: 'Save', onExecute: () => this._save() });
+            ownCommands.push({ id: DATASET_CONTROL_RIBBON_COMMAND_IDS.save, label: labels.get('ribbon.save'), iconName: 'Save', onExecute: () => this._save() });
         }
         if (props.enableDiscard !== false && this._wasDirty) {
-            ownCommands.push({ id: 'discard', label: labels.get('ribbon.discard'), iconName: 'Undo', onExecute: () => this._provider.clearChanges() });
+            ownCommands.push({ id: DATASET_CONTROL_RIBBON_COMMAND_IDS.discard, label: labels.get('ribbon.discard'), iconName: 'Undo', onExecute: () => this._provider.clearChanges() });
         }
         if (props.enableRefresh !== false) {
-            ownCommands.push({ id: 'refresh', label: labels.get('ribbon.refresh'), iconName: 'Refresh', onExecute: () => this._refresh() });
+            ownCommands.push({ id: DATASET_CONTROL_RIBBON_COMMAND_IDS.refresh, label: labels.get('ribbon.refresh'), iconName: 'Refresh', onExecute: () => this._refresh() });
         }
         commands.unshift(...ownCommands);
     };

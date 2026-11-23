@@ -122,8 +122,9 @@ export class GridRuntime extends Runtime<IRuntimePartMap, IGridModuleMap, IGrid>
         this._services.provide('keyboard', keyboard);
         this._services.provide('surfaces', surfaces);
         this._services.provide('fields', fields);
-        this._services.provide('viewport', viewport);
-
+        if (datasetControl) {
+            this._services.provide('datasetControl', datasetControl);
+        }
     }
 
     public get services(): IGridServiceRegistryInternal {

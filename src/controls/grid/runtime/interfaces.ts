@@ -15,6 +15,7 @@ import type { IGridSurfaces, IGridSurfacesInternal } from "./surfaces";
 import type { IGridFields } from "./fields";
 import type { IGridTheme, IGridThemeInternal } from "./theme";
 import type { IGridViewport } from "./viewport";
+import type { IDatasetControl } from "@controls/dataset-control/runtime/interfaces";
 
 /** Everything the grid is made of that a module or your code may use. */
 export interface IGridServiceMap {
@@ -52,6 +53,8 @@ export interface IGridServiceMap {
     viewport: IGridViewport;
     /** The running grid. */
     grid: IGrid;
+    /** The DatasetControl the grid is inside, if any. */
+    datasetControl: IDatasetControl;
 }
 
 /** The services as the grid's own parts use them: what draws the grid; a module adds what its own parts read by augmenting this. */
@@ -67,7 +70,7 @@ export interface IGridServiceMapInternal extends IGridServiceMap {
 }
 
 /** The services a grid may be without, or have only once it is mounted. */
-export type IGridDeferredService = 'gridRoot' | 'gridApi';
+export type IGridDeferredService = 'gridRoot' | 'gridApi' | 'datasetControl';
 
 /** Where the grid's parts find each other; a module passes its own map to see the services it adds. */
 export type IGridServiceRegistry<TServices extends IGridServiceMap = IGridServiceMap> = IServiceRegistry<TServices>;
