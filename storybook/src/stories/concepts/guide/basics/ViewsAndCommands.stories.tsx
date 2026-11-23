@@ -22,7 +22,7 @@ The list is the one from [**Edit and save**](?path=/docs/concepts-guide-basics-e
 |---|---|---|
 | \`VIEWS\`, \`views\` in \`loadStores\`, \`DatasetControl.ViewSwitcher\` | The views, which come with the provider, and the switcher that lists them | [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview) |
 | \`DatasetControl.QuickFind\` | Searches the columns \`QuickFindColumns\` names in *stores.ts*: the store, its manager and its country | [**Search and page**](?path=/docs/controls-datasetcontrol-guide-features-search-and-page--overview) |
-| \`DatasetControl.EditColumns\` | Picks the open view's columns among those the provider offers, which for a \`MemoryDataProvider\` are those of \`SavedQueries\`, *Seats* among them | [**Choose the columns**](?path=/docs/controls-datasetcontrol-guide-features-choose-the-columns--overview) |
+| \`DatasetControl.EditColumns\` | Picks the open view's columns among those the provider offers, which \`createStoresProvider\` adds through \`provider.hooks.availableColumns\`, *Seats* among them | [**Choose the columns**](?path=/docs/controls-datasetcontrol-guide-features-choose-the-columns--overview) |
 | \`onLoad\` in *StoresRibbon.tsx* | Returns **Mark N as open** while stores still to open are ticked. The ribbon calls it again on every selection, and \`markOpen\` calls the ribbon's \`reload()\` once the stores are saved | [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview) |
 | \`control.parts\` | Finds a part of the control, here the ribbon, from your code | [**From your code**](?path=/docs/controls-datasetcontrol-guide-advanced-from-your-code--overview) |
 

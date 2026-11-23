@@ -49,13 +49,17 @@ export const STORES = [
 ]
 
 //each load's provider writes saved changes back into these rows
-export const createStoresProvider = () => new MemoryDataProvider({
-    dataSource: STORES,
-    //drawn until a view sets its own
-    columns: VIEW_COLUMNS,
-    //a memory provider offers Edit columns the columns of its saved queries
-    metadata: { PrimaryIdAttribute: 'storeid', PrimaryNameAttribute: 'name', LogicalName: 'store', DisplayCollectionName: 'stores', QuickFindColumns: ['name', 'manager', 'country'], SavedQueries: [{ columns: COLUMNS }] },
-})
+export const createStoresProvider = () => {
+    const provider = new MemoryDataProvider({
+        dataSource: STORES,
+        //drawn until a view sets its own
+        columns: VIEW_COLUMNS,
+        metadata: { PrimaryIdAttribute: 'storeid', PrimaryNameAttribute: 'name', LogicalName: 'store', DisplayCollectionName: 'stores', QuickFindColumns: ['name', 'manager', 'country'] },
+    })
+    //offers every store column to Edit columns
+    provider.hooks.availableColumns.add(columns => columns.push(...COLUMNS))
+    return provider
+}
 `,
 }
 

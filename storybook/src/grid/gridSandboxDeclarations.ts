@@ -624,7 +624,17 @@ interface IDataProviderProperties {
     hasPreviousState?: boolean;
 }
 
+/** Adds to or replaces, by name, the columns a provider offers; options.entityName names a related scope. */
+type DataProviderAvailableColumnsHook = (columns: IColumn[], options?: IAvailableColumnOptions) => void;
+
+interface IDataProviderHooks {
+    /** Shapes what getAvailableColumns returns, after the provider's own columns. */
+    availableColumns: IHookPoint<DataProviderAvailableColumnsHook>;
+}
+
 interface IDataProvider extends IEventEmitter<IDataProviderEventListeners> {
+    /** Where consumers shape what the provider returns. */
+    readonly hooks: IDataProviderHooks;
     isError(): boolean;
     getErrorMessage(): string;
     setError(error: boolean, errorMessage?: string): void;
@@ -828,7 +838,7 @@ declare class MemoryDataProvider extends DataProvider implements IMemoryProvider
     onRecordsDelete(recordIds: string[]): Promise<{ success: boolean; results: IRecordDeleteOperationResult[] }>;
     onIsRecordActive(recordId: string): boolean;
     onOpenDatasetItem(entityReference: ComponentFramework.EntityReference): void;
-    /** The columns Edit columns offers to add. */
+    /** The columns of its metadata's SavedQueries. */
     onGetAvailableColumns(): Promise<IColumn[]>;
     getDataAsync(pageNumber: number, pageSize: number, previousPageNumber: number, event: GetDataEvent): Promise<IRetrievedData>;
     getDataSync(pageNumber: number, pageSize: number, previousPageNumber: number, event: GetDataEvent): IRetrievedData;
@@ -4328,10 +4338,6 @@ interface ITaskDataProvider extends IDataProvider {
     getFieldMapping(): IFieldMapping;
     /** The columns quick find searches, by name. */
     setQuickFindColumns(columnNames: string[]): void;
-    readonly hooks: {
-        /** Changes the available columns, also read as definitions for saved views that list them. */
-        readonly availableColumns: IHookPoint<(columns: IColumn[]) => void>;
-    };
     /** Reads the tasks with this column whatever the view shows; returns its unregistration. */
     addRequiredColumn(column: IColumn): () => void;
     /** Answers filters and quick find for the columns the matcher claims. */

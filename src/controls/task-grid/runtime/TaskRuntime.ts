@@ -1,4 +1,4 @@
-import { DataTypes, IColumn } from "@talxis/client-libraries";
+import { DataTypes, IAvailableColumnOptions, IColumn } from "@talxis/client-libraries";
 import type { ICommandBarItemProps, IContextualMenuItem } from "@fluentui/react";
 import type { IRibbonCommand } from "@controls/ribbon";
 import type { IDatasetControlLoadResult, IDatasetControlInternal } from "@controls/dataset-control/runtime/DatasetControlRuntime";
@@ -147,7 +147,10 @@ export class TaskRuntime implements ITaskRuntime {
         return subItems ? { ...result, subMenuProps: { ...result.subMenuProps!, items: subItems.map(this._applyRibbonCommandUi) } } : result;
     };
 
-    private _addPathColumn = (columns: IColumn[]): void => {
+    private _addPathColumn = (columns: IColumn[], options?: IAvailableColumnOptions): void => {
+        if (options?.entityName) {
+            return;
+        }
         if (!columns.some(column => column.name === PATH_COLUMN_NAME)) {
             columns.push({ name: PATH_COLUMN_NAME, displayName: this.getLabels(TASK_GRID_LABELS).get('taskGrid.path'), dataType: DataTypes.SingleLineText, isVirtual: true, visualSizeFactor: 300 });
         }

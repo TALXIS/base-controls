@@ -31,7 +31,7 @@ Each salesperson reads the deals by different columns: Ben wants the probability
 - **Disabled:** the button while the provider loads, and **Save** while no visible column is left.
 - **Saving:** clears the selection and mounts the control again on the same view; with unsaved changes, it asks first, as in [**Act on deals**](?path=/docs/controls-datasetcontrol-guide-features-act-on-deals--overview).
 
-The picker offers what the provider's \`onGetAvailableColumns()\` returns: \`DealsProvider\` in *deals.ts* offers every deal column, as in [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview). When the provider's \`onGetAvailableRelatedColumns()\` returns related entities, a *Column source* picker lets the user add their columns too.
+The picker offers the provider's available columns: \`loadDeals\` in *deals.ts* adds every deal column through \`provider.hooks.availableColumns\`, as in [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview). When the provider's \`onGetAvailableRelatedColumns()\` returns related entities, a *Column source* picker lets the user add their columns too.
 
 Each view keeps the columns the user saved while the control is mounted; [**Back where they left off**](?path=/docs/controls-datasetcontrol-guide-your-data-back-where-they-left-off--overview) keeps them longer.
 

@@ -107,6 +107,10 @@ Every change raises an event, so whatever shows the records can draw again. \`ad
 
 Create a provider once and keep it while it is used, such as in \`React.useState\`; \`destroy()\` frees it for good. A DatasetControl destroys the provider \`onLoad\` returned when the control unmounts or reloads, or when the load fails. To keep a provider the rest of your page uses too, return \`destroyProviderOnUnmount: false\` beside it from \`onLoad\` and destroy it yourself, as the example under *Sort, filter, search and page* does.
 
+## Available columns
+
+The columns a user can add, such as in *Edit columns*, come from \`getAvailableColumns(options?)\`. A provider offers its own first: a \`FetchXmlDataProvider\` the columns of its Dataverse table, a \`MemoryDataProvider\` those of its \`metadata.SavedQueries\`. \`provider.hooks.availableColumns.add(hook, priority?)\` adds or replaces columns on top, with no subclass: \`hook(columns, options?)\` pushes into the array, or replaces a column of the same name. Hooks run in ascending \`priority\`, \`add\` returns the hook's remover, and the result is sorted by display name. When \`options.entityName\` is set, the call asks for a related table's columns, which a hook for the provider's own table skips by returning early. [**Views**](?path=/docs/controls-datasetcontrol-guide-basics-views--overview) adds every deal column this way.
+
 ## Your own provider
 
 To work with your API, extend a shipped provider and override only what differs. A provider makes copies of itself, such as one per group, by calling its constructor again with the argument it got, so take one argument and pass it to \`super\`.
@@ -158,6 +162,7 @@ When your API sorts, filters and pages itself, extend \`DataProvider\`. Set the 
 | \`onGetQuickFindColumns()\` | Returns the columns search covers |
 | \`onBulkEdit(records)\` | Edits several records at once; resolves \`true\` to load again |
 | \`onGetAvailableColumns(options?)\` | Returns the columns a user can add |
+| \`hooks.availableColumns\` | Not one to implement: adds or replaces columns on top of what \`onGetAvailableColumns\` returns, as *Available columns* shows |
 | \`onGetAvailableRelatedColumns()\` | Returns the columns of related tables a user can add |
 
 ## Where next

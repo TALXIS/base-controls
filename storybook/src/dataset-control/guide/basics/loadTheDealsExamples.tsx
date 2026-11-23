@@ -10,14 +10,6 @@ const deals = DEAL_ROWS.map(row => ({ ...row }))
 
 const metadata: IMemoryProviderEntityMetadata = { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', QuickFindColumns: ['name'] }
 
-//offers every deal column to the views
-class DealsProvider extends MemoryDataProvider {
-    public async onGetAvailableColumns() {
-        //the provider sorts the array it gets
-        return [...DEAL_COLUMNS]
-    }
-}
-
 //a view's columns by name, in the order it shows them
 const columns = (...names: string[]) => names.map((name, order) => ({ name, order }))
 
@@ -63,8 +55,11 @@ const loadSignedInUser = async () => {
 const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
     //new: what the views need comes first
     const user = await loadSignedInUser()
+    const provider = new MemoryDataProvider({ dataSource: deals, metadata })
+    //offers every deal column to the views
+    provider.hooks.availableColumns.add(columns => columns.push(...DEAL_COLUMNS))
     //new: the views are built for the signed-in user
-    return { provider: new DealsProvider({ dataSource: deals, metadata }), views: createDealViews(user) }
+    return { provider, views: createDealViews(user) }
 }
 
 const GridExample = () => <DatasetControl onLoad={loadDeals} height='480px'>

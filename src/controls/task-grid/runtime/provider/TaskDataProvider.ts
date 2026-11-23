@@ -1,9 +1,8 @@
 import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IFormatting, IAvailableRelatedColumn, IColumn, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IMemoryProviderEntityMetadata, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, MemoryDataProvider, Operators } from "@talxis/client-libraries";
-import { HookRegistry } from "@core";
 import { StackRank } from "@core/stack-rank";
 import { getHoursPerDay } from "@fields/duration";
 import { IRecordTree, RecordTree } from "./record-tree";
-import { ITaskDataProviderParameters, INewTaskParameters, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskCreateParameters, ITaskCreateResult, ITasksCreateResult, TaskCreatePlacement, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParameters, ITaskMovePosition, ITaskStore, TaskAvailableColumnsHook, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
+import { ITaskDataProviderParameters, INewTaskParameters, IDeleteTasksResult, IFailedRecord, IFieldMapping, ITaskDeletion, IOpenTasksResult, ITaskChanges, ITaskCreateParameters, ITaskCreateResult, ITasksCreateResult, TaskCreatePlacement, TaskCreatePosition, ITaskDataProvider, ITaskDataProviderEvents, ITaskMoveParameters, ITaskMovePosition, ITaskStore, ITaskColumnHandler, ITaskColumnMatcher, TaskLoadWaiter } from "./interfaces";
 
 const ACTIVE_STATE_CODE = 0;
 
@@ -24,9 +23,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _newTaskPositions = new Map<string, TaskCreatePlacement>();
     private _definitions = new Map<string, IColumn>();
     private _declaredColumns: IColumn[] = [];
-    public readonly hooks = {
-        availableColumns: new HookRegistry<TaskAvailableColumnsHook>(),
-    };
     private _columnHandlers: ITaskColumnHandler[] = [];
     private _columnMatchers: ITaskColumnMatcher[] = [];
     private _requiredColumns: IColumn[] = [];
@@ -48,6 +44,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this._defaultCreatePosition = parameters.defaultCreatePosition ?? 'first';
         this._tree = new RecordTree(this, columnName => this._columnMatchers.find(matcher => matcher.isHandledColumn(columnName)));
         this.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
+        //last, so it reaches the columns the other hooks add
+        this.hooks.availableColumns.add(this._addHoursPerDay, Number.MAX_SAFE_INTEGER);
     }
 
     //the definition, so a view without the duration column still has it
@@ -131,12 +129,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
-        const columns = await this._store.getAvailableColumns(options);
-        if (this._isRelatedEntity(options)) {
-            return columns;
-        }
-        //the hooks add columns of the tasks, such as Path
-        return this._withHookColumns(columns).map(this._withHoursPerDay);
+        return await this._store.getAvailableColumns(options);
     }
 
     public addColumnHandler(handler: ITaskColumnHandler): () => void {
@@ -415,7 +408,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this.setEntityName(metadata.LogicalName ?? '');
         await this._loadHandledValues(rawData, metadata.PrimaryIdAttribute!);
         //the loaded columns only fill in what the available ones do not know
-        this._definitions = new Map([...columns, ...await this.onGetAvailableColumns()].map(column => [column.name, column]));
+        this._definitions = new Map([...columns, ...await this.getAvailableColumns()].map(column => [column.name, column]));
         this.setDataSource(rawData);
         //the base fills data-type defaults into what getColumns returns
         this.setColumns(this._declaredColumns.length > 0 ? this._declaredColumns : columns);
@@ -489,11 +482,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return !!options?.entityName && options.entityName !== this.getEntityName();
     }
 
-    private _withHookColumns(columns: IColumn[]): IColumn[] {
-        const result = [...columns];
-        this.hooks.availableColumns.apply(result);
-        return result;
-    }
+    private _addHoursPerDay = (columns: IColumn[], options?: IAvailableColumnOptions): void => {
+        if (!this._isRelatedEntity(options)) {
+            columns.forEach((column, index) => columns[index] = this._withHoursPerDay(column));
+        }
+    };
 
     //a move, a discarded move and a failed save all come through here
     private _onRecordColumnValueChanged = (_record: IRecord, columnName: string): void => {

@@ -1,5 +1,5 @@
 import type { ColDef, SuppressKeyboardEventParams } from "ag-grid-community";
-import { DataTypes, EventEmitter, IColumn, IDataProvider, IInternalDataProvider, IRawRecord, IRecord, IRecordSaveOperationResult, isQuickFindMatch, LookupCondition, Operators, unwrapConditionValue } from "@talxis/client-libraries";
+import { DataTypes, EventEmitter, IAvailableColumnOptions, IColumn, IDataProvider, IInternalDataProvider, IRawRecord, IRecord, IRecordSaveOperationResult, isQuickFindMatch, LookupCondition, Operators, unwrapConditionValue } from "@talxis/client-libraries";
 import type { GridColumnMenuSectionsHook, IGrid } from "@controls/grid";
 import { ErrorHelper, IEventSubscriber } from "@core";
 import { type LabelsOf } from "@labels";
@@ -231,7 +231,10 @@ export class LookupMany<TColumn extends ILookupManyColumn = ILookupManyColumn> i
         }
     };
 
-    private _addColumns = (columns: IColumn[]): void => {
+    private _addColumns = (columns: IColumn[], options?: IAvailableColumnOptions): void => {
+        if (options?.entityName) {
+            return;
+        }
         for (const [name, settings] of Object.entries(this._parameters.columns)) {
             if (!columns.some(column => column.name === name)) {
                 columns.push({

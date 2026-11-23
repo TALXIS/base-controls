@@ -1,5 +1,5 @@
 import type { ColDef } from "ag-grid-community";
-import type { IColumn, IEntityReference, IRawRecord, IRecord } from "@talxis/client-libraries";
+import type { IAvailableColumnOptions, IColumn, IEntityReference, IRawRecord, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
 import type { LabelsOf } from "@labels";
 import type { ITaskDataProvider } from "../../runtime/provider";
@@ -115,7 +115,10 @@ export class TaskChecklist implements ITaskChecklist {
         data: { isCompleted: item.isCompleted },
     });
 
-    private _addColumn = (columns: IColumn[]): void => {
+    private _addColumn = (columns: IColumn[], options?: IAvailableColumnOptions): void => {
+        if (options?.entityName) {
+            return;
+        }
         if (!columns.some(existing => existing.name === TASK_CHECKLIST_COLUMN_NAME)) {
             columns.push(createReadOnlyLookupColumn(TASK_CHECKLIST_COLUMN_NAME, this._labels.get('taskChecklist.checklist')));
         }

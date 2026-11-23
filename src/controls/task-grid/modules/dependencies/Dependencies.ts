@@ -1,5 +1,5 @@
 import type { ColDef } from "ag-grid-community";
-import { EventEmitter, IColumn, IEntityReference, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IAvailableColumnOptions, IColumn, IEntityReference, IRecord } from "@talxis/client-libraries";
 import type { IGrid } from "@controls/grid";
 import type { LabelsOf } from "@labels";
 import type { ITaskDataProvider } from "../../runtime/provider";
@@ -316,7 +316,10 @@ export class Dependencies implements IDependencies {
         return false;
     }
 
-    private _addColumns = (columns: IColumn[]): void => {
+    private _addColumns = (columns: IColumn[], options?: IAvailableColumnOptions): void => {
+        if (options?.entityName) {
+            return;
+        }
         const columnNames: [string, 'dependencies.predecessors' | 'dependencies.successors'][] = [[PREDECESSORS_COLUMN_NAME, 'dependencies.predecessors'], [SUCCESSORS_COLUMN_NAME, 'dependencies.successors']];
         for (const [name, label] of columnNames) {
             if (!columns.some(existing => existing.name === name)) {

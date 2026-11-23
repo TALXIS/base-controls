@@ -195,7 +195,7 @@ Every \`add\` on this page returns its remover, and a higher \`priority\` runs l
 | \`hooks.commands.add(hook, priority?)\` | Adds commands above the pickers: \`hook(commands, session)\` changes the \`ICommandBarItemProps\` in place. |
 | \`hooks.columnCommands.add(hook, priority?)\` | Adds commands to each chosen column: \`hook(commands, column, session)\` changes them in place, Remove first. Give them \`onMouseUp\`, not \`onClick\`, since dragging swallows clicks. |
 
-The pickers list what the provider's \`onGetAvailableColumns(options?)\` returns, a related entity's columns when \`options.entityName\` is given, and \`onGetAvailableRelatedColumns()\` adds the *Column source* picker; both are fetched anew each time the editor opens.
+The pickers list the provider's \`getAvailableColumns(options?)\`: its own columns and those its \`hooks.availableColumns\` add, a related entity's when \`options.entityName\` is given, as *Available columns* on [**Data providers**](?path=/docs/concepts-data-providers--overview) describes. \`onGetAvailableRelatedColumns()\` adds the *Column source* picker; both are fetched anew each time the editor opens.
 
 #### The column editor's session
 

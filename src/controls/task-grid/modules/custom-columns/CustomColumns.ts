@@ -1,4 +1,4 @@
-import { DatasetConstants, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { DatasetConstants, IAvailableColumnOptions, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import type { ICommandBarItemProps } from "@legacy";
 import type { DatasetControlEditColumnsSession, IDatasetControlEditColumns } from "@controls/dataset-control/adapters/edit-columns";
 import { type LabelsOf } from "@labels";
@@ -116,7 +116,10 @@ export class CustomColumns implements ICustomColumns {
     };
 
     //over the bare virtual column a FetchXML store hands back for one
-    private _addAvailableColumns = (columns: IColumn[]): void => {
+    private _addAvailableColumns = (columns: IColumn[], options?: IAvailableColumnOptions): void => {
+        if (options?.entityName) {
+            return;
+        }
         for (const column of this._columns) {
             const index = columns.findIndex(existing => existing.name === column.name);
             if (index === -1) {

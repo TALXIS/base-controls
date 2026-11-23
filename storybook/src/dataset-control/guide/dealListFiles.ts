@@ -15,14 +15,6 @@ export const deals = DEAL_ROWS.map(row => ({ ...row }))
 
 const metadata: IMemoryProviderEntityMetadata = { PrimaryIdAttribute: DEAL_PRIMARY_ID, PrimaryNameAttribute: 'name', LogicalName: 'docs_deal', QuickFindColumns: ['name'] }
 
-//offers every deal column to the views and to Edit columns
-export class DealsProvider extends MemoryDataProvider {
-    public async onGetAvailableColumns() {
-        //the provider sorts the array it gets
-        return [...DEAL_COLUMNS]
-    }
-}
-
 //a view's columns by name, in the order it shows them
 export const columns = (...names: string[]) => names.map((name, order) => ({ name, order }))
 
@@ -65,7 +57,10 @@ const loadSignedInUser = async () => {
 //called on every load for the provider the parts work on
 export const loadDeals = async (): Promise<IDatasetControlLoadResult> => {
     const user = await loadSignedInUser()
-    return { provider: new DealsProvider({ dataSource: deals, metadata }), views: createDealViews(user) }
+    const provider = new MemoryDataProvider({ dataSource: deals, metadata })
+    //offers every deal column to the views and to Edit columns
+    provider.hooks.availableColumns.add(columns => columns.push(...DEAL_COLUMNS))
+    return { provider, views: createDealViews(user) }
 }
 `,
 }

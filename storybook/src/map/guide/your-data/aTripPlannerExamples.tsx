@@ -93,8 +93,8 @@ export const loadTrip = async (): Promise<IDatasetControlLoadResult> => {
         await new Promise(resolve => setTimeout(resolve, 1000))
         return getDataAsync(...args)
     }
-    //what Edit columns offers: a memory provider lists the columns of its saved queries
-    provider.setMetadata({ ...provider.getMetadata(), SavedQueries: [{ columns: ['name', 'country', 'population'].map(getColumn) }] })
+    //what Edit columns offers
+    provider.hooks.availableColumns.add(available => available.push(...['name', 'country', 'population'].map(getColumn)))
     return { provider, views: VIEWS }
 }
 `,
