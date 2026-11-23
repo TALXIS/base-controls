@@ -378,6 +378,40 @@ new MemoryDataProvider({ dataSource, metadata, columnStore: new DataverseColumnS
 - **The task grid:** \`DataverseTaskStore\` hands its provider a \`DataverseColumnStore\` and drops the \`FetchXmlDataProvider\` it keeps for columns; \`ITaskStore.getAvailableColumns\` goes.
 - **The PCF frame:** a memory view over a Dataverse entity can offer that entity's columns.
 - **The docs:** examples stop adding their columns through \`hooks.availableColumns\` and pass them to the provider.
+
+## 14. Name the quick find columns, and resolve them in one place
+
+The columns a search looks in are full \`IColumn\`s that each provider builds in \`onGetQuickFindColumns()\`, and there is no way to add one without reaching into the provider. A provider only knows which columns it searches by name; what a column is belongs to its available columns.
+
+### Today
+
+| Provider | Where its search columns come from |
+|---|---|
+| \`FetchXmlDataProvider\` | The quick find view's attributes; the server filter is built from that view's conditions, so the columns the search box lists and the columns searched can differ. |
+| \`MemoryDataProvider\` | \`metadata.QuickFindColumns\`, keeping only names it has a column definition for, else its \`isPrimary\` column. |
+| \`TaskDataProvider\` | Its own \`setQuickFindColumns(names)\`, else the subject. |
+
+What works around it:
+
+- **The task grid** overrides \`getQuickFindColumns\`, saves the search columns with every user view, and sets \`QuickFindColumns\` through \`setMetadata\` on the scratch provider \`RecordTree\` searches with.
+- **The docs and the memory stores** put \`QuickFindColumns\` in metadata, the one way to change what a memory provider searches.
+- **A column the memory provider has no definition of** cannot be searched: \`getFormattedValue\` returns \`null\` for it.
+- **The PCF dataset control** cannot say which columns a view searches.
+
+### What every provider should do
+
+- **Name its own:** \`onGetQuickFindColumns()\` returns names. Memory its primary column, FetchXML its quick find view's attributes, \`alias.attribute\` for a linked one.
+- **Take a hook on the names:** \`hooks.quickFindColumns.add(names => …)\` adds, removes or replaces names, next to \`hooks.availableColumns\`.
+- **Resolve names in \`DataProvider\`:** a column comes from the provider's own definitions, then \`getAvailableColumns()\`, then, for \`alias.attribute\`, the available columns of the entity that link joins; a name nothing describes is assumed to be in the data, as single line text.
+- **Search what it lists:** FetchXML adds a condition for every name a hook adds; Memory formats a column it has no definition of as it was resolved, so a number or a lookup matches as shown.
+- **Resolve synchronously where it searches synchronously:** the memory provider filters records without awaiting, \`refreshSync\` included, so its resolve must not need an await; its available columns come only from hooks, which are synchronous.
+
+### What would use it
+
+- **The dataset control's search box** lists the resolved columns.
+- **The task grid** drops \`setQuickFindColumns\`, the user-view save and the \`setMetadata\` workaround in \`RecordTree\`.
+- **The PCF dataset control** lets each view name the columns it searches.
+- **The docs and the memory stores** drop \`QuickFindColumns\` from metadata.
 `
 
 const meta = {
