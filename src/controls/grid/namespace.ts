@@ -25,9 +25,7 @@ import { ColumnHeaderRoot } from "./adapters/column-header/root/ColumnHeaderRoot
 import { ColumnHeaderSuffix } from "./adapters/column-header/suffix/ColumnHeaderSuffix";
 import { ColumnHeaderTheme } from "./adapters/column-header/theme/ColumnHeaderTheme";
 import { ColumnHeaderUi, IColumnHeaderUi } from "./ui/column-header";
-import { LoadingOverlay } from "./adapters/overlays/loading";
 import { EmptyStateOverlay } from "./adapters/overlays/empty-state";
-import { IOverlayUi, OverlayUi } from "./ui/overlays";
 import { RowLoading } from "./adapters/rows/loading";
 import { RowError } from "./adapters/rows/error";
 import { IRowUi, RowUi } from "./ui/rows";
@@ -97,12 +95,8 @@ export interface IGridColumnHeaderNamespace {
 
 /** What the grid draws over its rows. */
 export interface IGridOverlayNamespace {
-    /** What the grid shows while it loads, its parts set through `components.overlays.loading`. */
-    Loading: typeof LoadingOverlay;
     /** What the grid shows while it has no rows, its parts set through `components.overlays.emptyState`. */
     EmptyState: typeof EmptyStateOverlay;
-    /** What draws an overlay without knowing why it is shown. */
-    Ui: IOverlayUi;
 }
 
 /** What the grid draws across a whole row. */
@@ -163,9 +157,7 @@ export const Grid: IGridNamespace = Object.assign(GridRoot, {
         Ui: ColumnHeaderUi,
     },
     Overlay: {
-        Loading: LoadingOverlay,
         EmptyState: EmptyStateOverlay,
-        Ui: OverlayUi,
     },
     Row: {
         Loading: RowLoading,

@@ -3,14 +3,9 @@ import { GridExampleRunner } from '../../GridExampleRunner'
 import { DEAL_LIST_TABS, DEALS_RIBBON_FILE, withDealGrid } from '../dealGridFiles'
 
 const LOADING_AND_NOTHING_TO_SHOW_CODE = `import { ClientSideGrid, createEditingModule, createFilteringModule, createRowSelectionModule, createSortingModule, DatasetControl, IGridComponents } from '@talxis/base-controls'
-import { Icon, mergeStyleSets, ProgressIndicator, Stack, Text } from '@fluentui/react'
+import { Icon, Stack, Text } from '@fluentui/react'
 import { loadDeals } from './deals'
 import { DealsRibbon } from './DealsRibbon'
-
-const styles = mergeStyleSets({
-    //new: a card in AG Grid's own background and shadow
-    card: { display: 'flex', flexDirection: 'column', gap: 12, width: 280, padding: 24, borderRadius: 8, background: 'var(--ag-background-color)', boxShadow: 'var(--ag-popup-shadow)' },
-})
 
 //new: the pieces the grid draws over its rows
 const COMPONENTS: IGridComponents = {
@@ -22,11 +17,6 @@ const COMPONENTS: IGridComponents = {
                 <Text {...props} variant='large' />
                 <Text>Try a lower value or clear a filter.</Text>
             </Stack>,
-        },
-        loading: {
-            onRender: props => <div {...props} className={styles.card} />,
-            //new: says what the grid waits for
-            onRenderSpinner: () => <ProgressIndicator label='Waiting for the CRM' />,
         },
     },
 }

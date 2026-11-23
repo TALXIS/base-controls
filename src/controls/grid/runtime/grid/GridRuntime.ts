@@ -6,7 +6,6 @@ import { ITheme } from "@theme";
 import { HookRegistry, IStateStore, IRuntimePartMap, Runtime, ServiceRegistry } from "@core";
 import { ILabels, ILabelSet, Labels, LabelsService } from "@labels";
 import { RowLoading } from "../../adapters/rows/loading";
-import { LoadingOverlay } from "../../adapters/overlays/loading";
 import { EmptyStateOverlay } from "../../adapters/overlays/empty-state";
 import type { IDatasetControlInternal } from "@controls/dataset-control/runtime/DatasetControlRuntime";
 import { IGridProps, IGridModule, IGridModuleMap, IGridOpenRecordParameters } from "../../interfaces";
@@ -20,7 +19,8 @@ import { GridCells } from "../cells";
 import { GridFields } from "../fields";
 import { GridKeyboard } from "../keyboard";
 import { GridColumnLayout } from "../column-layout";
-import { GridOverlays } from "../overlays";
+import { GridEmptyState } from "../empty-state";
+import { GridProviderLoading } from "../provider-loading";
 import { GridSurfaces } from "../surfaces";
 import { GridTheme } from "../theme";
 import { GridViewport } from "../viewport";
@@ -113,7 +113,7 @@ export class GridRuntime extends Runtime<IRuntimePartMap, IGridModuleMap, IGrid>
         const fields = new GridFields({ services: this._services });
         //all three wire themselves to the api and the provider
         new GridColumnLayout({ services: this._services });
-        new GridOverlays({ services: this._services });
+        new GridEmptyState({ services: this._services });
         const viewport = new GridViewport({ services: this._services });
         this._services.provide('columns', columns);
         this._services.provide('cells', cells);
@@ -125,6 +125,7 @@ export class GridRuntime extends Runtime<IRuntimePartMap, IGridModuleMap, IGrid>
         if (datasetControl) {
             this._services.provide('datasetControl', datasetControl);
         }
+        new GridProviderLoading({ services: this._services });
     }
 
     public get services(): IGridServiceRegistryInternal {
@@ -201,7 +202,6 @@ export class GridRuntime extends Runtime<IRuntimePartMap, IGridModuleMap, IGrid>
                 getRowId: this._getRowId,
                 onGridReady: this._onGridReady,
                 onGridPreDestroyed: this._onGridPreDestroyed,
-                loadingOverlayComponent: LoadingOverlay,
                 noRowsOverlayComponent: EmptyStateOverlay,
             },
         };

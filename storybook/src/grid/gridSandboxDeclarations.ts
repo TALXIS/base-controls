@@ -2835,23 +2835,10 @@ interface IGridColumnHeaderNamespace {
     Ui: IColumnHeaderUi;
 }
 
-interface IOverlayUiLoadingComponents {
-    onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
-    onRenderSpinner: (props: ISpinnerProps) => JSX.Element | null;
-    /** Drawn only while there is a message. */
-    onRenderText: (props: ITextProps) => JSX.Element | null;
-}
-
 interface IDatasetControlUiEmptyStateComponents {
     onRender: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element | null;
     onRenderIcon: (props: IIconProps) => JSX.Element | null;
     onRenderText: (props: ITextProps) => JSX.Element | null;
-}
-
-interface IOverlayUiLoadingProps {
-    /** What is being waited on, drawn under the spinner. */
-    message?: string;
-    components?: Partial<IOverlayUiLoadingComponents>;
 }
 
 interface IDatasetControlUiEmptyStateProps {
@@ -2860,17 +2847,10 @@ interface IDatasetControlUiEmptyStateProps {
     components?: Partial<IDatasetControlUiEmptyStateComponents>;
 }
 
-interface IOverlayUi {
-    Loading: (props: IOverlayUiLoadingProps) => JSX.Element | null;
-}
-
 /** What the grid draws over its rows. */
 interface IGridOverlayNamespace {
-    /** Its parts are replaced through components.overlays.loading. */
-    Loading: () => JSX.Element;
     /** Its parts are replaced through components.overlays.emptyState. */
     EmptyState: () => JSX.Element;
-    Ui: IOverlayUi;
 }
 
 interface IRowUiLoadingComponents {
@@ -3019,7 +2999,6 @@ interface IRecordSaveSelectionCellProps extends ICellRendererParams<IRecord> {
 
 /** Replaces parts of what the grid draws over its rows. */
 interface IGridOverlayComponents {
-    loading?: Partial<IOverlayUiLoadingComponents>;
     emptyState?: Partial<IDatasetControlUiEmptyStateComponents>;
 }
 

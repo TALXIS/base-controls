@@ -482,7 +482,6 @@ The grid's \`components\` prop. See [**Loading and nothing to show**](?path=/doc
 | Key | Slots | Default | Draws |
 |---|---|---|---|
 | \`overlays.emptyState\` | \`onRender\`, \`onRenderIcon\`, \`onRenderText\` | \`DatasetControlUiEmptyStateComponents\` | The overlay of a grid with no rows |
-| \`overlays.loading\` | \`onRender\`, \`onRenderSpinner\`, \`onRenderText\` | | The overlay while the provider loads; the text is the provider's loading message, drawn only while there is one |
 | \`rows.loading\` | \`onRender\` | | A group's records while they load in a \`ServerSideGrid\` |
 | \`rows.error\` | \`onRender\` | | Records or totals that failed to load, with the provider's error message |
 
