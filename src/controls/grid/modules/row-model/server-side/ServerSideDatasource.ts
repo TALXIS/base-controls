@@ -12,7 +12,8 @@ export class ServerSideDatasource implements IServerSideDatasource {
     public async getRows(params: IServerSideGetRowsParams): Promise<void> {
         const provider = this._services.get('provider');
         const records = provider.getRecords();
-        if (params.request.groupKeys.length > 0) {
+        //by the parent's level: a group AG Grid cannot key sends no group keys
+        if (params.parentNode.level >= 0) {
             const groupDataProvider = provider.createGroupedRecordDataProvider(params.parentNode.data);
             let records: IRecord[] = groupDataProvider.getRecords();
             try {
