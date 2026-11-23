@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ITagPickerProps, TagPicker as TagPickerBase } from "@fluentui/react/lib/Pickers";
+import { ITagPickerProps, TagPicker as TagPickerBase } from "@fluentui/react";
 import { useAppTheme } from "@theme";
 
 /** A tag picker whose suggestions are drawn in the application's theme rather than in the input's. */
