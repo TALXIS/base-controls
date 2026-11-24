@@ -270,7 +270,8 @@ export class GanttTasks implements IGanttTasks {
             unscheduled: !placement,
             progress: this._getProgress(record),
             row_height: node?.rowHeight ?? undefined,
-            bar_height: this._isSummary(taskId) ? SUMMARY_BAR_HEIGHT : TASK_BAR_HEIGHT,
+            //a summary on a single date is a diamond the size of any other
+            bar_height: this._isSummary(taskId) && placement?.kind !== 'milestone' ? SUMMARY_BAR_HEIGHT : TASK_BAR_HEIGHT,
             type: placement?.kind === 'milestone' ? 'milestone' : 'task',
         } as Task;
         this.hooks.task.apply(task, { record });

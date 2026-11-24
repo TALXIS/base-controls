@@ -18,6 +18,8 @@ import { runQuietly } from "../../runtime/runQuietly";
 export interface ITemplate {
     name: string;
     tree: ICreateTaskTree;
+    /** The task the template is saved from. */
+    taskId: string;
 }
 
 /** The template and where its own task lands. */
@@ -105,7 +107,7 @@ export class Templates implements ITemplates {
             const subject = this._taskRuntime.getProvider().getFieldMapping().subject;
             const { data, children } = this._toTemplateTree(task);
             const { [subject]: name, ...rootData } = data ?? {};
-            await createTemplate({ name: (name as string | null) ?? '', tree: { data: rootData, children } });
+            await createTemplate({ name: (name as string | null) ?? '', tree: { data: rootData, children }, taskId: task.getRecordId() });
         });
     }
 

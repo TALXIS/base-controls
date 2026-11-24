@@ -17,6 +17,8 @@ export interface ITalxisCustomColumnsStoreParameters {
     taskRuntime: ITaskRuntime;
     /** The logical name of the entity the columns are defined for, such as `task`. */
     entityName: string;
+    /** The table the definitions are kept for, such as the project's; `entityName` when left out. */
+    definitionEntityName?: string;
     /** The record, such as the project, whose own columns load too and which owns new ones. */
     recordId?: string;
     /** The relationship to `talxis_attributevalue` holding the values, when there are several. */
@@ -44,7 +46,7 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
 
     public async loadColumns(): Promise<IColumn[]> {
         this._relationship ??= await this._resolveRelationship();
-        const entityDefinition = await DynamicEntityDefinition.fetchForRecord(this._parameters.entityName, this._parameters.recordId);
+        const entityDefinition = await DynamicEntityDefinition.fetchForRecord(this._getDefinitionEntityName(), this._parameters.recordId);
         this._columns = entityDefinition.Attributes.map(attribute => {
             const dataType = Attribute.GetDataTypeFromMetadata({ ...attribute as any, attributeDescriptor: attribute });
             return {
@@ -110,7 +112,7 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
         const result = await this._navigate({
             pageType: 'entityrecord',
             entityName: ATTRIBUTE_DEFINITION_ENTITY_NAME,
-            data: { talxis_entityname: this._parameters.entityName, talxis_recordid: this._parameters.recordId },
+            data: { talxis_entityname: this._getDefinitionEntityName(), talxis_recordid: this._parameters.recordId },
         });
         const reference = result?.savedEntityReference?.[0];
         return reference ? `${Sanitizer.Guid.removeGuidBrackets(reference.id)}${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}` : null;
@@ -139,6 +141,10 @@ export class TalxisCustomColumnsStore implements ICustomColumnsStore {
         //the PCF typings leave out navigateTo
         const navigation = this._getPcfContext().navigation as ComponentFramework.Navigation & Pick<Xrm.Navigation, 'navigateTo'>;
         return navigation.navigateTo(pageInput, { target: 2 });
+    }
+
+    private _getDefinitionEntityName(): string {
+        return this._parameters.definitionEntityName ?? this._parameters.entityName;
     }
 
     private _getDefinitionId(columnName: string): string {

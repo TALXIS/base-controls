@@ -43,18 +43,45 @@ const ONE_DATE_TASKS = [
     { subject: 'Vendor contract renewal', scheduledend: '2026-03-31' },
 ]
 
-//each one-date task goes right after every other epic
+//parents with one date of their own over subtasks that span weeks
+const ONE_DATE_PARENTS = [
+    { subject: 'Partner onboarding', dates: { scheduledstart: '2025-11-10' }, subtasks: [
+        { subject: 'Sign NDAs', scheduledstart: '2025-11-10', scheduledend: '2025-11-14' },
+        { subject: 'Training sessions', scheduledstart: '2025-11-17', scheduledend: '2025-12-05' },
+    ] },
+    { subject: 'Data center migration', dates: { scheduledend: '2026-03-20' }, subtasks: [
+        { subject: 'Inventory servers', scheduledstart: '2026-01-05', scheduledend: '2026-01-23' },
+        { subject: 'Move racks', scheduledstart: '2026-02-02', scheduledend: '2026-03-13' },
+    ] },
+    { subject: 'Office opening', dates: { scheduledstart: '2026-04-15', scheduledend: '2026-04-15' }, subtasks: [
+        { subject: 'Furniture delivery', scheduledstart: '2026-04-01', scheduledend: '2026-04-08' },
+        { subject: 'IT setup', scheduledstart: '2026-04-09', scheduledend: '2026-04-14' },
+    ] },
+]
+
+const newTask = (id: string, parentid: IRawRecord['parentid'], stackrank: string, fields: IRawRecord): IRawRecord => ({
+    [TASK_METADATA.PrimaryIdAttribute]: id,
+    parentid,
+    stackrank,
+    statecode: 0,
+    statuscode: 1,
+    percentcomplete: 0,
+    ...fields,
+})
+
+//each one-date task goes right after an even epic, each one-date parent after an odd one
 const withOneDateTasks = (tasks: IRawRecord[]): IRawRecord[] => {
     const epics = tasks.filter(task => !task.parentid)
-    return tasks.concat(ONE_DATE_TASKS.map((task, index) => ({
-        [TASK_METADATA.PrimaryIdAttribute]: '99000000-0000-0000-0000-00000000000' + index,
-        parentid: null,
-        stackrank: epics[index * 2].stackrank + 'i',
-        statecode: 0,
-        statuscode: 1,
-        percentcomplete: 0,
-        ...task,
-    })))
+    const oneDateTasks = ONE_DATE_TASKS.map((task, index) => newTask('99000000-0000-0000-0000-00000000000' + index, null, epics[index * 2].stackrank + 'i', task))
+    const oneDateParents = ONE_DATE_PARENTS.flatMap(({ subject, dates, subtasks }, index) => {
+        const parentId = '98000000-0000-0000-0000-0000000000' + index + '0'
+        const parentReference = [{ id: { guid: parentId }, etn: TASK_METADATA.LogicalName, name: subject }]
+        return [
+            newTask(parentId, null, epics[index * 2 + 1].stackrank + 'i', { subject, ...dates }),
+            ...subtasks.map((subtask, subtaskIndex) => newTask('98000000-0000-0000-0000-0000000000' + index + (subtaskIndex + 1), parentReference, epics[subtaskIndex].stackrank, subtask)),
+        ]
+    })
+    return tasks.concat(oneDateTasks, oneDateParents)
 }
 
 const betaCutoffStyles = mergeStyleSets({

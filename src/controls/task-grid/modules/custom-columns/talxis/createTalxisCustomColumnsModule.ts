@@ -6,6 +6,6 @@ export interface ITalxisCustomColumnsModuleParameters extends Omit<ITalxisCustom
 
 /** The user's own task columns as TALXIS attribute definitions and values. */
 export const createTalxisCustomColumnsModule = (parameters: ITalxisCustomColumnsModuleParameters): ICustomColumnsModule => {
-    const { entityName, recordId, navigationPropertyName, ...moduleParameters } = parameters;
-    return createCustomColumnsModule({ ...moduleParameters, createStore: taskRuntime => new TalxisCustomColumnsStore({ taskRuntime, entityName, recordId, navigationPropertyName }) });
+    const { entityName, definitionEntityName, recordId, navigationPropertyName, ...moduleParameters } = parameters;
+    return createCustomColumnsModule({ ...moduleParameters, createStore: taskRuntime => new TalxisCustomColumnsStore({ taskRuntime, entityName, definitionEntityName, recordId, navigationPropertyName }) });
 };

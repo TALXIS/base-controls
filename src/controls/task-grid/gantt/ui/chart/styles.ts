@@ -156,6 +156,13 @@ export const getGanttUiChartStyles = (theme: ITheme, moduleStyles: IStyle[]) => 
                 borderRadius: theme.effects.roundedCorner2,
             },
         },
+        //a summary on a single date has no span to cap
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS}.${GANTT_MILESTONE_CLASS} .${GANTT_TASK_CONTENT_CLASS}::before`]: {
+            content: 'none',
+        },
+        [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SUMMARY_CLASS}.${GANTT_MILESTONE_CLASS} .${GANTT_TASK_CONTENT_CLASS}::after`]: {
+            content: 'none',
+        },
         [`.${GANTT_TASK_SCALE_CLASS}`]: {
             fontWeight: 600,
         },

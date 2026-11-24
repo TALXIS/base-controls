@@ -11,23 +11,25 @@ export class GridGanttScrollSync {
     private _echoedGridTop?: number;
     private _echoedChartTop?: number;
     private _renderEventId: string;
+    private _measureFrame?: number;
 
     constructor(chart: GanttStatic, gridScroller: HTMLElement) {
         this._chart = chart;
         this._gridScroller = gridScroller;
-        this._chartScroller = getVerticalScrollbar(chart);
         this._chartArea = chart.$task;
         //native events fire before the changed position is painted
         this._gridScroller.addEventListener('scroll', this._onGridScroll, { passive: true });
-        this._chartScroller?.addEventListener('scroll', this._onChartScroll, { passive: true });
         this._chartArea.addEventListener('wheel', this._onChartWheel, { passive: false });
         this._chartArea.addEventListener('mousewheel', this._onChartLegacyWheel);
-        this._renderEventId = this._chart.attachEvent('onGanttRender', this._matchScrollRange);
+        this._renderEventId = this._chart.attachEvent('onGanttRender', this._scheduleMatchScrollRange);
         this._matchScrollRange();
         this._scrollChartTo(this._gridScroller.scrollTop);
     }
 
     public destroy(): void {
+        if (this._measureFrame !== undefined) {
+            cancelAnimationFrame(this._measureFrame);
+        }
         this._gridScroller.removeEventListener('scroll', this._onGridScroll);
         this._chartScroller?.removeEventListener('scroll', this._onChartScroll);
         this._chartArea.removeEventListener('wheel', this._onChartWheel);
@@ -36,20 +38,40 @@ export class GridGanttScrollSync {
         this._gridScroller.style.paddingBottom = '';
     }
 
+    //the chart lays out its scrollbars after it reports the render
+    private _scheduleMatchScrollRange = (): void => {
+        if (this._measureFrame !== undefined) {
+            cancelAnimationFrame(this._measureFrame);
+        }
+        this._measureFrame = requestAnimationFrame(() => {
+            this._measureFrame = undefined;
+            this._matchScrollRange();
+        });
+    };
+
     //the chart's horizontal scrollbar shortens its rows so it scrolls further than the grid
     private _matchScrollRange = (): void => {
-        const chartScroller = this._chartScroller;
-        if (!chartScroller) {
-            return;
-        }
+        const chartScroller = this._attachChartScroller();
         const padding = parseFloat(this._gridScroller.style.paddingBottom) || 0;
         const gridRange = this._gridScroller.scrollHeight - this._gridScroller.clientHeight - padding;
-        const chartRange = chartScroller.scrollHeight - chartScroller.clientHeight;
+        const chartRange = chartScroller ? chartScroller.scrollHeight - chartScroller.clientHeight : 0;
         const missing = Math.max(0, chartRange - gridRange);
         if (missing !== padding) {
             this._gridScroller.style.paddingBottom = missing ? `${missing}px` : '';
         }
     };
+
+    //the chart drops its vertical scrollbar while every row fits
+    private _attachChartScroller(): HTMLElement | undefined {
+        const scroller = getVerticalScrollbar(this._chart);
+        const current = scroller?.isConnected ? scroller : undefined;
+        if (current !== this._chartScroller) {
+            this._chartScroller?.removeEventListener('scroll', this._onChartScroll);
+            current?.addEventListener('scroll', this._onChartScroll, { passive: true });
+            this._chartScroller = current;
+        }
+        return current;
+    }
 
     private _onGridScroll = (): void => {
         const top = this._gridScroller.scrollTop;

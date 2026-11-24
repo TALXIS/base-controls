@@ -44,6 +44,8 @@ interface IDisplayedParent {
     recordId: string;
     level: number;
     isExpanded: boolean;
+    /** Open because a match is under it. */
+    isHeldOpen: boolean;
 }
 
 export class TaskExpansion implements ITaskExpansion {
@@ -93,9 +95,7 @@ export class TaskExpansion implements ITaskExpansion {
         if (this._isFlatList()) {
             return false;
         }
-        const view = this._provider.getRecordTree().view;
-        //shown only because something under it matched
-        if (view.getOrderedIds().length > 0 && !view.isMatching(recordId) && view.hasChildren(recordId)) {
+        if (this._isHeldOpen(recordId)) {
             return true;
         }
         return this._intent.get(recordId) ?? this._isOpenByDefault(recordId);
@@ -123,7 +123,7 @@ export class TaskExpansion implements ITaskExpansion {
     }
 
     public collapseLevel(): void {
-        const expanded = this._getDisplayedParents().filter(parent => parent.isExpanded);
+        const expanded = this._getCollapsibleParents();
         const level = Math.max(...expanded.map(parent => parent.level));
         this._change(expanded.filter(parent => parent.level === level).map(parent => parent.recordId), false);
     }
@@ -133,7 +133,7 @@ export class TaskExpansion implements ITaskExpansion {
     }
 
     public canCollapseLevel(): boolean {
-        return this._getDisplayedParents().some(parent => parent.isExpanded);
+        return this._getCollapsibleParents().length > 0;
     }
 
     public getExpandedIds(): string[] {
@@ -172,7 +172,7 @@ export class TaskExpansion implements ITaskExpansion {
                     continue;
                 }
                 const isExpanded = this.isExpanded(recordId);
-                parents.push({ recordId, level, isExpanded });
+                parents.push({ recordId, level, isExpanded, isHeldOpen: this._isHeldOpen(recordId) });
                 if (isExpanded) {
                     visit(recordId, level + 1);
                 }
@@ -180,6 +180,16 @@ export class TaskExpansion implements ITaskExpansion {
         };
         visit(null, 0);
         return parents;
+    }
+
+    private _getCollapsibleParents(): IDisplayedParent[] {
+        return this._getDisplayedParents().filter(parent => parent.isExpanded && !parent.isHeldOpen);
+    }
+
+    //shown only because something under it matched
+    private _isHeldOpen(recordId: string): boolean {
+        const view = this._provider.getRecordTree().view;
+        return view.getOrderedIds().length > 0 && !view.isMatching(recordId) && view.hasChildren(recordId);
     }
 
     private _apply(delta: ITaskExpansionDelta): void {

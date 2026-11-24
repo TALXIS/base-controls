@@ -1,5 +1,5 @@
 import type { IRawRecord } from "@talxis/client-libraries";
-import type { GridCellLoadingHook, IGrid } from "@controls/grid";
+import type { GridCellLoadingHook, GridCellLockHook, IGrid, IGridEditing } from "@controls/grid";
 import type { ITaskDataProvider, TaskLoadWaiter } from "../provider";
 import type { ITaskRuntime } from "..";
 import type { ITaskGridServiceMap } from "../../services";
@@ -124,7 +124,19 @@ export class TaskColumnValues {
     private _onGridAvailable = (grid: IGrid): (() => void) => {
         this._grid = grid as IGrid<ITaskGridServiceMap>;
         grid.services.get('cells').hooks.loading.add(this._onCellLoading, TASK_GRID_PRIORITY.tree + 20);
+        grid.modules.observe('editing', this._onEditingAvailable);
         return () => this._grid = undefined;
+    };
+
+    //an editor opened before the values arrive would start from none
+    private _onEditingAvailable = (editing: IGridEditing): void => {
+        editing.locks.hooks.cell.add(this._onCellLock, TASK_GRID_PRIORITY.tree + 20);
+    };
+
+    private _onCellLock: GridCellLockHook = (result, params) => {
+        if (this.isLoading() && this._parameters.columnNames().includes(params.columnName)) {
+            result.isLocked = true;
+        }
     };
 
     private _onCellLoading: GridCellLoadingHook = (result, params) => {
