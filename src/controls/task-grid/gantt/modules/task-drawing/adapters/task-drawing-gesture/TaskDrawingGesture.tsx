@@ -3,6 +3,7 @@ import type { GanttStatic } from "dhtmlx-gantt";
 import { useGantt, useGanttModule } from "../../../../context";
 import type { IGanttDragging } from "../../../../dragging";
 import { TASK_BAR_HEIGHT } from "../../../../tasks";
+import { GANTT_TASK_LINE_CLASS } from "../../../../chart";
 import { TASK_DRAWING_ARMED_CLASS } from "../../classNames";
 import { getCreateTarget, isCreateTarget, ITimelineCreateTarget } from "../../timelineGeometry";
 import { TaskDrawingUiPreview, ITaskDrawingUiPreviewProps } from "../../ui/preview";
@@ -116,9 +117,17 @@ export const TaskDrawingGesture = (props: ITaskDrawingGestureProps) => {
             }
         },
         onMouseDown: (event: MouseEvent) => {
-            const target = event.button === 0 ? getCreateTarget(chart, event.target) : undefined;
+            if (event.button !== 0) {
+                return;
+            }
+            const target = getCreateTarget(chart, event.target);
+            const isCreating = event.ctrlKey && taskDrawing.isEnabled();
             const isDrawingDates = event.altKey && !event.ctrlKey && isDateTarget(event.target);
-            if (!target || !(isDrawingDates || (event.ctrlKey && taskDrawing.isEnabled()))) {
+            //a frame without focus never hears the key go down
+            if ((isCreating || event.altKey) && !(event.target as Element | null)?.closest?.(`.${GANTT_TASK_LINE_CLASS}`)) {
+                setArmed(true);
+            }
+            if (!target || !(isDrawingDates || isCreating)) {
                 return;
             }
             //the chart would otherwise start dragging the bar underneath

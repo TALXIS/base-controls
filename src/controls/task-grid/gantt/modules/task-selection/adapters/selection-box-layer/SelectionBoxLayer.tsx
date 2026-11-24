@@ -43,6 +43,8 @@ export const SelectionBoxLayer = () => {
         const onKeyDown = (event: KeyboardEvent) => event.key === 'Shift' && setArmed(true);
         const onKeyUp = (event: KeyboardEvent) => event.key === 'Shift' && setArmed(false);
         const onBlur = () => setArmed(false);
+        //a frame without focus never hears the key go down
+        const onMouseDown = (event: MouseEvent) => event.shiftKey && event.button === 0 && setArmed(true);
         //a keyup outside the page never arrives
         const onMouseMove = (event: MouseEvent) => !event.shiftKey && !isBandOpen && setArmed(false);
 
@@ -107,6 +109,8 @@ export const SelectionBoxLayer = () => {
         window.addEventListener('keyup', onKeyUp, { signal });
         window.addEventListener('blur', onBlur, { signal });
         window.addEventListener('mousemove', onMouseMove, { signal });
+        //captured, ahead of the chart's own mousedown that pans the timeline
+        chart.$root.addEventListener('mousedown', onMouseDown, { capture: true, signal });
         return () => {
             selecto.destroy();
             clearTimeout(unblockDeselectionTimeout);

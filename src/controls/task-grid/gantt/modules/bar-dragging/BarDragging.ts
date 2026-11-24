@@ -1,6 +1,6 @@
 import type { GanttStatic, Task } from "dhtmlx-gantt";
 import type { IGantt } from "../../interfaces";
-import { GANTT_TASK_DRAG_HANDLE_CLASS, GANTT_TASK_LINE_CLASS, getBarDragState, shiftBarDrag } from "../../chart";
+import { GANTT_TASK_DRAG_HANDLE_CLASS, GANTT_TASK_LINE_CLASS, getBarDragState, IBarDragState, shiftBarDrag } from "../../chart";
 import { GanttSpanEdge, IGanttSpan, MILLISECONDS_PER_MINUTE } from "../../schedule";
 import { getBarDraggingStyles } from "./styles";
 
@@ -128,9 +128,13 @@ export class BarDragging implements IBarDragging {
             return;
         }
         const edge: GanttSpanEdge = drag.left ? 'start' : 'end';
-        const snapped = mode === MOVE_MODE ? schedule.snapMove(span, original) : schedule.snapEdge(span, edge, original);
+        const snapped = mode === MOVE_MODE ? schedule.snapMove(span, original, this._getAnchor(drag)) : schedule.snapEdge(span, edge, original);
         task.start_date = snapped.start;
         task.end_date = snapped.end;
+    }
+
+    private _getAnchor(drag: IBarDragState): Date | undefined {
+        return drag.start_x === undefined ? undefined : this._gantt.services.get('chart').dateFromPos(drag.start_x);
     }
 
     private _onAfterTaskDrag = (id: string | number): void => {

@@ -1,7 +1,7 @@
 import dayjs, { Dayjs } from "dayjs";
 import { RRule } from "rrule";
 import type { INonWorkingDay } from "./NonWorkingDays";
-import { getClockDuration } from "../../schedule";
+import { addClockDuration, getClockDuration } from "../../schedule";
 
 interface ICalendarEntry<TData> {
     day: INonWorkingDay<TData>;
@@ -9,6 +9,9 @@ interface ICalendarEntry<TData> {
     spanDays: number;
     rule?: RRule;
 }
+
+//a year of non-working days in a row is a calendar to give up on
+const MAX_DAYS_ADDED = 366;
 
 const getDayKey = (date: Dayjs): string => date.format('YYYY-MM-DD');
 
@@ -51,6 +54,27 @@ export class NonWorkingDayCalendar<TData> {
             day = nextDay;
         }
         return duration;
+    }
+
+    /** The date a working duration in milliseconds reaches from a date, back in time when negative. */
+    public addWorkingDuration(date: Date, duration: number): Date {
+        const direction = duration < 0 ? -1 : 1;
+        let remaining = Math.abs(duration);
+        let time = +date;
+        for (let days = 0; remaining > 0 && days < MAX_DAYS_ADDED; days++) {
+            //the day the step crosses, which before a midnight is the day before it
+            const day = dayjs(direction > 0 ? time : time - 1).startOf('day');
+            const boundary = (direction > 0 ? day.add(1, 'day') : day).valueOf();
+            if (!this.isNonWorkingDay(day.toDate())) {
+                const available = Math.abs(getClockDuration(new Date(time), new Date(boundary)));
+                if (remaining <= available) {
+                    return addClockDuration(new Date(time), direction * remaining);
+                }
+                remaining -= available;
+            }
+            time = boundary;
+        }
+        return new Date(time);
     }
 
     private _getYear(year: number): Map<string, INonWorkingDay<TData>[]> {

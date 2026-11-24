@@ -33,6 +33,8 @@ export interface IGanttSnapHookParameters {
     change: 'move' | GanttSpanEdge | 'span';
     /** The span before the change, for a move or an edge. */
     original?: IGanttSpan;
+    /** The date in `original` the pointer holds, for a move. */
+    anchor?: Date;
 }
 
 /** Changes a span after it is snapped to the scale, such as to keep it off certain days. */
@@ -70,8 +72,11 @@ export interface IGanttSchedule {
      * @param original The span before the edge was dragged.
      */
     snapEdge(span: IGanttSpan, edge: GanttSpanEdge, original?: IGanttSpan): IGanttSpan;
-    /** Snaps the start and keeps the clock-time length of `lengthOf`. */
-    snapMove(span: IGanttSpan, lengthOf: IGanttSpan): IGanttSpan;
+    /**
+     * Snaps the start and keeps the clock-time length of `lengthOf`.
+     * @param anchor The date in `lengthOf` the pointer holds.
+     */
+    snapMove(span: IGanttSpan, lengthOf: IGanttSpan, anchor?: Date): IGanttSpan;
     /** Snaps both edges, keeping at least one step between them. */
     snapSpan(span: IGanttSpan): IGanttSpan;
     /** Snaps a moved milestone as the day its edges hold. */
@@ -191,9 +196,9 @@ export class GanttSchedule implements IGanttSchedule {
         return this._applySnapHooks(this._snapEdgeToScale(span, edge), { change: edge, original });
     }
 
-    public snapMove(span: IGanttSpan, lengthOf: IGanttSpan): IGanttSpan {
+    public snapMove(span: IGanttSpan, lengthOf: IGanttSpan, anchor?: Date): IGanttSpan {
         const start = this._snapDate(span.start, 'start');
-        return this._applySnapHooks({ start, end: addClockDuration(start, getClockDuration(lengthOf.start, lengthOf.end)) }, { change: 'move', original: lengthOf });
+        return this._applySnapHooks({ start, end: addClockDuration(start, getClockDuration(lengthOf.start, lengthOf.end)) }, { change: 'move', original: lengthOf, anchor });
     }
 
     public snapSpan(span: IGanttSpan): IGanttSpan {

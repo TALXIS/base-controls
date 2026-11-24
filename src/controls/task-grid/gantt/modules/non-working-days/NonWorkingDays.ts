@@ -8,7 +8,7 @@ import type { ITaskGridSetting } from "../../../adapters/root/settings";
 import type { IGantt } from "../../interfaces";
 import type { IGanttSurface } from "../../surfaces";
 import type { GanttCellClassHook, IGanttTimeline } from "../../timeline";
-import { GanttDurationHook, GanttSnapHook, IGanttSpan, MILLISECONDS_PER_MINUTE } from "../../schedule";
+import { addClockDuration, GanttDurationHook, GanttSnapHook, getClockDuration, IGanttSpan, MILLISECONDS_PER_MINUTE } from "../../schedule";
 import { setScaleIgnores } from "../../chart";
 import { NON_WORKING_DAYS_LABELS } from "./labels";
 import { NON_WORKING_DAY_CLASS } from "./classNames";
@@ -180,12 +180,10 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
         setScaleIgnores(chart, date => !this.isVisible() && this.isNonWorkingDay(date) && this._isDayScaleVisible());
     };
 
-    //towards where the pointer went so a bar dragged back does not jump forward
-    private _keepOffNonWorkingDays: GanttSnapHook = (result, { change, original }) => {
+    private _keepOffNonWorkingDays: GanttSnapHook = (result, { change, original, anchor }) => {
         const span = result.span;
         if (change === 'move') {
-            const direction = original && span.start < original.start ? -1 : 1;
-            result.span = this._shiftOffNonWorkingDays(span, direction);
+            result.span = this._moveKeepingWorkingTime(span, original ?? span, anchor);
             return;
         }
         const start = change === 'end' ? span.start : this._toWorkingStart(span, change === 'start' && original && span.start < original.start ? -1 : 1);
@@ -201,6 +199,39 @@ export class NonWorkingDays<TData = { [key: string]: unknown }> implements INonW
             shifted = { start: dayjs(shifted.start).add(direction, 'day').toDate(), end: dayjs(shifted.end).add(direction, 'day').toDate() };
         }
         return shifted;
+    }
+
+    //the grabbed date follows the pointer and the rest of the bar keeps its working time around it
+    private _moveKeepingWorkingTime(span: IGanttSpan, original: IGanttSpan, originalAnchor = original.start): IGanttSpan {
+        const workingTime = this._calendar.getWorkingDuration(original.start, original.end);
+        if (workingTime <= 0) {
+            const start = this.isNonWorkingDay(span.start) ? this._toWorkingDayEdge(span.start, 1) : span.start;
+            return { start, end: addClockDuration(start, getClockDuration(original.start, original.end)) };
+        }
+        //in whole snap steps so the bar stays on the scale's grid
+        const stepMs = this._gantt.services.get('schedule').getSnapMinutes('start') * MILLISECONDS_PER_MINUTE;
+        const length = getClockDuration(original.start, original.end);
+        const offset = Math.min(length, Math.max(0, Math.round(getClockDuration(original.start, originalAnchor) / stepMs) * stepMs));
+        originalAnchor = addClockDuration(original.start, offset);
+        let anchor = addClockDuration(span.start, offset);
+        const before = this._calendar.getWorkingDuration(original.start, originalAnchor);
+        const after = workingTime - before;
+        //a grab nearer the end belongs to the day it ends and holds the bar on the working day before
+        const isEndSide = after < before;
+        const anchorDay = isEndSide ? new Date(+anchor - 1) : anchor;
+        if (this.isNonWorkingDay(anchorDay)) {
+            anchor = this._toWorkingDayEdge(anchorDay, isEndSide ? -1 : 1);
+        }
+        return { start: this._calendar.addWorkingDuration(anchor, -before), end: this._calendar.addWorkingDuration(anchor, after) };
+    }
+
+    //the start of the next working day, or the end of the previous one
+    private _toWorkingDayEdge(date: Date, direction: 1 | -1): Date {
+        let day = dayjs(date).startOf('day');
+        for (let days = 0; days < MAX_DAYS_SEARCHED && this.isNonWorkingDay(day.toDate()); days++) {
+            day = day.add(direction, 'day');
+        }
+        return direction > 0 ? day.toDate() : day.add(1, 'day').toDate();
     }
 
     private _toWorkingStart(span: IGanttSpan, direction: 1 | -1): Date {
