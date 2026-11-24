@@ -8,6 +8,19 @@ import type { ITaskRuntime } from "../interfaces";
 type TaskLoadingLabel = 'taskGrid.openingTasks' | 'taskGrid.deletingTasks' | 'taskGrid.movingTask' | 'taskGrid.openingRecord';
 type TaskErrorLabel = 'taskGrid.openTasksFailed' | 'taskGrid.deleteTasksFailed' | 'taskGrid.moveTaskFailed' | 'taskGrid.openRecordFailed';
 
+/** Why a task cannot be moved, or cannot be moved to a place. */
+export type TaskMoveRefusal = 'sorted' | 'flatList' | 'locked' | 'pending' | 'saving' | 'ownSubtree' | 'parentLocked' | 'parentPending' | 'parentSaving';
+
+/** Where a task is moved to. */
+export interface ITaskMoveTarget {
+    taskId: string;
+    position: ITaskMovePosition;
+}
+
+type TaskStateRefusal = 'locked' | 'pending' | 'saving';
+
+const PARENT_REFUSALS = { locked: 'parentLocked', pending: 'parentPending', saving: 'parentSaving' } as const satisfies Record<TaskStateRefusal, TaskMoveRefusal>;
+
 /** The task actions, each run under the loading overlay and its error shown. */
 export interface ITaskActions {
     /** @returns The created task, or `null` when it was not created. */
@@ -18,6 +31,8 @@ export interface ITaskActions {
     delete(taskIds: string[]): Promise<void>;
     /** Places the task and saves it, or returns `null` when it cannot be moved there. */
     move(taskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null>;
+    /** Why the task cannot be moved at all, or to the target when one is given. */
+    getMoveRefusal(taskId: string, target?: ITaskMoveTarget): TaskMoveRefusal | undefined;
     /** Opens the task, or the record its lookup points to when `columnName` is another column. */
     openRecord(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void>;
     openRelatedRecord(reference: ComponentFramework.EntityReference, columnName: string): Promise<void>;
@@ -97,7 +112,7 @@ export class TaskActions implements ITaskActions {
     }
 
     public async move(taskId: string, targetTaskId: string, position: ITaskMovePosition): Promise<true | null> {
-        if (this._runtime.isTaskLocked(taskId)) {
+        if (this.getMoveRefusal(taskId, { taskId: targetTaskId, position })) {
             return null;
         }
         return this._execute(async () => {
@@ -111,6 +126,32 @@ export class TaskActions implements ITaskActions {
             }
             return true;
         }, 'taskGrid.movingTask', 'taskGrid.moveTaskFailed');
+    }
+
+    public getMoveRefusal(taskId: string, target?: ITaskMoveTarget): TaskMoveRefusal | undefined {
+        const provider = this._provider;
+        const sorting = provider.getSorting();
+        if (sorting.length > 0 && sorting[0].name !== provider.getFieldMapping().stackRank) {
+            return 'sorted';
+        }
+        if (this._runtime.isFlatList()) {
+            return 'flatList';
+        }
+        const taskRefusal = this._getStateRefusal(taskId);
+        if (taskRefusal || !target) {
+            return taskRefusal;
+        }
+        const { structure } = provider.getRecordTree();
+        if (structure.getAncestorIds(target.taskId).includes(taskId)) {
+            return 'ownSubtree';
+        }
+        const parentId = target.position === 'child' ? target.taskId : structure.getParent(target.taskId)?.getRecordId();
+        //the top level and the task the grid is scoped to take any task
+        if (!parentId || parentId === provider.getRootTaskId()) {
+            return undefined;
+        }
+        const parentRefusal = this._getStateRefusal(parentId);
+        return parentRefusal && PARENT_REFUSALS[parentRefusal];
     }
 
     public async openRecord(reference: ComponentFramework.EntityReference, columnName?: string): Promise<void> {
@@ -128,6 +169,16 @@ export class TaskActions implements ITaskActions {
 
     private get _provider(): ITaskDataProvider {
         return this._runtime.getProvider();
+    }
+
+    private _getStateRefusal(taskId: string): TaskStateRefusal | undefined {
+        if (this._provider.isTaskPending(taskId)) {
+            return 'pending';
+        }
+        if (this._runtime.isTaskLocked(taskId)) {
+            return 'locked';
+        }
+        return this._runtime.services.get('savingChains').isTaskLocked(taskId) ? 'saving' : undefined;
     }
 
     //the first few by name, the rest as a count

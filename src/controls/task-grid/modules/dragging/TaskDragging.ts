@@ -3,12 +3,25 @@ import { GridApi, IRowDragItem, IRowNode, IsRowValidDropPositionParams, IsRowVal
 import { ITheme } from "@fluentui/react";
 import type { IGrid, IGridAgGridInitialOptions, IGridAgGridOptions, IGridEditedCell, IGridStyles } from "@controls/grid";
 import type { ITaskDataProvider, ITaskMovePosition } from "../../runtime/provider";
-import type { ITaskRuntime } from "../../runtime";
+import type { ITaskRuntime, TaskMoveRefusal } from "../../runtime";
 import type { ITaskGridServiceMap } from "../../services";
 import { TASK_GRID_PRIORITY } from "../../priorities";
 import { LEVEL_INDENT, TASK_ROW_CLASS_NAMES } from "../../constants";
 import type { ITaskExpansion } from "../../runtime/tree/TaskExpansion";
+import { TASK_GRID_LABELS } from "../../labels";
 import { getTaskDraggingStyles } from "./styles";
+
+const MOVE_REFUSAL_LABELS = {
+    sorted: 'taskGrid.moveRefusedSorted',
+    flatList: 'taskGrid.moveRefusedFlatList',
+    locked: 'taskGrid.moveRefusedLocked',
+    pending: 'taskGrid.moveRefusedPending',
+    saving: 'taskGrid.moveRefusedSaving',
+    ownSubtree: 'taskGrid.moveRefusedOwnSubtree',
+    parentLocked: 'taskGrid.moveRefusedParentLocked',
+    parentPending: 'taskGrid.moveRefusedParentPending',
+    parentSaving: 'taskGrid.moveRefusedParentSaving',
+} as const satisfies Record<TaskMoveRefusal, string>;
 
 //AG Grid would open a hovered parent on its own once this runs out
 const NEVER_MS = 2 ** 31 - 1;
@@ -46,6 +59,8 @@ export class TaskDragging implements ITaskDragging {
     //where a release over the middle of a row lands before it is the drop target
     private _midRowDrop?: GapDrop;
     private _hoveredRow?: IRowNode<IRecord>;
+    //why the drop under the pointer is refused, shown in the drag ghost
+    private _refusal?: TaskMoveRefusal;
     private _dropIntoTimer?: number;
     private _expandTimer?: number;
     private _isAnimating = false;
@@ -53,7 +68,6 @@ export class TaskDragging implements ITaskDragging {
 
     constructor(taskRuntime: ITaskRuntime) {
         this._taskRuntime = taskRuntime;
-        taskRuntime.services.observe('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
     }
 
@@ -104,43 +118,73 @@ export class TaskDragging implements ITaskDragging {
         return this._taskRuntime.isEditingEnabled();
     }
 
-    //a refused task snaps back
-    private _canMoveTask(taskId: string): boolean {
-        return !this._taskRuntime.isTaskLocked(taskId);
-    }
-
+    //a sort, the flat list or a locked task refuses the drag itself and says why
     private _canDrag(): boolean {
-        const sorting = this._provider.getSorting();
-        const isSortedByStackRank = sorting.length === 0 || sorting[0].name === this._provider.getFieldMapping().stackRank;
-        return !this._taskRuntime.isFlatList() && this._isEditingEnabled() && isSortedByStackRank && !this._isEditing;
+        return this._isEditingEnabled() && !this._isEditing;
     }
 
     private _getRowDragText = (params: IRowDragItem): string => {
-        return params.rowNode?.data?.getFormattedValue(this._provider.getFieldMapping().subject) ?? '';
+        const subject = params.rowNode?.data?.getFormattedValue(this._provider.getFieldMapping().subject) ?? '';
+        return this._refusal ? `${subject}\n${this._taskRuntime.getLabels(TASK_GRID_LABELS).get(MOVE_REFUSAL_LABELS[this._refusal])}` : subject;
     };
 
+    private _getRefusal(taskId: string, target?: { taskId: string; position: ITaskMovePosition }): TaskMoveRefusal | undefined {
+        return this._taskRuntime.tasks.getMoveRefusal(taskId, target);
+    }
+
     private _isRowValidDropPosition = (params: IsRowValidDropPositionParams<IRecord>): IsRowValidDropPositionResult<IRecord> | boolean => {
+        const draggedId = params.source.id!;
+        const dragRefusal = this._getRefusal(draggedId);
+        if (dragRefusal) {
+            this._midRowDrop = undefined;
+            this._setHoveredRow(undefined);
+            this._setDropInto(undefined);
+            return this._refuse(dragRefusal);
+        }
         const dragged = new Set(params.rows);
         const over = params.overNode;
         const isOverTask = !!over && !this._isWithin(over, dragged) && params.pointerPos === 'inside';
         this._setHoveredRow(isOverTask ? over : undefined);
         if (isOverTask) {
-            this._midRowDrop = this._getGapDrop(this._getGap(params, dragged), params);
-            return { rows: [], highlight: false };
+            const intoRefusal = this._getRefusal(draggedId, { taskId: over!.id!, position: 'child' });
+            //a release here would otherwise land in the gap the ghost shows as refused
+            this._midRowDrop = intoRefusal ? undefined : this._getGapDrop(this._getGap(params, dragged), params);
+            return intoRefusal ? this._refuse(intoRefusal) : this._accept({ rows: [], highlight: false });
         }
         this._midRowDrop = undefined;
         const result = this._getGapDrop(this._getGap(params, dragged), params);
-        this._setDropInto(result && 'id' in result ? result : undefined);
+        this._setDropInto(result && 'id' in result && !this._getRefusal(draggedId, { taskId: result.id!, position: 'child' }) ? result : undefined);
         if (!result) {
             return false;
         }
-        if ('id' in result || this._isInPlace(result, params.source)) {
-            return { rows: [], highlight: false };
+        if ('id' in result) {
+            const intoRefusal = this._getRefusal(draggedId, { taskId: result.id!, position: 'child' });
+            return intoRefusal ? this._refuse(intoRefusal) : this._accept({ rows: [], highlight: false });
+        }
+        if (this._isInPlace(result, params.source)) {
+            return this._accept({ rows: [], highlight: false });
+        }
+        const gapRefusal = this._getRefusal(draggedId, { taskId: result.target!.id!, position: result.position === 'inside' ? 'child' : result.position as ITaskMovePosition });
+        if (gapRefusal) {
+            return this._refuse(gapRefusal);
         }
         //AG Grid moves a row only once the pointer leaves it
         params.moved = true;
-        return result;
+        return this._accept(result);
     };
+
+    //the ghost redraws, and reads the drag text again, only when told it changed
+    private _refuse(refusal: TaskMoveRefusal): IsRowValidDropPositionResult<IRecord> {
+        const changed = this._refusal !== refusal;
+        this._refusal = refusal;
+        return { rows: [], position: 'none', highlight: false, allowed: false, changed };
+    }
+
+    private _accept(result: IsRowValidDropPositionResult<IRecord>): IsRowValidDropPositionResult<IRecord> {
+        const changed = this._refusal !== undefined;
+        this._refusal = undefined;
+        return changed ? { ...result, changed } : result;
+    }
 
     private _getGap(params: IsRowValidDropPositionParams<IRecord>, dragged: Set<IRowNode<IRecord>>): IGap {
         const over = params.overNode;
@@ -217,7 +261,8 @@ export class TaskDragging implements ITaskDragging {
         this._hoveredRow = row;
         window.clearTimeout(this._dropIntoTimer);
         this._setDropInto(undefined);
-        if (row && !this._taskRuntime.isTaskLocked(row.id!)) {
+        const draggedId = this._dragStart?.record.getRecordId();
+        if (row && draggedId && !this._getRefusal(draggedId, { taskId: row.id!, position: 'child' })) {
             this._dropIntoTimer = window.setTimeout(() => this._setDropInto(row), DROP_INTO_ON_HOVER_MS);
         }
     }
@@ -266,18 +311,11 @@ export class TaskDragging implements ITaskDragging {
         }
     };
 
-    //a sort by another column turns dragging off
-    private _onBeforeNewDataLoaded = (): void => this._grid?.refreshAgGridOptions();
-
     private _onGridApiAvailable = (gridApi: GridApi<IRecord>): void => {
         gridApi.addEventListener('rowDragEnter', this._onRowDragEnter);
         gridApi.addEventListener('rowDragEnd', this._onRowDragEnd);
         gridApi.addEventListener('dragStopped', this._restoreDraggedRow);
         gridApi.addEventListener('rowDragCancel', this._restoreDraggedRow);
-    };
-
-    private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
-        return provider.addEventListener('onBeforeNewDataLoaded', this._onBeforeNewDataLoaded);
     };
 
     private _clearTimers = (): void => {
@@ -322,6 +360,7 @@ export class TaskDragging implements ITaskDragging {
         const start = this._dragStart;
         this._dragStart = undefined;
         this._midRowDrop = undefined;
+        this._refusal = undefined;
         this._setHoveredRow(undefined);
         this._setDropInto(undefined);
         return start;
@@ -393,7 +432,7 @@ export class TaskDragging implements ITaskDragging {
     //a refused, cancelled or failed move snaps back
     private async _moveTask(record: IRecord, targetId: string, position: ITaskMovePosition): Promise<void> {
         try {
-            if (!this._canMoveTask(record.getRecordId()) || !await this._taskRuntime.tasks.move(record.getRecordId(), targetId, position)) {
+            if (!await this._taskRuntime.tasks.move(record.getRecordId(), targetId, position)) {
                 this._syncRows(record);
             }
         }

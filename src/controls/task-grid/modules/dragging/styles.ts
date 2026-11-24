@@ -10,5 +10,8 @@ export const getTaskDraggingStyles = (theme: ITheme, rowSlideMs: number): IStyle
         '.ag-row-dragging': { cursor: 'grabbing' },
         //AG Grid draws the ghost under the pointer, outside the grid
         ':global(body .ag-dnd-ghost)': { cursor: 'grabbing' },
+        //the drag text puts the reason for a refused drop on its second line
+        ':global(body .ag-dnd-ghost-not-allowed .ag-dnd-ghost-label)': { whiteSpace: 'pre-line', color: theme.semanticColors.errorText },
+        ':global(body .ag-dnd-ghost-not-allowed .ag-dnd-ghost-label::first-line)': { color: theme.semanticColors.bodyText },
     },
 });
