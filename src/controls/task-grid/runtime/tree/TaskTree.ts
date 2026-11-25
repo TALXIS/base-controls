@@ -154,7 +154,7 @@ export class TaskTree implements ITaskGridTree {
         if (percentCompleteColDef) {
             percentCompleteColDef.cellRenderer = PercentCompleteCell;
         }
-        columnDefs.push(this._grid.services.get('columns').createEmptyColDef({
+        columnDefs.push(this._grid.services.get('columns').createUnboundColDef({
             colId: TASK_COMMANDS_COLUMN_KEY,
             hide: this._isFlatList,
             width: 50,

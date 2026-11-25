@@ -31,7 +31,7 @@ The example gives \`columnControl\`, the piece that draws the value, a slot in e
 
 \`setValue()\` changes the value as an edit does: it stays unsaved until **Save**, or saves at once with auto-save.
 
-**A column of your own.** The provider's columns are the ones that hold a value; a column with none is made by the grid, with \`columns.createUnboundColDef(colDef)\`, and added in the column definitions hook. It gets the grid's header and keyboard handling, and what you pass overrides them. Its cell draws nothing until you give it a \`cellRenderer\`; for a column whose cells only carry commands, \`columns.createEmptyColDef(colDef)\` draws them empty. A cell of your own is any component that takes \`IGridCellParams\`; \`WeightedValueCell\` composes it from \`Grid.Cell\`'s parts, so it keeps what each part brings:
+**A column of your own.** The provider's columns are the ones that hold a value; a column with none is made by the grid, with \`columns.createUnboundColDef(colDef)\`, and added in the column definitions hook. It gets the grid's header, keyboard handling and empty cells, and what you pass overrides them, so it draws nothing of its own until you give it a \`cellRenderer\`. A cell of your own is any component that takes \`IGridCellParams\`; \`WeightedValueCell\` composes it from \`Grid.Cell\`'s parts, so it keeps what each part brings:
 
 | Part | Brings |
 |---|---|

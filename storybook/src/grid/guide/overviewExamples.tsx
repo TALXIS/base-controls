@@ -364,7 +364,7 @@ const dealCommands: IGridModule = {
         const columns = grid.services.get('columns')
         columns.hooks.columnDefinitions.add(columnDefs => {
             //a column of the grid's own: its cells hold only the commands added below
-            columnDefs.push(columns.createEmptyColDef({ colId: 'actions', pinned: 'right', initialWidth: 96 }))
+            columnDefs.push(columns.createUnboundColDef({ colId: 'actions', pinned: 'right', initialWidth: 96 }))
         })
         grid.services.get('cells').hooks.commands.add((result, { record, columnName }) => {
             if (columnName !== 'actions' || isSummaryRow(record) || isClosed(record)) {

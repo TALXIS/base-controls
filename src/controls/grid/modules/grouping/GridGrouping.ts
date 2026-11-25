@@ -361,7 +361,7 @@ export class GridGrouping implements IGridGrouping {
         columnDefs.sort((left, right) => Number(isGrouped(right)) - Number(isGrouped(left)));
         //nothing to open while nothing is grouped
         if (columnDefs.some(isGrouped)) {
-            columnDefs.push(this._gridServices.get('columns').createEmptyColDef({
+            columnDefs.push(this._gridServices.get('columns').createUnboundColDef({
                 colId: GROUP_EXPANSION_COLUMN_KEY,
                 width: 60,
                 lockPinned: true,

@@ -1649,10 +1649,8 @@ interface IGridColumns {
         /** Runs on every column build and on every load of the provider. */
         readonly columnDefinitions: IHookPoint<GridColumnDefinitionsHook>;
     };
-    /** Makes a column bound to no provider column, with the grid's header and keyboard handling; \`colDef\` wins. */
+    /** Makes a column bound to no provider column, with the grid's defaults; \`colDef\` wins. */
     createUnboundColDef(colDef: IGridColDef & { colId: string }): IGridColDef;
-    /** Makes an unbound column whose cells draw no value, only the commands and states put on them. */
-    createEmptyColDef(colDef: IGridColDef & { colId: string }): IGridColDef;
 }
 
 /** Which cell a hook is running for. */

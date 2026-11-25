@@ -43,10 +43,8 @@ export interface IGridColumns {
     /** What a column header offers, assembled from what the modules added. */
     readonly headers: IGridColumnHeaders;
     readonly hooks: IGridColumnsHooks;
-    /** Makes a column bound to no provider column, with the grid's header and keyboard handling; `colDef` wins. */
+    /** Makes a column bound to no provider column, with the grid's defaults; `colDef` wins. */
     createUnboundColDef(colDef: IGridColDef & { colId: string }): IGridColDef;
-    /** Makes an unbound column whose cells draw no value, only the commands and states put on them. */
-    createEmptyColDef(colDef: IGridColDef & { colId: string }): IGridColDef;
 }
 
 /** What the grid's own parts read of it. */
@@ -85,6 +83,7 @@ export class GridColumns implements IGridColumnsInternal {
         return {
             headerName: '',
             headerComponent: ColumnHeaderRenderer,
+            cellRenderer: CellEmptyRenderer,
             valueGetter: () => null,
             valueFormatter: () => '',
             suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
@@ -92,10 +91,6 @@ export class GridColumns implements IGridColumnsInternal {
             editable: !!colDef.cellEditor && !!editing && ((params: EditableCallbackParams<IRecord>) => editing.isEditorAvailable(params.data, params.colDef)),
             ...colDef,
         };
-    }
-
-    public createEmptyColDef(colDef: IGridColDef & { colId: string }): IGridColDef {
-        return this.createUnboundColDef({ cellRenderer: CellEmptyRenderer, ...colDef });
     }
 
     private _getAlignment(column: IColumn): IAlignment {

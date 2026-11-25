@@ -76,7 +76,7 @@ export class ChecklistColumns {
         const context: IGridColumnContext = {
             alignment: 'center',
         };
-        return this._services.get('columns').createEmptyColDef({
+        return this._services.get('columns').createUnboundColDef({
             ...CONTROL_COLUMN_DEFINITION,
             colId: DELETE_COLUMN_NAME,
             pinned: 'right',
