@@ -9,7 +9,7 @@ import { GRID_GROUPING_LABELS } from "./labels";
 import { GridGroupingIconComponents, IGridGroupingComponents } from "./components";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../runtime/column-header";
 import { IGridGroupingServiceRegistry } from "./runtime";
-import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
+import { GroupExpansionHeader } from "./adapters/group-expansion-header/GroupExpansionHeader";
 import { CellEmptyRenderer } from "../../adapters/cells/empty-cell-renderer/CellEmptyRenderer";
 import { GroupCell } from "./adapters/group-cell/GroupCell";
 import { GroupSelectionLimitDialog } from "./adapters/group-selection-limit-dialog/GroupSelectionLimitDialog";
@@ -29,6 +29,9 @@ declare module "../../interfaces" {
 
 /** The chevron and the count a group row draws beside the value. */
 const GROUPED_COLUMN_WIDTH_OFFSET = 80;
+
+/** The key the expansion column takes. */
+export const GROUP_EXPANSION_COLUMN_KEY = 'groupExpansion';
 
 /** How many children a group loads before it stops and says so. */
 const CHILD_LIMIT = 5000;
@@ -358,7 +361,19 @@ export class GridGrouping implements IGridGrouping {
         columnDefs.sort((left, right) => Number(isGrouped(right)) - Number(isGrouped(left)));
         //nothing to open while nothing is grouped
         if (columnDefs.some(isGrouped)) {
-            columnDefs.push(getGroupExpansionColumnDefinition());
+            columnDefs.push(this._gridServices.get('columns').createEmptyColDef({
+                colId: GROUP_EXPANSION_COLUMN_KEY,
+                width: 60,
+                lockPinned: true,
+                //locked, not just pinned: nothing may sort or reorder this out of the front
+                lockPosition: 'left',
+                resizable: false,
+                sortable: false,
+                pinned: 'left',
+                suppressSizeToFit: true,
+                suppressMovable: true,
+                headerComponent: GroupExpansionHeader,
+            }));
         }
     };
 

@@ -201,9 +201,8 @@ export class GridEditing implements IGridEditing {
 
     /** The column a row reports its save in. */
     private _getRecordSaveColumnDefinition(): ColDef<IRecord> {
-        return {
+        return this._services.get('columns').createUnboundColDef({
             colId: RECORD_SAVE_COLUMN_KEY,
-            headerName: '',
             width: 40,
             lockPinned: true,
             lockPosition: 'left',
@@ -212,17 +211,14 @@ export class GridEditing implements IGridEditing {
             pinned: 'left',
             suppressSizeToFit: true,
             suppressMovable: true,
-            valueGetter: () => null,
-            valueFormatter: () => '',
             cellRenderer: RecordSaveIndicatorCell,
-        };
+        });
     }
 
     /** The column a record locked as a whole shows its lock in, shown only while there is one. */
     private _getRecordLockColumnDefinition(): ColDef<IRecord> {
-        return {
+        return this._services.get('columns').createUnboundColDef({
             colId: RECORD_LOCK_COLUMN_KEY,
-            headerName: '',
             width: 40,
             lockPinned: true,
             lockPosition: 'left',
@@ -233,10 +229,8 @@ export class GridEditing implements IGridEditing {
             suppressMovable: true,
             //later pushes of the definitions keep the visibility set here
             initialHide: true,
-            valueGetter: () => null,
-            valueFormatter: () => '',
             cellRenderer: RecordLockIndicatorCell,
-        };
+        });
     }
 
     private _onRecordColumnValueChanged = (record: IRecord): void => {

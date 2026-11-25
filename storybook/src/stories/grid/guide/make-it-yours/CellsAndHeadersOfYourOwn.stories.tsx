@@ -31,7 +31,7 @@ The example gives \`columnControl\`, the piece that draws the value, a slot in e
 
 \`setValue()\` changes the value as an edit does: it stays unsaved until **Save**, or saves at once with auto-save.
 
-**A column of your own.** A definition whose \`colId\` is not a provider column's name adds a column. It holds no value of its own, and its cell is empty until you give it a \`cellRenderer\`. A cell of your own is any component that takes \`IGridCellParams\`; \`WeightedValueCell\` composes it from \`Grid.Cell\`'s parts, so it keeps what each part brings:
+**A column of your own.** The provider's columns are the ones that hold a value; a column with none is made by the grid, with \`columns.createUnboundColDef(colDef)\`, and added in the column definitions hook. It gets the grid's header and keyboard handling, and what you pass overrides them. Its cell draws nothing until you give it a \`cellRenderer\`; for a column whose cells only carry commands, \`columns.createEmptyColDef(colDef)\` draws them empty. A cell of your own is any component that takes \`IGridCellParams\`; \`WeightedValueCell\` composes it from \`Grid.Cell\`'s parts, so it keeps what each part brings:
 
 | Part | Brings |
 |---|---|
@@ -78,7 +78,7 @@ The modules add their sections at \`GRID_MODULE_PRIORITY\`, so *Quick filters* c
 ## Remember
 
 - \`cellRendererParams\`, \`cellEditorParams\` and \`headerComponentParams\` hand a column's cells and header new slots; the rest draws as before.
-- A column of your own needs a cell of your own, built from \`Grid.Cell\`'s parts.
+- A column of your own is made with \`createUnboundColDef\`, and needs a cell of your own, built from \`Grid.Cell\`'s parts.
 - Commands and header hooks run for every cell or header: check the column first.
 
 {{block: navigation}}

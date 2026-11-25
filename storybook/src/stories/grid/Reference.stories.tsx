@@ -89,7 +89,7 @@ Once the grid has unmounted, \`find\` returns \`undefined\`, \`get\` throws, \`o
 | \`provider\` | The provider the grid shows. |
 | \`fields\` | \`get(record, columnName)\` returns an \`IGridField\`: \`getValue()\`, \`getFormattedValue()\`, \`isValid()\`, \`getRecord()\`, \`getColumn()\`, and \`setValue(value)\`, which also saves the record while the editing module's \`enableAutoSave\` is on. |
 | \`cells\` | The cells on screen: \`render({ columnNames? })\`, \`getCells()\`, \`getCell(record, columnName)\`, \`events\` and the cell hooks. |
-| \`columns\` | The column definitions hook, \`events\`, and \`headers\`: \`render()\` and the header hooks. |
+| \`columns\` | The column definitions hook, \`events\`, \`headers\`: \`render()\` and the header hooks, and the methods that make a column bound to no provider column: \`createUnboundColDef(colDef)\` with the grid's header and keyboard handling, and \`createEmptyColDef(colDef)\`, which also draws its cells empty, for cells that only carry commands. What you pass overrides the defaults. |
 | \`rows\` | \`events\`, \`hooks.height\`, \`addRowClass(className, rule)\` and \`refreshRowClasses(records)\`. |
 | \`validation\` | The validation hook. |
 | \`surfaces\` | \`hooks.surfaces\`, for what a module draws inside the grid. See Grid's [**Write a module**](?path=/docs/controls-grid-guide-advanced-write-a-module--overview). |

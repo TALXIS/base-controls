@@ -76,13 +76,13 @@ export class ChecklistColumns {
         const context: IGridColumnContext = {
             alignment: 'center',
         };
-        return {
+        return this._services.get('columns').createEmptyColDef({
             ...CONTROL_COLUMN_DEFINITION,
             colId: DELETE_COLUMN_NAME,
             pinned: 'right',
             lockPosition: 'right',
             context: context,
-        };
+        });
     }
 
     //its own column only, after every other hook

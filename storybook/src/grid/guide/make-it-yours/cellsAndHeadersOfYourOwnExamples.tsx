@@ -72,21 +72,22 @@ const WeightedValueCell = (props: IGridCellParams) => <Grid.Cell.Root {...props}
 
 //new: called with each new grid before it loads
 const drawCells = (grid: IGrid) => {
-    grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
+    const columns = grid.services.get('columns')
+    columns.hooks.columnDefinitions.add(columnDefs => {
         const probability = columnDefs.find(colDef => colDef.colId === 'probability')!
         //new: the ring in each cell, and the slider while the cell is edited
         probability.cellRendererParams = { components: { columnControl: { onRender: () => <ChanceRing /> } } }
         probability.cellEditorParams = { components: { columnControl: { onRender: () => <ChanceSlider /> } } }
         //new: room for the slider
         probability.initialWidth = 200
-        //new: a column of your own, after Probability (%)
-        columnDefs.splice(columnDefs.indexOf(probability) + 1, 0, {
+        //new: a column of your own, bound to no provider column, after Probability (%)
+        columnDefs.splice(columnDefs.indexOf(probability) + 1, 0, columns.createUnboundColDef({
             colId: 'weightedvalue',
             headerName: 'Weighted value',
             initialWidth: 140,
             cellRenderer: WeightedValueCell,
             context: { alignment: 'right' },
-        })
+        }))
     })
     //new: runs for every cell
     grid.services.get('cells').hooks.commands.add((result, { record, columnName }) => {

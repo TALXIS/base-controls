@@ -1,7 +1,7 @@
 import React from 'react'
 import { Dropdown, IDropdownOption, Stack, Text } from '@fluentui/react'
 import type { ColDef } from 'ag-grid-community'
-import { createCellSelectionModule, ClientSideGrid, createClipboardModule, createEditingModule, Grid, GRID_MODULE_PRIORITY, IGrid, IGridCellParams, IGridModule, PcfContextProvider, DatasetControl } from '@talxis/base-controls'
+import { createCellSelectionModule, ClientSideGrid, createClipboardModule, createEditingModule, Grid, GRID_MODULE_PRIORITY, IGrid, IGridCellParams, IGridColumns, IGridModule, PcfContextProvider, DatasetControl } from '@talxis/base-controls'
 import { getFormatting, getLocaleFromLanguageId, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATE_COLUMN_NAMES, getDataSource, PRIMARY_ID } from './parsingScratchData'
 import { mockTimeZone } from './mockTimeZone'
@@ -92,22 +92,25 @@ const StoredCell = (props: IGridCellParams) => {
     </Grid.Cell.Root>
 }
 
-const addParsingColumns = (columnDefs: ColDef<IRecord>[]) => {
+const addParsingColumns = (columnDefs: ColDef<IRecord>[], columns: IGridColumns) => {
     const name = columnDefs.find(colDef => colDef.colId === 'name')
     if (name) {
         name.pinned = 'left'
     }
-    columnDefs.push({
+    columnDefs.push(columns.createUnboundColDef({
         colId: STORED_COLUMN,
         headerName: 'Stored (what a save sends)',
         initialWidth: 900,
         autoHeight: true,
         valueGetter: params => params.data ? JSON.stringify(getStoredValues(params.data)) : null,
         cellRenderer: StoredCell,
-    })
+    }))
 }
 
-const onSetup = (grid: IGrid) => grid.services.get('columns').hooks.columnDefinitions.add(addParsingColumns, GRID_MODULE_PRIORITY.clipboard + 1)
+const onSetup = (grid: IGrid) => {
+    const columns = grid.services.get('columns')
+    columns.hooks.columnDefinitions.add(columnDefs => addParsingColumns(columnDefs, columns), GRID_MODULE_PRIORITY.clipboard + 1)
+}
 
 const createModules = (autoSave: boolean): IGridModule[] => [
     createEditingModule({ enableAutoSave: autoSave }),

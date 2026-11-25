@@ -5,7 +5,7 @@ import { HookRegistry, IAlignment, IEventSubscriber, IHookPoint } from "@core";
 import { CellFieldRenderer } from "../../adapters/cells/field-cell-renderer/CellFieldRenderer";
 import { IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../adapters/column-header/ColumnHeaderRenderer";
-import { getColumnContext, IGridColumnContext } from "./colDef";
+import { IGridColDef, IGridColumnContext } from "./colDef";
 import { IGridServiceRegistryInternal } from "..";
 import { GridColumnHeaders, IGridColumnHeaders, IGridColumnHeadersInternal } from "../column-header";
 import { CellEmptyRenderer } from "../../adapters/cells/empty-cell-renderer/CellEmptyRenderer";
@@ -43,6 +43,10 @@ export interface IGridColumns {
     /** What a column header offers, assembled from what the modules added. */
     readonly headers: IGridColumnHeaders;
     readonly hooks: IGridColumnsHooks;
+    /** Makes a column bound to no provider column, with the grid's header and keyboard handling; `colDef` wins. */
+    createUnboundColDef(colDef: IGridColDef & { colId: string }): IGridColDef;
+    /** Makes an unbound column whose cells draw no value, only the commands and states put on them. */
+    createEmptyColDef(colDef: IGridColDef & { colId: string }): IGridColDef;
 }
 
 /** What the grid's own parts read of it. */
@@ -72,28 +76,26 @@ export class GridColumns implements IGridColumnsInternal {
 
     public getColumnDefinitions(): ColDef<IRecord>[] {
         const columnDefs = this._provider.getColumns().filter(column => !column.isHidden).map(column => this._getColumnDefinition(column));
-        const own = new Set(columnDefs);
         this.hooks.columnDefinitions.apply(columnDefs);
-        columnDefs.filter(columnDef => !own.has(columnDef)).forEach(columnDef => this._applyGridBehaviour(columnDef));
-        columnDefs.forEach(columnDef => this._applyColumnType(columnDef));
         return columnDefs;
     }
 
-    //only the renderer the grid gave: one a hook set stays
-    private _applyColumnType(columnDef: ColDef<IRecord>): void {
-        if (getColumnContext(columnDef).type === 'action' && columnDef.cellRenderer === CellFieldRenderer) {
-            columnDef.cellRenderer = CellEmptyRenderer;
-        }
+    public createUnboundColDef(colDef: IGridColDef & { colId: string }): IGridColDef {
+        const editing = this._services.get('grid').modules.find('editing');
+        return {
+            headerName: '',
+            headerComponent: ColumnHeaderRenderer,
+            valueGetter: () => null,
+            valueFormatter: () => '',
+            suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
+            suppressHeaderKeyboardEvent: (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params),
+            editable: !!colDef.cellEditor && !!editing && ((params: EditableCallbackParams<IRecord>) => editing.isEditorAvailable(params.data, params.colDef)),
+            ...colDef,
+        };
     }
 
-    /** What a column a hook added takes from the grid, where it did not say otherwise. */
-    private _applyGridBehaviour(columnDef: ColDef<IRecord>): void {
-        columnDef.headerComponent ??= ColumnHeaderRenderer;
-        columnDef.cellRenderer ??= CellEmptyRenderer;
-        columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
-        columnDef.suppressHeaderKeyboardEvent ??= (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params);
-        const editing = this._services.get('grid').modules.find('editing');
-        columnDef.editable ??= !!columnDef.cellEditor && !!editing && ((params: EditableCallbackParams<IRecord>) => editing.isEditorAvailable(params.data, params.colDef));
+    public createEmptyColDef(colDef: IGridColDef & { colId: string }): IGridColDef {
+        return this.createUnboundColDef({ cellRenderer: CellEmptyRenderer, ...colDef });
     }
 
     private _getAlignment(column: IColumn): IAlignment {

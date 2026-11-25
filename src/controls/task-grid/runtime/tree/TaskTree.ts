@@ -154,9 +154,8 @@ export class TaskTree implements ITaskGridTree {
         if (percentCompleteColDef) {
             percentCompleteColDef.cellRenderer = PercentCompleteCell;
         }
-        columnDefs.push({
+        columnDefs.push(this._grid.services.get('columns').createEmptyColDef({
             colId: TASK_COMMANDS_COLUMN_KEY,
-            headerName: '',
             hide: this._isFlatList,
             width: 50,
             pinned: 'left',
@@ -167,7 +166,7 @@ export class TaskTree implements ITaskGridTree {
             suppressSizeToFit: true,
             cellRenderer: TaskCommandsCell,
             headerComponent: ExpansionHeader,
-        });
+        }));
         const getOrder = (colDef: ColDef<IRecord>): number => {
             if (LEADING_COLUMN_KEYS.has(colDef.colId!)) {
                 return 0;

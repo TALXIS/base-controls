@@ -2,13 +2,8 @@ import type { IRecord } from "@talxis/client-libraries";
 import type { ColDef } from "ag-grid-community";
 import type { IAlignment } from "@core";
 
-/** What a column's cells hold: a record's value, or what acts on the row. */
-export type IGridColumnType = 'data' | 'action';
-
 /** What the grid's own column is, whatever its cells are bound to. */
 export interface IGridColumnContext {
-    /** An `'action'` column's cells draw no value unless its `cellRenderer` says otherwise; defaults to `'data'`. */
-    type?: IGridColumnType;
     /** Which edge the value reads from. */
     alignment?: IAlignment;
     /** Whether the column's value stands for the record, drawn as a link to it. */

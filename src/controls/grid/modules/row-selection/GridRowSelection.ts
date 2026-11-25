@@ -1,7 +1,8 @@
 import { HookRegistry, IHookPoint } from "@core";
 import { ColDef, GridApi, IRowNode, SelectionChangedEvent, SuppressMouseEventHandlingParams } from "ag-grid-community";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
+import { SelectionCell } from "./adapters/selection-cell/SelectionCell";
+import { SelectionHeader } from "./adapters/selection-header/SelectionHeader";
 import { SELECTION_COLUMN_KEY } from "./constants";
 import { IGridRowSelectionServiceRegistry } from "./runtime";
 import { GRID_MODULE_PRIORITY } from "../priorities";
@@ -161,7 +162,19 @@ export class GridRowSelection implements IGridRowSelection {
 
     /** Adds the column the checkboxes live in. */
     private _onColumnDefinitions = (columnDefs: ColDef<IRecord>[]): void => {
-        columnDefs.unshift(getSelectionColumnDefinition());
+        columnDefs.unshift(this._services.get('gridServices').get('columns').createUnboundColDef({
+            colId: SELECTION_COLUMN_KEY,
+            width: 40,
+            lockPinned: true,
+            //locked so a module reordering the definitions cannot move it
+            lockPosition: 'left',
+            resizable: false,
+            pinned: 'left',
+            headerComponent: SelectionHeader,
+            suppressSizeToFit: true,
+            suppressMovable: true,
+            cellRenderer: SelectionCell,
+        }));
     };
 
     /** Keeps the clicks that mean something else from reaching AG Grid's row-click selection. */

@@ -361,8 +361,10 @@ const dealCommands: IGridModule = {
             const targets = selectedIds.includes(deal.getRecordId()) ? selectedIds.map(recordId => findDeal(provider, recordId)) : [deal]
             await Promise.all(targets.filter(target => target && !isClosed(target)).map(target => closeDeal(grid, target, stage)))
         }
-        grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
-            columnDefs.push({ colId: 'actions', headerName: '', pinned: 'right', initialWidth: 96 })
+        const columns = grid.services.get('columns')
+        columns.hooks.columnDefinitions.add(columnDefs => {
+            //a column of the grid's own: its cells hold only the commands added below
+            columnDefs.push(columns.createEmptyColDef({ colId: 'actions', pinned: 'right', initialWidth: 96 }))
         })
         grid.services.get('cells').hooks.commands.add((result, { record, columnName }) => {
             if (columnName !== 'actions' || isSummaryRow(record) || isClosed(record)) {

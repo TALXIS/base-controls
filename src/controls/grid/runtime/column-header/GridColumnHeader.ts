@@ -25,7 +25,7 @@ export interface IGridColumnHeader {
     readonly events: IEventSubscriber<IGridColumnHeaderEvents>;
     /** What this header is drawn in. */
     getTheme(): IGridColumnHeaderTheme;
-    /** Asks for the menu to open. */
+    /** Asks for the menu to open, unless nothing would be in it. */
     openMenu(): void;
     /** Asks for it to go away again. */
     closeMenu(): void;
@@ -68,6 +68,9 @@ export class GridColumnHeader implements IGridColumnHeader {
     }
 
     public openMenu(): void {
+        if (this.getMenuItems().length === 0) {
+            return;
+        }
         this.events.dispatchEvent('onMenuVisibilityChanged', true);
     }
 

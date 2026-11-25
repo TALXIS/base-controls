@@ -1,7 +1,7 @@
 import React from 'react'
 import { CommandBarButton, Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
 import type { ColDef } from 'ag-grid-community'
-import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, ClientSideGrid, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, ServerSideGrid, Callout, Grid, GridValidationHook, IColumnHeaderRendererProps, IGridCellParams, DatasetControl } from '@talxis/base-controls'
+import { getTextColorForBackground, GRID_MODULE_PRIORITY, IGridModule, createCellSelectionModule, ClientSideGrid, createClipboardModule, createEditingModule, createRowSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createLegacyClientApiCompatibilityModule, ServerSideGrid, Callout, Grid, GridValidationHook, IColumnHeaderRendererProps, IGridColumns, IGridCellParams, DatasetControl } from '@talxis/base-controls'
 import { DataTypes, IAddControlNotificationOptions, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
 
@@ -332,8 +332,6 @@ const SUMMARY_COLUMN_DEFINITION = {
     colId: SUMMARY_COLUMN,
     headerName: 'Summary',
     initialWidth: 160,
-    valueGetter: () => null,
-    valueFormatter: () => '',
 }
 //an estimate this team would not plan in, so a refused value can be seen
 const validateEstimate: GridValidationHook = (result, { record, columnName }) => {
@@ -345,7 +343,7 @@ const validateEstimate: GridValidationHook = (result, { record, columnName }) =>
 }
 
 /** The columns the story adds or changes, beyond what the provider holds. */
-const changeScratchColumns = (columnDefs: ColDef<IRecord>[]) => {
+const changeScratchColumns = (columnDefs: ColDef<IRecord>[], columns: IGridColumns) => {
     for (const colDef of columnDefs) {
         switch (colDef.colId) {
             case 'status':
@@ -358,7 +356,7 @@ const changeScratchColumns = (columnDefs: ColDef<IRecord>[]) => {
                 break
         }
     }
-    columnDefs.push({ ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader })
+    columnDefs.push(columns.createUnboundColDef({ ...SUMMARY_COLUMN_DEFINITION, cellRenderer: SummaryCell, headerComponent: SummaryHeader }))
 }
 
 export interface IScratchGridProps {
@@ -487,7 +485,8 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                     stateKey='scratch-grid'
                     onSetup={grid => {
                         (window as any).__scratchGrid = grid
-                        grid.services.get('columns').hooks.columnDefinitions.add(changeScratchColumns, GRID_MODULE_PRIORITY.clipboard + 1)
+                        const columns = grid.services.get('columns')
+                        columns.hooks.columnDefinitions.add(columnDefs => changeScratchColumns(columnDefs, columns), GRID_MODULE_PRIORITY.clipboard + 1)
                         grid.services.get('validation').hooks.validation.add(validateEstimate)
                     }}
                     onReady={grid => { (window as any).__scratchGridApi = grid.services.get('gridApi') }} />
