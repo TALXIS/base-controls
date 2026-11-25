@@ -102,7 +102,8 @@ export class DatasetControlEditColumnsSession {
     }
 
     public addColumn(column: IColumn): void {
-        const added = this._scope ? toScopedColumn(column, this._getLink(this._scope), this._scope) : column;
+        //an available column can be one the view hides
+        const added = { ...(this._scope ? toScopedColumn(column, this._getLink(this._scope), this._scope) : column), isHidden: false };
         this._columns = [added, ...this._columns.filter(existing => existing.name !== added.name)];
         this.events.dispatchEvent('onColumnAdded', added);
         this.events.dispatchEvent('onColumnsChanged');
