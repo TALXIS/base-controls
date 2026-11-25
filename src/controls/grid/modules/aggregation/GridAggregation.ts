@@ -1,7 +1,7 @@
 import { ColDef, ICellRendererParams, IsFullWidthRowParams } from "ag-grid-community";
 import { FontWeights } from "@fluentui/react";
 import { ThemeBuilder, ITheme } from "@theme";
-import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRecord, TotalRow } from "@talxis/client-libraries";
+import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRecord, IRecordSaveOperationResult, TotalRow } from "@talxis/client-libraries";
 import { LabelsOf } from "@labels";
 import { GRID_AGGREGATION_LABELS } from "./labels";
 import { IGridAggregationComponents } from "./components";
@@ -313,9 +313,24 @@ export class GridAggregation implements IGridAggregation {
         this._totalRow?.refresh();
     };
 
-    private _onAfterRecordSaved = (): void => {
+    private _onAfterRecordSaved = (result: IRecordSaveOperationResult): void => {
         this._totalRow?.refresh();
+        this._reloadGroupRows(result);
     };
+
+    private async _reloadGroupRows(result: IRecordSaveOperationResult): Promise<void> {
+        const record = this._provider.getRecordsMap()[result.recordId];
+        if (!result.success || !record) {
+            return;
+        }
+        const groupRecords = await record.getDataProvider().reloadGroupRecords();
+        const gridApi = this._gridServices.find('gridApi');
+        if (groupRecords.length === 0 || !gridApi || gridApi.isDestroyed()) {
+            return;
+        }
+        const rowNodes = groupRecords.map(groupRecord => gridApi.getRowNode(groupRecord.getRecordId())).filter(node => !!node);
+        gridApi.refreshCells({ rowNodes, force: true });
+    }
 
     private _onAfterRecordsDeleted = (): void => {
         this._totalRow?.refresh();
