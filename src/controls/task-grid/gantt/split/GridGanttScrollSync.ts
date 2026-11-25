@@ -52,13 +52,14 @@ export class GridGanttScrollSync {
     //the chart's horizontal scrollbar shortens its rows so it scrolls further than the grid
     private _matchScrollRange = (): void => {
         const chartScroller = this._attachChartScroller();
-        const padding = parseFloat(this._gridScroller.style.paddingBottom) || 0;
-        const gridRange = this._gridScroller.scrollHeight - this._gridScroller.clientHeight - padding;
         const chartRange = chartScroller ? chartScroller.scrollHeight - chartScroller.clientHeight : 0;
-        const missing = Math.max(0, chartRange - gridRange);
-        if (missing !== padding) {
-            this._gridScroller.style.paddingBottom = missing ? `${missing}px` : '';
-        }
+        const scroller = this._gridScroller;
+        const top = scroller.scrollTop;
+        //measured without the padding since the viewport cannot shrink below it
+        scroller.style.paddingBottom = '';
+        const missing = Math.max(0, chartRange - (scroller.scrollHeight - scroller.clientHeight));
+        scroller.style.paddingBottom = missing ? `${missing}px` : '';
+        scroller.scrollTop = top;
     };
 
     //the chart drops its vertical scrollbar while every row fits
