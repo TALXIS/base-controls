@@ -13,8 +13,6 @@ export interface ITaskColumnValuesParameters {
     load: (taskIds: string[]) => Promise<Map<string, IRawRecord> | void>;
     /** What a failed load is kept as. */
     errorMessage: () => string;
-    /** Loads a task's values again once its editor closes. */
-    reloadOnEditorClosed?: boolean;
 }
 
 /** Loads values kept apart from the tasks after the tasks, or first when a query needs them. */
@@ -57,11 +55,12 @@ export class TaskColumnValues {
     private _onProviderAvailable = (provider: ITaskDataProvider): (() => void) => {
         const offFirstDataLoaded = provider.addEventListener('onFirstDataLoaded', this._onFirstDataLoaded);
         const removeLoadWaiter = provider.addLoadWaiter(this._waitForValues);
-        const offEditorClosed = this._parameters.reloadOnEditorClosed ? provider.taskEvents.addEventListener('onEditorClosed', this._onEditorClosed) : undefined;
+        //what the task's form changed is not on the task itself
+        const offEditorClosed = provider.taskEvents.addEventListener('onEditorClosed', this._onEditorClosed);
         return () => {
             offFirstDataLoaded();
             removeLoadWaiter();
-            offEditorClosed?.();
+            offEditorClosed();
         };
     };
 

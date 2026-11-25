@@ -6,5 +6,5 @@ export interface ITalxisTaskChecklistModuleParameters extends Omit<ITaskChecklis
 
 /** Checklists stored as JSON on each TALXIS task. */
 export const createTalxisTaskChecklistModule = (parameters: ITalxisTaskChecklistModuleParameters = {}): ITaskChecklistModule => {
-    return createTaskChecklistModule({ reloadOnEditorClosed: true, ...parameters, createStore: taskRuntime => new TalxisTaskChecklistStore(taskRuntime) });
+    return createTaskChecklistModule({ ...parameters, createStore: taskRuntime => new TalxisTaskChecklistStore(taskRuntime) });
 };

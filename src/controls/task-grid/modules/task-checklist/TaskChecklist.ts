@@ -39,8 +39,6 @@ export interface ITaskChecklistComponents {
 
 export interface ITaskChecklistParameters {
     createStore: (taskRuntime: ITaskRuntime) => ITaskChecklistStore;
-    /** Loads a task's items again once its editor closes. */
-    reloadOnEditorClosed?: boolean;
     components?: ITaskChecklistComponents;
 }
 
@@ -76,7 +74,6 @@ export class TaskChecklist implements ITaskChecklist {
             columnNames: () => [TASK_CHECKLIST_COLUMN_NAME],
             load: this._loadItems,
             errorMessage: () => this._labels.get('taskChecklist.loadChecklistFailed'),
-            reloadOnEditorClosed: parameters.reloadOnEditorClosed,
         });
         taskRuntime.services.observe('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);

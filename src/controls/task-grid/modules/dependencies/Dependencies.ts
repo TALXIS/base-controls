@@ -58,8 +58,6 @@ export interface IDependenciesComponents {
 
 export interface IDependenciesParameters {
     createStore: (taskRuntime: ITaskRuntime) => IDependenciesStore;
-    /** Loads a task's dependencies again once its editor closes. */
-    reloadOnEditorClosed?: boolean;
     components?: IDependenciesComponents;
 }
 
@@ -130,7 +128,6 @@ export class Dependencies implements IDependencies {
             columnNames: () => DEPENDENCY_COLUMN_NAMES,
             load: this._loadDependencies,
             errorMessage: () => this._labels.get('dependencies.loadDependenciesFailed'),
-            reloadOnEditorClosed: parameters.reloadOnEditorClosed,
         });
         taskRuntime.services.observe('provider', this._onProviderAvailable);
         taskRuntime.services.get('datasetControl').parts.observe('grid', this._onGridAvailable);
