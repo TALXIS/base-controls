@@ -281,7 +281,7 @@ const recurringSwitch: IGridModule = {
     onLoad: grid => {
         grid.services.get('columns').hooks.columnDefinitions.add(columnDefs => {
             const recurring = columnDefs.find(colDef => colDef.colId === 'recurring')!
-            recurring.context = { ...recurring.context, cell: { ...recurring.context?.cell, enableOneClickEdit: true } }
+            recurring.context = { ...recurring.context, oneClickEdit: true }
         })
     },
 }

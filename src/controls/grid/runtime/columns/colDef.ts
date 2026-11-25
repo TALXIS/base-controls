@@ -2,12 +2,6 @@ import type { IRecord } from "@talxis/client-libraries";
 import type { ColDef } from "ag-grid-community";
 import type { IAlignment } from "@core";
 
-/** What a column decides for each of its cells. */
-export interface IGridColumnCellContext {
-    /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
-    isRowResizable?: boolean;
-}
-
 /** What the grid's own column is, whatever its cells are bound to. */
 export interface IGridColumnContext {
     /** Which edge the value reads from. */
@@ -18,8 +12,8 @@ export interface IGridColumnContext {
     isRequired?: boolean;
     /** Unsaved width a module adds for what it draws. */
     widthOffset?: number;
-    /** How each of the column's cells behaves. */
-    cell?: IGridColumnCellContext;
+    /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
+    isRowResizable?: boolean;
     /** Your own options for the column, read back with `getColumnContext`. */
     [key: string]: unknown;
 }

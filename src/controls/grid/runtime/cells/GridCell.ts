@@ -134,7 +134,7 @@ export class GridCell implements IGridCell {
 
     public takesInput(): boolean {
         //a one-click column takes input where its cell stands
-        return this._takesInput || (!!this._editing && !!this.getContext().cell?.enableOneClickEdit);
+        return this._takesInput || (!!this._editing && !!this.getContext().oneClickEdit);
     }
 
     public getContext(): IGridColumnContext {

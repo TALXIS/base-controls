@@ -26,7 +26,7 @@ const GridExample = () => {
             deal.context = { ...deal.context, isPrimary: true }
             const recurring = columnDefs.find(colDef => colDef.colId === 'recurring')!
             //new: a switch in each cell
-            recurring.context = { ...recurring.context, cell: { ...recurring.context?.cell, enableOneClickEdit: true } }
+            recurring.context = { ...recurring.context, oneClickEdit: true }
             //new: room for the notes
             columnDefs.find(colDef => colDef.colId === 'notes')!.initialWidth = 360
         })

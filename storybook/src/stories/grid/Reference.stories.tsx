@@ -194,8 +194,8 @@ What the grid reads from a column definition's \`context\`; keys of your own sit
 | \`isRequired\` | \`boolean\` | Draws the required marker in the header; the editing module sets it from \`RequiredLevel\`. Validates nothing. |
 | \`alignment\` | \`'left' \\| 'center' \\| 'right'\` | Which edge the value reads from; numbers and currency default to \`'right'\`. |
 | \`widthOffset\` | \`number\` | Pixels added for what a module draws in the column, such as grouping's indent. Not saved. |
-| \`cell.isRowResizable\` | \`boolean\` | Draws the grip a row is dragged taller by; on by default for text areas and multiline text. |
-| \`cell.enableOneClickEdit\` | \`boolean\` | With the editing module, draws the column's editing control in the cell, so no editor opens. |
+| \`isRowResizable\` | \`boolean\` | Draws the grip a row is dragged taller by; on by default for text areas and multiline text. |
+| \`oneClickEdit\` | \`boolean\` | With the editing module, draws the column's editing control in the cell, so no editor opens. |
 
 ### Control parameters
 
@@ -211,7 +211,7 @@ A \`controlParameters\` hook on the \`cells\` service changes what a cell's cont
 | \`IsMultiline\` | \`true\` wraps the text onto the lines its row has room for, up to six. |
 | \`ColumnAlignment\` | \`'left'\`, \`'center'\` or \`'right'\`. |
 
-An editor, and a cell drawn with \`enableOneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field reads \`Placeholder\` too. \`GridValueRenderer\` reads the value from the record, so changing \`value\` here shows nothing.
+An editor, and a cell drawn with \`oneClickEdit\`, is drawn by the column's editing control, which takes that control's own parameters; the text field reads \`Placeholder\` too. \`GridValueRenderer\` reads the value from the record, so changing \`value\` here shows nothing.
 
 ## Keyboard
 

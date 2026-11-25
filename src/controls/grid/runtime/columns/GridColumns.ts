@@ -127,7 +127,7 @@ export class GridColumns implements IGridColumnsInternal {
         return {
             alignment: this._getAlignment(column),
             isPrimary: !!column.isPrimary,
-            cell: { isRowResizable: this._isLongText(column) },
+            isRowResizable: this._isLongText(column),
         };
     }
 

@@ -1545,14 +1545,6 @@ interface IGridCellLockParameters {
     columnName: string;
 }
 
-/** What a column decides for each of its cells. */
-interface IGridColumnCellContext {
-    /** Whether the cell takes input in place without opening an editor. */
-    enableOneClickEdit?: boolean;
-    /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
-    isRowResizable?: boolean;
-}
-
 interface IGridColumnContext {
     alignment?: IAlignment;
     /** Whether the value is drawn as a link to the record. */
@@ -1561,7 +1553,10 @@ interface IGridColumnContext {
     isRequired?: boolean;
     /** Unsaved width a module adds for what it draws. */
     widthOffset?: number;
-    cell?: IGridColumnCellContext;
+    /** Whether the cell takes input in place without opening an editor. */
+    oneClickEdit?: boolean;
+    /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
+    isRowResizable?: boolean;
     /** Your own options for the column, read back with \`getColumnContext\`. */
     [key: string]: unknown;
 }

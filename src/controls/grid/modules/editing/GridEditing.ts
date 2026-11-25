@@ -337,7 +337,7 @@ export class GridEditing implements IGridEditing {
     }
 
     private _isOneClickEdit(colDef: ColDef<IRecord>): boolean {
-        return !!getColumnContext(colDef).cell?.enableOneClickEdit;
+        return !!getColumnContext(colDef).oneClickEdit;
     }
 
     private _isColumnRequired(column: IColumn): boolean {

@@ -3,9 +3,9 @@ import { HookRegistry, IHookPoint } from "@core";
 import { IGridServiceRegistry } from "../../runtime";
 
 declare module "../../runtime/columns/colDef" {
-    interface IGridColumnCellContext {
+    interface IGridColumnContext {
         /** Whether the control takes input where the cell stands, with no editor to open. */
-        enableOneClickEdit?: boolean;
+        oneClickEdit?: boolean;
     }
 }
 
