@@ -303,7 +303,6 @@ interface IColumn {
     disableSorting?: boolean;
     isVirtual?: boolean;
     metadata?: IAttributeMetadata;
-    type?: 'data' | 'action';
     aggregation?: { aggregationFunction: AggregationFunction; columnName?: string; alias?: string };
     grouping?: { isGrouped: boolean; alias?: string; ungroupedOrder?: number };
     controls?: ICustomColumnControl[];

@@ -5,7 +5,7 @@ import { HookRegistry, IAlignment, IEventSubscriber, IHookPoint } from "@core";
 import { CellFieldRenderer } from "../../adapters/cells/field-cell-renderer/CellFieldRenderer";
 import { IGridField } from "../fields";
 import { ColumnHeaderRenderer } from "../../adapters/column-header/ColumnHeaderRenderer";
-import { IGridColumnContext } from "./colDef";
+import { getColumnContext, IGridColumnContext } from "./colDef";
 import { IGridServiceRegistryInternal } from "..";
 import { GridColumnHeaders, IGridColumnHeaders, IGridColumnHeadersInternal } from "../column-header";
 import { CellEmptyRenderer } from "../../adapters/cells/empty-cell-renderer/CellEmptyRenderer";
@@ -75,7 +75,15 @@ export class GridColumns implements IGridColumnsInternal {
         const own = new Set(columnDefs);
         this.hooks.columnDefinitions.apply(columnDefs);
         columnDefs.filter(columnDef => !own.has(columnDef)).forEach(columnDef => this._applyGridBehaviour(columnDef));
+        columnDefs.forEach(columnDef => this._applyColumnType(columnDef));
         return columnDefs;
+    }
+
+    //only the renderer the grid gave: one a hook set stays
+    private _applyColumnType(columnDef: ColDef<IRecord>): void {
+        if (getColumnContext(columnDef).type === 'action' && columnDef.cellRenderer === CellFieldRenderer) {
+            columnDef.cellRenderer = CellEmptyRenderer;
+        }
     }
 
     /** What a column a hook added takes from the grid, where it did not say otherwise. */
