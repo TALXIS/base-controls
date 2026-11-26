@@ -64,6 +64,9 @@ const useNavigate = () => {
 
 const getProgressStyles = (theme: StorybookTheme) => mergeStyleSets({
     root: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
         margin: '0 0 24px',
         padding: '12px 16px',
         border: `1px solid ${theme.appBorderColor}`,
@@ -71,8 +74,6 @@ const getProgressStyles = (theme: StorybookTheme) => mergeStyleSets({
         background: theme.background.content,
     },
     caption: {
-        display: 'block',
-        marginBottom: 10,
         color: theme.textMutedColor,
         fontSize: 13,
         fontWeight: 600,

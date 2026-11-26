@@ -88,11 +88,11 @@ const VALUE_STRENGTHS: (ITintStrength | undefined)[] = [undefined, 'subtle', 'st
 const statusIcons: IGridModule = {
     name: 'statusIcons',
     onLoad: grid => {
-        grid.services.get('cells').hooks.controlParameters.add((parameters, { record, columnName }) => {
+        grid.services.get('cells').hooks.control.add((result, { record, columnName }) => {
             const value = getShownValue(grid, record, columnName)
             const state = columnName === 'closedate' && !isClosed(record) ? getCloseDateState(value) : undefined
             if (state) {
-                parameters.PrefixIcon = { raw: CLOSE_DATE_ICONS[state] }
+                result.control.parameters.PrefixIcon = { raw: CLOSE_DATE_ICONS[state] }
             }
         })
     },

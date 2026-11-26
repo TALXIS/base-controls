@@ -1,8 +1,7 @@
 import { CellFocusedEvent, GridApi } from "ag-grid-community";
 import { IRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import { IParameters } from "@pcf/interfaces";
 import { StackRank } from "@core/stack-rank";
-import { IGridAgGridOptions, IGrid, IGridCellHookParameters, IGridEditedCell, GRID_MODULE_PRIORITY } from "@controls/grid";
+import { IGridAgGridOptions, IGrid, GridControlHook, IGridEditedCell, GRID_MODULE_PRIORITY } from "@controls/grid";
 import { IGridChecklist } from "../GridChecklist";
 import { CHECKLIST_LABELS } from "../../../labels";
 
@@ -31,7 +30,7 @@ export class ChecklistNewItemRow {
         this._checklist = parameters.checklist;
         //after the totals row, so the new-item row sits between the items and the totals
         this._grid.hooks.agGridOptions.add(this._onAgGridOptions, GRID_MODULE_PRIORITY.aggregation + 1);
-        this._grid.services.get('cells').hooks.controlParameters.add(this._onControlParameters);
+        this._grid.services.get('cells').hooks.control.add(this._onControl);
         this._grid.modules.get('editing').events.addEventListener('onEditedCellChanged', this._onEditedCellChanged);
         this._grid.services.observe('gridApi', this._onGridApiAvailable);
     }
@@ -51,9 +50,9 @@ export class ChecklistNewItemRow {
         result.options.pinnedBottomRowData = this._pinnedRows;
     };
 
-    private _onControlParameters = (result: IParameters, parameters: IGridCellHookParameters): void => {
+    private _onControl: GridControlHook = (result, parameters) => {
         if (parameters.record === this._draft && parameters.columnName === this._checklist.getFieldMapping().name) {
-            result.Placeholder = { raw: this._grid.getLabels(CHECKLIST_LABELS).get('checklist.newItemPlaceholder') };
+            result.control.parameters.Placeholder = { raw: this._grid.getLabels(CHECKLIST_LABELS).get('checklist.newItemPlaceholder') };
         }
     };
 

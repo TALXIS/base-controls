@@ -1,4 +1,5 @@
-import { DataTypes, IColumn, ICustomColumnControl, Sanitizer } from "@talxis/client-libraries";
+import { DataTypes, IColumn, Sanitizer } from "@talxis/client-libraries";
+import { IParameters } from "@pcf/interfaces";
 import { IGridField } from "../../../runtime/fields";
 import { IBinding } from "@fields/nested-control-renderer/interfaces";
 
@@ -7,14 +8,13 @@ export interface IBindingsParameters {
     field: IGridField | undefined;
     /** The column the cell is in, where the provider has one for it. */
     column: IColumn | undefined;
-    /** The control the bindings are for: whatever it declared itself is bound as static. */
-    control: ICustomColumnControl;
-    enableNavigation: boolean;
+    /** The cell's parameters: every plain value among them is bound as static. */
+    parameters: IParameters;
 }
 
 /** What a nested control is bound to. */
 export const getBindings = (parameters: IBindingsParameters): { [name: string]: IBinding } => {
-    const { field, column, control, enableNavigation } = parameters;
+    const { field, column } = parameters;
     const value = field?.getValue();
     const validity = field?.isValid();
     const bindings: { [name: string]: IBinding } = {
@@ -35,23 +35,17 @@ export const getBindings = (parameters: IBindingsParameters): { [name: string]: 
             type: DataTypes.TwoOptions,
             value: true
         },
-        EnableNavigation: {
-            isStatic: true,
-            type: DataTypes.TwoOptions,
-            value: enableNavigation
-        }
     };
-    if (control.bindings) {
-        Object.entries(control.bindings).map(([name, binding]) => {
-            bindings[name] = {
-                isStatic: true,
-                type: binding.type!,
-                value: binding.value
-            }
-        })
+    //a PCF mounted by the platform reads its manifest's inputs from these
+    for (const [name, parameter] of Object.entries(parameters.parameters)) {
+        if (name !== 'value' && isPlainValue(parameter.raw)) {
+            bindings[name] = { isStatic: true, type: parameter.type!, value: parameter.raw };
+        }
     }
     return bindings;
 };
+
+const isPlainValue = (value: unknown): boolean => value === null || ['string', 'number', 'boolean'].includes(typeof value);
 
 /** The value in the shape PCF typings promise. */
 const getControlValue = (column: IColumn, value: any): any => {

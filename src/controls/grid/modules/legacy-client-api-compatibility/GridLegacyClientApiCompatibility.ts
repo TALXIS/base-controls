@@ -1,10 +1,9 @@
 import { createElement } from "react";
-import { EventEmitter, IAddControlNotificationOptions, IControlParameters, ICustomColumnControl, IEventEmitter, IField, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IAddControlNotificationOptions, IControlParameters, IEventEmitter, IField, IRecord } from "@talxis/client-libraries";
 import { ICommandBarItemProps, Target } from "@fluentui/react";
 import { CELL_COMMANDS_CLASS } from "../../ui/cells/commands/styles";
-import { merge } from "merge-anything";
 import { createThemeBuilder, getTextColorForBackground } from "@theme";
-import type { GridCellCommandsHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../../runtime/cells";
+import type { GridCellCommandsHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook } from "../../runtime/cells";
 import type { GridCellLockHook } from "../editing/GridLocks";
 import type { IGridSurface } from "../../runtime/surfaces";
 import type { IGridServiceRegistry } from "../../runtime";
@@ -52,7 +51,6 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
         cells.hooks.theme.add(this._onCellTheme, COMPATIBILITY_HOOK_PRIORITY);
         cells.hooks.commands.add(this._onCellCommands, COMPATIBILITY_HOOK_PRIORITY);
         cells.hooks.control.add(this._onControl, COMPATIBILITY_HOOK_PRIORITY);
-        cells.hooks.controlParameters.add(this._onControlParameters, COMPATIBILITY_HOOK_PRIORITY);
         //a legacy script redraws through the dataset
         parameters.services.observe('gridApi', () => this._provider.addEventListener('onRenderRequested', this._onRenderRequested));
     }
@@ -174,21 +172,17 @@ export class GridLegacyClientApiCompatibility implements IGridLegacyClientApiCom
             return;
         }
         const appliesTo = params.takesInput ? 'editor' : 'renderer';
+        const parameters = result.control.parameters;
         //a column may name one control for drawing and another for input
-        const customControl = field.ui.getCustomControls([result.control])
+        const customControl = field.ui.getCustomControls([{ name: result.control.name, appliesTo: 'both', bindings: {} }])
             .find(candidate => candidate.appliesTo === 'both' || candidate.appliesTo === appliesTo);
-        if (!customControl) {
-            return;
+        if (customControl) {
+            result.control.name = customControl.name ?? result.control.name;
+            Object.entries(customControl.bindings ?? {}).forEach(([name, binding]) => {
+                parameters[name] = { raw: binding.value, type: binding.type };
+            });
         }
-        result.control = merge(result.control, customControl) as Required<ICustomColumnControl>;
-    };
-
-    private _onControlParameters: GridControlParametersHook = (result, params) => {
-        const field = this._getField(params);
-        if (!field) {
-            return;
-        }
-        Object.assign(result, field.ui.getControlParameters({ ...result } as IControlParameters));
+        Object.assign(parameters, field.ui.getControlParameters({ ...parameters } as IControlParameters));
     };
 
     /** Only for a column the record's provider has. */

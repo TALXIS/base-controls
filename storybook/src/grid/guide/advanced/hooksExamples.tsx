@@ -36,10 +36,10 @@ const addCellRules = (grid: IGrid) => {
             result.errorMessage = 'A discount over 10% is for deals in negotiation.'
         }
     })
-    //new: what the control drawing a cell is handed
-    cells.hooks.controlParameters.add((parameters, { columnName }) => {
+    //new: the control drawing a cell, and what it is handed
+    cells.hooks.control.add((result, { columnName }) => {
         if (columnName === 'closedate') {
-            parameters.Placeholder = { raw: 'Not planned yet' }
+            result.control.parameters.Placeholder = { raw: 'Not planned yet' }
         }
     })
     //new: a shimmer in place of the value

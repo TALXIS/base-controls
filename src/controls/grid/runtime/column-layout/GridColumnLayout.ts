@@ -53,21 +53,24 @@ export class GridColumnLayout {
         if (!gridWidth) {
             return undefined;
         }
-        const columnsMap = this._provider.getColumnsMap();
         const columns = gridApi.getAllDisplayedColumns();
-        const dataColumns = columns.filter(column => !!columnsMap[column.getColId()]);
-        const widths = new Map(dataColumns.map(column => [column, this._getBaseWidth(column)]));
-        const totalWidth = columns.reduce((total, column) => total + (widths.get(column) ?? column.getActualWidth()), 0);
+        const widths = new Map(columns.map(column => [column, this._getBaseWidth(column)]));
+        const totalWidth = columns.reduce((total, column) => total + widths.get(column)!, 0);
         const isFilling = totalWidth <= gridWidth;
         return {
-            key: `${isFilling}|${dataColumns.map(column => `${column.getColId()}:${widths.get(column)}`).join(',')}`,
-            state: dataColumns.map(column => ({
+            key: `${isFilling}|${columns.map(column => `${column.getColId()}:${widths.get(column)}`).join(',')}`,
+            state: columns.map(column => ({
                 colId: column.getColId(),
                 width: widths.get(column),
-                //AG Grid flexes only what scrolls
-                flex: isFilling && !column.getPinned() ? widths.get(column) : null,
+                flex: isFilling && this._isFlexible(column) ? widths.get(column) : null,
             })),
         };
+    }
+
+    //AG Grid flexes only what scrolls, and a fixed-size column stays as wide as it is set
+    private _isFlexible(column: Column): boolean {
+        const colDef = column.getColDef();
+        return !column.getPinned() && colDef.resizable !== false && !colDef.suppressSizeToFit;
     }
 
     private _getBaseWidth(column: Column): number {
@@ -88,8 +91,9 @@ export class GridColumnLayout {
         this._writeColumns(column => column.name === resizedColumnName
             ? { ...column, visualSizeFactor: width }
             : column);
-        //what the user dragged is the layout now
-        this._layoutKey = this._getLayout(event.api)?.key;
+        //AG Grid takes flex off the columns left of the one dragged
+        this._layoutKey = undefined;
+        this._applyLayout(event.api);
     };
 
     private _onColumnMoved = (event: ColumnMovedEvent<IRecord>): void => {

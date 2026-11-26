@@ -27,8 +27,7 @@ Like [**From your code**](?path=/docs/controls-grid-guide-advanced-from-your-cod
 | Hook on \`cells.hooks\` | Gets | Decides |
 |---|---|---|
 | \`loading\` | \`(result, { record, columnName })\` | \`result.isLoading\`: a shimmer in place of the value |
-| \`controlParameters\` | \`(parameters, { record, columnName, takesInput })\` | The parameters the cell's control is handed, such as \`Placeholder\`. \`takesInput\` is \`true\` for an editor and for a cell edited in place. |
-| \`control\` | \`(result, { record, columnName, takesInput })\` | \`result.control\`: the control that draws the cell, by \`name\`, and its \`bindings\` |
+| \`control\` | \`(result, { record, columnName, takesInput })\` | \`result.control\`: the control that draws or edits the cell, by \`name\`, and the \`parameters\` it is handed, such as \`Placeholder\`. \`takesInput\` is \`true\` for an editor and for a cell edited in place. |
 | \`theme\`, \`commands\` | | See [**Colours and density**](?path=/docs/controls-grid-guide-make-it-yours-colours-and-density--overview) and [**Cells and headers of your own**](?path=/docs/controls-grid-guide-make-it-yours-cells-and-headers-of-your-own--overview) |
 
 The parameters a cell's control reads are under *Columns* on [**Reference**](?path=/docs/controls-grid-reference--overview).

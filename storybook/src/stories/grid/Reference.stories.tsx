@@ -195,11 +195,12 @@ What the grid reads from a column definition's \`context\`; keys of your own sit
 | \`alignment\` | \`'left' \\| 'center' \\| 'right'\` | Which edge the value reads from; numbers and currency default to \`'right'\`. |
 | \`widthOffset\` | \`number\` | Pixels added for what a module draws in the column, such as grouping's indent. Not saved. |
 | \`isRowResizable\` | \`boolean\` | Draws the grip a row is dragged taller by; on by default for text areas and multiline text. |
+| \`control\` | \`{ parameters?, renderer?, editor? }\` | The controls the column's cells are drawn and edited with: \`parameters\` go to every cell, \`renderer\` and \`editor\` each take a \`name\` and \`parameters\` of their own for that mode. The \`control\` hook still has the last word. |
 | \`oneClickEdit\` | \`boolean\` | With the editing module, draws the column's editing control in the cell, so no editor opens. |
 
 ### Control parameters
 
-A \`controlParameters\` hook on the \`cells\` service changes what a cell's control gets (see *Hooks*). Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Not planned yet' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\`, which reads these:
+A column's \`context.control.parameters\`, or the \`control\` hook on the \`cells\` service through \`result.control.parameters\`, changes what a cell's control gets (see *Hooks*). Each parameter is an object with a \`raw\` value, such as \`{ raw: 'Not planned yet' }\`. A cell that only shows its value is drawn by \`GridValueRenderer\`, which reads these:
 
 | Parameter | Description |
 |---|---|
@@ -417,8 +418,7 @@ How \`add\` and \`priority\` work is on [**Lock closed deals**](?path=/docs/cont
 | \`theme\` | \`cells\` | \`builder\`, \`{ record, columnName }\` | A cell's colours. See [**Colours and density**](?path=/docs/controls-grid-guide-make-it-yours-colours-and-density--overview). |
 | \`loading\` | \`cells\` | \`result\`, \`{ record, columnName }\` | \`result.isLoading\`: a shimmer in place of the value |
 | \`commands\` | \`cells\` | \`result\`, \`{ record, columnName }\` | \`result.items\` and \`result.overflowItems\`, shown while the row is hovered, focused or selected |
-| \`control\` | \`cells\` | \`result\`, \`{ record, columnName, takesInput }\` | \`result.control\`: the control that draws the cell, and its \`bindings\` |
-| \`controlParameters\` | \`cells\` | \`parameters\`, \`{ record, columnName, takesInput }\` | The parameters the cell's control gets. See *Control parameters*. |
+| \`control\` | \`cells\` | \`result\`, \`{ record, columnName, takesInput }\` | \`result.control\`: the control that draws or edits the cell, by \`name\`, and its \`parameters\`. See *Control parameters*. |
 | \`height\` | \`rows\` | \`result\`, \`{ record, node }\` | \`result.height\` in pixels; unset for the grid's \`rowHeight\` |
 | \`column\`, \`row\`, \`cell\` | \`editing.locks\` | \`result\`, \`{ columnName }\`, \`{ record }\` or \`{ record, columnName }\` | \`result.isLocked\` for a column, a row or a cell |
 | \`validation\` | \`validation\` | \`result\`, \`{ record, columnName }\` | \`result.error\` and \`result.errorMessage\` |

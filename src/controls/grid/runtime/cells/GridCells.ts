@@ -1,7 +1,7 @@
 import { ICommandBarItemProps } from "@fluentui/react";
 import { ThemeBuilder } from "@theme";
 import { CellFocusedEvent } from "ag-grid-community";
-import { EventEmitter, ICustomColumnControl, IEventEmitter, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { HookRegistry, IEventSubscriber, IHookPoint } from "@core";
 import { IParameters } from "@pcf/interfaces";
 import { IGridServiceRegistryInternal } from "..";
@@ -16,11 +16,16 @@ export interface IGridCellHookParameters {
     takesInput: boolean;
 }
 
-/** A hook over which control draws a cell. */
-export type GridControlHook = (result: { control: Required<ICustomColumnControl> }, parameters: IGridCellHookParameters) => void;
+/** What a cell is drawn or edited with. */
+export interface IGridCellControl {
+    /** The PCF; the grid's own value renderer unless something names another. */
+    name: string;
+    /** What the control is handed, by parameter name. */
+    parameters: IParameters;
+}
 
-/** A hook over the parameters the control drawing a cell is handed. */
-export type GridControlParametersHook = (result: IParameters, parameters: IGridCellHookParameters) => void;
+/** A hook over the control a cell is drawn or edited with, and what it is handed. */
+export type GridControlHook = (result: { control: IGridCellControl }, parameters: IGridCellHookParameters) => void;
 
 /** A hook over the theme a cell is drawn in. */
 export type GridCellThemeHook = (builder: ThemeBuilder, parameters: { record: IRecord; columnName: string }) => void;
@@ -60,10 +65,8 @@ export interface IGridCellsParameters {
 }
 
 export interface IGridCellsHooks {
-    /** What draws a cell. */
+    /** What draws or edits a cell, and its parameters. */
     readonly control: IHookPoint<GridControlHook>;
-    /** The parameters the control drawing a cell is handed. */
-    readonly controlParameters: IHookPoint<GridControlParametersHook>;
     /** The theme a cell is drawn in. */
     readonly theme: IHookPoint<GridCellThemeHook>;
     /** Whether a cell is waiting. */
@@ -93,10 +96,7 @@ export interface IGridCellsInternal extends IGridCells {
     /** Removes a cell from the registry once it is gone. */
     removeCell(cell: IGridCell): void;
     /** Run by the `GridControl` of the cell in question. */
-    applyControlHooks(result: {
-        control: Required<ICustomColumnControl>;
-    }, parameters: IGridCellHookParameters): void;
-    applyControlParametersHooks(result: IParameters, parameters: IGridCellHookParameters): void;
+    applyControlHooks(result: { control: IGridCellControl }, parameters: IGridCellHookParameters): void;
     /** Run by the `GridCellTheme` of the cell in question. */
     applyCellThemeHooks(builder: ThemeBuilder, parameters: {
         record: IRecord;
@@ -119,7 +119,6 @@ export class GridCells implements IGridCellsInternal {
     private _renderedCells = new Map<string, IGridCell>();
     public readonly hooks = {
         control: new HookRegistry<GridControlHook>(),
-        controlParameters: new HookRegistry<GridControlParametersHook>(),
         theme: new HookRegistry<GridCellThemeHook>(),
         loading: new HookRegistry<GridCellLoadingHook>(),
         commands: new HookRegistry<GridCellCommandsHook>(),
@@ -160,12 +159,8 @@ export class GridCells implements IGridCellsInternal {
         return this.getCells().find(cell => cell.getRecord().getRecordId() === record.getRecordId() && cell.getColumnName() === columnName);
     }
 
-    public applyControlHooks(result: { control: Required<ICustomColumnControl> }, parameters: IGridCellHookParameters): void {
+    public applyControlHooks(result: { control: IGridCellControl }, parameters: IGridCellHookParameters): void {
         this.hooks.control.apply(result, parameters);
-    }
-
-    public applyControlParametersHooks(result: IParameters, parameters: IGridCellHookParameters): void {
-        this.hooks.controlParameters.apply(result, parameters);
     }
 
     public applyCellThemeHooks(builder: ThemeBuilder, parameters: { record: IRecord; columnName: string }): void {

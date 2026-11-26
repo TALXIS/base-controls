@@ -1556,6 +1556,15 @@ interface IGridColumnContext {
     oneClickEdit?: boolean;
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
     isRowResizable?: boolean;
+    /** The controls the column's cells are drawn and edited with, before \`cells.hooks.control\`. */
+    control?: {
+        /** Handed to the control in every cell of the column. */
+        parameters?: IParameters;
+        /** While a cell only shows its value. */
+        renderer?: { name?: string; parameters?: IParameters };
+        /** While a cell is being edited. */
+        editor?: { name?: string; parameters?: IParameters };
+    };
     /** Your own options for the column, read back with \`getColumnContext\`. */
     [key: string]: unknown;
 }
@@ -1661,8 +1670,14 @@ interface IGridCellHookParameters {
     takesInput: boolean;
 }
 
-type GridControlHook = (result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters) => void;
-type GridControlParametersHook = (result: IParameters, params: IGridCellHookParameters) => void;
+/** What a cell is drawn or edited with. */
+interface IGridCellControl {
+    /** The PCF; the grid's own value renderer unless something names another. */
+    name: string;
+    /** What the control is handed, by parameter name. */
+    parameters: IParameters;
+}
+type GridControlHook = (result: { control: IGridCellControl }, params: IGridCellHookParameters) => void;
 type GridCellThemeHook = (builder: ThemeBuilder, params: { record: IRecord; columnName: string }) => void;
 type GridCellCommandsHook = (result: IGridCellCommands, params: { record: IRecord; columnName: string }) => void;
 type GridCellLoadingHook = (result: IGridCellLoading, params: { record: IRecord; columnName: string }) => void;
@@ -1736,8 +1751,7 @@ interface IGridControl {
     isCustomRendererEnabled(): boolean;
     getControlProps(): IGridValueRenderer;
     getContext(): ComponentFramework.Context<any, any>;
-    getCustomControl(): Required<ICustomColumnControl>;
-    getFinalControlParameters(parameters: IParameters): IParameters;
+    getControl(): IGridCellControl;
 }
 
 /** A cell on screen. */
@@ -1777,10 +1791,8 @@ interface IGridCells {
     /** The cell drawing this field, where one is on screen. */
     getCell(record: IRecord, columnName: string): IGridCell | undefined;
     readonly hooks: {
-        /** Which control draws a cell. */
+        /** Which control draws or edits a cell, and the parameters it is handed. */
         readonly control: IHookPoint<GridControlHook>;
-        /** The parameters the control drawing a cell is handed. */
-        readonly controlParameters: IHookPoint<GridControlParametersHook>;
         /** Below GRID_MODULE_PRIORITY.grouping, a background is lost while grouped. */
         readonly theme: IHookPoint<GridCellThemeHook>;
         readonly loading: IHookPoint<GridCellLoadingHook>;

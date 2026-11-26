@@ -1,6 +1,25 @@
 import type { IRecord } from "@talxis/client-libraries";
 import type { ColDef } from "ag-grid-community";
 import type { IAlignment } from "@core";
+import type { IParameters } from "@pcf/interfaces";
+
+/** The control a column's cells use in one mode. */
+export interface IGridColumnModeControl {
+    /** The PCF to use; left out, the cell keeps the one it has. */
+    name?: string;
+    /** Handed to the control, by parameter name. */
+    parameters?: IParameters;
+}
+
+/** The controls a column's cells are drawn and edited with, before `cells.hooks.control`. */
+export interface IGridColumnControlContext {
+    /** Handed to the control in every cell of the column. */
+    parameters?: IParameters;
+    /** While a cell only shows its value. */
+    renderer?: IGridColumnModeControl;
+    /** While a cell is being edited. */
+    editor?: IGridColumnModeControl;
+}
 
 /** What the grid's own column is, whatever its cells are bound to. */
 export interface IGridColumnContext {
@@ -14,6 +33,7 @@ export interface IGridColumnContext {
     widthOffset?: number;
     /** Whether the grip a row is dragged taller by is drawn in this column's cells. */
     isRowResizable?: boolean;
+    control?: IGridColumnControlContext;
     /** Your own options for the column, read back with `getColumnContext`. */
     [key: string]: unknown;
 }

@@ -1,5 +1,5 @@
 import { IPcfContext, IParameters } from "@pcf/interfaces";
-import { DataTypes, ICustomColumnControl, IDataProvider, IRecord } from "@talxis/client-libraries";
+import { DataTypes, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { BaseControls } from "@pcf";
 import { IGridValueRenderer, IGridValueRendererParameters } from "../../adapters/value-renderer";
 import { IGridServiceRegistryInternal } from "..";
@@ -7,6 +7,7 @@ import { IGridField } from "../fields";
 import type { IGridCell } from "./GridCell";
 import { GridFieldControl, IGridFieldControl } from "./GridFieldControl";
 import { hasResizeGrip } from "../../adapters/cells/resize-grip/hasResizeGrip";
+import type { IGridCellControl } from "./GridCells";
 
 export interface IGridControlParameters {
     services: IGridServiceRegistryInternal;
@@ -27,10 +28,8 @@ export interface IGridControl {
     getControlProps(): IGridValueRenderer;
     /** What the host gave the grid, with what a control may do in this cell. */
     getContext(): IPcfContext;
-    /** The control a hook named for this cell, or the grid's renderer. */
-    getCustomControl(): Required<ICustomColumnControl>;
-    /** The parameters a control is actually handed. */
-    getFinalControlParameters(parameters: IParameters): IParameters;
+    /** The control this cell is drawn or edited with, and its parameters, after the hooks. */
+    getControl(): IGridCellControl;
 }
 
 export class GridControl implements IGridControl {
@@ -58,16 +57,13 @@ export class GridControl implements IGridControl {
     }
 
     public isCustomRendererEnabled(): boolean {
-        return this._isCustomRenderer(this.getCustomControl());
+        return this._isCustomRenderer(this.getControl());
     }
 
     public getControlProps(): IGridValueRenderer {
-        const control = this.getCustomControl();
-        const parameters = this._getCellParameters(control);
         return {
             context: this.getContext(),
-            //a custom control merges these into its own parameters and finalizes them there
-            parameters: this._isCustomRenderer(control) ? parameters : this.getFinalControlParameters(parameters) as IGridValueRendererParameters,
+            parameters: this.getControl().parameters as IGridValueRendererParameters,
         };
     }
 
@@ -85,24 +81,26 @@ export class GridControl implements IGridControl {
         return value;
     }
 
-    public getCustomControl(): Required<ICustomColumnControl> {
-        const result = { control: this._getDefaultControl() };
+    public getControl(): IGridCellControl {
+        const columnControl = this._cell.getContext().control;
+        const modeControl = this._takesInput ? columnControl?.editor : columnControl?.renderer;
+        const result = {
+            control: {
+                name: modeControl?.name ?? this._fieldControl?.getControlName() ?? BaseControls.GridValueRenderer,
+                parameters: { ...this._getCellParameters(), ...columnControl?.parameters, ...modeControl?.parameters },
+            },
+        };
         this._cells.applyControlHooks(result, this._hookParams);
         return result.control;
     }
 
-    public getFinalControlParameters(parameters: IParameters): IParameters {
-        this._cells.applyControlParametersHooks(parameters, this._hookParams);
-        return parameters;
-    }
-
-    private _isCustomRenderer(control: ICustomColumnControl): boolean {
+    private _isCustomRenderer(control: IGridCellControl): boolean {
         //a cell taking input needs a control since the renderer only draws
         return this._takesInput || control.name !== BaseControls.GridValueRenderer;
     }
 
-    /** What a cell hands whatever draws it, before the hooks have their say. */
-    private _getCellParameters(control: ICustomColumnControl): IGridValueRendererParameters {
+    /** What a cell hands whatever draws it, before the column and the hooks have their say. */
+    private _getCellParameters(): IParameters {
         const parameters: IGridValueRendererParameters = {
             value: { raw: undefined },
             ColumnAlignment: { raw: this._cell.getAlignment() },
@@ -125,20 +123,7 @@ export class GridControl implements IGridControl {
             EnableTypeSuffix: { raw: false, type: DataTypes.TwoOptions },
             EnableOptionSetColors: { raw: this._settings.isOptionSetColorsEnabled(), type: DataTypes.TwoOptions },
         };
-        Object.assign(parameters, this._fieldControl?.getParameters());
-        //what the column's bindings ask for wins
-        Object.entries(control.bindings ?? {}).forEach(([name, binding]) => {
-            parameters[name] = { raw: binding.value, type: binding.type };
-        });
-        return parameters;
-    }
-
-    private _getDefaultControl(): Required<ICustomColumnControl> {
-        return {
-            name: this._fieldControl?.getControlName() ?? BaseControls.GridValueRenderer,
-            appliesTo: 'both',
-            bindings: {}
-        };
+        return { ...parameters, ...this._fieldControl?.getParameters() };
     }
 
     private get _hookParams() {

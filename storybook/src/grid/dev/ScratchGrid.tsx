@@ -8,17 +8,28 @@ import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratch
 const PAYLOAD_COLUMN = 'payload'
 
 const NUMBER_TYPES = new Set<string>([DataTypes.WholeNone, DataTypes.Decimal, DataTypes.Currency, DataTypes.WholeDuration])
+const DATE_TYPES = new Set<string>([DataTypes.DateAndTimeDateOnly, DataTypes.DateAndTimeDateAndTime])
 
-/** A colour from hue (0-360), saturation and lightness (0-100), as hex. */
-const hslToHex = (hue: number, saturation: number, lightness: number): string => {
-    const s = saturation / 100
-    const l = lightness / 100
-    const channel = (n: number) => {
-        const k = (n + hue / 30) % 12
-        const value = l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k - 3, 9 - k, 1))
-        return Math.round(value * 255).toString(16).padStart(2, '0')
-    }
-    return `#${channel(0)}${channel(8)}${channel(4)}`
+/** Cool to warm, softened so text stays readable at both ends. */
+const HEAT_STOPS = ['#4575b4', '#91bfdb', '#e0f3f8', '#ffffbf', '#fee090', '#fc8d59', '#d73027']
+
+/** Quiet tints for values that have no order, picked by what the value is. */
+const CATEGORY_TINTS = ['#e8f1fb', '#e7f5ec', '#fdf1e1', '#f3ebfa', '#fbe9ec', '#e5f4f4', '#f5f3e1', '#eceff5']
+
+const EMPTY_TINT = '#f5f5f5'
+
+const toRgb = (hex: string) => [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16))
+
+const toHex = (rgb: number[]) => `#${rgb.map(channel => Math.round(channel).toString(16).padStart(2, '0')).join('')}`
+
+/** The heat colour at a ratio between 0 and 1. */
+const getHeatColor = (ratio: number): string => {
+    const position = Math.min(Math.max(ratio, 0), 1) * (HEAT_STOPS.length - 1)
+    const index = Math.min(Math.floor(position), HEAT_STOPS.length - 2)
+    const from = toRgb(HEAT_STOPS[index])
+    const to = toRgb(HEAT_STOPS[index + 1])
+    const mix = position - index
+    return toHex(from.map((channel, channelIndex) => (channel + (to[channelIndex] - channel) * mix) * 0.8 + 255 * 0.2))
 }
 
 declare module '@talxis/base-controls' {
@@ -29,7 +40,7 @@ declare module '@talxis/base-controls' {
 
 const hashText = (text: string): number => [...text].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) | 0, 0)
 
-/** Tints every record cell: numbers from green to red across their column's range, any other value by what it is. */
+/** Tints every record cell: numbers and dates from cool to warm across their column's range, other values by what they are. */
 const heatmapModule: IGridModule = {
     name: 'heatmap',
     onLoad: runtime => {
@@ -37,34 +48,43 @@ const heatmapModule: IGridModule = {
         const cells = runtime.services.get('cells')
         let ranges = new Map<string, { min: number; max: number }>()
 
-        const getRange = (columnName: string) => {
+        const toNumber = (value: unknown, dataType: string): number => {
+            if (value === null || value === undefined || value === '') {
+                return NaN
+            }
+            return DATE_TYPES.has(dataType) ? new Date(value as string).getTime() : Number(value)
+        }
+
+        const getRange = (columnName: string, dataType: string) => {
             let range = ranges.get(columnName)
             if (!range) {
-                const values = provider.getRecords().map(record => Number(record.getValue(columnName))).filter(Number.isFinite)
-                range = { min: Math.min(...values), max: Math.max(...values) }
+                let min = Infinity
+                let max = -Infinity
+                for (const record of provider.getRecords()) {
+                    const number = toNumber(record.getValue(columnName), dataType)
+                    if (Number.isFinite(number)) {
+                        min = Math.min(min, number)
+                        max = Math.max(max, number)
+                    }
+                }
+                range = { min, max }
                 ranges.set(columnName, range)
             }
             return range
         }
 
-        const getColor = (record: IRecord, columnName: string, dataType: string | undefined): string => {
-            //a column the grid adds, such as the checkbox column, holds no value of its own
-            if (!dataType) {
-                return hslToHex(210, 25, 92)
-            }
-            const value = record.getValue(columnName)
-            if (NUMBER_TYPES.has(dataType)) {
-                const { min, max } = getRange(columnName)
-                const number = Number(value)
-                if (value === null || value === undefined || !Number.isFinite(number)) {
-                    return hslToHex(0, 0, 94)
+        const getColor = (record: IRecord, columnName: string, dataType: string): string => {
+            if (NUMBER_TYPES.has(dataType) || DATE_TYPES.has(dataType)) {
+                const number = toNumber(record.getValue(columnName), dataType)
+                if (!Number.isFinite(number)) {
+                    return EMPTY_TINT
                 }
-                const ratio = max > min ? (number - min) / (max - min) : 0.5
-                return hslToHex(120 - 120 * ratio, 70, 80)
+                const { min, max } = getRange(columnName, dataType)
+                return getHeatColor(max > min ? (number - min) / (max - min) : 0.5)
             }
             //not every data type formats to a string
             const text = String(record.getFormattedValue(columnName) ?? '')
-            return text ? hslToHex(Math.abs(hashText(text)) % 360, 65, 90) : hslToHex(0, 0, 94)
+            return text ? CATEGORY_TINTS[Math.abs(hashText(text)) % CATEGORY_TINTS.length] : EMPTY_TINT
         }
 
         //an edited number can move its column's range
@@ -85,7 +105,8 @@ const heatmapModule: IGridModule = {
         //after the grouping and totals hooks, which reset backgrounds
         cells.hooks.theme.add((builder, { record, columnName }) => {
             const dataType = provider.getColumnsMap()[columnName]?.dataType
-            if (record.getSummarizationType() !== 'none') {
+            //a column the grid adds, such as the checkbox column, holds no value of its own
+            if (!dataType || record.getSummarizationType() !== 'none') {
                 return
             }
             const color = getColor(record, columnName, dataType)
@@ -377,7 +398,7 @@ export interface IScratchGridProps {
     selectableRows: 'none' | 'single' | 'multiple'
     /** How many rows the in-memory provider holds. */
     rowCount?: number
-    /** Tints every record cell by its value through the cell theme hook. */
+    /** Tints every record cell through the cell theme hook: numbers and dates as a heatmap. */
     heatmap?: boolean
 }
 
@@ -472,25 +493,27 @@ export const ScratchGrid = (props: IScratchGridProps) => {
 
     return <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
         <CommandBarButton iconProps={{ iconName: 'Refresh' }} text='Remount' styles={{ root: { alignSelf: 'flex-start', height: 32 } }} onClick={() => setMountCount(count => count + 1)} />
-        <DatasetControl onLoad={async () => ({ provider: provider })}>
-            <DatasetControl.Body>
-                <RowModelGrid
-                    key={key}
-                    modules={modules}
-                    height='100%'
-                    enableNavigation={props.enableNavigation}
-                    enableZebra={props.enableZebra}
-                    enableOptionSetColors={props.enableOptionSetColors}
-                    rowHeight={props.rowHeight}
-                    stateKey='scratch-grid'
-                    onSetup={grid => {
-                        (window as any).__scratchGrid = grid
-                        const columns = grid.services.get('columns')
-                        columns.hooks.columnDefinitions.add(columnDefs => changeScratchColumns(columnDefs, columns), GRID_MODULE_PRIORITY.clipboard + 1)
-                        grid.services.get('validation').hooks.validation.add(validateEstimate)
-                    }}
-                    onReady={grid => { (window as any).__scratchGridApi = grid.services.get('gridApi') }} />
-            </DatasetControl.Body>
-        </DatasetControl>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+            <DatasetControl height='100%' onLoad={async () => ({ provider: provider })}>
+                <DatasetControl.Body>
+                    <RowModelGrid
+                        key={key}
+                        modules={modules}
+                        height='100%'
+                        enableNavigation={props.enableNavigation}
+                        enableZebra={props.enableZebra}
+                        enableOptionSetColors={props.enableOptionSetColors}
+                        rowHeight={props.rowHeight}
+                        stateKey='scratch-grid'
+                        onSetup={grid => {
+                            (window as any).__scratchGrid = grid
+                            const columns = grid.services.get('columns')
+                            columns.hooks.columnDefinitions.add(columnDefs => changeScratchColumns(columnDefs, columns), GRID_MODULE_PRIORITY.clipboard + 1)
+                            grid.services.get('validation').hooks.validation.add(validateEstimate)
+                        }}
+                        onReady={grid => { (window as any).__scratchGridApi = grid.services.get('gridApi') }} />
+                </DatasetControl.Body>
+            </DatasetControl>
+        </div>
     </div>
 }

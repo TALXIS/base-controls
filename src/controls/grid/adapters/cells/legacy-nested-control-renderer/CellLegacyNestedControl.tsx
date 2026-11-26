@@ -26,20 +26,19 @@ export const CellLegacyNestedControl = (props: ICellLegacyNestedControlProps) =>
     const settings = useGridServiceInternal('settings');
     const fieldControl = control.getFieldControl();
     const column = fieldControl?.getColumn();
-    const customControl = control.getCustomControl();
+    const controlName = control.getControl().name;
 
     //a root of its own runs the control's handlers before AG Grid's
     return <CellNestedRoot>
         <NestedControlRenderer
             context={context}
             parameters={{
-                ControlName: customControl.name,
+                ControlName: controlName,
                 LoadingType: 'shimmer',
                 Bindings: getBindings({
                     field: fieldControl?.getField(),
                     column: column,
-                    control: customControl,
-                    enableNavigation: !!parameters.EnableNavigation?.raw,
+                    parameters: parameters,
                 }),
                 ControlStates: {
                     isControlDisabled: cell.isLocked()
@@ -56,8 +55,8 @@ export const CellLegacyNestedControl = (props: ICellLegacyNestedControlProps) =>
                     return defaultUnmount();
                 },
                 onOverrideControlProps: (controlProps: IControl<any, any, any>) => {
-                    //the control builds its own parameters out of the bindings
-                    const controlParameters = control.getFinalControlParameters({ ...parameters, ...controlProps.parameters });
+                    //the cell's parameters win over the manifest's defaults
+                    const controlParameters = { ...controlProps.parameters, ...parameters, value: controlProps.parameters.value };
                     return {
                         ...controlProps,
                         parameters: controlParameters,
