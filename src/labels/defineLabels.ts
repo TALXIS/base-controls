@@ -19,5 +19,8 @@ export const defineLabels = <const T extends Labels>(defaults: T): ILabelSet<T> 
     return { defaults };
 };
 
+/** The keys of every label set the bundle has loaded. */
+export const getDefinedLabelKeys = (): string[] => [...DEFINED_DEFAULTS.keys()];
+
 /** Translations of one set, with their keys checked against it. */
 export const translateLabels = <T extends Labels>(_set: ILabelSet<T>, strings: Partial<Record<keyof T & string, string>>): Labels => strings as Labels;

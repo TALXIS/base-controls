@@ -26,6 +26,21 @@
         "--no-open"
       ],
       "port": 6007
+    },
+    {
+      "name": "storybook-demo-clone",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/private/tmp/claude-501/-Users-dominikbrych-Repos-NETWORG-base-controls/362eedb2-54a6-4e9d-9f87-9389f72bad21/scratchpad/demo-clone/storybook",
+        "run",
+        "storybook",
+        "--",
+        "--port",
+        "6108",
+        "--no-open"
+      ],
+      "port": 6108
     }
   ]
 }

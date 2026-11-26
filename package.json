@@ -31,8 +31,12 @@
     "./package.json": "./package.json"
   },
   "sideEffects": false,
+  "bin": {
+    "base-controls-labels-resx": "scripts/merge-labels-resx.mjs"
+  },
   "files": [
     "/dist",
+    "/scripts/merge-labels-resx.mjs",
     "/package.json",
     "/README.md"
   ],
@@ -73,7 +77,7 @@
     "webpack": "^5.68.0"
   },
   "scripts": {
-    "build": "rollup -c && node ./scripts/resolve-dts-aliases.mjs && rollup -c rollup.dts.config.js && node ./scripts/unwrap-dts-augmentations.mjs",
+    "build": "rollup -c && node ./scripts/resolve-dts-aliases.mjs && rollup -c rollup.dts.config.js && node ./scripts/unwrap-dts-augmentations.mjs && node ./scripts/write-labels-resx.mjs",
     "yalc": "npm run build && yalc publish --sig",
     "storybook": "npm --prefix ./storybook run storybook",
     "build-storybook": "npm --prefix ./storybook run build-storybook",

@@ -3,8 +3,10 @@ import ReactDOM from 'react-dom';
 import type { DeepPartial, IRawRecord } from '@talxis/client-libraries';
 import type { IDatasetControl, IDatasetControlViewControl, IDatasetControlViewGroup } from '@controls/dataset-control';
 import type { IDatasetControlViewColumn } from '@controls/dataset-control/runtime/interfaces';
+import { getDefinedLabelKeys, Labels } from '@labels';
 import { createThemeBuilder } from '@theme';
 import type { PcfDatasetControlFrameHost } from './PcfDatasetControlFrame';
+import { PcfDatasetControlTranslations } from './PcfDatasetControlTranslations';
 import { getPcfDatasetControlEntryStyles } from './styles';
 
 type StringProperty = ComponentFramework.PropertyTypes.StringProperty;
@@ -18,6 +20,8 @@ export interface IPcfDatasetControlEntryInputs {
     Views?: StringProperty;
     /** JSON entity metadata, set on the provider. */
     EntityMetadata?: StringProperty;
+    /** JSON `PcfDatasetControlTranslationDictionary`, which `{{t 'key'}}` in the bindings is looked up in. */
+    Translations?: StringProperty;
     Height?: StringProperty;
     ClientApiWebResourceName?: StringProperty;
     /** Called with `IPcfDatasetControlScriptParameters` on every mount, before the data loads. */
@@ -80,6 +84,7 @@ export class PcfDatasetControlEntry<IInputs extends IPcfDatasetControlEntryInput
     private _context!: ComponentFramework.Context<IInputs>;
     private _container!: HTMLDivElement;
     private _config?: IPcfDatasetControlConfig<TData>;
+    private _labels?: Labels;
     private _styles = getPcfDatasetControlEntryStyles();
 
     constructor(parameters: IPcfDatasetControlEntryParameters<TData>) {
@@ -102,6 +107,7 @@ export class PcfDatasetControlEntry<IInputs extends IPcfDatasetControlEntryInput
             providerKind: this._context.parameters.DataProvider.raw ?? 'Memory',
             parts: this._getParts(),
             onLoadConfig: this._loadConfig,
+            labels: this._getLabels(),
             frame: { height, title: 'Dataset control', className: height === '100%' ? this._styles.frame : undefined },
         }), this._container);
     }
@@ -113,8 +119,9 @@ export class PcfDatasetControlEntry<IInputs extends IPcfDatasetControlEntryInput
     private _loadConfig = async (datasetControl: IDatasetControl<TData>): Promise<IPcfDatasetControlConfig<TData>> => {
         const config = this._config ?? this._getBindingConfig();
         const functionName = this._context.parameters.ClientApiFunctionName?.raw;
+        //kept untranslated, so a script sees the markers on every mount
         this._config = functionName ? await this._runConfigScript(functionName, datasetControl, config) : config;
-        return this._config;
+        return this._getTranslations().translateConfig(this._config);
     };
 
     private async _runConfigScript(functionName: string, datasetControl: IDatasetControl<TData>, config: IPcfDatasetControlConfig<TData>): Promise<IPcfDatasetControlConfig<TData>> {
@@ -138,6 +145,23 @@ export class PcfDatasetControlEntry<IInputs extends IPcfDatasetControlEntryInput
             views: Views?.raw ? JSON.parse(Views.raw) : [],
             metadata: EntityMetadata?.raw ? JSON.parse(EntityMetadata.raw) : undefined,
         };
+    }
+
+    private _getTranslations(): PcfDatasetControlTranslations {
+        const { Translations } = this._context.parameters;
+        return new PcfDatasetControlTranslations({
+            dictionary: Translations?.raw ? JSON.parse(Translations.raw) : {},
+            languageId: this._context.userSettings.languageId,
+        });
+    }
+
+    //Power Apps picks the resx of the user's language; a key it lacks keeps its English default
+    private _getLabels(): Labels {
+        if (!this._labels) {
+            const entries = getDefinedLabelKeys().map(key => [key, this._context.resources.getString(key)] as const);
+            this._labels = Object.fromEntries(entries.filter(([key, value]) => value && value !== key));
+        }
+        return this._labels;
     }
 
     private _getParts(): IPcfDatasetControlParts {

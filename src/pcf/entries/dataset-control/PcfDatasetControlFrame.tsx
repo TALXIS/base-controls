@@ -5,9 +5,11 @@ import { DatasetControl, IDatasetControl, IDatasetControlLoadResult, IDatasetCon
 import type { IDatasetControlViewColumn } from '@controls/dataset-control/runtime/interfaces';
 import { createIsolatedComponent, IIsolatedComponentProps } from '@controls/isolated-frame';
 import { StateProvider } from '@core';
+import { Labels, LabelsProvider } from '@labels';
 import { PcfContextProvider, usePcfContext } from '@pcf';
 import { AppThemeProvider, ITheme } from '@theme';
 import type { IPcfDatasetControlConfig, IPcfDatasetControlParts, IPcfDatasetControlView, PcfDatasetControlProviderKind } from './PcfDatasetControlEntry';
+import { renderOverride } from './PcfDatasetControlTranslations';
 
 /** What the entry hands the frame. */
 export interface IPcfDatasetControlFrameProps<TData = unknown> {
@@ -17,6 +19,8 @@ export interface IPcfDatasetControlFrameProps<TData = unknown> {
     providerKind: PcfDatasetControlProviderKind;
     parts: IPcfDatasetControlParts;
     onLoadConfig: (control: IDatasetControl<TData>) => Promise<IPcfDatasetControlConfig<TData>>;
+    /** The control's own strings in the user's language. */
+    labels?: Labels;
 }
 
 export interface IPcfDatasetControlFrameContentProps<TData = unknown> extends IPcfDatasetControlFrameProps<TData> {
@@ -28,6 +32,8 @@ export type PcfDatasetControlFrameHost<TData = unknown> = React.ComponentType<IP
 
 let areIconsInitialized = false;
 
+const NO_LABELS: Labels = {};
+
 /** The dataset control drawn inside the frame, with the PCF's body as its children. */
 export const PcfDatasetControlFrame = <TData,>(props: IPcfDatasetControlFrameContentProps<TData>) => {
     if (!areIconsInitialized) {
@@ -37,7 +43,9 @@ export const PcfDatasetControlFrame = <TData,>(props: IPcfDatasetControlFrameCon
     return <PcfContextProvider context={props.context}>
         <StateProvider>
             <AppThemeProvider theme={props.theme} style={{ height: '100%' }}>
-                <PcfDatasetControl {...props} />
+                <LabelsProvider labels={props.labels ?? NO_LABELS}>
+                    <PcfDatasetControl {...props} />
+                </LabelsProvider>
             </AppThemeProvider>
         </StateProvider>
     </PcfContextProvider>;
@@ -63,7 +71,7 @@ const PcfDatasetControl = <TData,>(props: IPcfDatasetControlFrameContentProps<TD
         const { views = [], metadata } = await props.onLoadConfig(control);
         return {
             provider: createProvider(props.providerKind, metadata, formatting),
-            views: views.map(view => toView(view, views, props.providerKind)),
+            views: views.map(view => toView(view, views, props.providerKind, metadata)),
         };
     };
 
@@ -93,7 +101,7 @@ const PcfDatasetControl = <TData,>(props: IPcfDatasetControlFrameContentProps<TD
     </DatasetControl>;
 };
 
-const toView = <TData,>(view: IPcfDatasetControlView<TData>, views: IPcfDatasetControlView<TData>[], kind: PcfDatasetControlProviderKind): IDatasetControlView<TData> => ({
+const toView = <TData,>(view: IPcfDatasetControlView<TData>, views: IPcfDatasetControlView<TData>[], kind: PcfDatasetControlProviderKind, metadata: IPcfDatasetControlConfig['metadata']): IDatasetControlView<TData> => ({
     id: view.id,
     name: view.name,
     group: view.group,
@@ -103,10 +111,15 @@ const toView = <TData,>(view: IPcfDatasetControlView<TData>, views: IPcfDatasetC
         provider.setDataSource(view.dataSource);
         //with no columns set, the preload takes them from the saved query's layout or the fetchXml
         await provider.preload();
+        if (kind === 'FetchXml' && metadata) {
+            const loaded = provider.getMetadata();
+            provider.setMetadata({ ...loaded, ...renderOverride(metadata, loaded) });
+        }
         const columns = new Map<string, IDatasetControlViewColumn>(provider.getColumns().map(column => [column.name, column]));
         //the fetchXml's own attributes load hidden
         for (const column of view.columns ?? []) {
-            columns.set(column.name, { ...columns.get(column.name), isHidden: false, ...column });
+            const loaded = columns.get(column.name);
+            columns.set(column.name, { ...loaded, isHidden: false, ...renderOverride(column, loaded) });
         }
         return { columns: [...columns.values()], data: view.data, control: view.control };
     },
@@ -114,11 +127,8 @@ const toView = <TData,>(view: IPcfDatasetControlView<TData>, views: IPcfDatasetC
 
 const createProvider = (kind: PcfDatasetControlProviderKind, metadata: IPcfDatasetControlConfig['metadata'], formatting: IFormatting): IDataProvider => {
     if (kind === 'FetchXml') {
-        const provider = new FetchXmlDataProvider({ fetchXml: '', formatting });
-        if (metadata) {
-            provider.setMetadata(metadata);
-        }
-        return provider;
+        //its metadata is set once Dataverse's has loaded, so the binding can read Dataverse's values
+        return new FetchXmlDataProvider({ fetchXml: '', formatting });
     }
     return new MemoryDataProvider({ dataSource: [], metadata: { ...metadata } as IMemoryProviderEntityMetadata, formatting });
 };
@@ -136,12 +146,13 @@ const addViewColumns = <TData,>(provider: IDataProvider, kind: PcfDatasetControl
         columns.forEach((column, index) => {
             const definition = definitions.get(column.name);
             if (definition) {
-                columns[index] = { ...column, ...definition, metadata: { ...column.metadata, ...definition.metadata } as IColumn['metadata'] };
+                const rendered = renderOverride(definition, column);
+                columns[index] = { ...column, ...rendered, metadata: { ...column.metadata, ...rendered.metadata } as IColumn['metadata'] };
             }
         });
         for (const column of addable) {
             if (!columns.some(existing => existing.name === column.name)) {
-                columns.push(column);
+                columns.push(renderOverride(column, undefined));
             }
         }
     });
