@@ -4,7 +4,7 @@ import { FetchXmlDataProvider, IColumn, IDataProvider, IFormatting, IMemoryProvi
 import { DatasetControl, IDatasetControl, IDatasetControlLoadResult, IDatasetControlView } from '@controls/dataset-control';
 import type { IDatasetControlViewColumn } from '@controls/dataset-control/runtime/interfaces';
 import { createIsolatedComponent, IIsolatedComponentProps } from '@controls/isolated-frame';
-import { StateProvider } from '@core';
+import { IStateStore, StateProvider } from '@core';
 import { Labels, LabelsProvider } from '@labels';
 import { PcfContextProvider, usePcfContext } from '@pcf';
 import { AppThemeProvider, ITheme } from '@theme';
@@ -21,6 +21,8 @@ export interface IPcfDatasetControlFrameProps<TData = unknown> {
     onLoadConfig: (control: IDatasetControl<TData>) => Promise<IPcfDatasetControlConfig<TData>>;
     /** The control's own strings in the user's language. */
     labels?: Labels;
+    /** Where the control keeps its state, such as the open view, for the next mount. */
+    stateStore?: IStateStore;
 }
 
 export interface IPcfDatasetControlFrameContentProps<TData = unknown> extends IPcfDatasetControlFrameProps<TData> {
@@ -41,7 +43,7 @@ export const PcfDatasetControlFrame = <TData,>(props: IPcfDatasetControlFrameCon
         areIconsInitialized = true;
     }
     return <PcfContextProvider context={props.context}>
-        <StateProvider>
+        <StateProvider store={props.stateStore}>
             <AppThemeProvider theme={props.theme} style={{ height: '100%' }}>
                 <LabelsProvider labels={props.labels ?? NO_LABELS}>
                     <PcfDatasetControl {...props} />
@@ -75,7 +77,7 @@ const PcfDatasetControl = <TData,>(props: IPcfDatasetControlFrameContentProps<TD
         };
     };
 
-    return <DatasetControl onLoad={onLoad} height={props.height}>
+    return <DatasetControl onLoad={onLoad} height={props.height} stateKey="datasetControl">
         <DatasetControl.Header>
             <DatasetControl.Header.Start>
                 {parts.enableViewSwitcher && <DatasetControl.ViewSwitcher />}

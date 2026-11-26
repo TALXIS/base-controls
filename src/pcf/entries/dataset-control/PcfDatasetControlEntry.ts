@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import type { DeepPartial, IRawRecord } from '@talxis/client-libraries';
 import type { IDatasetControl, IDatasetControlViewControl, IDatasetControlViewGroup } from '@controls/dataset-control';
 import type { IDatasetControlViewColumn } from '@controls/dataset-control/runtime/interfaces';
+import { IStateStore, StateStore } from '@core';
 import { getDefinedLabelKeys, Labels } from '@labels';
 import { createThemeBuilder } from '@theme';
 import type { PcfDatasetControlFrameHost } from './PcfDatasetControlFrame';
@@ -83,6 +84,8 @@ export class PcfDatasetControlEntry<IInputs extends IPcfDatasetControlEntryInput
     private _parameters: IPcfDatasetControlEntryParameters<TData>;
     private _context!: ComponentFramework.Context<IInputs>;
     private _container!: HTMLDivElement;
+    private _state: ComponentFramework.Dictionary = {};
+    private _stateStore!: IStateStore;
     private _config?: IPcfDatasetControlConfig<TData>;
     private _labels?: Labels;
     private _styles = getPcfDatasetControlEntryStyles();
@@ -91,9 +94,12 @@ export class PcfDatasetControlEntry<IInputs extends IPcfDatasetControlEntryInput
         this._parameters = parameters;
     }
 
-    public init(context: ComponentFramework.Context<IInputs>, container: HTMLDivElement): void {
+    /** @param state The PCF's `init` state; the control keeps its state in it for the session. */
+    public init(context: ComponentFramework.Context<IInputs>, container: HTMLDivElement, state?: ComponentFramework.Dictionary): void {
         this._context = context;
         this._container = container;
+        this._state = state ?? {};
+        this._stateStore = new StateStore({ state: this._state });
         this._container.classList.add(this._styles.container);
     }
 
@@ -108,12 +114,15 @@ export class PcfDatasetControlEntry<IInputs extends IPcfDatasetControlEntryInput
             parts: this._getParts(),
             onLoadConfig: this._loadConfig,
             labels: this._getLabels(),
+            stateStore: this._stateStore,
             frame: { height, title: 'Dataset control', className: height === '100%' ? this._styles.frame : undefined },
         }), this._container);
     }
 
     public destroy(): void {
         ReactDOM.unmountComponentAtNode(this._container);
+        //Power Apps hands it back to init when the control is shown again in this session
+        this._context.mode.setControlState(this._state);
     }
 
     private _loadConfig = async (datasetControl: IDatasetControl<TData>): Promise<IPcfDatasetControlConfig<TData>> => {
