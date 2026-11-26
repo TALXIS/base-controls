@@ -5,11 +5,13 @@ import { DatasetControl, IDatasetControl, IDatasetControlLoadResult, IDatasetCon
 import type { IDatasetControlViewColumn } from '@controls/dataset-control/runtime/interfaces';
 import { createIsolatedComponent, IIsolatedComponentProps } from '@controls/isolated-frame';
 import { IStateStore, StateProvider } from '@core';
-import { Labels, LabelsProvider } from '@labels';
+import { Labels, LabelsProvider, useLabels } from '@labels';
+import { NotificationMessageBar } from '@ui';
 import { PcfContextProvider, usePcfContext } from '@pcf';
 import { AppThemeProvider, ITheme } from '@theme';
 import type { IPcfDatasetControlConfig, IPcfDatasetControlParts, IPcfDatasetControlView, PcfDatasetControlProviderKind } from './PcfDatasetControlEntry';
 import { renderOverride } from './PcfDatasetControlTranslations';
+import { PCF_DATASET_CONTROL_LABELS } from './labels';
 
 /** What the entry hands the frame. */
 export interface IPcfDatasetControlFrameProps<TData = unknown> {
@@ -23,6 +25,8 @@ export interface IPcfDatasetControlFrameProps<TData = unknown> {
     labels?: Labels;
     /** Where the control keeps its state, such as the open view, for the next mount. */
     stateStore?: IStateStore;
+    /** Shows a message instead of the control while the record is not saved yet. */
+    isUnsavedRecord?: boolean;
 }
 
 export interface IPcfDatasetControlFrameContentProps<TData = unknown> extends IPcfDatasetControlFrameProps<TData> {
@@ -46,7 +50,7 @@ export const PcfDatasetControlFrame = <TData,>(props: IPcfDatasetControlFrameCon
         <StateProvider store={props.stateStore}>
             <AppThemeProvider theme={props.theme} style={{ height: '100%' }}>
                 <LabelsProvider labels={props.labels ?? NO_LABELS}>
-                    <PcfDatasetControl {...props} />
+                    {props.isUnsavedRecord ? <UnsavedRecordMessage /> : <PcfDatasetControl {...props} />}
                 </LabelsProvider>
             </AppThemeProvider>
         </StateProvider>
@@ -63,6 +67,11 @@ export const createPcfDatasetControlFrame = <TData = unknown,>(key: string, Body
     createIsolatedComponent<IPcfDatasetControlFrameProps<TData>>(key, props => <PcfDatasetControlFrame {...props}><Body /></PcfDatasetControlFrame>, {
         prepareWindow: frameWindow => Object.assign(frameWindow, { Xrm: (window as Window & { Xrm?: unknown }).Xrm }),
     });
+
+const UnsavedRecordMessage = () => {
+    const labels = useLabels(PCF_DATASET_CONTROL_LABELS);
+    return <NotificationMessageBar messages={[{ level: 'INFO', text: labels.get('pcfDatasetControl.unsavedRecord') }]} />;
+};
 
 //the frame runs its own copy of the libraries, so the provider has to be created in it
 const PcfDatasetControl = <TData,>(props: IPcfDatasetControlFrameContentProps<TData>) => {

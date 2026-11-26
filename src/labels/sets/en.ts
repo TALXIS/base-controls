@@ -36,6 +36,7 @@ import { ERROR_MESSAGE_BAR_LABELS } from '@ui/error-message-bar/labels/en';
 import { LOADING_BOUNDARY_LABELS } from '@ui/loading-boundary/labels/en';
 import { RUNTIME_EXECUTE_ERROR_LABELS } from '@controls/runtime-host/adapters/execute-error/labels/en';
 import { NOTIFICATION_MESSAGE_BAR_LABELS } from '@ui/notifications/message-bar/labels/en';
+import { PCF_DATASET_CONTROL_LABELS } from '@pcf/entries/dataset-control/labels/en';
 import type { ILabelSet } from '..';
 
 /** Every label set base-controls defines, for reading a consumer's translations of them. */
@@ -78,4 +79,5 @@ export const BASE_CONTROLS_LABEL_SETS: ILabelSet[] = [
     LOADING_BOUNDARY_LABELS,
     RUNTIME_EXECUTE_ERROR_LABELS,
     NOTIFICATION_MESSAGE_BAR_LABELS,
+    PCF_DATASET_CONTROL_LABELS,
 ];

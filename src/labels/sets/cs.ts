@@ -36,6 +36,7 @@ import { ERROR_MESSAGE_BAR_LABELS_CS } from '@ui/error-message-bar/labels/cs';
 import { LOADING_BOUNDARY_LABELS_CS } from '@ui/loading-boundary/labels/cs';
 import { RUNTIME_EXECUTE_ERROR_LABELS_CS } from '@controls/runtime-host/adapters/execute-error/labels/cs';
 import { NOTIFICATION_MESSAGE_BAR_LABELS_CS } from '@ui/notifications/message-bar/labels/cs';
+import { PCF_DATASET_CONTROL_LABELS_CS } from '@pcf/entries/dataset-control/labels/cs';
 import type { Labels } from '..';
 
 /** The Czech strings of every base-controls component. */
@@ -78,4 +79,5 @@ export const CZECH_LABELS: Labels = {
     ...LOADING_BOUNDARY_LABELS_CS,
     ...RUNTIME_EXECUTE_ERROR_LABELS_CS,
     ...NOTIFICATION_MESSAGE_BAR_LABELS_CS,
+    ...PCF_DATASET_CONTROL_LABELS_CS,
 };

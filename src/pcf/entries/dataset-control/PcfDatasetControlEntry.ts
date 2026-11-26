@@ -115,6 +115,7 @@ export class PcfDatasetControlEntry<IInputs extends IPcfDatasetControlEntryInput
             onLoadConfig: this._loadConfig,
             labels: this._getLabels(),
             stateStore: this._stateStore,
+            isUnsavedRecord: this._isUnsavedRecord(),
             frame: { height, title: 'Dataset control', className: height === '100%' ? this._styles.frame : undefined },
         }), this._container);
     }
@@ -171,6 +172,12 @@ export class PcfDatasetControlEntry<IInputs extends IPcfDatasetControlEntryInput
             this._labels = Object.fromEntries(entries.filter(([key, value]) => value && value !== key));
         }
         return this._labels;
+    }
+
+    //on a record form the table is known, and the id only once the record is first saved
+    private _isUnsavedRecord(): boolean {
+        const contextInfo = (this._context.mode as ComponentFramework.Mode & { contextInfo?: { entityTypeName?: string; entityId?: string } }).contextInfo;
+        return !!contextInfo?.entityTypeName && !contextInfo.entityId;
     }
 
     private _getParts(): IPcfDatasetControlParts {
