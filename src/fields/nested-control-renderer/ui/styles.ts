@@ -18,6 +18,9 @@ export const getNestedControlStyles = (isBaseControl: boolean) => {
         shimmerWrapper: {
             height: 32
         },
+        messageBar: {
+            flexGrow: 1
+        },
         messageBarBtn: {
             minHeight: 'inherit'
         }

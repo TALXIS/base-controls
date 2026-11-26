@@ -62,8 +62,8 @@ const PcfDatasetControl = <TData,>(props: IPcfDatasetControlFrameContentProps<TD
     const onLoad = async (control: IDatasetControl<TData>): Promise<IDatasetControlLoadResult<TData>> => {
         const { views = [], metadata } = await props.onLoadConfig(control);
         return {
-            provider: createProvider(props.providerKind, views, metadata, formatting),
-            views: views.map(toView),
+            provider: createProvider(props.providerKind, metadata, formatting),
+            views: views.map(view => toView(view, views, props.providerKind)),
         };
     };
 
@@ -93,11 +93,13 @@ const PcfDatasetControl = <TData,>(props: IPcfDatasetControlFrameContentProps<TD
     </DatasetControl>;
 };
 
-const toView = <TData,>(view: IPcfDatasetControlView<TData>): IDatasetControlView<TData> => ({
+const toView = <TData,>(view: IPcfDatasetControlView<TData>, views: IPcfDatasetControlView<TData>[], kind: PcfDatasetControlProviderKind): IDatasetControlView<TData> => ({
     id: view.id,
     name: view.name,
     group: view.group,
     resolve: async provider => {
+        //every mount creates its provider, so it describes the columns as the open view does
+        addViewColumns(provider, kind, view, views);
         provider.setDataSource(view.dataSource);
         //with no columns set, the preload takes them from the saved query's layout or the fetchXml
         await provider.preload();
@@ -110,31 +112,40 @@ const toView = <TData,>(view: IPcfDatasetControlView<TData>): IDatasetControlVie
     },
 });
 
-const createProvider = <TData,>(kind: PcfDatasetControlProviderKind, views: IPcfDatasetControlView<TData>[], metadata: IPcfDatasetControlConfig['metadata'], formatting: IFormatting): IDataProvider => {
-    const viewColumns = views.flatMap(view => view.columns ?? []) as IColumn[];
+const createProvider = (kind: PcfDatasetControlProviderKind, metadata: IPcfDatasetControlConfig['metadata'], formatting: IFormatting): IDataProvider => {
     if (kind === 'FetchXml') {
         const provider = new FetchXmlDataProvider({ fetchXml: '', formatting });
         if (metadata) {
             provider.setMetadata(metadata);
         }
-        //Dataverse knows the rest
-        addAvailableColumns(provider, viewColumns.filter(column => column.isVirtual));
         return provider;
     }
-    const provider = new MemoryDataProvider({ dataSource: [], metadata: { ...metadata } as IMemoryProviderEntityMetadata, formatting });
-    addAvailableColumns(provider, viewColumns);
-    return provider;
+    return new MemoryDataProvider({ dataSource: [], metadata: { ...metadata } as IMemoryProviderEntityMetadata, formatting });
 };
 
-const addAvailableColumns = (provider: IDataProvider, added: IColumn[]): void => {
+//the open view's definitions win, then the other views add what the provider lacks
+const addViewColumns = <TData,>(provider: IDataProvider, kind: PcfDatasetControlProviderKind, view: IPcfDatasetControlView<TData>, views: IPcfDatasetControlView<TData>[]): void => {
+    const viewColumns = [view, ...views.filter(other => other !== view)].flatMap(other => other.columns ?? []).map(toColumnDefinition);
+    //Dataverse knows the rest
+    const addable = kind === 'FetchXml' ? viewColumns.filter(column => column.isVirtual) : viewColumns;
+    const definitions = new Map((view.columns ?? []).map(column => [column.name, toColumnDefinition(column)]));
     provider.hooks.availableColumns.add((columns, options) => {
         if (options?.entityName) {
             return;
         }
-        for (const column of added) {
+        columns.forEach((column, index) => {
+            const definition = definitions.get(column.name);
+            if (definition) {
+                columns[index] = { ...column, ...definition, metadata: { ...column.metadata, ...definition.metadata } as IColumn['metadata'] };
+            }
+        });
+        for (const column of addable) {
             if (!columns.some(existing => existing.name === column.name)) {
                 columns.push(column);
             }
         }
     });
 };
+
+//where and how a view shows the column is the view's own
+const toColumnDefinition = ({ isHidden, order, grouping, aggregation, ...definition }: IDatasetControlViewColumn): IColumn => definition as IColumn;

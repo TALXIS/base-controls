@@ -21,6 +21,9 @@ import { NESTED_CONTROL_RENDERER_LABELS } from './labels';
 import { Ribbon as LegacyRibbon } from '@legacy/ribbon';
 import { getRegisteredBaseControl } from './registry';
 
+/** Marks the element a PCF loaded by the platform draws in. */
+export const PLATFORM_CONTROL_ATTRIBUTE = 'data-platform-control';
+
 interface IRef {
     control: NestedControl | null;
     props: INestedControlRenderer;
@@ -55,6 +58,7 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
         messageBarProps: {
             //@ts-ignore - typescript
             messageBarType: MessageBarType.error,
+            className: styles.messageBar,
             buttonProps: {
                 className: styles.messageBarBtn
             }
@@ -253,7 +257,7 @@ const NestedControlRendererInternal = forwardRef<INestedControlRendererInternalR
                     {labels.get('nestedControlRenderer.control')} <b>{parameters.ControlName}</b> {labels.get('nestedControlRenderer.failedToLoad')}.
                 </MessageBar>
             }
-            <div className={styles.nestedControl} ref={customControlContainerRef} style={errorMessage ? { display: 'none' } : undefined} {...componentProps.controlContainerProps}>
+            <div className={styles.nestedControl} ref={customControlContainerRef} style={errorMessage ? { display: 'none' } : undefined} {...(BaseControl ? {} : { [PLATFORM_CONTROL_ATTRIBUTE]: '' })} {...componentProps.controlContainerProps}>
                 {/* base controls only. Props are read during render so this pass shows the current ones,
                     rather than the previous ones a container render would have left behind */}
                 {BaseControl && control && React.createElement(BaseControl, control.refreshProps())}

@@ -1,4 +1,5 @@
 import { IIsolatedFrameContent, IsolatedFrameChannel } from "./IsolatedFrameChannel";
+import { IsolatedFramePageBridge } from "./IsolatedFramePageBridge";
 
 /** A script the frame loads: a URL, or an ES module entry. */
 export type IsolatedFrameScript = string | { src: string; type: 'module' };
@@ -32,6 +33,7 @@ export class IsolatedFrame {
     private _container?: HTMLElement;
     private _props?: object;
     private _isDestroyed = false;
+    private _pageBridge?: IsolatedFramePageBridge;
 
     constructor(parameters: IIsolatedFrameParameters) {
         this._parameters = parameters;
@@ -59,6 +61,7 @@ export class IsolatedFrame {
 
     public destroy(): void {
         this._isDestroyed = true;
+        this._pageBridge?.destroy();
         if (this._content && this._container) {
             this._content.unmount(this._container);
         }
@@ -78,6 +81,7 @@ export class IsolatedFrame {
         const channel = new IsolatedFrameChannel(frameWindow);
         channel.markAsFrame();
         this._parameters.prepareWindow?.(frameWindow);
+        this._pageBridge = new IsolatedFramePageBridge({ frameWindow });
         for (const script of scripts) {
             await this._loadScript(frameDocument, script);
         }
@@ -86,6 +90,7 @@ export class IsolatedFrame {
             throw new Error(`The frame's scripts registered no frame as "${this._parameters.key}".`);
         }
         if (this._isDestroyed) {
+            this._pageBridge.destroy();
             return;
         }
         this._content = content;
