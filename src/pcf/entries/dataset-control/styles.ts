@@ -1,6 +1,6 @@
 import { mergeStyleSets } from '@fluentui/react';
 
-export const getPcfDatasetControlEntryStyles = () => mergeStyleSets({
+export const getPcfBindingEntryStyles = () => mergeStyleSets({
     container: {
         display: 'flex',
         flexDirection: 'column',

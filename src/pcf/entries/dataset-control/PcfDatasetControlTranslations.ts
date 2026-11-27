@@ -1,5 +1,5 @@
 import { Liquid } from "liquidjs";
-import type { IPcfDatasetControlConfig } from "./PcfDatasetControlEntry";
+import type { IPcfDatasetControlConfig } from "./PcfBindingEntryShared";
 
 /** The `Translations` binding: each key's text by LCID. */
 export type PcfDatasetControlTranslationDictionary = { [key: string]: { [languageId: string]: string } };
