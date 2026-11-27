@@ -3,11 +3,11 @@ import type { IDatasetControl } from '@controls/dataset-control';
 import { StateStore } from '@core';
 import { Labels } from '@labels';
 import {
-    getBindingConfig, getLabels, IPcfBindingEntryInputs, IPcfDatasetControlConfig, IPcfDatasetControlView, isPartEnabled, prepareContainer, renderFrame,
+    getBindingConfig, getLabels, IPcfBindingEntryInputs, IPcfBindingConfig, IPcfBindingView, isPartEnabled, prepareContainer, renderFrame,
     runConfigScript, translateConfig,
-} from './PcfBindingEntryShared';
+} from '../shared/PcfBindingEntry';
 import type { IPcfDatasetBindingFrameProps, PcfDatasetBindingFrameHost } from './PcfDatasetBindingFrame';
-import { IPowerAppsDatasetInputs, PowerAppsDatasetBridge } from './PowerAppsDatasetBridge';
+import { IPowerAppsDatasetInputs, PowerAppsDatasetBridge } from './power-apps/PowerAppsDatasetBridge';
 
 export interface IPcfDatasetBindingEntryInputs extends IPcfBindingEntryInputs, IPowerAppsDatasetInputs { }
 
@@ -24,7 +24,7 @@ export class PcfDatasetBindingEntry<IInputs extends IPcfDatasetBindingEntryInput
     private _bridge!: PowerAppsDatasetBridge;
     //what was kept may belong to another host view, column set or filter
     private _stateStore = new StateStore();
-    private _config?: IPcfDatasetControlConfig<TData>;
+    private _config?: IPcfBindingConfig<TData>;
     private _labels?: Labels;
 
     constructor(parameters: IPcfDatasetBindingEntryParameters<TData>) {
@@ -50,6 +50,7 @@ export class PcfDatasetBindingEntry<IInputs extends IPcfDatasetBindingEntryInput
             stateStore: this._stateStore,
             isUnsavedRecord: this._isUnsavedRecord(),
             onProviderCreated: provider => this._bridge.attach(provider),
+            getRecordCommands: (recordIds, commandButtonIds) => this._bridge.getRecordCommands(recordIds, commandButtonIds),
         });
     }
 
@@ -58,19 +59,11 @@ export class PcfDatasetBindingEntry<IInputs extends IPcfDatasetBindingEntryInput
         this._bridge.destroy();
     }
 
-    private _loadConfig = async (datasetControl: IDatasetControl<TData>): Promise<IPcfDatasetControlConfig<TData>> => {
+    private _loadConfig = async (datasetControl: IDatasetControl<TData>): Promise<IPcfBindingConfig<TData>> => {
         //kept untranslated, so a script sees the markers on every mount
         this._config = await runConfigScript(this._context, datasetControl, this._config ?? this._getBindingConfig());
-        return translateConfig(this._context, this._withAutoSave(this._config));
+        return translateConfig(this._context, this._config);
     };
-
-    //nothing draws Save, so every edit saves itself
-    private _withAutoSave(config: IPcfDatasetControlConfig<TData>): IPcfDatasetControlConfig<TData> {
-        return {
-            ...config,
-            views: config.views?.map(view => ({ ...view, control: { name: view.control?.name ?? 'grid', parameters: { ...view.control?.parameters, enableAutoSave: true } } })),
-        };
-    }
 
     //a home page names its table too, so only a record form counts
     private _isUnsavedRecord(): boolean {
@@ -79,13 +72,13 @@ export class PcfDatasetBindingEntry<IInputs extends IPcfDatasetBindingEntryInput
     }
 
     //the binding's views override the host view with their `id`, or every one with `*`
-    private _getBindingConfig(): IPcfDatasetControlConfig<TData> {
+    private _getBindingConfig(): IPcfBindingConfig<TData> {
         const { views = [], metadata } = getBindingConfig<TData>(this._context);
         return { views: [this._getHostView(views)], metadata };
     }
 
     //the binding redefines the host's columns and never adds one
-    private _getHostView(views: IPcfDatasetControlView<TData>[]): IPcfDatasetControlView<TData> {
+    private _getHostView(views: IPcfBindingView<TData>[]): IPcfBindingView<TData> {
         const query = this._bridge.getQuery();
         const override = views.find(view => view.id === query.viewId) ?? views.find(view => view.id === '*');
         const columnOverrides = new Map((override?.columns ?? []).map(column => [column.name, column]));

@@ -6,8 +6,8 @@ import type { IDatasetControlViewColumn } from '@controls/dataset-control/runtim
 import { getDefinedLabelKeys, Labels } from '@labels';
 import { createThemeBuilder } from '@theme';
 import type { IIsolatedComponentProps } from '@controls/isolated-frame';
-import type { IPcfBindingFrameProps, PcfBindingFrameContextPropName } from './PcfBindingFrameShared';
-import { PcfDatasetControlTranslations } from './PcfDatasetControlTranslations';
+import type { IPcfBindingFrameProps, PcfBindingFrameContextPropName } from './PcfBindingFrame';
+import { PcfBindingTranslations } from './PcfBindingTranslations';
 import { getPcfBindingEntryStyles } from './styles';
 
 type StringProperty = ComponentFramework.PropertyTypes.StringProperty;
@@ -15,21 +15,21 @@ type TwoOptionsProperty = ComponentFramework.PropertyTypes.TwoOptionsProperty;
 
 /** The inputs both binding entries read. */
 export interface IPcfBindingEntryInputs {
-    /** JSON `IPcfDatasetControlView[]`. */
+    /** JSON `IPcfBindingView[]`. */
     Views?: StringProperty;
     /** JSON entity metadata, set on the provider. */
     EntityMetadata?: StringProperty;
-    /** JSON `PcfDatasetControlTranslationDictionary`, which `{{t 'key'}}` in the bindings is looked up in. */
+    /** JSON `PcfBindingTranslationDictionary`, which `{{t 'key'}}` in the bindings is looked up in. */
     Translations?: StringProperty;
     Height?: StringProperty;
     ClientApiWebResourceName?: StringProperty;
-    /** Called with `IPcfDatasetControlScriptParameters` on every mount, before the data loads. */
+    /** Called with `IPcfBindingScriptParameters` on every mount, before the data loads. */
     ClientApiFunctionName?: StringProperty;
     EnablePagination?: TwoOptionsProperty;
     EnablePageSizeSwitcher?: TwoOptionsProperty;
 }
 
-export interface IPcfDatasetControlView<TData = unknown> {
+export interface IPcfBindingView<TData = unknown> {
     id: string;
     name: string;
     group?: IDatasetControlViewGroup;
@@ -43,20 +43,20 @@ export interface IPcfDatasetControlView<TData = unknown> {
     control?: IDatasetControlViewControl;
 }
 
-export interface IPcfDatasetControlConfig<TData = unknown> {
-    views?: IPcfDatasetControlView<TData>[];
+export interface IPcfBindingConfig<TData = unknown> {
+    views?: IPcfBindingView<TData>[];
     metadata?: DeepPartial<Xrm.Metadata.EntityMetadata>;
 }
 
 /** What the client API function is called with. */
-export interface IPcfDatasetControlScriptParameters<TData = unknown> {
+export interface IPcfBindingScriptParameters<TData = unknown> {
     /** The runtime being mounted; it has no provider or view until it is ready. */
     datasetControl: IDatasetControl<TData>;
     controlId?: string;
     /** The bindings on the first mount, the config last set on later ones. */
-    config: IPcfDatasetControlConfig<TData>;
+    config: IPcfBindingConfig<TData>;
     /** The control waits until this is called, on every mount. */
-    setConfig: (config: IPcfDatasetControlConfig<TData>) => void;
+    setConfig: (config: IPcfBindingConfig<TData>) => void;
 }
 
 type CommonContext = ComponentFramework.Context<IPcfBindingEntryInputs>;
@@ -78,7 +78,7 @@ export const renderFrame = <TProps extends IPcfBindingFrameProps<any>>(container
     ReactDOM.render(createElement(frame, frameProps), container);
 };
 
-export const getBindingConfig = <TData,>(context: CommonContext): IPcfDatasetControlConfig<TData> => {
+export const getBindingConfig = <TData,>(context: CommonContext): IPcfBindingConfig<TData> => {
     const { Views, EntityMetadata } = context.parameters;
     return {
         views: Views?.raw ? JSON.parse(Views.raw) : [],
@@ -87,14 +87,14 @@ export const getBindingConfig = <TData,>(context: CommonContext): IPcfDatasetCon
 };
 
 /** Hands the config to the client API function and waits for the one it sets, when the PCF names a function. */
-export const runConfigScript = async <TData,>(context: CommonContext, datasetControl: IDatasetControl<TData>, config: IPcfDatasetControlConfig<TData>): Promise<IPcfDatasetControlConfig<TData>> => {
+export const runConfigScript = async <TData,>(context: CommonContext, datasetControl: IDatasetControl<TData>, config: IPcfBindingConfig<TData>): Promise<IPcfBindingConfig<TData>> => {
     const functionName = context.parameters.ClientApiFunctionName?.raw;
     if (!functionName) {
         return config;
     }
-    let onConfigSet!: (config: IPcfDatasetControlConfig<TData>) => void;
-    const configSet = new Promise<IPcfDatasetControlConfig<TData>>(resolve => onConfigSet = resolve);
-    const parameters: IPcfDatasetControlScriptParameters<TData> = {
+    let onConfigSet!: (config: IPcfBindingConfig<TData>) => void;
+    const configSet = new Promise<IPcfBindingConfig<TData>>(resolve => onConfigSet = resolve);
+    const parameters: IPcfBindingScriptParameters<TData> = {
         datasetControl,
         //@ts-ignore - typings
         controlId: context.utils._customControlProperties?.controlId,
@@ -106,9 +106,9 @@ export const runConfigScript = async <TData,>(context: CommonContext, datasetCon
     return await configSet;
 };
 
-export const translateConfig = <TData,>(context: CommonContext, config: IPcfDatasetControlConfig<TData>): IPcfDatasetControlConfig<TData> => {
+export const translateConfig = <TData,>(context: CommonContext, config: IPcfBindingConfig<TData>): IPcfBindingConfig<TData> => {
     const { Translations } = context.parameters;
-    return new PcfDatasetControlTranslations({
+    return new PcfBindingTranslations({
         dictionary: Translations?.raw ? JSON.parse(Translations.raw) : {},
         languageId: context.userSettings.languageId,
     }).translateConfig(config);

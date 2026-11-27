@@ -3,9 +3,9 @@ import type { IDatasetControl } from '@controls/dataset-control';
 import { IStateStore, StateStore } from '@core';
 import { Labels } from '@labels';
 import {
-    getBindingConfig, getLabels, IPcfBindingEntryInputs, IPcfDatasetControlConfig, isPartEnabled, prepareContainer, renderFrame, runConfigScript,
+    getBindingConfig, getLabels, IPcfBindingEntryInputs, IPcfBindingConfig, isPartEnabled, prepareContainer, renderFrame, runConfigScript,
     translateConfig,
-} from './PcfBindingEntryShared';
+} from '../shared/PcfBindingEntry';
 import type { IPcfFieldBindingFrameProps, IPcfFieldBindingParts, PcfFieldBindingFrameHost, PcfFieldBindingProviderKind } from './PcfFieldBindingFrame';
 
 type TwoOptionsProperty = ComponentFramework.PropertyTypes.TwoOptionsProperty;
@@ -30,7 +30,7 @@ export class PcfFieldBindingEntry<IInputs extends IPcfFieldBindingEntryInputs, T
     private _container!: HTMLDivElement;
     private _state: ComponentFramework.Dictionary = {};
     private _stateStore!: IStateStore;
-    private _config?: IPcfDatasetControlConfig<TData>;
+    private _config?: IPcfBindingConfig<TData>;
     private _labels?: Labels;
 
     constructor(parameters: IPcfFieldBindingEntryParameters<TData>) {
@@ -65,7 +65,7 @@ export class PcfFieldBindingEntry<IInputs extends IPcfFieldBindingEntryInputs, T
         this._context.mode.setControlState(this._state);
     }
 
-    private _loadConfig = async (datasetControl: IDatasetControl<TData>): Promise<IPcfDatasetControlConfig<TData>> => {
+    private _loadConfig = async (datasetControl: IDatasetControl<TData>): Promise<IPcfBindingConfig<TData>> => {
         //kept untranslated, so a script sees the markers on every mount
         this._config = await runConfigScript(this._context, datasetControl, this._config ?? getBindingConfig<TData>(this._context));
         return translateConfig(this._context, this._config);

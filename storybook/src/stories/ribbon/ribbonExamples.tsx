@@ -9,6 +9,12 @@ type Status = 'Draft' | 'Sent'
 //stands in for a server call
 const callServer = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
+//an iconUrl is any URL an <img> can load, a web resource's included
+const fileIcon = (color: string, text: string) => 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">'
+    + '<rect width="16" height="16" rx="2" fill="' + color + '"/>'
+    + '<text x="8" y="11" font-size="6" font-family="sans-serif" font-weight="bold" fill="white" text-anchor="middle">' + text + '</text></svg>')
+
 const GridExample = () => {
     const [status, setStatus] = React.useState<Status>('Draft')
     const ribbonRef = React.useRef<IRibbon>()
@@ -39,9 +45,11 @@ const GridExample = () => {
                 : { id: 'remind', label: 'Send reminder', iconName: 'Mail', onExecute: sendReminder },
             //a command with commands opens a menu of them
             { id: 'download', label: 'Download', iconName: 'Download', commands: [
-                { id: 'pdf', label: 'As PDF', onExecute: () => callServer(500) },
-                { id: 'csv', label: 'As CSV', onExecute: () => callServer(500) },
+                { id: 'pdf', label: 'As PDF', iconUrl: fileIcon('#c4314b', 'PDF'), onExecute: () => callServer(500) },
+                { id: 'csv', label: 'As CSV', iconUrl: fileIcon('#107c41', 'CSV'), onExecute: () => callServer(500) },
             ] },
+            { id: 'excel', label: 'Open in Excel', iconUrl: fileIcon('#107c41', 'XLS'), onExecute: () => callServer(500) },
+            { id: 'word', label: 'Open in Word', iconUrl: fileIcon('#185abd', 'DOC'), onExecute: () => callServer(500) },
             { id: 'reopen', label: 'Reopen', iconName: 'Undo', disabled: status === 'Draft', onExecute: () => setStatus('Draft') },
         ]
     }

@@ -1,15 +1,11 @@
 import React from 'react';
-import { initializeIcons } from '@fluentui/react';
 import { FetchXmlDataProvider, IDataProvider, IFormatting, IMemoryProviderEntityMetadata, MemoryDataProvider } from '@talxis/client-libraries';
 import { DatasetControl, IDatasetControl, IDatasetControlLoadResult, IDatasetControlView } from '@controls/dataset-control';
 import type { IDatasetControlViewColumn } from '@controls/dataset-control/runtime/interfaces';
 import { createIsolatedComponent, IIsolatedComponentProps } from '@controls/isolated-frame';
-import { StateProvider } from '@core';
-import { Labels, LabelsProvider } from '@labels';
-import { PcfContextProvider, usePcfContext } from '@pcf';
-import { AppThemeProvider } from '@theme';
-import type { IPcfDatasetControlConfig, IPcfDatasetControlView } from './PcfBindingEntryShared';
-import { addColumnDefinitions, applyMetadata, IPcfBindingFrameProps, showColumn, UnsavedRecordMessage } from './PcfBindingFrameShared';
+import { usePcfContext } from '@pcf';
+import type { IPcfBindingConfig, IPcfBindingView } from '../shared/PcfBindingEntry';
+import { addColumnDefinitions, applyMetadata, IPcfBindingFrameProps, PcfBindingFrameRoot, showColumn } from '../shared/PcfBindingFrame';
 
 /** The provider every view of a field-bound PCF uses. */
 export type PcfFieldBindingProviderKind = 'Memory' | 'FetchXml';
@@ -28,8 +24,6 @@ export interface IPcfFieldBindingParts {
 export interface IPcfFieldBindingFrameProps<TData = unknown> extends IPcfBindingFrameProps<TData> {
     providerKind: PcfFieldBindingProviderKind;
     parts: IPcfFieldBindingParts;
-    /** Shows a message instead of the control while the form's record is not saved yet. */
-    isUnsavedRecord?: boolean;
 }
 
 export type PcfFieldBindingFrameHost<TData = unknown> = React.ComponentType<IPcfFieldBindingFrameProps<TData> & IIsolatedComponentProps>;
@@ -38,32 +32,12 @@ export type PcfFieldBindingFrameHost<TData = unknown> = React.ComponentType<IPcf
  * Declares the frame a field-bound PCF renders its dataset control in; call it at module level.
  *
  * @param key Unique within the bundle.
- * @param Body Draws the records inside `DatasetControl.Body`, such as a `ClientSideGrid`.
+ * @param Body Draws the records inside `DatasetControl.Body`, such as `PcfFieldBindingGrid`.
  */
 export const createPcfFieldBindingFrame = <TData = unknown,>(key: string, Body: React.ComponentType): PcfFieldBindingFrameHost<TData> =>
-    createIsolatedComponent<IPcfFieldBindingFrameProps<TData>>(key, props => <PcfFieldBindingFrame {...props}><Body /></PcfFieldBindingFrame>, {
+    createIsolatedComponent<IPcfFieldBindingFrameProps<TData>>(key, props => <PcfBindingFrameRoot {...props}><PcfFieldBindingDatasetControl {...props}><Body /></PcfFieldBindingDatasetControl></PcfBindingFrameRoot>, {
         prepareWindow: frameWindow => Object.assign(frameWindow, { Xrm: (window as Window & { Xrm?: unknown }).Xrm }),
     });
-
-let areIconsInitialized = false;
-
-const NO_LABELS: Labels = {};
-
-const PcfFieldBindingFrame = <TData,>(props: IPcfFieldBindingFrameProps<TData> & { children: React.ReactNode }) => {
-    if (!areIconsInitialized) {
-        initializeIcons();
-        areIconsInitialized = true;
-    }
-    return <PcfContextProvider context={props.context}>
-        <StateProvider store={props.stateStore}>
-            <AppThemeProvider theme={props.theme} style={{ height: '100%' }}>
-                <LabelsProvider labels={props.labels ?? NO_LABELS}>
-                    {props.isUnsavedRecord ? <UnsavedRecordMessage /> : <PcfFieldBindingDatasetControl {...props} />}
-                </LabelsProvider>
-            </AppThemeProvider>
-        </StateProvider>
-    </PcfContextProvider>;
-};
 
 //the frame runs its own copy of the libraries, so the provider has to be created in it
 const PcfFieldBindingDatasetControl = <TData,>(props: IPcfFieldBindingFrameProps<TData> & { children: React.ReactNode }) => {
@@ -104,7 +78,7 @@ const PcfFieldBindingDatasetControl = <TData,>(props: IPcfFieldBindingFrameProps
     </DatasetControl>;
 };
 
-const toView = <TData,>(view: IPcfDatasetControlView<TData>, views: IPcfDatasetControlView<TData>[], kind: PcfFieldBindingProviderKind, metadata: IPcfDatasetControlConfig['metadata']): IDatasetControlView<TData> => ({
+const toView = <TData,>(view: IPcfBindingView<TData>, views: IPcfBindingView<TData>[], kind: PcfFieldBindingProviderKind, metadata: IPcfBindingConfig['metadata']): IDatasetControlView<TData> => ({
     id: view.id,
     name: view.name,
     group: view.group,
@@ -125,7 +99,7 @@ const toView = <TData,>(view: IPcfDatasetControlView<TData>, views: IPcfDatasetC
     },
 });
 
-const createProvider = (kind: PcfFieldBindingProviderKind, metadata: IPcfDatasetControlConfig['metadata'], formatting: IFormatting): IDataProvider => {
+const createProvider = (kind: PcfFieldBindingProviderKind, metadata: IPcfBindingConfig['metadata'], formatting: IFormatting): IDataProvider => {
     if (kind === 'FetchXml') {
         //its metadata is set once Dataverse's has loaded, so the binding can read Dataverse's values
         return new FetchXmlDataProvider({ fetchXml: '', formatting });
@@ -134,7 +108,7 @@ const createProvider = (kind: PcfFieldBindingProviderKind, metadata: IPcfDataset
 };
 
 //the open view's definitions win, then the other views add what the provider lacks
-const addViewColumns = <TData,>(provider: IDataProvider, kind: PcfFieldBindingProviderKind, view: IPcfDatasetControlView<TData>, views: IPcfDatasetControlView<TData>[]): void => {
+const addViewColumns = <TData,>(provider: IDataProvider, kind: PcfFieldBindingProviderKind, view: IPcfBindingView<TData>, views: IPcfBindingView<TData>[]): void => {
     const viewColumns = [view, ...views.filter(other => other !== view)].flatMap(other => other.columns ?? []);
     //Dataverse knows the rest
     const addable = kind === 'FetchXml' ? viewColumns.filter(column => column.isVirtual) : viewColumns;

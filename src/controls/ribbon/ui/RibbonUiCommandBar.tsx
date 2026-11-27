@@ -5,6 +5,7 @@ import { IRibbonUiCommandBarComponents, RibbonUiCommandBarComponents } from "./c
 import { getRibbonUiCommandBarStyles } from "./styles";
 
 export interface IRibbonUiCommandBarProps {
+    /** An item's `iconProps.imageProps` is drawn at the size of a Fluent icon. */
     items: ICommandBarItemProps[];
     /** Which side the commands are drawn against; defaults to `'start'`. */
     align?: 'start' | 'end';
@@ -16,8 +17,14 @@ export interface IRibbonUiCommandBarProps {
 export const RibbonUiCommandBar = (props: IRibbonUiCommandBarProps) => {
     const components = { ...RibbonUiCommandBarComponents, ...props.components };
     const styles = useMemo(() => getRibbonUiCommandBarStyles(), []);
+    //a class, not a ribbon selector: menus render outside the ribbon
+    const sizeImageIcons = (items: ICommandBarItemProps[]): ICommandBarItemProps[] => items.map(item => ({
+        ...item,
+        iconProps: item.iconProps?.imageProps ? { ...item.iconProps, className: getClassNames([styles.imageIcon, item.iconProps.className]) } : item.iconProps,
+        subMenuProps: item.subMenuProps && { ...item.subMenuProps, items: sizeImageIcons(item.subMenuProps.items) },
+    }));
     return components.onRender({
-        items: props.items,
+        items: sizeImageIcons(props.items),
         className: getClassNames([styles.ribbon, props.className]),
         align: props.align,
     });

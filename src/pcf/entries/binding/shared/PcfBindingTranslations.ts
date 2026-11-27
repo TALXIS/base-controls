@@ -1,11 +1,11 @@
 import { Liquid } from "liquidjs";
-import type { IPcfDatasetControlConfig } from "./PcfBindingEntryShared";
+import type { IPcfBindingConfig } from "./PcfBindingEntry";
 
 /** The `Translations` binding: each key's text by LCID. */
-export type PcfDatasetControlTranslationDictionary = { [key: string]: { [languageId: string]: string } };
+export type PcfBindingTranslationDictionary = { [key: string]: { [languageId: string]: string } };
 
-export interface IPcfDatasetControlTranslationsParameters {
-    dictionary: PcfDatasetControlTranslationDictionary;
+export interface IPcfBindingTranslationsParameters {
+    dictionary: PcfBindingTranslationDictionary;
     languageId: number;
 }
 
@@ -17,18 +17,18 @@ const MARKER_VARIABLE = /(\w+)\s*:\s*'([^']*)'/g;
 const TEMPLATE_VARIABLE = /\{\{\s*(\w+)\s*\}\}/g;
 
 /** Resolves the `{{t 'key'}}` markers of a binding in the user's language. */
-export class PcfDatasetControlTranslations {
-    private _dictionary: PcfDatasetControlTranslationDictionary;
+export class PcfBindingTranslations {
+    private _dictionary: PcfBindingTranslationDictionary;
     private _languageId: string;
     private _missingKeys = new Set<string>();
 
-    constructor(parameters: IPcfDatasetControlTranslationsParameters) {
+    constructor(parameters: IPcfBindingTranslationsParameters) {
         this._dictionary = parameters.dictionary;
         this._languageId = String(parameters.languageId);
     }
 
     /** A copy of the config with the strings the dataset control reads translated. */
-    public translateConfig<TData>(config: IPcfDatasetControlConfig<TData>): IPcfDatasetControlConfig<TData> {
+    public translateConfig<TData>(config: IPcfBindingConfig<TData>): IPcfBindingConfig<TData> {
         return {
             ...config,
             views: config.views?.map(view => ({

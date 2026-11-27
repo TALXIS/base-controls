@@ -151,10 +151,17 @@ export class GridRows implements IGridRowsInternal {
 
     //AG Grid reports the cell the pointer left
     private _onCellMouseOut = (event: CellMouseOutEvent<IRecord>): void => {
-        if (this._hoveredRecordId === event.data?.getRecordId()) {
+        if (this._hoveredRecordId === event.data?.getRecordId() && !this._isPointerStillInRow(event)) {
             this._setHighlightedRow('hovered', undefined);
         }
     };
+
+    //pinned and scrolled parts of a row are separate elements sharing its `row-id`
+    private _isPointerStillInRow(event: CellMouseOutEvent<IRecord>): boolean {
+        const target = (event.event as MouseEvent | null | undefined)?.relatedTarget;
+        const row = target instanceof Element ? target.closest('.ag-row') : null;
+        return !!row && row.getAttribute('row-id') === event.node.id;
+    }
 
     private _onCellFocused = (event: CellFocusedEvent<IRecord>): void => {
         const record = getRowNode(event.api, event.rowIndex, event.rowPinned)?.data;

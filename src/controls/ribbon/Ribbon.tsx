@@ -1,4 +1,4 @@
-import { ICommandBarItemProps } from "@fluentui/react";
+import { ICommandBarItemProps, IIconProps } from "@fluentui/react";
 import { useEventEmitter, useLatest, useRerender } from "@core";
 import { ILoadingBoundaryComponents } from "@ui/loading-boundary";
 import { RuntimeHost, useRuntime } from "@controls/runtime-host";
@@ -52,7 +52,7 @@ const RibbonMount = (props: IRibbonProps) => {
             key: command.id,
             text: command.label,
             title: command.tooltip,
-            iconProps: command.iconName ? { iconName: command.iconName } : undefined,
+            iconProps: getIconProps(command),
         };
         if (command.commands) {
             return { ...item, disabled: props.disabled || command.disabled, subMenuProps: { items: command.commands.map(toItem) } };
@@ -61,4 +61,11 @@ const RibbonMount = (props: IRibbonProps) => {
     };
 
     return <RibbonUiCommandBar items={(runtime.getCommands() ?? []).map(toItem)} align={props.align} components={props.components?.commandBar} />;
+};
+
+const getIconProps = (command: IRibbonCommand): IIconProps | undefined => {
+    if (command.iconUrl) {
+        return { imageProps: { src: command.iconUrl } };
+    }
+    return command.iconName ? { iconName: command.iconName } : undefined;
 };

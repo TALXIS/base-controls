@@ -7,7 +7,7 @@ import {
 } from '@controls/grid';
 
 /** The grid's setup a view carries in `control.parameters`. */
-export interface IPcfDatasetControlGridParameters {
+export interface IPcfBindingGridParameters {
     /** AG Grid Enterprise license key. */
     licenseKey?: string;
     rowHeight?: number;
@@ -31,14 +31,19 @@ export interface IPcfDatasetControlGridParameters {
     colDefs?: IGridColDef[];
 }
 
+export interface IPcfBindingGridProps {
+    /** Built from the open view; read when the view mounts. */
+    modules: IGridModule[];
+}
+
 /** The grid a PCF's dataset control frame draws, set up by the open view's `control.parameters`. */
-export const PcfDatasetControlGrid = () => {
+export const PcfBindingGrid = (props: IPcfBindingGridProps) => {
     const view = useDatasetControl().getView();
-    const parameters = (view?.control?.parameters ?? {}) as IPcfDatasetControlGridParameters;
+    const parameters = (view?.control?.parameters ?? {}) as IPcfBindingGridParameters;
     return <ServerSideGrid
         key={view?.id}
         stateKey="grid"
-        modules={createGridModules(parameters)}
+        modules={props.modules}
         rowHeight={parameters.rowHeight}
         enableZebra={parameters.enableZebra}
         enableNavigation={parameters.enableNavigation}
@@ -75,7 +80,8 @@ const mergeModeControl = (control?: IGridColumnModeControl, changes?: IGridColum
     parameters: { ...control?.parameters, ...changes.parameters },
 } : control;
 
-const createGridModules = (parameters: IPcfDatasetControlGridParameters): IGridModule[] => {
+/** The modules a view's `control.parameters` turn on. */
+export const createPcfBindingGridModules = (parameters: IPcfBindingGridParameters): IGridModule[] => {
     const modules: IGridModule[] = [];
     if (parameters.licenseKey) {
         modules.push(createLicenseModule({ key: parameters.licenseKey }));

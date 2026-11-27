@@ -22,6 +22,7 @@ A command either runs or opens a menu of further commands, as **Download** does 
 | \`commands\` | \`IRibbonCommand[]\` | None | Makes the command a menu of these, instead of running. |
 | \`tooltip\` | \`string\` | None | Shown on hover. |
 | \`iconName\` | \`string\` | None | A Fluent icon name. |
+| \`iconUrl\` | \`string\` | None | An image drawn in place of \`iconName\`, as in the **Download** menu. |
 | \`disabled\` | \`boolean\` | \`false\` | Shows the button disabled. |
 
 ## How it behaves

@@ -1,4 +1,4 @@
 export * from './DatasetControlEntry';
 export * from './VirtualDatasetControlEntry';
 export * from './PcfXrmFormEntry';
-export * from './dataset-control';
+export * from './binding';

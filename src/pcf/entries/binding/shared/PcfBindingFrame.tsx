@@ -1,33 +1,57 @@
 import React from 'react';
+import { initializeIcons } from '@fluentui/react';
 import { IColumn, IDataProvider } from '@talxis/client-libraries';
 import type { IDatasetControl } from '@controls/dataset-control';
 import type { IDatasetControlViewColumn } from '@controls/dataset-control/runtime/interfaces';
-import type { IStateStore } from '@core';
-import { Labels, useLabels } from '@labels';
+import { IStateStore, StateProvider } from '@core';
+import { Labels, LabelsProvider, useLabels } from '@labels';
+import { PcfContextProvider } from '@pcf';
 import { NotificationMessageBar } from '@ui';
-import type { ITheme } from '@theme';
-import type { IPcfDatasetControlConfig } from './PcfBindingEntryShared';
-import { renderOverride } from './PcfDatasetControlTranslations';
-import { PCF_DATASET_CONTROL_LABELS } from './labels';
+import { AppThemeProvider, ITheme } from '@theme';
+import type { IPcfBindingConfig } from './PcfBindingEntry';
+import { renderOverride } from './PcfBindingTranslations';
+import { PCF_BINDING_LABELS } from './labels';
 
 /** What both binding entries hand their frame. */
 export interface IPcfBindingFrameProps<TData = unknown> {
     context: ComponentFramework.Context<any>;
     theme: ITheme;
     height?: string;
-    onLoadConfig: (control: IDatasetControl<TData>) => Promise<IPcfDatasetControlConfig<TData>>;
+    onLoadConfig: (control: IDatasetControl<TData>) => Promise<IPcfBindingConfig<TData>>;
     /** The control's own strings in the user's language. */
     labels?: Labels;
     /** Where the control keeps its state, such as the open view, for the next mount. */
     stateStore?: IStateStore;
+    /** Shows a message instead of the control while the form's record is not saved yet. */
+    isUnsavedRecord?: boolean;
 }
 
 /** The frame props `renderFrame` reads from the PCF's context. */
 export type PcfBindingFrameContextPropName = 'context' | 'theme' | 'height';
 
-/** What a frame shows in place of the control while the form's record is not saved yet. */
-export const UnsavedRecordMessage = () => {
-    const labels = useLabels(PCF_DATASET_CONTROL_LABELS);
+let areIconsInitialized = false;
+
+const NO_LABELS: Labels = {};
+
+/** Gives a frame's control the PCF context, state, theme and labels. */
+export const PcfBindingFrameRoot = (props: Pick<IPcfBindingFrameProps, 'context' | 'theme' | 'labels' | 'stateStore' | 'isUnsavedRecord'> & { children: React.ReactNode }) => {
+    if (!areIconsInitialized) {
+        initializeIcons();
+        areIconsInitialized = true;
+    }
+    return <PcfContextProvider context={props.context}>
+        <StateProvider store={props.stateStore}>
+            <AppThemeProvider theme={props.theme} style={{ height: '100%' }}>
+                <LabelsProvider labels={props.labels ?? NO_LABELS}>
+                    {props.isUnsavedRecord ? <UnsavedRecordMessage /> : props.children}
+                </LabelsProvider>
+            </AppThemeProvider>
+        </StateProvider>
+    </PcfContextProvider>;
+};
+
+const UnsavedRecordMessage = () => {
+    const labels = useLabels(PCF_BINDING_LABELS);
     return <NotificationMessageBar messages={[{ level: 'INFO', text: labels.get('pcfDatasetControl.unsavedRecord') }]} />;
 };
 
@@ -55,7 +79,7 @@ export const addColumnDefinitions = (provider: IDataProvider, definitions: IData
 };
 
 //set once Dataverse's has loaded, so the binding can read Dataverse's values
-export const applyMetadata = (provider: IDataProvider, metadata: IPcfDatasetControlConfig['metadata']): void => {
+export const applyMetadata = (provider: IDataProvider, metadata: IPcfBindingConfig['metadata']): void => {
     if (metadata) {
         const loaded = provider.getMetadata();
         provider.setMetadata({ ...loaded, ...renderOverride(metadata, loaded) });

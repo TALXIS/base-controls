@@ -3862,6 +3862,8 @@ interface IRibbonCommandBase {
     tooltip?: string;
     /** A Fluent icon name. */
     iconName?: string;
+    /** An image drawn in place of \`iconName\`. */
+    iconUrl?: string;
     /** The ribbon also disables an action while it runs. */
     disabled?: boolean;
 }

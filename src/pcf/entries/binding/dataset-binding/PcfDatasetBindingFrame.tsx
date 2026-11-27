@@ -1,23 +1,25 @@
 import React from 'react';
-import { initializeIcons } from '@fluentui/react';
-import { FetchXmlDataProvider, IDataProvider } from '@talxis/client-libraries';
+import { FetchXmlDataProvider, ICommand, IDataProvider } from '@talxis/client-libraries';
 import { DatasetControl, IDatasetControl, IDatasetControlLoadResult, IDatasetControlView } from '@controls/dataset-control';
 import { createIsolatedComponent, IIsolatedComponentProps } from '@controls/isolated-frame';
-import { StateProvider } from '@core';
-import { Labels, LabelsProvider } from '@labels';
-import { PcfContextProvider, usePcfContext } from '@pcf';
-import { AppThemeProvider } from '@theme';
-import type { IPcfDatasetControlConfig, IPcfDatasetControlView } from './PcfBindingEntryShared';
-import { addColumnDefinitions, applyMetadata, IPcfBindingFrameProps, showColumn, UnsavedRecordMessage } from './PcfBindingFrameShared';
+import { usePcfContext } from '@pcf';
+import type { IPcfBindingConfig, IPcfBindingView } from '../shared/PcfBindingEntry';
+import { addColumnDefinitions, applyMetadata, IPcfBindingFrameProps, PcfBindingFrameRoot, showColumn } from '../shared/PcfBindingFrame';
+import type { IPowerAppsInlineRibbonParameters } from './power-apps/PowerAppsInlineRibbon';
 
 /** What the dataset binding entry hands its frame. */
 export interface IPcfDatasetBindingFrameProps<TData = unknown> extends IPcfBindingFrameProps<TData> {
     enablePagination: boolean;
     enablePageSizeSwitcher: boolean;
-    /** Shows a message instead of the control while the form's record is not saved yet. */
-    isUnsavedRecord?: boolean;
     /** Fires when a mount creates its provider, before it loads. */
     onProviderCreated: (provider: IDataProvider) => void;
+    /** Asks the host for its commands on the records, as if they were selected. */
+    getRecordCommands: (recordIds: string[], commandButtonIds: string[]) => Promise<ICommand[]>;
+}
+
+/** What the dataset binding frame hands the body it draws. */
+export interface IPcfDatasetBindingBodyProps {
+    getRecordCommands: IPowerAppsInlineRibbonParameters['getRecordCommands'];
 }
 
 export type PcfDatasetBindingFrameHost<TData = unknown> = React.ComponentType<IPcfDatasetBindingFrameProps<TData> & IIsolatedComponentProps>;
@@ -26,32 +28,12 @@ export type PcfDatasetBindingFrameHost<TData = unknown> = React.ComponentType<IP
  * Declares the frame a data-set-bound PCF renders its dataset control in; call it at module level.
  *
  * @param key Unique within the bundle.
- * @param Body Draws the records inside `DatasetControl.Body`, such as a `ClientSideGrid`.
+ * @param Body Draws the records inside `DatasetControl.Body`, such as `PcfDatasetBindingGrid`.
  */
-export const createPcfDatasetBindingFrame = <TData = unknown,>(key: string, Body: React.ComponentType): PcfDatasetBindingFrameHost<TData> =>
-    createIsolatedComponent<IPcfDatasetBindingFrameProps<TData>>(key, props => <PcfDatasetBindingFrame {...props}><Body /></PcfDatasetBindingFrame>, {
+export const createPcfDatasetBindingFrame = <TData = unknown,>(key: string, Body: React.ComponentType<IPcfDatasetBindingBodyProps>): PcfDatasetBindingFrameHost<TData> =>
+    createIsolatedComponent<IPcfDatasetBindingFrameProps<TData>>(key, props => <PcfBindingFrameRoot {...props}><PcfDatasetBindingDatasetControl {...props}><Body getRecordCommands={props.getRecordCommands} /></PcfDatasetBindingDatasetControl></PcfBindingFrameRoot>, {
         prepareWindow: frameWindow => Object.assign(frameWindow, { Xrm: (window as Window & { Xrm?: unknown }).Xrm }),
     });
-
-let areIconsInitialized = false;
-
-const NO_LABELS: Labels = {};
-
-const PcfDatasetBindingFrame = <TData,>(props: IPcfDatasetBindingFrameProps<TData> & { children: React.ReactNode }) => {
-    if (!areIconsInitialized) {
-        initializeIcons();
-        areIconsInitialized = true;
-    }
-    return <PcfContextProvider context={props.context}>
-        <StateProvider store={props.stateStore}>
-            <AppThemeProvider theme={props.theme} style={{ height: '100%' }}>
-                <LabelsProvider labels={props.labels ?? NO_LABELS}>
-                    {props.isUnsavedRecord ? <UnsavedRecordMessage /> : <PcfDatasetBindingDatasetControl {...props} />}
-                </LabelsProvider>
-            </AppThemeProvider>
-        </StateProvider>
-    </PcfContextProvider>;
-};
 
 //the frame runs its own copy of the libraries, so the provider has to be created in it
 const PcfDatasetBindingDatasetControl = <TData,>(props: IPcfDatasetBindingFrameProps<TData> & { children: React.ReactNode }) => {
@@ -82,7 +64,7 @@ const PcfDatasetBindingDatasetControl = <TData,>(props: IPcfDatasetBindingFrameP
 };
 
 //the host's columns come in the host's order
-const toView = <TData,>(view: IPcfDatasetControlView<TData>, metadata: IPcfDatasetControlConfig['metadata']): IDatasetControlView<TData> => ({
+const toView = <TData,>(view: IPcfBindingView<TData>, metadata: IPcfBindingConfig['metadata']): IDatasetControlView<TData> => ({
     id: view.id,
     name: view.name,
     resolve: async provider => {

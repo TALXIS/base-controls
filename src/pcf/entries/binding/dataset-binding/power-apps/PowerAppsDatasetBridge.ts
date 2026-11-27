@@ -1,4 +1,4 @@
-import { FetchXmlBuilder, IDataProvider } from '@talxis/client-libraries';
+import { FetchXmlBuilder, ICommand, IDataProvider } from '@talxis/client-libraries';
 import type { IDatasetControlViewColumn } from '@controls/dataset-control/runtime/interfaces';
 
 type DataSet = ComponentFramework.PropertyTypes.DataSet;
@@ -13,6 +13,8 @@ const HOST_LOADED = 2;
 
 //the host sends the id filter in the URL
 const MAX_COMMAND_RECORDS = 1000;
+//the rows the inline ribbon asked for most recently
+const MAX_INLINE_RIBBON_RECORDS = 50;
 const FILTER_OPERATOR_AND = 0;
 const CONDITION_OPERATOR_IN = 8;
 
@@ -52,6 +54,11 @@ interface IHostQueryState {
     key: string;
 }
 
+//undocumented on the host's data-set
+type CommandDataSet = DataSet & {
+    retrieveRecordCommand(recordIds: string[], specificCommands: string[], filterByPriority: boolean, useNestedFormat: boolean, refreshAllRules: boolean): Promise<ICommand[]>;
+};
+
 interface ICommandRecordsLoad {
     recordIds: string[];
     onDone: () => void;
@@ -77,6 +84,9 @@ export class PowerAppsDatasetBridge {
     private _pushedFiltering = JSON.stringify(null);
     private _selectionRequest = 0;
     private _commandRecordsLoad?: ICommandRecordsLoad;
+    private _commandRecordsQueue: Promise<void> = Promise.resolve();
+    private _selectedCommandRecordIds: string[] = [];
+    private _inlineRibbonRecordIds: string[] = [];
 
     constructor(parameters: IPowerAppsDatasetBridgeParameters) {
         this._context = parameters.context;
@@ -91,7 +101,7 @@ export class PowerAppsDatasetBridge {
         }
     }
 
-    /** Takes the context of every `updateView`, since the host hands its data-set over anew each time. */
+    /** Takes the context of every `updateView`; the host hands its data-set over anew each time. */
     public updateView(context: ComponentFramework.Context<IPowerAppsDatasetInputs>): void {
         this._context = context;
         const isLoading = this._getDataset().loading;
@@ -154,6 +164,30 @@ export class PowerAppsDatasetBridge {
         return detach;
     }
 
+    /** The host's commands for the records as if selected, from the data-set holding them. */
+    public async getRecordCommands(frameRecordIds: string[], commandButtonIds: string[]): Promise<ICommand[]> {
+        //the host takes an array from the frame's window for a string
+        const recordIds = [...frameRecordIds];
+        const dataset = await this._getDatasetHolding(recordIds);
+        if (!dataset) {
+            return [];
+        }
+        return await (dataset as CommandDataSet).retrieveRecordCommand(recordIds, [...commandButtonIds], false, false, true);
+    }
+
+    private async _getDatasetHolding(recordIds: string[]): Promise<DataSet | undefined> {
+        if (recordIds.every(id => this._getDataset().records[id])) {
+            return this._getDataset();
+        }
+        if (!this._context.parameters.CommandRecords) {
+            return undefined;
+        }
+        this._inlineRibbonRecordIds = [...new Set([...recordIds, ...this._inlineRibbonRecordIds])].slice(0, MAX_INLINE_RIBBON_RECORDS);
+        await this._loadCommandRecords();
+        const commandRecords = this._context.parameters.CommandRecords;
+        return recordIds.every(id => commandRecords?.records[id]) ? commandRecords : undefined;
+    }
+
     //the host takes an array from the frame's window for a string
     private _onRecordsSelected = (recordIds: string[]): void => {
         void this._selectOnHost([...recordIds]);
@@ -165,6 +199,7 @@ export class PowerAppsDatasetBridge {
         const dataset = this._getDataset();
         const commandRecords = this._context.parameters.CommandRecords;
         if (!commandRecords || recordIds.every(id => dataset.records[id])) {
+            this._selectedCommandRecordIds = [];
             commandRecords?.clearSelectedRecordIds();
             dataset.setSelectedRecordIds(recordIds.filter(id => dataset.records[id]));
             return;
@@ -173,20 +208,32 @@ export class PowerAppsDatasetBridge {
         if (recordIds.length > MAX_COMMAND_RECORDS) {
             console.warn(`The host's commands act on the first ${MAX_COMMAND_RECORDS} of the ${recordIds.length} selected records.`);
         }
-        const commandRecordIds = recordIds.slice(0, MAX_COMMAND_RECORDS);
-        await this._loadCommandRecords(commandRecordIds);
-        const loaded = this._context.parameters.CommandRecords;
-        if (request !== this._selectionRequest || !loaded) {
-            return;
+        this._selectedCommandRecordIds = recordIds.slice(0, MAX_COMMAND_RECORDS);
+        await this._loadCommandRecords();
+        if (request === this._selectionRequest) {
+            this._selectCommandRecords();
         }
-        if (loaded.error) {
-            console.error(`The host could not load the selected records: ${loaded.errorMessage}`);
-        }
-        loaded.setSelectedRecordIds(commandRecordIds.filter(id => loaded.records[id]));
     }
 
-    private async _loadCommandRecords(recordIds: string[]): Promise<void> {
+    //one load at a time, so a later one never replaces the filter an earlier one waits on
+    private async _loadCommandRecords(): Promise<void> {
+        const previous = this._commandRecordsQueue;
+        const load = (async () => {
+            //an earlier load reports its own failure
+            try {
+                await previous;
+            }
+            catch { }
+            await this._loadMissingCommandRecords();
+        })();
+        this._commandRecordsQueue = load;
+        await load;
+    }
+
+    //the selection first, so the inline ribbon's rows give way at the limit
+    private async _loadMissingCommandRecords(): Promise<void> {
         const commandRecords = this._context.parameters.CommandRecords!;
+        const recordIds = [...new Set([...this._selectedCommandRecordIds, ...this._inlineRibbonRecordIds])].slice(0, MAX_COMMAND_RECORDS);
         if (recordIds.every(id => commandRecords.records[id])) {
             return;
         }
@@ -199,6 +246,17 @@ export class PowerAppsDatasetBridge {
         commandRecords.refresh();
         await this._waitForHost(loaded);
         this._commandRecordsLoad = undefined;
+        const reloaded = this._context.parameters.CommandRecords!;
+        if (reloaded.error) {
+            console.error(`The host could not load the records its commands act on: ${reloaded.errorMessage}`);
+        }
+        //a load may drop what the data-set had selected
+        this._selectCommandRecords();
+    }
+
+    private _selectCommandRecords(): void {
+        const commandRecords = this._context.parameters.CommandRecords;
+        commandRecords?.setSelectedRecordIds(this._selectedCommandRecordIds.filter(id => commandRecords.records[id]));
     }
 
     private _isCommandRecordsLoadDone(load: ICommandRecordsLoad): boolean {
