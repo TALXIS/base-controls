@@ -41,6 +41,8 @@ export interface IPowerAppsDatasetQuery {
     fetchXml: string;
     /** The columns the host shows, in its order. */
     columns: IDatasetControlViewColumn[];
+    /** Changes whenever the host runs a different query. */
+    key: string;
 }
 
 export interface IPowerAppsDatasetBridgeParameters {
@@ -127,7 +129,8 @@ export class PowerAppsDatasetBridge {
 
     public getQuery(): IPowerAppsDatasetQuery {
         const dataset = this._getDataset();
-        const fetch = FetchXmlBuilder.fetch.fromXml(this._getHostQueryState().fetchXml);
+        const queryState = this._getHostQueryState();
+        const fetch = FetchXmlBuilder.fetch.fromXml(queryState.fetchXml);
         //the provider would lay the saved view's layout over the host's columns
         fetch.savedqueryid = '';
         fetch.userqueryid = '';
@@ -139,6 +142,7 @@ export class PowerAppsDatasetBridge {
                 .filter(column => !column.isHidden)
                 .sort((a, b) => a.order - b.order)
                 .map(column => ({ name: column.name, order: column.order, visualSizeFactor: column.visualSizeFactor })),
+            key: queryState.key,
         };
     }
 

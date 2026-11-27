@@ -55,20 +55,46 @@ export class DatasetControlState {
         return this._getView(viewId).scope(PARTS_KEY);
     }
 
+    /** The provider's setup kept for the view. */
+    public getProviderState(viewId: string | undefined): Partial<IDatasetControlProviderState> | undefined {
+        return this._getView(viewId).get<Partial<IDatasetControlProviderState>>(PROVIDER_KEY);
+    }
+
+    /** Replaces what is kept of the view's provider; the rest is left as the view sets it up. */
+    public setProviderState(viewId: string | undefined, state: Partial<IDatasetControlProviderState>): void {
+        this._getView(viewId).set(PROVIDER_KEY, state);
+    }
+
     /** Puts the setup kept for the view onto its provider, before it loads. */
     public restore(provider: IDataProvider, viewId: string | undefined): void {
-        const state = this._getView(viewId).get<IDatasetControlProviderState>(PROVIDER_KEY);
+        const state = this.getProviderState(viewId);
         if (!state) {
             return;
         }
-        provider.setColumns(state.columns);
-        provider.setLinking(state.linking);
-        provider.setSorting(state.sorting);
-        provider.setFiltering(state.filtering);
-        provider.getPaging().setPageSize(state.pageSize);
-        provider.getPaging().setPageNumber(state.pageNumber);
-        provider.setSearchQuery(state.searchQuery);
-        provider.setSelectedRecordIds(state.selectedRecordIds);
+        if (state.columns) {
+            provider.setColumns(state.columns);
+        }
+        if (state.linking) {
+            provider.setLinking(state.linking);
+        }
+        if (state.sorting) {
+            provider.setSorting(state.sorting);
+        }
+        if (state.filtering !== undefined) {
+            provider.setFiltering(state.filtering);
+        }
+        if (state.pageSize !== undefined) {
+            provider.getPaging().setPageSize(state.pageSize);
+        }
+        if (state.pageNumber !== undefined) {
+            provider.getPaging().setPageNumber(state.pageNumber);
+        }
+        if (state.searchQuery !== undefined) {
+            provider.setSearchQuery(state.searchQuery);
+        }
+        if (state.selectedRecordIds) {
+            provider.setSelectedRecordIds(state.selectedRecordIds);
+        }
     }
 
     /** Keeps the provider's setup for the view it shows. */

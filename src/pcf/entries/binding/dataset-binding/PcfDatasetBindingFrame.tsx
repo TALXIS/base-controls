@@ -1,7 +1,9 @@
 import React from 'react';
-import { FetchXmlDataProvider, ICommand, IDataProvider } from '@talxis/client-libraries';
+import { FetchXmlDataProvider, IColumn, ICommand, IDataProvider } from '@talxis/client-libraries';
 import { DatasetControl, IDatasetControl, IDatasetControlLoadResult, IDatasetControlView } from '@controls/dataset-control';
+import { DatasetControlState } from '@controls/dataset-control/runtime/DatasetControlState';
 import { createIsolatedComponent, IIsolatedComponentProps } from '@controls/isolated-frame';
+import type { IStateStore } from '@core';
 import { usePcfContext } from '@pcf';
 import type { IPcfBindingConfig, IPcfBindingView } from '../shared/PcfBindingEntry';
 import { addColumnDefinitions, applyMetadata, IPcfBindingFrameProps, PcfBindingFrameRoot, showColumn } from '../shared/PcfBindingFrame';
@@ -11,6 +13,8 @@ import type { IPowerAppsInlineRibbonParameters } from './power-apps/PowerAppsInl
 export interface IPcfDatasetBindingFrameProps<TData = unknown> extends IPcfBindingFrameProps<TData> {
     enablePagination: boolean;
     enablePageSizeSwitcher: boolean;
+    /** Identifies the host's query as the PCF mounted; state kept for another one comes back only in part. */
+    hostQueryKey: string;
     /** Fires when a mount creates its provider, before it loads. */
     onProviderCreated: (provider: IDataProvider) => void;
     /** Asks the host for its commands on the records, as if they were selected. */
@@ -21,6 +25,9 @@ export interface IPcfDatasetBindingFrameProps<TData = unknown> extends IPcfBindi
 export interface IPcfDatasetBindingBodyProps {
     getRecordCommands: IPowerAppsInlineRibbonParameters['getRecordCommands'];
 }
+
+const DATASET_CONTROL_STATE_KEY = 'datasetControl';
+const HOST_QUERY_KEY_STATE_KEY = 'hostQueryKey';
 
 export type PcfDatasetBindingFrameHost<TData = unknown> = React.ComponentType<IPcfDatasetBindingFrameProps<TData> & IIsolatedComponentProps>;
 
@@ -43,11 +50,12 @@ const PcfDatasetBindingDatasetControl = <TData,>(props: IPcfDatasetBindingFrameP
         const { views = [], metadata } = await props.onLoadConfig(control);
         const provider = new FetchXmlDataProvider({ fetchXml: '', formatting });
         props.onProviderCreated(provider);
-        return { provider, views: views.map(view => toView(view, metadata)) };
+        const keptViews = views.map(view => keepState(view, props.stateStore, props.hostQueryKey));
+        return { provider, views: keptViews.map(view => toView(view, metadata)) };
     };
 
     //the host draws the view switcher, quick find, column editing and commands above it
-    return <DatasetControl onLoad={onLoad} height={props.height} stateKey="datasetControl">
+    return <DatasetControl onLoad={onLoad} height={props.height} stateKey={DATASET_CONTROL_STATE_KEY}>
         <DatasetControl.Notifications />
         <DatasetControl.Body>
             {props.children}
@@ -63,12 +71,34 @@ const PcfDatasetBindingDatasetControl = <TData,>(props: IPcfDatasetBindingFrameP
     </DatasetControl>;
 };
 
+//the host owns the columns and quick find, so only the user's layout of the host's columns is kept
+const keepState = <TData,>(view: IPcfBindingView<TData>, stateStore: IStateStore | undefined, hostQueryKey: string): IPcfBindingView<TData> => {
+    if (!stateStore) {
+        return view;
+    }
+    const isSameHostQuery = stateStore.get<string>(HOST_QUERY_KEY_STATE_KEY) === hostQueryKey;
+    stateStore.set(HOST_QUERY_KEY_STATE_KEY, hostQueryKey);
+    const state = new DatasetControlState({ store: stateStore.scope(DATASET_CONTROL_STATE_KEY) });
+    const kept = state.getProviderState(view.id);
+    if (!kept) {
+        return view;
+    }
+    const { columns = [], linking, searchQuery, ...query } = kept;
+    //the user changed the view, columns or filters on the host since
+    state.setProviderState(view.id, isSameHostQuery ? query : { pageSize: query.pageSize });
+    const layouts = new Map(columns.map(column => [column.name, getColumnLayout(column)]));
+    return { ...view, columns: view.columns?.map(column => ({ ...column, ...layouts.get(column.name) })) };
+};
+
+const getColumnLayout = ({ visualSizeFactor, grouping, aggregation }: IColumn): Partial<IColumn> => ({ visualSizeFactor, grouping, aggregation });
+
 //the host's columns come in the host's order
 const toView = <TData,>(view: IPcfBindingView<TData>, metadata: IPcfBindingConfig['metadata']): IDatasetControlView<TData> => ({
     id: view.id,
     name: view.name,
     resolve: async provider => {
-        addColumnDefinitions(provider, view.columns ?? []);
+        //Dataverse knows the rest
+        addColumnDefinitions(provider, view.columns ?? [], (view.columns ?? []).filter(column => column.isVirtual));
         provider.setDataSource(view.dataSource);
         await provider.preload();
         applyMetadata(provider, metadata);

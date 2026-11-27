@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import type { IDatasetControl } from '@controls/dataset-control';
-import { StateStore } from '@core';
+import { IStateStore, StateStore } from '@core';
 import { Labels } from '@labels';
 import {
     getBindingConfig, getLabels, IPcfBindingEntryInputs, IPcfBindingConfig, IPcfBindingView, isPartEnabled, prepareContainer, renderFrame,
@@ -22,8 +22,9 @@ export class PcfDatasetBindingEntry<IInputs extends IPcfDatasetBindingEntryInput
     private _context!: ComponentFramework.Context<IInputs>;
     private _container!: HTMLDivElement;
     private _bridge!: PowerAppsDatasetBridge;
-    //what was kept may belong to another host view, column set or filter
-    private _stateStore = new StateStore();
+    private _state: ComponentFramework.Dictionary = {};
+    private _stateStore!: IStateStore;
+    private _hostQueryKey?: string;
     private _config?: IPcfBindingConfig<TData>;
     private _labels?: Labels;
 
@@ -31,9 +32,12 @@ export class PcfDatasetBindingEntry<IInputs extends IPcfDatasetBindingEntryInput
         this._parameters = parameters;
     }
 
-    public init(context: ComponentFramework.Context<IInputs>, container: HTMLDivElement): void {
+    /** @param state The PCF's `init` state; the control keeps its state in it for the session. */
+    public init(context: ComponentFramework.Context<IInputs>, container: HTMLDivElement, state?: ComponentFramework.Dictionary): void {
         this._context = context;
         this._container = container;
+        this._state = state ?? {};
+        this._stateStore = new StateStore({ state: this._state });
         this._bridge = new PowerAppsDatasetBridge({ context });
         prepareContainer(container);
     }
@@ -42,12 +46,15 @@ export class PcfDatasetBindingEntry<IInputs extends IPcfDatasetBindingEntryInput
         this._context = context;
         this._bridge.updateView(context);
         this._labels ??= getLabels(context);
+        //before our own query reaches the host
+        this._hostQueryKey ??= this._bridge.getQuery().key;
         renderFrame<IPcfDatasetBindingFrameProps<TData>>(this._container, this._parameters.frame, context, {
             enablePagination: isPartEnabled(context.parameters.EnablePagination),
             enablePageSizeSwitcher: isPartEnabled(context.parameters.EnablePageSizeSwitcher),
             onLoadConfig: this._loadConfig,
             labels: this._labels,
             stateStore: this._stateStore,
+            hostQueryKey: this._hostQueryKey,
             isUnsavedRecord: this._isUnsavedRecord(),
             onProviderCreated: provider => this._bridge.attach(provider),
             getRecordCommands: (recordIds, commandButtonIds) => this._bridge.getRecordCommands(recordIds, commandButtonIds),
@@ -57,6 +64,8 @@ export class PcfDatasetBindingEntry<IInputs extends IPcfDatasetBindingEntryInput
     public destroy(): void {
         ReactDOM.unmountComponentAtNode(this._container);
         this._bridge.destroy();
+        //Power Apps hands it back to init when the control is shown again in this session
+        this._context.mode.setControlState(this._state);
     }
 
     private _loadConfig = async (datasetControl: IDatasetControl<TData>): Promise<IPcfBindingConfig<TData>> => {
@@ -77,17 +86,21 @@ export class PcfDatasetBindingEntry<IInputs extends IPcfDatasetBindingEntryInput
         return { views: [this._getHostView(views)], metadata };
     }
 
-    //the binding redefines the host's columns and never adds one
+    //the binding redefines the host's columns by name and appends the ones the host does not show
     private _getHostView(views: IPcfBindingView<TData>[]): IPcfBindingView<TData> {
         const query = this._bridge.getQuery();
         const override = views.find(view => view.id === query.viewId) ?? views.find(view => view.id === '*');
         const columnOverrides = new Map((override?.columns ?? []).map(column => [column.name, column]));
+        const hostColumnNames = new Set(query.columns.map(column => column.name));
         return {
             ...override,
             id: query.viewId,
             name: query.title,
             dataSource: query.fetchXml,
-            columns: query.columns.map(column => ({ ...column, ...columnOverrides.get(column.name) })),
+            columns: [
+                ...query.columns.map(column => ({ ...column, ...columnOverrides.get(column.name) })),
+                ...(override?.columns ?? []).filter(column => !hostColumnNames.has(column.name)),
+            ],
         };
     }
 }
