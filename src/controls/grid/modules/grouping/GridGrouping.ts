@@ -16,7 +16,7 @@ import { GroupSelectionLimitDialog } from "./adapters/group-selection-limit-dial
 import { IGridRowModelGrouping } from "../../runtime/row-model";
 import { IGridSurface } from "../../runtime/surfaces";
 import type { GridSelectionStateHook, GridSelectRecordsHook } from "../row-selection";
-import { GRID_MODULE_PRIORITY } from "../priorities";
+import { GRID_MODULE_CELL_THEME_PRIORITY, GRID_MODULE_PRIORITY } from "../priorities";
 import { GridCellLockHook } from "../editing/GridLocks";
 
 declare module "../../interfaces" {
@@ -157,7 +157,7 @@ export class GridGrouping implements IGridGrouping {
         const columnHeaders = this._gridServices.get('columns').headers;
         this._gridServices.get('grid').hooks.agGridOptions.add(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
-        cells.hooks.theme.add(this._onCellTheme, GRID_MODULE_PRIORITY.grouping);
+        cells.hooks.theme.add(this._onCellTheme, GRID_MODULE_CELL_THEME_PRIORITY.grouping);
         //locks come with the editing module, which may load after this one
         this._gridServices.get('grid').modules.observe('editing', editing => {
             editing.locks.hooks.cell.add(this._onLock, GRID_MODULE_PRIORITY.grouping);

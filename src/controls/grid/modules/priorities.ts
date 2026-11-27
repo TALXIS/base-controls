@@ -14,3 +14,9 @@ export const GRID_MODULE_PRIORITY = {
     aggregation: 70,
     clipboard: 80,
 } as const;
+
+/** Where a module's own cell look runs: before a legacy script's and a consumer's theme hooks. */
+export const GRID_MODULE_CELL_THEME_PRIORITY = {
+    grouping: -30,
+    aggregation: -20,
+} as const;

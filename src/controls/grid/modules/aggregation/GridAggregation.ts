@@ -14,7 +14,7 @@ import { TotalCell } from "./adapters/total-cell/TotalCell";
 import { AggregateCell } from "./adapters/aggregate-cell/AggregateCell";
 import { IGridColumnHeader, IColumnHeaderAdornment, IColumnMenuSection } from "../../runtime/column-header";
 import { IGridAggregationServiceRegistry } from "./runtime";
-import { GRID_MODULE_PRIORITY } from "../priorities";
+import { GRID_MODULE_CELL_THEME_PRIORITY, GRID_MODULE_PRIORITY } from "../priorities";
 import { IGridAgTheme } from "../../runtime/theme";
 
 declare module "../../interfaces" {
@@ -93,7 +93,7 @@ export class GridAggregation implements IGridAggregation {
         this._gridServices.get('gridTheme').hooks.theme.add(this._onTheme, GRID_MODULE_PRIORITY.aggregation);
         //runs after grouping to have the last word on a group row's cell
         this._gridServices.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
-        this._gridServices.get('cells').hooks.theme.add(this._onCellTheme, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('cells').hooks.theme.add(this._onCellTheme, GRID_MODULE_CELL_THEME_PRIORITY.aggregation);
         this._gridServices.get('cells').hooks.loading.add(this._onCellLoading, GRID_MODULE_PRIORITY.aggregation);
         this._gridServices.get('rows').hooks.height.add(this._onRowHeight, GRID_MODULE_PRIORITY.aggregation);
         //listed in the column menu after grouping
