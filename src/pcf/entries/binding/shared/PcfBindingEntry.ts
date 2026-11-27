@@ -15,8 +15,6 @@ type TwoOptionsProperty = ComponentFramework.PropertyTypes.TwoOptionsProperty;
 
 /** The inputs both binding entries read. */
 export interface IPcfBindingEntryInputs {
-    /** JSON `IPcfBindingView[]`. */
-    Views?: StringProperty;
     /** JSON entity metadata, set on the provider. */
     EntityMetadata?: StringProperty;
     /** JSON `PcfBindingTranslationDictionary`, which `{{t 'key'}}` in the bindings is looked up in. */
@@ -49,14 +47,14 @@ export interface IPcfBindingConfig<TData = unknown> {
 }
 
 /** What the client API function is called with. */
-export interface IPcfBindingScriptParameters<TData = unknown> {
+export interface IPcfBindingScriptParameters<TConfig = IPcfBindingConfig, TData = unknown> {
     /** The runtime being mounted; it has no provider or view until it is ready. */
     datasetControl: IDatasetControl<TData>;
     controlId?: string;
     /** The bindings on the first mount, the config last set on later ones. */
-    config: IPcfBindingConfig<TData>;
+    config: TConfig;
     /** The control waits until this is called, on every mount. */
-    setConfig: (config: IPcfBindingConfig<TData>) => void;
+    setConfig: (config: TConfig) => void;
 }
 
 type CommonContext = ComponentFramework.Context<IPcfBindingEntryInputs>;
@@ -66,7 +64,7 @@ export const prepareContainer = (container: HTMLDivElement): void => {
 };
 
 /** @param props What the entry decides; the rest is read from the context. */
-export const renderFrame = <TProps extends IPcfBindingFrameProps<any>>(container: HTMLDivElement, frame: ComponentType<TProps & IIsolatedComponentProps>, context: CommonContext, props: Omit<TProps, PcfBindingFrameContextPropName>): void => {
+export const renderFrame = <TProps extends IPcfBindingFrameProps>(container: HTMLDivElement, frame: ComponentType<TProps & IIsolatedComponentProps>, context: CommonContext, props: Omit<TProps, PcfBindingFrameContextPropName>): void => {
     const height = getHeight(context);
     const frameProps = {
         ...props,
@@ -78,23 +76,20 @@ export const renderFrame = <TProps extends IPcfBindingFrameProps<any>>(container
     ReactDOM.render(createElement(frame, frameProps), container);
 };
 
-export const getBindingConfig = <TData,>(context: CommonContext): IPcfBindingConfig<TData> => {
-    const { Views, EntityMetadata } = context.parameters;
-    return {
-        views: Views?.raw ? JSON.parse(Views.raw) : [],
-        metadata: EntityMetadata?.raw ? JSON.parse(EntityMetadata.raw) : undefined,
-    };
+export const getMetadata = (context: CommonContext): IPcfBindingConfig['metadata'] => {
+    const { EntityMetadata } = context.parameters;
+    return EntityMetadata?.raw ? JSON.parse(EntityMetadata.raw) : undefined;
 };
 
 /** Hands the config to the client API function and waits for the one it sets, when the PCF names a function. */
-export const runConfigScript = async <TData,>(context: CommonContext, datasetControl: IDatasetControl<TData>, config: IPcfBindingConfig<TData>): Promise<IPcfBindingConfig<TData>> => {
+export const runConfigScript = async <TConfig, TData>(context: CommonContext, datasetControl: IDatasetControl<TData>, config: TConfig): Promise<TConfig> => {
     const functionName = context.parameters.ClientApiFunctionName?.raw;
     if (!functionName) {
         return config;
     }
-    let onConfigSet!: (config: IPcfBindingConfig<TData>) => void;
-    const configSet = new Promise<IPcfBindingConfig<TData>>(resolve => onConfigSet = resolve);
-    const parameters: IPcfBindingScriptParameters<TData> = {
+    let onConfigSet!: (config: TConfig) => void;
+    const configSet = new Promise<TConfig>(resolve => onConfigSet = resolve);
+    const parameters: IPcfBindingScriptParameters<TConfig, TData> = {
         datasetControl,
         //@ts-ignore - typings
         controlId: context.utils._customControlProperties?.controlId,
@@ -106,12 +101,12 @@ export const runConfigScript = async <TData,>(context: CommonContext, datasetCon
     return await configSet;
 };
 
-export const translateConfig = <TData,>(context: CommonContext, config: IPcfBindingConfig<TData>): IPcfBindingConfig<TData> => {
+export const getTranslations = (context: CommonContext): PcfBindingTranslations => {
     const { Translations } = context.parameters;
     return new PcfBindingTranslations({
         dictionary: Translations?.raw ? JSON.parse(Translations.raw) : {},
         languageId: context.userSettings.languageId,
-    }).translateConfig(config);
+    });
 };
 
 //Power Apps picks the resx of the user's language; a key it lacks keeps its English default

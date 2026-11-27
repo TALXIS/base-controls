@@ -20,17 +20,17 @@ export class DatasetControlUnsavedChangesGuard {
     //the provider is there once init has loaded it
     private _onStatusChanged = (status: RuntimeStatus): void => {
         if (status === 'rendering') {
-            (this._runtime.getProvider() as IInternalDataProvider).setInterceptor('__unsavedChangesBlocker', this._onBlock);
+            (this._runtime.provider as IInternalDataProvider).setInterceptor('__unsavedChangesBlocker', this._onBlock);
         }
     };
 
     //the provider has no way to drop an interceptor
     private _onDestroyed = (): void => {
-        (this._runtime.getProvider() as IInternalDataProvider | undefined)?.setInterceptor('__unsavedChangesBlocker', (parameters, defaultAction) => defaultAction(parameters));
+        (this._runtime.services.find('provider') as IInternalDataProvider | undefined)?.setInterceptor('__unsavedChangesBlocker', (parameters, defaultAction) => defaultAction(parameters));
     };
 
     private _onBlock = (parameters: any, defaultAction: (parameters: any) => any): any => {
-        const provider = this._runtime.getProvider()!;
+        const provider = this._runtime.provider;
         if (!provider.isDirty()) {
             return defaultAction(parameters);
         }

@@ -112,8 +112,8 @@ export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap, IData
         return this.parts.get('editColumns');
     }
 
-    public getProvider(): IDataProvider | undefined {
-        return this._provider;
+    public get provider(): IDataProvider {
+        return this._services.get('provider');
     }
 
     public getViews(): IDatasetControlView[] {
@@ -186,6 +186,7 @@ export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap, IData
     protected async onInit(): Promise<void> {
         const { provider, views = [], destroyProviderOnUnmount } = await this._getProps().onLoad(this);
         this._isProviderOwned = destroyProviderOnUnmount !== false;
+        const removeProvider = this._services.provide('provider', provider);
         try {
             //a copy: the hooks change it in place
             const listedViews = [...views];
@@ -218,6 +219,7 @@ export class DatasetControlRuntime extends Runtime<IDatasetControlPartMap, IData
             this._state.setViewId(viewId);
         }
         catch (error) {
+            removeProvider();
             this._releaseProvider(provider);
             throw error;
         }

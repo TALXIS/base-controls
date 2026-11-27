@@ -3,14 +3,16 @@ import type { IDatasetControl } from '@controls/dataset-control';
 import { IStateStore, StateStore } from '@core';
 import { Labels } from '@labels';
 import {
-    getBindingConfig, getLabels, IPcfBindingEntryInputs, IPcfBindingConfig, isPartEnabled, prepareContainer, renderFrame, runConfigScript,
-    translateConfig,
+    getLabels, getMetadata, getTranslations, IPcfBindingEntryInputs, IPcfBindingConfig, isPartEnabled, prepareContainer, renderFrame,
+    runConfigScript,
 } from '../shared/PcfBindingEntry';
 import type { IPcfFieldBindingFrameProps, IPcfFieldBindingParts, PcfFieldBindingFrameHost, PcfFieldBindingProviderKind } from './PcfFieldBindingFrame';
 
 type TwoOptionsProperty = ComponentFramework.PropertyTypes.TwoOptionsProperty;
 
 export interface IPcfFieldBindingEntryInputs extends IPcfBindingEntryInputs {
+    /** JSON `IPcfBindingView[]`. */
+    Views?: ComponentFramework.PropertyTypes.StringProperty;
     DataProvider: ComponentFramework.PropertyTypes.EnumProperty<PcfFieldBindingProviderKind>;
     EnableViewSwitcher?: TwoOptionsProperty;
     EnableQuickFind?: TwoOptionsProperty;
@@ -67,9 +69,18 @@ export class PcfFieldBindingEntry<IInputs extends IPcfFieldBindingEntryInputs, T
 
     private _loadConfig = async (datasetControl: IDatasetControl<TData>): Promise<IPcfBindingConfig<TData>> => {
         //kept untranslated, so a script sees the markers on every mount
-        this._config = await runConfigScript(this._context, datasetControl, this._config ?? getBindingConfig<TData>(this._context));
-        return translateConfig(this._context, this._config);
+        this._config = await runConfigScript(this._context, datasetControl, this._config ?? this._getBindingConfig());
+        const translations = getTranslations(this._context);
+        return {
+            views: this._config.views?.map(view => translations.translateView(view)),
+            metadata: translations.translateMetadata(this._config.metadata),
+        };
     };
+
+    private _getBindingConfig(): IPcfBindingConfig<TData> {
+        const { Views } = this._context.parameters;
+        return { views: Views?.raw ? JSON.parse(Views.raw) : [], metadata: getMetadata(this._context) };
+    }
 
     //on a record form the table is known, and the id only once the record is first saved
     private _isUnsavedRecord(): boolean {

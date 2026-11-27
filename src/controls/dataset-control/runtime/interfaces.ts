@@ -98,8 +98,10 @@ export interface IDatasetControl<TData = unknown> extends IRuntime {
     readonly modules: IDatasetControlModuleLocator;
     /** What modules draw in the control. */
     readonly surfaces: IDatasetControlSurfaces;
-    /** The provider shown, once the status is `ready`. */
-    getProvider(): IDataProvider | undefined;
+    /** What the control provides by key; observe `provider` to reach it before its first page loads. */
+    readonly services: IServiceLocator<IDatasetControlServiceMap>;
+    /** The provider shown; throws until `onLoad` has handed it over, so read it from `onReady` on. */
+    readonly provider: IDataProvider;
     /** The views of this mount, from `onLoad`; empty before they loaded. */
     getViews(): IDatasetControlView<TData>[];
     /** The view the provider shown is for. */
@@ -118,6 +120,8 @@ export interface IDatasetControl<TData = unknown> extends IRuntime {
 
 export interface IDatasetControlServiceMap {
     runtime: IDatasetControlInternal;
+    /** The provider `onLoad` handed over, there before its view resolves. */
+    provider: IDataProvider;
     labels: Pick<LabelsService, 'getLabels'>;
     surfaces: DatasetControlSurfaces;
 }

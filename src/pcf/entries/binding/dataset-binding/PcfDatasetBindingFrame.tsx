@@ -10,7 +10,14 @@ import { addColumnDefinitions, applyMetadata, IPcfBindingFrameProps, PcfBindingF
 import type { IPowerAppsInlineRibbonParameters } from './power-apps/PowerAppsInlineRibbon';
 
 /** What the dataset binding entry hands its frame. */
-export interface IPcfDatasetBindingFrameProps<TData = unknown> extends IPcfBindingFrameProps<TData> {
+/** The host's view as the frame resolves it. */
+export interface IPcfDatasetBindingFrameConfig<TData = unknown> {
+    view: IPcfBindingView<TData>;
+    metadata?: IPcfBindingConfig['metadata'];
+}
+
+export interface IPcfDatasetBindingFrameProps<TData = unknown> extends IPcfBindingFrameProps {
+    onLoadConfig: (control: IDatasetControl<TData>) => Promise<IPcfDatasetBindingFrameConfig<TData>>;
     enablePagination: boolean;
     enablePageSizeSwitcher: boolean;
     /** Identifies the host's query as the PCF mounted; state kept for another one comes back only in part. */
@@ -47,11 +54,10 @@ const PcfDatasetBindingDatasetControl = <TData,>(props: IPcfDatasetBindingFrameP
     const { formatting } = usePcfContext();
 
     const onLoad = async (control: IDatasetControl<TData>): Promise<IDatasetControlLoadResult<TData>> => {
-        const { views = [], metadata } = await props.onLoadConfig(control);
+        const { view, metadata } = await props.onLoadConfig(control);
         const provider = new FetchXmlDataProvider({ fetchXml: '', formatting });
         props.onProviderCreated(provider);
-        const keptViews = views.map(view => keepState(view, props.stateStore, props.hostQueryKey));
-        return { provider, views: keptViews.map(view => toView(view, metadata)) };
+        return { provider, views: [toView(keepState(view, props.stateStore, props.hostQueryKey), metadata)] };
     };
 
     //the host draws the view switcher, quick find, column editing and commands above it

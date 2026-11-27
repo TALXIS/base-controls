@@ -21,7 +21,8 @@ export interface IPcfFieldBindingParts {
 }
 
 /** What the field binding entry hands its frame. */
-export interface IPcfFieldBindingFrameProps<TData = unknown> extends IPcfBindingFrameProps<TData> {
+export interface IPcfFieldBindingFrameProps<TData = unknown> extends IPcfBindingFrameProps {
+    onLoadConfig: (control: IDatasetControl<TData>) => Promise<IPcfBindingConfig<TData>>;
     providerKind: PcfFieldBindingProviderKind;
     parts: IPcfFieldBindingParts;
 }

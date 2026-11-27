@@ -1,7 +1,6 @@
 import React from 'react';
 import { initializeIcons } from '@fluentui/react';
 import { IColumn, IDataProvider } from '@talxis/client-libraries';
-import type { IDatasetControl } from '@controls/dataset-control';
 import type { IDatasetControlViewColumn } from '@controls/dataset-control/runtime/interfaces';
 import { IStateStore, StateProvider } from '@core';
 import { Labels, LabelsProvider, useLabels } from '@labels';
@@ -13,11 +12,10 @@ import { renderOverride } from './PcfBindingTranslations';
 import { PCF_BINDING_LABELS } from './labels';
 
 /** What both binding entries hand their frame. */
-export interface IPcfBindingFrameProps<TData = unknown> {
+export interface IPcfBindingFrameProps {
     context: ComponentFramework.Context<any>;
     theme: ITheme;
     height?: string;
-    onLoadConfig: (control: IDatasetControl<TData>) => Promise<IPcfBindingConfig<TData>>;
     /** The control's own strings in the user's language. */
     labels?: Labels;
     /** Where the control keeps its state, such as the open view, for the next mount. */

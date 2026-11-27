@@ -120,9 +120,9 @@ export const dealViews = createLocalStorageUserQueriesModule({ storageKey: 'docs
 //saves the sorting, filter and search with every user view
 export const saveDealViewData = (control: IDatasetControl) => {
     control.modules.observe('userQueries', userQueries => {
-        userQueries.saveWithView('sorting', () => control.getProvider()?.getSorting(), (sorting, provider) => provider.setSorting(sorting))
-        userQueries.saveWithView('filtering', () => control.getProvider()?.getFiltering(), (filtering, provider) => provider.setFiltering(filtering))
-        userQueries.saveWithView('searchQuery', () => control.getProvider()?.getSearchQuery(), (searchQuery, provider) => provider.setSearchQuery(searchQuery))
+        userQueries.saveWithView('sorting', () => control.services.find('provider')?.getSorting(), (sorting, provider) => provider.setSorting(sorting))
+        userQueries.saveWithView('filtering', () => control.services.find('provider')?.getFiltering(), (filtering, provider) => provider.setFiltering(filtering))
+        userQueries.saveWithView('searchQuery', () => control.services.find('provider')?.getSearchQuery(), (searchQuery, provider) => provider.setSearchQuery(searchQuery))
     })
 }
 `,

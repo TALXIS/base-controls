@@ -163,7 +163,7 @@ export class DatasetControlUserQueries {
 
     //what the control shows, as a view keeps it
     private _getView(): IUserQueryView {
-        const provider = this._datasetControl.getProvider();
+        const provider = this._datasetControl.services.find('provider');
         const columns = (provider?.getColumns() ?? []).map(({ name, isHidden, isPersistent, order, visualSizeFactor, grouping, aggregation }): IUserQueryColumn => ({ name, isHidden, isPersistent, order, visualSizeFactor, grouping, aggregation }));
         return { columns, linking: this._getUsedLinking(provider?.getLinking() ?? [], columns), data: this._getSavedValues(), control: this._datasetControl.getView()?.control };
     }

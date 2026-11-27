@@ -10,7 +10,7 @@ export const DatasetControlMount = (props: IDatasetControlProps) => {
     const runtime = useRuntime<DatasetControlRuntime>();
 
     return <DatasetControlContext.Provider value={runtime}>
-        <DataProviderContext.Provider value={runtime.getProvider() ?? null}>
+        <DataProviderContext.Provider value={runtime.provider}>
             {props.children}
             <Surfaces />
         </DataProviderContext.Provider>

@@ -1,5 +1,5 @@
 import { Liquid } from "liquidjs";
-import type { IPcfBindingConfig } from "./PcfBindingEntry";
+import type { IPcfBindingConfig, IPcfBindingView } from "./PcfBindingEntry";
 
 /** The `Translations` binding: each key's text by LCID. */
 export type PcfBindingTranslationDictionary = { [key: string]: { [languageId: string]: string } };
@@ -8,6 +8,8 @@ export interface IPcfBindingTranslationsParameters {
     dictionary: PcfBindingTranslationDictionary;
     languageId: number;
 }
+
+type ITranslatableView = Pick<IPcfBindingView, 'name' | 'group' | 'columns'>;
 
 const LIQUID = new Liquid();
 const FALLBACK_LANGUAGE_ID = '1033';
@@ -27,18 +29,18 @@ export class PcfBindingTranslations {
         this._languageId = String(parameters.languageId);
     }
 
-    /** A copy of the config with the strings the dataset control reads translated. */
-    public translateConfig<TData>(config: IPcfBindingConfig<TData>): IPcfBindingConfig<TData> {
+    /** A copy of the view with the strings the dataset control reads translated. */
+    public translateView<TView extends ITranslatableView>(view: TView): TView {
         return {
-            ...config,
-            views: config.views?.map(view => ({
-                ...view,
-                name: this._translate(view.name),
-                group: view.group && { ...view.group, name: this._translate(view.group.name) },
-                columns: view.columns && this._translateDeep(view.columns),
-            })),
-            metadata: config.metadata && this._translateDeep(config.metadata),
+            ...view,
+            name: this._translate(view.name),
+            group: view.group && { ...view.group, name: this._translate(view.group.name) },
+            columns: view.columns && this._translateDeep(view.columns),
         };
+    }
+
+    public translateMetadata(metadata: IPcfBindingConfig['metadata']): IPcfBindingConfig['metadata'] {
+        return metadata && this._translateDeep(metadata);
     }
 
     private _translate(text: string): string {

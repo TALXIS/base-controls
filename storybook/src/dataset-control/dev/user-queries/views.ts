@@ -93,7 +93,7 @@ export const withCopies = <T extends { id: string, name: string }>(items: T[], r
 export const createDealViewDataModule = (): IDatasetControlModule => ({
     name: 'dealViewData',
     onLoad: datasetControl => {
-        const provider = () => datasetControl.getProvider()!
+        const provider = () => datasetControl.provider
         datasetControl.modules.observe('userQueries', userQueries => {
             const unsaveWithViews = [
                 userQueries.saveWithView('sorting', () => provider().getSorting(), (sorting, provider) => provider.setSorting(sorting)),
