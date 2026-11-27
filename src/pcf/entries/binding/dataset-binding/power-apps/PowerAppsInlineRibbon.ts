@@ -1,6 +1,6 @@
 import { getIcon, ICommandBarItemProps, IIconProps } from '@fluentui/react';
 import { ICommand, IRecord } from '@talxis/client-libraries';
-import type { GridCellCommandsHook, GridCellLoadingHook, IGrid, IGridColDef, IGridModule } from '@controls/grid';
+import type { GridCellCommandsHook, GridCellLoadingHook, GridCellRow, IGrid, IGridColDef, IGridModule } from '@controls/grid';
 import { getRibbonUiCommandBarStyles } from '@controls/ribbon/ui/styles';
 
 //overridable through the view's `colDefs`
@@ -97,6 +97,7 @@ export class PowerAppsInlineRibbon {
         columnDefs.push(this._grid.services.get('columns').createUnboundColDef({
             colId: INLINE_RIBBON_COLUMN_KEY,
             width: 160,
+            pinned: 'right',
             sortable: false,
         }));
     };
@@ -109,11 +110,11 @@ export class PowerAppsInlineRibbon {
     };
 
     //runs only for highlighted rows, so only those are asked for
-    private _onCellCommands: GridCellCommandsHook = (result, { record, columnName }) => {
+    private _onCellCommands: GridCellCommandsHook = (result, { record, columnName, row }) => {
         if (columnName !== this._columnName) {
             return;
         }
-        const recordIds = this._getCommandRecordIds(record);
+        const recordIds = this._getCommandRecordIds(record, row);
         if (recordIds.length === 0) {
             return;
         }
@@ -126,11 +127,11 @@ export class PowerAppsInlineRibbon {
     };
 
     //a group row acts on the records selected under it, a total row on none
-    private _getCommandRecordIds(record: IRecord): string[] {
-        switch (record.getSummarizationType()) {
-            case 'none':
+    private _getCommandRecordIds(record: IRecord, row: GridCellRow): string[] {
+        switch (row) {
+            case 'record':
                 return [record.getRecordId()];
-            case 'grouping': {
+            case 'group': {
                 const group = record.getDataProvider().getGroupedRecordDataProviders().find(child => child.getParentRecordId() === record.getRecordId());
                 return group?.getSelectedRecordIds() ?? [];
             }

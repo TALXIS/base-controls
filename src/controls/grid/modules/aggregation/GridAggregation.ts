@@ -5,7 +5,7 @@ import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, IRe
 import { LabelsOf } from "@labels";
 import { GRID_AGGREGATION_LABELS } from "./labels";
 import { IGridAggregationComponents } from "./components";
-import { IGridCellLoading } from "../../runtime/cells";
+import { IGridCellLoading, IGridCellRowResult } from "../../runtime/cells";
 import { IGridRowHeight } from "../../runtime/rows";
 import { RowError } from "../../adapters/rows/error";
 import { IGridAgGridOptions } from "../../runtime/grid";
@@ -93,6 +93,7 @@ export class GridAggregation implements IGridAggregation {
         this._gridServices.get('gridTheme').hooks.theme.add(this._onTheme, GRID_MODULE_PRIORITY.aggregation);
         //runs after grouping to have the last word on a group row's cell
         this._gridServices.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.aggregation);
+        this._gridServices.get('cells').hooks.row.add(this._onCellRow, GRID_MODULE_PRIORITY.aggregation);
         this._gridServices.get('cells').hooks.theme.add(this._onCellTheme, GRID_MODULE_CELL_THEME_PRIORITY.aggregation);
         this._gridServices.get('cells').hooks.loading.add(this._onCellLoading, GRID_MODULE_PRIORITY.aggregation);
         this._gridServices.get('rows').hooks.height.add(this._onRowHeight, GRID_MODULE_PRIORITY.aggregation);
@@ -127,6 +128,19 @@ export class GridAggregation implements IGridAggregation {
             return;
         }
         result.isLoading = !!this._totalRow?.getDataProvider().isLoading();
+    };
+
+    //the total row and a group row's aggregated columns show the aggregate
+    private _onCellRow = (result: IGridCellRowResult, parameters: { record: IRecord; columnName: string }): void => {
+        const { record, columnName } = parameters;
+        if (this._isTotalRecord(record)) {
+            result.row = 'total';
+        }
+        else if (result.row !== 'group' || !this._isColumnAggregated(this._provider.getColumnsMap()[columnName])) {
+            return;
+        }
+        const valueColumnName = this.getAggregateValueColumnName(record, columnName);
+        result.valueColumnName = valueColumnName === columnName ? undefined : valueColumnName;
     };
 
     /** Styles the total row like a group row. */

@@ -18,6 +18,7 @@ import { IGridSurface } from "../../runtime/surfaces";
 import type { GridSelectionStateHook, GridSelectRecordsHook } from "../row-selection";
 import { GRID_MODULE_CELL_THEME_PRIORITY, GRID_MODULE_PRIORITY } from "../priorities";
 import { GridCellLockHook } from "../editing/GridLocks";
+import type { IGridCellRowResult } from "../../runtime/cells";
 
 declare module "../../interfaces" {
     interface IGridModuleMap {
@@ -157,6 +158,7 @@ export class GridGrouping implements IGridGrouping {
         const columnHeaders = this._gridServices.get('columns').headers;
         this._gridServices.get('grid').hooks.agGridOptions.add(result => result.options.groupDisplayType = 'custom', GRID_MODULE_PRIORITY.grouping);
         this._gridServices.get('columns').hooks.columnDefinitions.add(this._onColumnDefinitions, GRID_MODULE_PRIORITY.grouping);
+        cells.hooks.row.add(this._onCellRow, GRID_MODULE_PRIORITY.grouping);
         cells.hooks.theme.add(this._onCellTheme, GRID_MODULE_CELL_THEME_PRIORITY.grouping);
         //locks come with the editing module, which may load after this one
         this._gridServices.get('grid').modules.observe('editing', editing => {
@@ -374,6 +376,23 @@ export class GridGrouping implements IGridGrouping {
                 suppressMovable: true,
                 headerComponent: GroupExpansionHeader,
             }));
+        }
+    };
+
+    //matches what _applyGroupRowRenderer draws
+    private _onCellRow = (result: IGridCellRowResult, parameters: { record: IRecord; columnName: string }): void => {
+        const { record, columnName } = parameters;
+        const column = this._provider.getColumnsMap()[columnName];
+        if (!column) {
+            return;
+        }
+        if (isGroupRecord(record)) {
+            result.row = 'group';
+            result.valueColumnName = this.isRowGroupedBy(record, columnName) ? this.getGroupedValueColumnName(record, columnName) : undefined;
+        }
+        //a grouped column's value lives in the group rows above the record
+        else if (this.isColumnGrouped(column)) {
+            result.valueColumnName = undefined;
         }
     };
 
