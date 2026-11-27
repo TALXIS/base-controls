@@ -1,10 +1,13 @@
 import type { Preview } from '@storybook/react-vite';
 import React from 'react';
-import { ThemeProvider } from '@fluentui/react';
+import { initializeIcons, ThemeProvider } from '@fluentui/react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
 import { PcfContextProvider, usePcfContext } from '@talxis/base-controls/utils';
 import { useControlTheme } from '@talxis/base-controls/hooks';
+
+//a host app registers these once; without them every Fluent icon in a control renders as nothing
+initializeIcons();
 
 const StorybookProviders = ({ children }: { children?: React.ReactNode }) => {
   const context = usePcfContext();
@@ -122,6 +125,12 @@ const preview: Preview = {
             ],
           ],
           'Map',
+          [
+            'Overview',
+            'Core',
+            ['Data', 'Pins', 'Providers'],
+            'Modules',
+          ],
           'Checklist',
           ['Get started', 'Reacting to changes', 'Dev'],
           'Providers',
