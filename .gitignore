@@ -13,3 +13,5 @@ storybook/node_modules
 storybook/storybook-static
 
 .chrome-profile
+
+.env.local
